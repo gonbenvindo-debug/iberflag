@@ -384,6 +384,16 @@ class DesignEditor {
         handlesContainer.classList.remove('hidden');
         
         const bbox = elementData.element.getBBox();
+        
+        // Create selection box
+        const selectionBox = document.createElement('div');
+        selectionBox.className = 'selection-box';
+        selectionBox.style.left = (bbox.x - 2) + 'px';
+        selectionBox.style.top = (bbox.y - 2) + 'px';
+        selectionBox.style.width = (bbox.width + 4) + 'px';
+        selectionBox.style.height = (bbox.height + 4) + 'px';
+        handlesContainer.appendChild(selectionBox);
+        
         const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
         
         positions.forEach(pos => {
@@ -634,9 +644,20 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
         } else if (this.selectedElement.type === 'text') {
-            const maxFontSize = Math.min(120, newHeight);
-            this.selectedElement.element.setAttribute('font-size', Math.max(12, maxFontSize));
-            this.selectedElement.size = Math.max(12, maxFontSize);
+            // Calculate scale factor based on height change
+            const currentSize = parseFloat(this.selectedElement.element.getAttribute('font-size'));
+            const scaleFactor = newHeight / bbox.height;
+            let newSize = currentSize * scaleFactor;
+            
+            // Constrain font size
+            newSize = Math.max(12, Math.min(120, newSize));
+            
+            this.selectedElement.element.setAttribute('font-size', newSize);
+            this.selectedElement.size = newSize;
+            
+            // Update position for corner/edge handles
+            this.selectedElement.element.setAttribute('x', newX);
+            this.selectedElement.element.setAttribute('y', newY + newSize); // y is baseline
         }
         
         this.dragStart = { x: e.clientX, y: e.clientY };
