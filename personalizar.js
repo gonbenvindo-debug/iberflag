@@ -30,6 +30,7 @@ const textItalic = document.getElementById('text-italic');
 const textUnderline = document.getElementById('text-underline');
 
 // Image controls
+const addImageBtn = document.getElementById('add-image-btn');
 const imageUpload = document.getElementById('image-upload');
 const imageUrl = document.getElementById('image-url');
 const addImageUrlBtn = document.getElementById('add-image-url-btn');
@@ -52,9 +53,8 @@ const zoomFitBtn = document.getElementById('zoom-fit');
 const undoBtn = document.getElementById('undo-btn');
 const redoBtn = document.getElementById('redo-btn');
 const clearAllBtn = document.getElementById('clear-all');
-const downloadBtn = document.getElementById('download-design');
-const saveDraftBtn = document.getElementById('save-draft');
 const addToCartBtn = document.getElementById('add-to-cart-custom');
+const cartBtnText = document.getElementById('cart-btn-text');
 
 // ===== LOAD PRODUCT INFO =====
 function loadProductInfo() {
@@ -78,6 +78,13 @@ function loadProductInfo() {
     document.getElementById('product-name').textContent = currentProduct.nome;
     document.getElementById('product-info').textContent = currentProduct.nome;
     document.getElementById('product-price').textContent = `${currentProduct.preco.toFixed(2)}€`;
+    
+    // Check if editing existing design
+    const editIndex = urlParams.get('edit');
+    if (editIndex !== null) {
+        loadExistingDesign(parseInt(editIndex));
+        if (cartBtnText) cartBtnText.textContent = 'Atualizar no Carrinho';
+    }
 }
 
 // ===== TAB SWITCHING =====
@@ -213,6 +220,12 @@ if (textUnderline) {
 }
 
 // ===== ADD IMAGE =====
+if (addImageBtn) {
+    addImageBtn.addEventListener('click', () => {
+        imageUpload.click();
+    });
+}
+
 if (imageUpload) {
     imageUpload.addEventListener('change', (e) => {
         const file = e.target.files[0];
@@ -297,8 +310,8 @@ function addShape(type) {
         x: 300,
         y: 250,
         fill: '#3b82f6',
-        stroke: '#000000',
-        strokeWidth: 2
+        stroke: 'none',
+        strokeWidth: 0
     };
     
     switch(type) {
@@ -333,8 +346,10 @@ function addShape(type) {
     }
     
     shape.setAttribute('fill', elementData.fill);
-    shape.setAttribute('stroke', elementData.stroke);
-    shape.setAttribute('stroke-width', elementData.strokeWidth);
+    if (elementData.stroke !== 'none') {
+        shape.setAttribute('stroke', elementData.stroke);
+        shape.setAttribute('stroke-width', elementData.strokeWidth);
+    }
     shape.style.cursor = 'move';
     
     elementData.element = shape;
@@ -469,8 +484,16 @@ function updateLayers() {
     }
     
     layersList.innerHTML = elements.map((el, index) => `
-        <div class="flex items-center justify-between p-2 bg-gray-50 rounded hover:bg-gray-100 cursor-pointer" data-layer-id="${el.id}">
-            <div class="flex items-center gap-2">
+        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded hover:bg-gray-100" data-layer-id="${el.id}">
+            <div class="flex flex-col gap-1">
+                <button class="layer-move-up text-gray-600 hover:text-blue-600" data-layer-index="${index}" ${index === elements.length - 1 ? 'disabled' : ''}>
+                    <i data-lucide="chevron-up" class="w-3 h-3"></i>
+                </button>
+                <button class="layer-move-down text-gray-600 hover:text-blue-600" data-layer-index="${index}" ${index === 0 ? 'disabled' : ''}>
+                    <i data-lucide="chevron-down" class="w-3 h-3"></i>
+                </button>
+            </div>
+            <div class="flex items-center gap-2 flex-1 cursor-pointer">
                 <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? 'image' : 'square'}" class="w-4 h-4"></i>
                 <span class="text-sm">${el.type === 'text' ? el.content.substring(0, 20) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
             </div>
@@ -493,12 +516,31 @@ function updateLayers() {
         });
     });
     
-    document.querySelectorAll('[data-layer-id]').forEach(layer => {
-        layer.addEventListener('click', () => {
-            const id = parseInt(layer.dataset.layerId);
-            const element = elements.find(el => el.id === id);
-            if (element) selectElement(element);
+    document.querySelectorAll('.layer-move-up').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.layerIndex);
+            moveLayer(index, 1);
         });
+    });
+    
+    document.querySelectorAll('.layer-move-down').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
+            const index = parseInt(btn.dataset.layerIndex);
+            moveLayer(index, -1);
+        });
+    });
+    
+    document.querySelectorAll('[data-layer-id]').forEach(layer => {
+        const clickableArea = layer.querySelector('.flex-1');
+        if (clickableArea) {
+            clickableArea.addEventListener('click', () => {
+                const id = parseInt(layer.dataset.layerId);
+                const element = elements.find(el => el.id === id);
+                if (element) selectElement(element);
+            });
+        }
     });
 }
 
@@ -514,6 +556,29 @@ function deleteLayer(index) {
     }
     updateLayers();
     saveHistory();
+    autoSaveDesign();
+}
+
+function moveLayer(index, direction) {
+    const newIndex = index + direction;
+    if (newIndex < 0 || newIndex >= elements.length) return;
+    
+    // Swap elements in array
+    [elements[index], elements[newIndex]] = [elements[newIndex], elements[index]];
+    
+    // Reorder in SVG
+    const element1 = elements[index].element;
+    const element2 = elements[newIndex].element;
+    
+    if (direction > 0) {
+        canvas.insertBefore(element2, element1.nextSibling);
+    } else {
+        canvas.insertBefore(element1, element2);
+    }
+    
+    updateLayers();
+    saveHistory();
+    autoSaveDesign();
 }
 
 // ===== HISTORY =====
@@ -568,36 +633,31 @@ if (clearAllBtn) {
     });
 }
 
-// ===== DOWNLOAD SVG =====
-if (downloadBtn) {
-    downloadBtn.addEventListener('click', () => {
-        const svgData = new XMLSerializer().serializeToString(canvas);
-        const blob = new Blob([svgData], { type: 'image/svg+xml' });
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `${currentProduct.nome.replace(/\s+/g, '_')}_design.svg`;
-        link.click();
-        URL.revokeObjectURL(url);
-        showToast('Design exportado com sucesso!', 'success');
-    });
+// ===== AUTO SAVE DESIGN =====
+function autoSaveDesign() {
+    if (!currentProduct) return;
+    
+    const svgData = new XMLSerializer().serializeToString(canvas);
+    const design = {
+        productId: currentProduct.id,
+        svgData: svgData,
+        elements: elements.map(el => ({
+            ...el,
+            element: null
+        })),
+        timestamp: Date.now()
+    };
+    
+    localStorage.setItem(`design_${currentProduct.id}`, JSON.stringify(design));
 }
 
-// ===== SAVE DRAFT =====
-if (saveDraftBtn) {
-    saveDraftBtn.addEventListener('click', () => {
-        const design = {
-            productId: currentProduct.id,
-            elements: elements.map(el => ({
-                ...el,
-                element: null
-            })),
-            timestamp: Date.now()
-        };
-        
-        localStorage.setItem(`design_draft_${currentProduct.id}`, JSON.stringify(design));
-        showToast('Rascunho guardado!', 'success');
-    });
+// ===== LOAD EXISTING DESIGN =====
+function loadExistingDesign(cartIndex) {
+    const item = cart[cartIndex];
+    if (!item || !item.customDesign) return;
+    
+    // TODO: Restore design from SVG
+    showToast('Design carregado!', 'success');
 }
 
 // ===== ADD TO CART =====
@@ -608,21 +668,23 @@ if (addToCartBtn) {
             return;
         }
         
-        // Save design
+        const urlParams = new URLSearchParams(window.location.search);
+        const editIndex = urlParams.get('edit');
         const svgData = new XMLSerializer().serializeToString(canvas);
         
-        // Add to cart with custom design
-        const customProduct = {
-            ...currentProduct,
-            customDesign: svgData,
-            customized: true
-        };
-        
-        const existingItem = cart.find(item => item.id === currentProduct.id && !item.customized);
-        
-        if (existingItem) {
-            existingItem.quantity += 1;
+        if (editIndex !== null) {
+            // Update existing cart item
+            const index = parseInt(editIndex);
+            if (cart[index]) {
+                cart[index].customDesign = svgData;
+                updateCart();
+                showToast('Design atualizado!', 'success');
+                setTimeout(() => {
+                    window.location.href = '/produtos.html';
+                }, 1000);
+            }
         } else {
+            // Add new item to cart
             cart.push({
                 id: currentProduct.id,
                 nome: currentProduct.nome,
@@ -632,14 +694,14 @@ if (addToCartBtn) {
                 customDesign: svgData,
                 customized: true
             });
+            
+            updateCart();
+            showToast('Produto personalizado adicionado ao carrinho!', 'success');
+            
+            setTimeout(() => {
+                window.location.href = '/produtos.html';
+            }, 1500);
         }
-        
-        updateCart();
-        showToast('Produto personalizado adicionado ao carrinho!', 'success');
-        
-        setTimeout(() => {
-            window.location.href = '/produtos.html';
-        }, 1500);
     });
 }
 
@@ -655,9 +717,10 @@ document.addEventListener('keydown', (e) => {
 document.addEventListener('DOMContentLoaded', () => {
     loadProductInfo();
     
-    // Load draft if exists
-    const draft = localStorage.getItem(`design_draft_${currentProduct?.id}`);
-    if (draft) {
-        // TODO: Restore draft
-    }
+    // Auto-save on changes
+    setInterval(() => {
+        if (elements.length > 0) {
+            autoSaveDesign();
+        }
+    }, 5000); // Auto-save every 5 seconds
 });

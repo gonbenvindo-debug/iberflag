@@ -221,6 +221,7 @@ if (productForm) {
             preco: parseFloat(document.getElementById('product-preco').value),
             categoria: document.getElementById('product-categoria').value,
             imagem: document.getElementById('product-imagem').value,
+            svg_template: document.getElementById('product-svg-template').value || null,
             stock: parseInt(document.getElementById('product-stock').value) || 0,
             destaque: document.getElementById('product-destaque').checked,
             ativo: document.getElementById('product-ativo').checked
@@ -273,6 +274,7 @@ async function editProduct(id) {
         document.getElementById('product-preco').value = data.preco;
         document.getElementById('product-categoria').value = data.categoria;
         document.getElementById('product-imagem').value = data.imagem;
+        document.getElementById('product-svg-template').value = data.svg_template || '';
         document.getElementById('product-stock').value = data.stock || 0;
         document.getElementById('product-destaque').checked = data.destaque;
         document.getElementById('product-ativo').checked = data.ativo;

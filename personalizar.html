@@ -38,18 +38,18 @@
                 <h2 class="text-xl font-bold mb-6">Ferramentas de Design</h2>
                 
                 <!-- Tabs -->
-                <div class="flex gap-2 mb-6 border-b">
+                <div class="flex gap-1 mb-6 bg-gray-100 p-1 rounded-lg">
                     <button class="tool-tab active" data-tab="text">
                         <i data-lucide="type" class="w-4 h-4"></i>
-                        Texto
+                        <span>Texto</span>
                     </button>
                     <button class="tool-tab" data-tab="images">
                         <i data-lucide="image" class="w-4 h-4"></i>
-                        Imagens
+                        <span>Imagens</span>
                     </button>
                     <button class="tool-tab" data-tab="shapes">
                         <i data-lucide="square" class="w-4 h-4"></i>
-                        Formas
+                        <span>Formas</span>
                     </button>
                 </div>
 
@@ -96,15 +96,16 @@
 
                 <!-- Images Panel -->
                 <div id="images-panel" class="tool-panel hidden">
-                    <div class="mb-4">
-                        <label class="form-label">Upload de Imagem</label>
-                        <input type="file" id="image-upload" accept="image/*" class="form-input">
-                    </div>
-                    <p class="text-sm text-gray-600">Ou cole uma URL de imagem:</p>
-                    <div class="flex gap-2 mt-2">
+                    <input type="file" id="image-upload" accept="image/*" class="hidden">
+                    <button id="add-image-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition mb-4 flex items-center justify-center gap-2">
+                        <i data-lucide="plus" class="w-4 h-4"></i>
+                        Adicionar Imagem
+                    </button>
+                    <p class="text-sm text-gray-500 text-center mb-4">Clique para fazer upload ou cole URL abaixo</p>
+                    <div class="flex gap-2">
                         <input type="url" id="image-url" class="form-input flex-1" placeholder="https://...">
-                        <button id="add-image-url-btn" class="bg-blue-600 text-white px-4 rounded-lg hover:bg-blue-700">
-                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        <button id="add-image-url-btn" class="bg-gray-600 text-white px-4 rounded-lg hover:bg-gray-700">
+                            <i data-lucide="link" class="w-4 h-4"></i>
                         </button>
                     </div>
                     
@@ -195,10 +196,6 @@
                         <i data-lucide="redo" class="w-5 h-5"></i>
                     </button>
                     <div class="border-l h-6 mx-2"></div>
-                    <button id="download-design" class="flex items-center gap-2 px-4 py-2 bg-gray-100 rounded-lg hover:bg-gray-200">
-                        <i data-lucide="download" class="w-4 h-4"></i>
-                        Exportar SVG
-                    </button>
                 </div>
             </div>
 
@@ -226,12 +223,9 @@
                     <p class="text-sm text-gray-600">Preço: <span id="product-price" class="font-bold text-blue-600"></span></p>
                 </div>
                 <div class="flex gap-3">
-                    <button id="save-draft" class="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 font-semibold">
-                        Guardar Rascunho
-                    </button>
                     <button id="add-to-cart-custom" class="px-8 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-bold flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-                        Adicionar ao Carrinho
+                        <span id="cart-btn-text">Adicionar ao Carrinho</span>
                     </button>
                 </div>
             </div>

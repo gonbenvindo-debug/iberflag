@@ -1151,6 +1151,151 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     outline-offset: 2px;
 }
 
+/* ===== MOBILE RESPONSIVE STYLES ===== */
+@media (max-width: 768px) {
+    /* Typography */
+    h1 { font-size: 2rem !important; }
+    h2 { font-size: 1.5rem !important; }
+    h3 { font-size: 1.25rem !important; }
+    
+    /* Container padding */
+    .max-w-7xl { padding-left: 1rem !important; padding-right: 1rem !important; }
+    
+    /* Navigation */
+    nav .hidden.md\:flex { display: none !important; }
+    
+    /* Hero section */
+    .hero-section { padding: 2rem 0 !important; }
+    .hero-section h1 { font-size: 2rem !important; line-height: 1.2 !important; }
+    .hero-section p { font-size: 1rem !important; }
+    .hero-image-container { display: none !important; }
+    
+    /* Product grid */
+    .grid.grid-cols-3 { grid-template-columns: 1fr !important; }
+    .grid.grid-cols-2 { grid-template-columns: 1fr !important; }
+    .grid.grid-cols-4 { grid-template-columns: repeat(2, 1fr) !important; }
+    
+    /* Product cards */
+    .product-card { margin-bottom: 1rem; }
+    
+    /* Cart sidebar */
+    #cart-sidebar { width: 100% !important; }
+    
+    /* Forms */
+    .grid.md\:grid-cols-2 { grid-template-columns: 1fr !important; }
+    
+    /* Tables */
+    .table-container { overflow-x: auto; }
+    table { min-width: 600px; }
+    
+    /* Admin panel */
+    .admin-sidebar { width: 100% !important; position: relative !important; }
+    .admin-content { margin-left: 0 !important; }
+    
+    /* Customizer */
+    .flex.h-\[calc\(100vh-64px\)\] { flex-direction: column !important; }
+    aside.w-80 { width: 100% !important; max-height: 40vh; }
+    #canvas-container { width: 100% !important; height: 400px !important; }
+    #design-canvas { width: 100% !important; height: 400px !important; }
+    
+    /* Tool tabs */
+    .tool-tab { flex: 1; font-size: 0.75rem !important; padding: 0.5rem !important; }
+    .tool-tab span { display: none; }
+    
+    /* Checkout */
+    .lg\:col-span-2 { grid-column: span 1 !important; }
+    .lg\:col-span-1 { grid-column: span 1 !important; }
+    
+    /* Footer */
+    footer .grid.md\:grid-cols-4 { grid-template-columns: 1fr !important; }
+    footer .col-span-2 { grid-column: span 1 !important; }
+    
+    /* Buttons */
+    .flex.gap-3 button { font-size: 0.875rem !important; padding: 0.75rem 1rem !important; }
+    
+    /* Modal */
+    .modal-content { width: 95% !important; max-height: 90vh !important; overflow-y: auto; }
+    
+    /* Stats cards */
+    .stat-card { position: relative !important; margin: 1rem 0 !important; }
+    
+    /* Trust badges */
+    .trust-badge { padding: 1rem !important; }
+    
+    /* Feature cards */
+    .feature-card { padding: 1.5rem !important; }
+    
+    /* Spacing */
+    section { padding: 2rem 0 !important; }
+    .py-16 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+    .py-12 { padding-top: 2rem !important; padding-bottom: 2rem !important; }
+    
+    /* Hide on mobile */
+    .hidden-mobile { display: none !important; }
+}
+
+@media (max-width: 640px) {
+    /* Extra small screens */
+    h1 { font-size: 1.75rem !important; }
+    
+    /* Product grid single column */
+    .grid { grid-template-columns: 1fr !important; }
+    
+    /* Buttons full width */
+    .flex.gap-2 { flex-direction: column !important; }
+    .flex.gap-3 { flex-direction: column !important; }
+    .flex.gap-2 > *, .flex.gap-3 > * { width: 100% !important; }
+    
+    /* Form inputs */
+    input, select, textarea { font-size: 16px !important; } /* Prevent zoom on iOS */
+    
+    /* Canvas */
+    #canvas-container { height: 300px !important; }
+    #design-canvas { height: 300px !important; }
+}
+
+/* Tablet styles */
+@media (min-width: 769px) and (max-width: 1024px) {
+    .grid.grid-cols-3 { grid-template-columns: repeat(2, 1fr) !important; }
+    .grid.grid-cols-4 { grid-template-columns: repeat(3, 1fr) !important; }
+}
+
+/* Touch device improvements */
+@media (hover: none) and (pointer: coarse) {
+    /* Larger touch targets */
+    button, a { min-height: 44px; min-width: 44px; }
+    
+    /* Remove hover effects */
+    .hover\:bg-blue-700:hover { background-color: inherit; }
+    .hover\:scale-105:hover { transform: none; }
+}
+
+/* ===== CUSTOMIZER SPECIFIC MOBILE STYLES ===== */
+.tool-tab {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1rem;
+    background: white;
+    border-radius: 0.5rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+    color: #6b7280;
+}
+
+.tool-tab.active {
+    background: #2563eb;
+    color: white;
+}
+
+.tool-tab:hover:not(.active) {
+    background: #f3f4f6;
+}
+
 /* ===== DARK MODE SUPPORT (Optional) ===== */
 @media (prefers-color-scheme: dark) {
     /* Add dark mode styles if needed */

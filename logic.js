@@ -79,6 +79,8 @@ const initialProducts = [
 
 // ===== RENDER PRODUCTS =====
 function renderProducts(products) {
+    if (!productsContainer) return; // Safety check for pages without products container
+    
     if (!products || products.length === 0) {
         productsContainer.innerHTML = '<p class="text-center col-span-full py-10 text-gray-500">Nenhum produto encontrado.</p>';
         return;
@@ -163,21 +165,19 @@ function updateCartUI() {
                 </div>
             `;
         } else {
-            cartItemsContainer.innerHTML = cart.map(item => `
+            cartItemsContainer.innerHTML = cart.map((item, index) => `
                 <div class="flex gap-4 mb-4 pb-4 border-b">
                     <img src="${item.imagem}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg">
                     <div class="flex-1">
                         <h4 class="font-bold text-sm">${item.nome}</h4>
+                        ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
                         <p class="text-blue-600 font-bold">${item.preco.toFixed(2)}€</p>
                         <div class="flex items-center gap-2 mt-2">
-                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" class="w-6 h-6 bg-gray-100 rounded flex items-center justify-center hover:bg-gray-200">
-                                <i data-lucide="minus" class="w-3 h-3"></i>
-                            </button>
-                            <span class="text-sm font-semibold">${item.quantity}</span>
-                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" class="w-6 h-6 bg-gray-100 rounded flex items-center justify-center hover:bg-gray-200">
-                                <i data-lucide="plus" class="w-3 h-3"></i>
-                            </button>
-                            <button onclick="removeFromCart(${item.id})" class="ml-auto text-red-500 hover:text-red-700">
+                            ${item.customized ? `<a href="/personalizar.html?produto=${item.id}&edit=${index}" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
+                                <i data-lucide="edit" class="w-3 h-3"></i>
+                                Editar
+                            </a>` : ''}
+                            <button onclick="removeFromCart(${index})" class="ml-auto text-red-500 hover:text-red-700">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -226,23 +226,10 @@ function addToCart(productId) {
     openCart();
 }
 
-function removeFromCart(productId) {
-    cart = cart.filter(item => item.id !== productId);
+function removeFromCart(index) {
+    cart.splice(index, 1);
     updateCart();
     showToast('Produto removido do carrinho', 'info');
-}
-
-function updateQuantity(productId, newQuantity) {
-    if (newQuantity <= 0) {
-        removeFromCart(productId);
-        return;
-    }
-
-    const item = cart.find(item => item.id === productId);
-    if (item) {
-        item.quantity = newQuantity;
-        updateCart();
-    }
 }
 
 function openCart() {
