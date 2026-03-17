@@ -644,20 +644,11 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
         } else if (this.selectedElement.type === 'text') {
-            // Calculate scale factor based on height change
-            const currentSize = parseFloat(this.selectedElement.element.getAttribute('font-size'));
-            const scaleFactor = newHeight / bbox.height;
-            let newSize = currentSize * scaleFactor;
-            
-            // Constrain font size
-            newSize = Math.max(12, Math.min(120, newSize));
-            
-            this.selectedElement.element.setAttribute('font-size', newSize);
-            this.selectedElement.size = newSize;
-            
-            // Update position for corner/edge handles
+            // Apply same logic as images
+            this.selectedElement.element.setAttribute('font-size', newHeight);
+            this.selectedElement.size = newHeight;
             this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', newY + newSize); // y is baseline
+            this.selectedElement.element.setAttribute('y', newY + newHeight);
         }
         
         this.dragStart = { x: e.clientX, y: e.clientY };
