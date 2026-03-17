@@ -229,7 +229,7 @@ class DesignEditor {
     addText() {
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         text.setAttribute('x', '200');
-        text.setAttribute('y', '200');
+        text.setAttribute('y', '224'); // y is baseline, so y = top + fontSize
         text.setAttribute('font-family', 'Arial');
         text.setAttribute('font-size', '24');
         text.setAttribute('fill', '#000000');
@@ -238,6 +238,9 @@ class DesignEditor {
         text.style.cursor = 'move';
         
         this.canvas.appendChild(text);
+        
+        // Get actual bounding box after adding to DOM
+        const bbox = text.getBBox();
         
         const elementData = {
             id: Date.now(),
@@ -249,7 +252,11 @@ class DesignEditor {
             color: '#000000',
             bold: false,
             italic: false,
-            rotation: 0
+            rotation: 0,
+            width: bbox.width,
+            height: bbox.height,
+            baseX: parseFloat(text.getAttribute('x')),
+            baseY: parseFloat(text.getAttribute('y'))
         };
         
         this.elements.push(elementData);
@@ -644,11 +651,22 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
         } else if (this.selectedElement.type === 'text') {
-            // Apply same logic as images
-            this.selectedElement.element.setAttribute('font-size', newHeight);
-            this.selectedElement.size = newHeight;
+            // Calculate scale based on stored dimensions
+            const scaleX = newWidth / this.selectedElement.width;
+            const scaleY = newHeight / this.selectedElement.height;
+            const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
+            
+            const newFontSize = Math.max(12, Math.min(120, this.selectedElement.size * scale));
+            
+            this.selectedElement.element.setAttribute('font-size', newFontSize);
+            this.selectedElement.size = newFontSize;
             this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', newY + newHeight);
+            this.selectedElement.element.setAttribute('y', newY + newFontSize);
+            
+            // Update stored dimensions
+            const newBBox = this.selectedElement.element.getBBox();
+            this.selectedElement.width = newBBox.width;
+            this.selectedElement.height = newBBox.height;
         }
         
         this.dragStart = { x: e.clientX, y: e.clientY };
@@ -710,6 +728,13 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.textContent = value;
             this.selectedElement.content = value;
+            
+            // Update stored dimensions
+            const bbox = this.selectedElement.element.getBBox();
+            this.selectedElement.width = bbox.width;
+            this.selectedElement.height = bbox.height;
+            
+            this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
     }
@@ -718,6 +743,13 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('font-family', value);
             this.selectedElement.font = value;
+            
+            // Update stored dimensions
+            const bbox = this.selectedElement.element.getBBox();
+            this.selectedElement.width = bbox.width;
+            this.selectedElement.height = bbox.height;
+            
+            this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
     }
@@ -726,6 +758,13 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('font-size', value);
             this.selectedElement.size = value;
+            
+            // Update stored dimensions
+            const bbox = this.selectedElement.element.getBBox();
+            this.selectedElement.width = bbox.width;
+            this.selectedElement.height = bbox.height;
+            
+            this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
     }
