@@ -210,6 +210,44 @@ if (cancelModalBtn) {
     });
 }
 
+// ===== SVG FILE UPLOAD HANDLER =====
+let svgTemplateContent = null;
+
+const svgUpload = document.getElementById('product-svg-upload');
+const svgPreview = document.getElementById('svg-preview');
+const svgPreviewContent = document.getElementById('svg-preview-content');
+
+if (svgUpload) {
+    svgUpload.addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) {
+            svgTemplateContent = null;
+            svgPreview.classList.add('hidden');
+            return;
+        }
+        
+        if (!file.name.endsWith('.svg')) {
+            showToast('Por favor selecione um ficheiro SVG', 'error');
+            svgUpload.value = '';
+            return;
+        }
+        
+        try {
+            const text = await file.text();
+            svgTemplateContent = text;
+            
+            // Show preview
+            svgPreview.classList.remove('hidden');
+            svgPreviewContent.innerHTML = text.substring(0, 200) + '...';
+            
+            showToast('SVG carregado com sucesso', 'success');
+        } catch (error) {
+            console.error('Erro ao ler ficheiro SVG:', error);
+            showToast('Erro ao ler ficheiro SVG', 'error');
+        }
+    });
+}
+
 // ===== PRODUCT FORM SUBMIT =====
 if (productForm) {
     productForm.addEventListener('submit', async (e) => {
@@ -221,7 +259,7 @@ if (productForm) {
             preco: parseFloat(document.getElementById('product-preco').value),
             categoria: document.getElementById('product-categoria').value,
             imagem: document.getElementById('product-imagem').value,
-            svg_template: document.getElementById('product-svg-template').value || null,
+            svg_template: svgTemplateContent || null,
             stock: parseInt(document.getElementById('product-stock').value) || 0,
             destaque: document.getElementById('product-destaque').checked,
             ativo: document.getElementById('product-ativo').checked
@@ -247,6 +285,9 @@ if (productForm) {
             
             showToast(currentProductId ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
             productModal.classList.add('hidden');
+            svgTemplateContent = null;
+            svgUpload.value = '';
+            svgPreview.classList.add('hidden');
             loadProducts();
             
         } catch (error) {
@@ -274,10 +315,19 @@ async function editProduct(id) {
         document.getElementById('product-preco').value = data.preco;
         document.getElementById('product-categoria').value = data.categoria;
         document.getElementById('product-imagem').value = data.imagem;
-        document.getElementById('product-svg-template').value = data.svg_template || '';
         document.getElementById('product-stock').value = data.stock || 0;
         document.getElementById('product-destaque').checked = data.destaque;
         document.getElementById('product-ativo').checked = data.ativo;
+        
+        // Load existing SVG template
+        if (data.svg_template) {
+            svgTemplateContent = data.svg_template;
+            svgPreview.classList.remove('hidden');
+            svgPreviewContent.innerHTML = data.svg_template.substring(0, 200) + '...';
+        } else {
+            svgTemplateContent = null;
+            svgPreview.classList.add('hidden');
+        }
         
         productModal.classList.remove('hidden');
         

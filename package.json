@@ -1,0 +1,17 @@
+{
+  "name": "latinflag",
+  "version": "1.0.0",
+  "description": "E-commerce de produtos publicitários",
+  "main": "index.html",
+  "scripts": {
+    "populate": "node populate-products.js"
+  },
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0",
+    "dotenv": "^16.3.1"
+  },
+  "devDependencies": {},
+  "keywords": ["ecommerce", "publicidade", "flybanners", "rollups"],
+  "author": "LatinFlag",
+  "license": "ISC"
+}
