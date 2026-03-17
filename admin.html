@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - LatinFlag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Admin Navigation -->
+    <nav class="bg-gray-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="shield" class="w-8 h-8 text-blue-400"></i>
+                    <span class="text-xl font-bold">LatinFlag Admin</span>
+                </div>
+                <div class="flex items-center gap-4">
+                    <a href="/" target="_blank" class="text-sm hover:text-blue-400 transition flex items-center gap-2">
+                        <i data-lucide="external-link" class="w-4 h-4"></i>
+                        Ver Site
+                    </a>
+                    <button id="logout-btn" class="text-sm hover:text-red-400 transition flex items-center gap-2">
+                        <i data-lucide="log-out" class="w-4 h-4"></i>
+                        Sair
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <div class="flex">
+        <!-- Sidebar -->
+        <aside class="w-64 bg-white border-r min-h-screen">
+            <nav class="p-4">
+                <ul class="space-y-2">
+                    <li>
+                        <button class="nav-tab active w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="dashboard">
+                            <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
+                            Dashboard
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="produtos">
+                            <i data-lucide="package" class="w-5 h-5"></i>
+                            Produtos
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="encomendas">
+                            <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+                            Encomendas
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="clientes">
+                            <i data-lucide="users" class="w-5 h-5"></i>
+                            Clientes
+                        </button>
+                    </li>
+                    <li>
+                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="contactos">
+                            <i data-lucide="mail" class="w-5 h-5"></i>
+                            Contactos
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <main class="flex-1 p-8">
+            
+            <!-- Dashboard Tab -->
+            <div id="dashboard-tab" class="tab-panel">
+                <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
+                
+                <!-- Stats Grid -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Total Produtos</h3>
+                            <i data-lucide="package" class="w-8 h-8 text-blue-600"></i>
+                        </div>
+                        <div class="stat-number" id="stat-produtos">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Produtos ativos</p>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Encomendas</h3>
+                            <i data-lucide="shopping-cart" class="w-8 h-8 text-green-600"></i>
+                        </div>
+                        <div class="stat-number" id="stat-encomendas">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Total de encomendas</p>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Clientes</h3>
+                            <i data-lucide="users" class="w-8 h-8 text-purple-600"></i>
+                        </div>
+                        <div class="stat-number" id="stat-clientes">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Clientes registados</p>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Contactos</h3>
+                            <i data-lucide="mail" class="w-8 h-8 text-orange-600"></i>
+                        </div>
+                        <div class="stat-number" id="stat-contactos">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Mensagens recebidas</p>
+                    </div>
+                </div>
+
+                <!-- Recent Activity -->
+                <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">Produtos em Destaque</h3>
+                        <div id="featured-products" class="space-y-3">
+                            <div class="text-center py-8 text-gray-400">
+                                <i data-lucide="package" class="w-12 h-12 mx-auto mb-2"></i>
+                                <p>A carregar...</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">Contactos Recentes</h3>
+                        <div id="recent-contacts" class="space-y-3">
+                            <div class="text-center py-8 text-gray-400">
+                                <i data-lucide="mail" class="w-12 h-12 mx-auto mb-2"></i>
+                                <p>A carregar...</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Produtos Tab -->
+            <div id="produtos-tab" class="tab-panel hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold">Gestão de Produtos</h1>
+                    <button id="add-product-btn" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Adicionar Produto
+                    </button>
+                </div>
+
+                <!-- Products Table -->
+                <div class="admin-card">
+                    <div class="table-container">
+                        <table id="products-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Imagem</th>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Preço</th>
+                                    <th>Stock</th>
+                                    <th>Destaque</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="products-tbody">
+                                <tr>
+                                    <td colspan="9" class="text-center py-8 text-gray-400">
+                                        <div class="spinner mx-auto mb-2"></div>
+                                        A carregar produtos...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Encomendas Tab -->
+            <div id="encomendas-tab" class="tab-panel hidden">
+                <h1 class="text-3xl font-bold mb-8">Gestão de Encomendas</h1>
+                
+                <div class="admin-card">
+                    <div class="table-container">
+                        <table id="orders-table">
+                            <thead>
+                                <tr>
+                                    <th>Nº Encomenda</th>
+                                    <th>Cliente</th>
+                                    <th>Data</th>
+                                    <th>Total</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="orders-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-400">
+                                        Nenhuma encomenda encontrada
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Clientes Tab -->
+            <div id="clientes-tab" class="tab-panel hidden">
+                <h1 class="text-3xl font-bold mb-8">Gestão de Clientes</h1>
+                
+                <div class="admin-card">
+                    <div class="table-container">
+                        <table id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Empresa</th>
+                                    <th>Data Registo</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="clients-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-400">
+                                        Nenhum cliente encontrado
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Contactos Tab -->
+            <div id="contactos-tab" class="tab-panel hidden">
+                <h1 class="text-3xl font-bold mb-8">Mensagens de Contacto</h1>
+                
+                <div class="admin-card">
+                    <div class="table-container">
+                        <table id="contacts-table">
+                            <thead>
+                                <tr>
+                                    <th>Data</th>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Assunto</th>
+                                    <th>Status</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="contacts-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-400">
+                                        <div class="spinner mx-auto mb-2"></div>
+                                        A carregar contactos...
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-2xl p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="modal-title">Adicionar Produto</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <form id="product-form" class="space-y-4">
+                <input type="hidden" id="product-id">
+                
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nome do Produto *</label>
+                        <input type="text" id="product-nome" required class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Categoria *</label>
+                        <select id="product-categoria" required class="form-input">
+                            <option value="">Selecione</option>
+                            <option value="flybanners">Flybanners</option>
+                            <option value="rollups">Roll-ups</option>
+                            <option value="lonas">Lonas & Banners</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Descrição *</label>
+                    <textarea id="product-descricao" required rows="3" class="form-input"></textarea>
+                </div>
+
+                <div class="grid grid-cols-3 gap-4">
+                    <div>
+                        <label class="form-label">Preço (€) *</label>
+                        <input type="number" id="product-preco" step="0.01" required class="form-input">
+                    </div>
+                    <div>
+                        <label class="form-label">Stock</label>
+                        <input type="number" id="product-stock" value="0" class="form-input">
+                    </div>
+                    <div class="flex items-end">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="product-destaque" class="custom-checkbox">
+                            <span class="text-sm font-semibold">Produto em Destaque</span>
+                        </label>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">URL da Imagem *</label>
+                    <input type="url" id="product-imagem" required class="form-input" placeholder="https://...">
+                </div>
+
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="product-ativo" checked class="custom-checkbox">
+                    <label class="text-sm font-semibold">Produto Ativo</label>
+                </div>
+
+                <div class="flex gap-3 pt-4">
+                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Guardar Produto
+                    </button>
+                    <button type="button" id="cancel-modal" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Contact Detail Modal -->
+    <div id="contact-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-2xl p-8">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold">Detalhes da Mensagem</h2>
+                <button class="close-contact-modal text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            
+            <div id="contact-details" class="space-y-4">
+                <!-- Contact details will be loaded here -->
+            </div>
+
+            <div class="flex gap-3 pt-6">
+                <button id="mark-responded" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                    Marcar como Respondido
+                </button>
+                <button class="close-contact-modal px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                    Fechar
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script src="logic.js"></script>
+    <script src="admin.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

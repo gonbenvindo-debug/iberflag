@@ -3,7 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>LatinFlag - Publicidade Outdoor</title>
+    <title>LatinFlag - Flybanners & Publicidade Outdoor Premium</title>
+    <meta name="description" content="Especialistas em flybanners, roll-ups e publicidade outdoor. Qualidade premium, entrega rápida e preços competitivos.">
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -11,93 +12,389 @@
 </head>
 <body class="bg-gray-50 font-sans text-gray-900">
 
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 text-center text-sm overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+            </div>
+        </div>
+    </div>
+
     <!-- Navigation -->
-    <nav class="bg-white shadow-sm sticky top-0 z-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
-                <div class="flex items-center gap-2">
-                    <i data-lucide="flag" class="text-blue-600 w-8 h-8"></i>
+                <a href="/" class="flex items-center gap-2 group">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8 group-hover:scale-110 transition-transform"></i>
                     <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
-                </div>
-                <div class="hidden md:flex space-x-8 items-center">
-                    <a href="#produtos" class="hover:text-blue-600 transition">Produtos</a>
-                    <a href="#servicos" class="hover:text-blue-600 transition">Serviços</a>
-                    <a href="#contacto" class="hover:text-blue-600 transition">Contacto</a>
-                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                        Orçamento
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
             </div>
         </div>
     </nav>
 
     <!-- Hero Section -->
-    <header class="relative bg-blue-900 text-white py-24 overflow-hidden">
-        <div class="absolute inset-0 opacity-20">
-            <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80" alt="Background" class="w-full h-full object-cover">
+    <header class="relative bg-gradient-to-br from-blue-900 via-blue-800 to-indigo-900 text-white py-32 overflow-hidden">
+        <div class="absolute inset-0 opacity-10">
+            <div class="absolute inset-0 bg-grid-pattern"></div>
         </div>
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
-            <h1 class="text-4xl md:text-6xl font-extrabold mb-6">A Sua Marca em Grande Destaque</h1>
-            <p class="text-xl mb-10 text-blue-100 max-w-2xl mx-auto">Soluções premium de publicidade outdoor: Banners, Roll-ups, Bandeiras e Estruturas de Grande Formato.</p>
-            <div class="flex flex-col sm:flex-row justify-center gap-4">
-                <a href="#produtos" class="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition">Ver Catálogo</a>
-                <a href="#contacto" class="border-2 border-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-blue-900 transition">Falar com Consultor</a>
+        <div class="floating-shapes">
+            <div class="shape shape-1"></div>
+            <div class="shape shape-2"></div>
+            <div class="shape shape-3"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+            <div class="grid md:grid-cols-2 gap-12 items-center">
+                <div class="text-left fade-in-up">
+                    <div class="inline-block bg-blue-500/20 backdrop-blur-sm px-4 py-2 rounded-full text-sm font-semibold mb-6 border border-blue-400/30">
+                        🏆 Líderes em Flybanners Premium
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
+                        A Sua Marca em <span class="text-gradient">Grande Destaque</span>
+                    </h1>
+                    <p class="text-xl mb-8 text-blue-100 leading-relaxed">
+                        Flybanners, Roll-ups e Estruturas Outdoor de Alta Performance. Qualidade Premium, Entrega Rápida.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
+                        <a href="/produtos.html" class="btn-primary group">
+                            Ver Catálogo
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                        <a href="/contacto.html" class="btn-secondary">
+                            Falar com Consultor
+                        </a>
+                    </div>
+                    <div class="flex items-center gap-8 text-sm">
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="check-circle" class="w-5 h-5 text-green-400"></i>
+                            <span>Envio Grátis +150€</span>
+                        </div>
+                        <div class="flex items-center gap-2">
+                            <i data-lucide="zap" class="w-5 h-5 text-yellow-400"></i>
+                            <span>Produção 24-48h</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative hidden md:block">
+                    <div class="hero-image-container">
+                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=800" alt="Flybanners" class="rounded-2xl shadow-2xl hero-image">
+                        <div class="absolute -bottom-6 -left-6 bg-white text-gray-900 p-6 rounded-xl shadow-xl stat-card">
+                            <div class="text-4xl font-bold text-blue-600">500+</div>
+                            <div class="text-sm text-gray-600">Clientes Satisfeitos</div>
+                        </div>
+                        <div class="absolute -top-6 -right-6 bg-white text-gray-900 p-6 rounded-xl shadow-xl stat-card">
+                            <div class="text-4xl font-bold text-blue-600">24h</div>
+                            <div class="text-sm text-gray-600">Produção Express</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </header>
 
-    <!-- Products Grid -->
-    <main id="produtos" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
-        <div class="text-center mb-16">
-            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nossos Produtos</h2>
-            <p class="text-gray-600">Qualidade superior para máxima durabilidade exterior.</p>
-        </div>
-
-        <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-            <!-- Skeleton Loading -->
-            <div class="animate-pulse bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
-                <div class="bg-gray-200 h-64 w-full"></div>
-                <div class="p-6">
-                    <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
-                    <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
-                    <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+    <!-- Trust Badges -->
+    <section class="bg-white py-8 border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+                <div class="trust-badge">
+                    <i data-lucide="truck" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-sm">Envio Rápido</h3>
+                    <p class="text-xs text-gray-600">24-48h em Portugal</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="shield-check" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-sm">Garantia Total</h3>
+                    <p class="text-xs text-gray-600">Qualidade Garantida</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="palette" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-sm">Design Grátis</h3>
+                    <p class="text-xs text-gray-600">Apoio Gráfico Incluído</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="award" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
+                    <h3 class="font-bold text-sm">Premium Quality</h3>
+                    <p class="text-xs text-gray-600">Materiais de Topo</p>
                 </div>
             </div>
-            <!-- More skeletons... -->
         </div>
-    </main>
+    </section>
+
+    <!-- Featured Categories -->
+    <section class="py-20 bg-gray-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Categorias em Destaque</h2>
+                <p class="text-gray-600 text-lg">Soluções completas para todas as suas necessidades de publicidade outdoor</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <a href="/produtos.html?categoria=flybanners" class="category-card group">
+                    <div class="relative h-64 overflow-hidden rounded-t-2xl">
+                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80" alt="Flybanners" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Flybanners</h3>
+                            <p class="text-sm text-gray-200">A partir de 45€</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-b-2xl border border-gray-100">
+                        <p class="text-gray-600 text-sm mb-4">Bandeiras publicitárias de alta visibilidade para eventos e lojas</p>
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+                <a href="/produtos.html?categoria=rollups" class="category-card group">
+                    <div class="relative h-64 overflow-hidden rounded-t-2xl">
+                        <img src="https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80" alt="Roll-ups" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Roll-ups</h3>
+                            <p class="text-sm text-gray-200">A partir de 65€</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-b-2xl border border-gray-100">
+                        <p class="text-gray-600 text-sm mb-4">Expositores verticais premium para feiras e eventos</p>
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+                <a href="/produtos.html?categoria=lonas" class="category-card group">
+                    <div class="relative h-64 overflow-hidden rounded-t-2xl">
+                        <img src="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80" alt="Lonas" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+                        <div class="absolute bottom-4 left-4 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Lonas & Banners</h3>
+                            <p class="text-sm text-gray-200">A partir de 25€</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 rounded-b-2xl border border-gray-100">
+                        <p class="text-gray-600 text-sm mb-4">Lonas PVC de alta resistência para exterior</p>
+                        <div class="flex items-center text-blue-600 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Best Sellers -->
+    <section id="produtos" class="py-20 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in-up">
+                <h2 class="text-4xl font-bold text-gray-900 mb-4">Produtos Mais Vendidos</h2>
+                <p class="text-gray-600 text-lg">Os favoritos dos nossos clientes</p>
+            </div>
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Loading Skeleton -->
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-12">
+                <a href="/produtos.html" class="btn-primary inline-flex">
+                    Ver Todos os Produtos
+                    <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="py-20 bg-gradient-to-br from-blue-900 to-indigo-900 text-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <h2 class="text-4xl font-bold mb-4">Porquê Escolher a LatinFlag?</h2>
+                <p class="text-blue-100 text-lg">Excelência em cada detalhe</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card">
+                    <div class="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="zap" class="w-8 h-8 text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Produção Ultra-Rápida</h3>
+                    <p class="text-blue-100">Produção express em 24-48h. Precisa com urgência? Temos soluções same-day para Lisboa e Porto.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="award" class="w-8 h-8 text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Qualidade Premium</h3>
+                    <p class="text-blue-100">Materiais de topo, impressão de alta resolução e acabamentos profissionais. Garantia de satisfação.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="bg-blue-500/20 w-16 h-16 rounded-full flex items-center justify-center mb-6">
+                        <i data-lucide="headphones" class="w-8 h-8 text-yellow-400"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3">Apoio Dedicado</h3>
+                    <p class="text-blue-100">Equipa especializada para ajudar em cada passo. Design gráfico gratuito incluído em todas as encomendas.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-20 bg-white">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <div class="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-3xl p-12 text-white cta-card">
+                <h2 class="text-4xl font-bold mb-4">Pronto para Destacar a Sua Marca?</h2>
+                <p class="text-xl text-blue-100 mb-8">Peça já o seu orçamento gratuito e sem compromisso</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/contacto.html" class="bg-white text-blue-600 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition-all inline-flex items-center justify-center gap-2">
+                        <i data-lucide="mail" class="w-5 h-5"></i>
+                        Pedir Orçamento
+                    </a>
+                    <a href="tel:+351900000000" class="border-2 border-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-blue-600 transition-all inline-flex items-center justify-center gap-2">
+                        <i data-lucide="phone" class="w-5 h-5"></i>
+                        Ligar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 text-gray-400 py-12">
+    <footer class="bg-gray-900 text-gray-400 py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
                 <div class="col-span-1 md:col-span-2">
                     <div class="flex items-center gap-2 text-white mb-6">
-                        <i data-lucide="flag" class="text-blue-500 w-6 h-6"></i>
-                        <span class="text-xl font-bold">LatinFlag</span>
+                        <i data-lucide="flag" class="text-blue-500 w-8 h-8"></i>
+                        <span class="text-2xl font-bold">LatinFlag</span>
                     </div>
-                    <p class="max-w-sm">Especialistas em sistemas de exibição e publicidade exterior de alta performance.</p>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners, roll-ups e publicidade exterior de alta performance. Qualidade premium, entrega rápida.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Links</h4>
-                    <ul class="space-y-2">
-                        <li><a href="#" class="hover:text-white transition">Início</a></li>
-                        <li><a href="#produtos" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="#contacto" class="hover:text-white transition">Orçamentos</a></li>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Contacto</h4>
-                    <p>geral@latinflag.pt</p>
-                    <p>+351 9xx xxx xxx</p>
+                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                    </ul>
                 </div>
             </div>
-            <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
-                © 2024 LatinFlag. Todos os direitos reservados.
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">
+                        © 2024 LatinFlag. Todos os direitos reservados.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-white transition">geral@latinflag.pt</a>
+                        <span class="mx-2">|</span>
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <a href="tel:+351900000000" class="hover:text-white transition">+351 900 000 000</a>
+                    </div>
+                </div>
             </div>
         </div>
     </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
 
     <script src="logic.js"></script>
     <script>

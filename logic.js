@@ -1,92 +1,340 @@
-// Configuração Supabase
+// ===== SUPABASE CONFIGURATION =====
 const SUPABASE_URL = 'https://nzwfquivulxkmxrwqalz.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
-// Elementos do DOM
-const productsContainer = document.getElementById('products-container');
+// ===== CART MANAGEMENT =====
+let cart = JSON.parse(localStorage.getItem('latinflag_cart')) || [];
 
-// Dados iniciais (fallback caso o Supabase não esteja configurado)
+// ===== DOM ELEMENTS =====
+const productsContainer = document.getElementById('products-container');
+const cartBtn = document.getElementById('cart-btn');
+const cartSidebar = document.getElementById('cart-sidebar');
+const cartOverlay = document.getElementById('cart-overlay');
+const closeCartBtn = document.getElementById('close-cart');
+const cartItemsContainer = document.getElementById('cart-items');
+const cartTotal = document.getElementById('cart-total');
+const cartCount = document.getElementById('cart-count');
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+
+// ===== INITIAL PRODUCTS (FALLBACK) =====
 const initialProducts = [
     {
         id: 1,
-        nome: "Bandeira Drop",
-        descricao: "Bandeira publicitária em formato gota, ideal para eventos outdoor.",
+        nome: "Flybanner Gota 2.5m",
+        descricao: "Bandeira publicitária em formato gota, ideal para eventos outdoor. Inclui estrutura e base.",
         preco: 45.00,
-        imagem: "https://images.unsplash.com/photo-1596435707700-6264292b919d?auto=format&fit=crop&q=80"
+        categoria: "flybanners",
+        imagem: "https://images.unsplash.com/photo-1596435707700-6264292b919d?auto=format&fit=crop&q=80",
+        destaque: true
     },
     {
         id: 2,
-        nome: "Roll-up Premium",
-        descricao: "Expositor vertical auto-enrolável com impressão de alta qualidade.",
-        preco: 65.00,
-        imagem: "https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80"
+        nome: "Flybanner Vela 3m",
+        descricao: "Bandeira em formato vela, máxima visibilidade. Estrutura em fibra de vidro.",
+        preco: 52.00,
+        categoria: "flybanners",
+        imagem: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80",
+        destaque: true
     },
     {
         id: 3,
-        nome: "Lona Publicitária",
-        descricao: "Lona PVC de alta resistência com ilhós para fixação.",
+        nome: "Roll-up Premium 85x200cm",
+        descricao: "Expositor vertical auto-enrolável com impressão de alta qualidade e maleta de transporte.",
+        preco: 65.00,
+        categoria: "rollups",
+        imagem: "https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80",
+        destaque: true
+    },
+    {
+        id: 4,
+        nome: "Lona PVC 440g/m²",
+        descricao: "Lona PVC de alta resistência com ilhós para fixação. Impressão digital de alta resolução.",
         preco: 25.00,
-        imagem: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80"
+        categoria: "lonas",
+        imagem: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80",
+        destaque: false
+    },
+    {
+        id: 5,
+        nome: "Flybanner Retangular 2m",
+        descricao: "Bandeira retangular para máxima área de impressão. Base com água ou areia.",
+        preco: 48.00,
+        categoria: "flybanners",
+        imagem: "https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80",
+        destaque: false
+    },
+    {
+        id: 6,
+        nome: "Roll-up Económico 80x200cm",
+        descricao: "Solução económica para eventos. Estrutura leve e fácil montagem.",
+        preco: 45.00,
+        categoria: "rollups",
+        imagem: "https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80",
+        destaque: false
     }
 ];
 
-// Função para renderizar produtos
+// ===== RENDER PRODUCTS =====
 function renderProducts(products) {
     if (!products || products.length === 0) {
-        productsContainer.innerHTML = '<p class="text-center col-span-full py-10">Nenhum produto encontrado.</p>';
+        productsContainer.innerHTML = '<p class="text-center col-span-full py-10 text-gray-500">Nenhum produto encontrado.</p>';
         return;
     }
 
-    productsContainer.innerHTML = products.map(product => `
-        <div class="product-card bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100 flex flex-col">
-            <div class="relative h-64 overflow-hidden">
-                <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover transition transform hover:scale-105 duration-500">
-                <div class="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-sm font-bold text-blue-600 shadow-sm">
+    // Filter only featured products for homepage
+    const featuredProducts = products.filter(p => p.destaque).slice(0, 3);
+    const displayProducts = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 3);
+
+    productsContainer.innerHTML = displayProducts.map(product => `
+        <div class="product-card" data-product-id="${product.id}">
+            <div class="relative h-64 overflow-hidden image-zoom">
+                <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
+                <div class="product-badge">
                     A partir de ${product.preco.toFixed(2)}€
                 </div>
             </div>
             <div class="p-6 flex flex-col flex-grow">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">${product.nome}</h3>
                 <p class="text-gray-600 text-sm mb-6 flex-grow">${product.descricao}</p>
-                <button onclick="solicitarOrcamento('${product.nome}')" class="w-full bg-blue-50 text-blue-600 font-bold py-3 rounded-xl hover:bg-blue-600 hover:text-white transition-all flex items-center justify-center gap-2">
-                    Solicitar Orçamento
-                </button>
+                <div class="flex gap-2">
+                    <button onclick="addToCart(${product.id})" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        Adicionar
+                    </button>
+                    <button onclick="quickView(${product.id})" class="bg-gray-100 text-gray-700 font-bold px-4 py-3 rounded-xl hover:bg-gray-200 transition-all">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                </div>
             </div>
         </div>
     `).join('');
+    
+    // Reinitialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 }
 
-// Função para buscar produtos do Supabase
+// ===== FETCH PRODUCTS FROM SUPABASE =====
 async function fetchProducts() {
     try {
         const { data, error } = await supabaseClient
             .from('produtos')
-            .select('*');
+            .select('*')
+            .order('destaque', { ascending: false })
+            .order('created_at', { ascending: false });
 
         if (error) throw error;
 
         if (data && data.length > 0) {
             renderProducts(data);
         } else {
-            // Se não houver dados, usa os iniciais para demonstração
             renderProducts(initialProducts);
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error.message);
-        renderProducts(initialProducts); // Fallback
+        renderProducts(initialProducts);
     }
 }
 
-// Função para lidar com orçamentos
-function solicitarOrcamento(produto) {
-    const mensagem = `Olá! Gostaria de solicitar um orçamento para o produto: ${produto}`;
-    const whatsappUrl = `https://wa.me/351900000000?text=${encodeURIComponent(mensagem)}`;
-    window.open(whatsappUrl, '_blank');
+// ===== CART FUNCTIONS =====
+function updateCart() {
+    localStorage.setItem('latinflag_cart', JSON.stringify(cart));
+    updateCartUI();
 }
 
-// Inicialização
+function updateCartUI() {
+    // Update cart count
+    const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    if (cartCount) {
+        if (totalItems > 0) {
+            cartCount.textContent = totalItems;
+            cartCount.classList.remove('hidden');
+        } else {
+            cartCount.classList.add('hidden');
+        }
+    }
+
+    // Update cart items
+    if (cartItemsContainer) {
+        if (cart.length === 0) {
+            cartItemsContainer.innerHTML = `
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            `;
+        } else {
+            cartItemsContainer.innerHTML = cart.map(item => `
+                <div class="flex gap-4 mb-4 pb-4 border-b">
+                    <img src="${item.imagem}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg">
+                    <div class="flex-1">
+                        <h4 class="font-bold text-sm">${item.nome}</h4>
+                        <p class="text-blue-600 font-bold">${item.preco.toFixed(2)}€</p>
+                        <div class="flex items-center gap-2 mt-2">
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity - 1})" class="w-6 h-6 bg-gray-100 rounded flex items-center justify-center hover:bg-gray-200">
+                                <i data-lucide="minus" class="w-3 h-3"></i>
+                            </button>
+                            <span class="text-sm font-semibold">${item.quantity}</span>
+                            <button onclick="updateQuantity(${item.id}, ${item.quantity + 1})" class="w-6 h-6 bg-gray-100 rounded flex items-center justify-center hover:bg-gray-200">
+                                <i data-lucide="plus" class="w-3 h-3"></i>
+                            </button>
+                            <button onclick="removeFromCart(${item.id})" class="ml-auto text-red-500 hover:text-red-700">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+        }
+        
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    // Update total
+    if (cartTotal) {
+        const total = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
+        cartTotal.textContent = `${total.toFixed(2)}€`;
+    }
+}
+
+function addToCart(productId) {
+    // Find product in initial products or fetch from Supabase
+    const product = initialProducts.find(p => p.id === productId);
+    
+    if (!product) {
+        showToast('Produto não encontrado', 'error');
+        return;
+    }
+
+    const existingItem = cart.find(item => item.id === productId);
+    
+    if (existingItem) {
+        existingItem.quantity += 1;
+    } else {
+        cart.push({
+            id: product.id,
+            nome: product.nome,
+            preco: product.preco,
+            imagem: product.imagem,
+            quantity: 1
+        });
+    }
+
+    updateCart();
+    showToast('Produto adicionado ao carrinho!', 'success');
+    openCart();
+}
+
+function removeFromCart(productId) {
+    cart = cart.filter(item => item.id !== productId);
+    updateCart();
+    showToast('Produto removido do carrinho', 'info');
+}
+
+function updateQuantity(productId, newQuantity) {
+    if (newQuantity <= 0) {
+        removeFromCart(productId);
+        return;
+    }
+
+    const item = cart.find(item => item.id === productId);
+    if (item) {
+        item.quantity = newQuantity;
+        updateCart();
+    }
+}
+
+function openCart() {
+    if (cartSidebar && cartOverlay) {
+        cartSidebar.classList.add('cart-open');
+        cartOverlay.classList.remove('hidden');
+        document.body.style.overflow = 'hidden';
+    }
+}
+
+function closeCart() {
+    if (cartSidebar && cartOverlay) {
+        cartSidebar.classList.remove('cart-open');
+        cartOverlay.classList.add('hidden');
+        document.body.style.overflow = '';
+    }
+}
+
+// ===== TOAST NOTIFICATIONS =====
+function showToast(message, type = 'info') {
+    const toast = document.createElement('div');
+    toast.className = `toast toast-${type}`;
+    
+    const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info';
+    
+    toast.innerHTML = `
+        <i data-lucide="${icon}" class="w-5 h-5"></i>
+        <span>${message}</span>
+    `;
+    
+    document.body.appendChild(toast);
+    
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        setTimeout(() => toast.remove(), 300);
+    }, 3000);
+}
+
+// ===== QUICK VIEW =====
+function quickView(productId) {
+    const product = initialProducts.find(p => p.id === productId);
+    if (!product) return;
+    
+    showToast('Funcionalidade de visualização rápida em desenvolvimento', 'info');
+}
+
+// ===== MOBILE MENU =====
+function toggleMobileMenu() {
+    if (mobileMenu) {
+        mobileMenu.classList.toggle('hidden');
+    }
+}
+
+// ===== EVENT LISTENERS =====
+if (cartBtn) {
+    cartBtn.addEventListener('click', openCart);
+}
+
+if (closeCartBtn) {
+    closeCartBtn.addEventListener('click', closeCart);
+}
+
+if (cartOverlay) {
+    cartOverlay.addEventListener('click', closeCart);
+}
+
+if (mobileMenuBtn) {
+    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+}
+
+// ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
+    updateCartUI();
+    
+    // Initialize Lucide icons
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
 });
+
+// Make functions globally available
+window.addToCart = addToCart;
+window.removeFromCart = removeFromCart;
+window.updateQuantity = updateQuantity;
+window.quickView = quickView;

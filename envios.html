@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Envios e Entregas - LatinFlag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 text-center text-sm overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Envios e Entregas</h1>
+            <p class="text-xl text-blue-100">Informação sobre prazos e custos de envio</p>
+        </div>
+    </section>
+
+    <!-- Content -->
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Shipping Options -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
+                <div class="bg-white rounded-xl p-6 border-2 border-blue-600">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-blue-100 p-3 rounded-lg">
+                            <i data-lucide="truck" class="w-8 h-8 text-blue-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Envio Standard</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Entrega em 1-2 dias úteis após produção</p>
+                    <div class="space-y-2 text-sm">
+                        <p><strong>Custo:</strong> 7.50€</p>
+                        <p><strong>Grátis:</strong> Encomendas acima de 150€</p>
+                        <p><strong>Cobertura:</strong> Portugal Continental</p>
+                    </div>
+                </div>
+
+                <div class="bg-white rounded-xl p-6 border border-gray-200">
+                    <div class="flex items-center gap-3 mb-4">
+                        <div class="bg-orange-100 p-3 rounded-lg">
+                            <i data-lucide="zap" class="w-8 h-8 text-orange-600"></i>
+                        </div>
+                        <h3 class="text-xl font-bold">Envio Express</h3>
+                    </div>
+                    <p class="text-gray-600 mb-4">Produção e entrega no mesmo dia</p>
+                    <div class="space-y-2 text-sm">
+                        <p><strong>Custo:</strong> Sob consulta</p>
+                        <p><strong>Disponível:</strong> Lisboa e Porto</p>
+                        <p><strong>Horário:</strong> Pedidos até 12h</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Production Times -->
+            <div class="bg-white rounded-xl p-8 border border-gray-200 mb-12">
+                <h2 class="text-2xl font-bold mb-6">Prazos de Produção</h2>
+                <div class="space-y-4">
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="check-circle" class="w-6 h-6 text-green-600 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold mb-1">Produção Standard</h3>
+                            <p class="text-gray-600">24-48 horas úteis após aprovação do design</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="zap" class="w-6 h-6 text-orange-600 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold mb-1">Produção Express</h3>
+                            <p class="text-gray-600">Mesmo dia para pedidos até 12h (sujeito a disponibilidade)</p>
+                        </div>
+                    </div>
+                    <div class="flex items-start gap-4">
+                        <i data-lucide="package" class="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"></i>
+                        <div>
+                            <h3 class="font-bold mb-1">Grandes Quantidades</h3>
+                            <p class="text-gray-600">Prazos personalizados - contacte-nos para orçamento</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Shipping Zones -->
+            <div class="bg-white rounded-xl p-8 border border-gray-200 mb-12">
+                <h2 class="text-2xl font-bold mb-6">Zonas de Envio</h2>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>Zona</th>
+                                <th>Prazo</th>
+                                <th>Custo</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>Portugal Continental</td>
+                                <td>1-2 dias úteis</td>
+                                <td>7.50€ (Grátis +150€)</td>
+                            </tr>
+                            <tr>
+                                <td>Açores e Madeira</td>
+                                <td>3-5 dias úteis</td>
+                                <td>Sob consulta</td>
+                            </tr>
+                            <tr>
+                                <td>União Europeia</td>
+                                <td>3-7 dias úteis</td>
+                                <td>Sob consulta</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Important Info -->
+            <div class="bg-blue-50 rounded-xl p-8 border border-blue-200">
+                <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
+                    <i data-lucide="info" class="w-6 h-6 text-blue-600"></i>
+                    Informações Importantes
+                </h2>
+                <ul class="space-y-3 text-gray-700">
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                        <span>Os prazos de entrega começam a contar após aprovação do design e confirmação de pagamento</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                        <span>Receberá um email com o número de tracking assim que a encomenda for expedida</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                        <span>As entregas são realizadas de segunda a sexta-feira, das 9h às 18h</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                        <span>Para entregas urgentes ao fim de semana, contacte-nos para verificar disponibilidade</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                        <span>Todos os produtos são cuidadosamente embalados para garantir que chegam em perfeitas condições</span>
+                    </li>
+                </ul>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-white mb-6">
+                        <i data-lucide="flag" class="text-blue-500 w-8 h-8"></i>
+                        <span class="text-2xl font-bold">LatinFlag</span>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners, roll-ups e publicidade exterior de alta performance. Qualidade premium, entrega rápida.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2024 LatinFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-white transition">geral@latinflag.pt</a>
+                        <span class="mx-2">|</span>
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <a href="tel:+351900000000" class="hover:text-white transition">+351 900 000 000</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <script src="logic.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

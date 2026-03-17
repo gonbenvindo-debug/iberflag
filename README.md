@@ -1,4 +1,216 @@
-# LatinFlag - WebApp de Publicidade Outdoor
+# LatinFlag - E-commerce de Publicidade Outdoor Premium
+
+Plataforma completa de e-commerce especializada em flybanners, roll-ups e produtos de publicidade outdoor.
+
+## 🚀 Características
+
+### Frontend
+- **Design Moderno**: Interface clean e apelativa com animações CSS inovadoras
+- **Totalmente Responsivo**: Otimizado para desktop, tablet e mobile
+- **Carrinho de Compras**: Sistema completo com localStorage
+- **Filtros Avançados**: Pesquisa e filtragem por categoria e preço
+- **Animações Premium**: Efeitos visuais dignos de grandes sites
+- **SEO Otimizado**: Meta tags e estrutura semântica
+
+### Backend (Supabase)
+- **Base de Dados PostgreSQL**: Schema completo para produtos, encomendas, clientes
+- **Autenticação**: Sistema de utilizadores para admin
+- **Row Level Security**: Políticas de segurança implementadas
+- **Real-time**: Atualizações em tempo real
+
+### Painel Admin
+- **Dashboard Completo**: Estatísticas e métricas em tempo real
+- **Gestão de Produtos**: CRUD completo com upload de imagens
+- **Gestão de Encomendas**: Acompanhamento de pedidos
+- **Gestão de Clientes**: Base de dados de clientes
+- **Gestão de Contactos**: Mensagens recebidas via formulário
+
+## 📁 Estrutura do Projeto
+
+```
+latinflag/
+├── index.html              # Homepage
+├── produtos.html           # Catálogo de produtos
+├── contacto.html           # Formulário de contacto
+├── faq.html               # Perguntas frequentes
+├── envios.html            # Informações de envio
+├── admin.html             # Painel de administração
+├── style.css              # Estilos globais com animações
+├── logic.js               # Lógica principal e carrinho
+├── produtos.js            # Lógica da página de produtos
+├── contacto.js            # Lógica do formulário
+├── faq.js                 # Lógica da FAQ
+├── admin.js               # Lógica do painel admin
+├── supabase-schema.sql    # Schema da base de dados
+└── vercel.json            # Configuração Vercel
+```
+
+## 🛠️ Setup e Instalação
+
+### 1. Configurar Supabase
+
+1. Aceda a [supabase.com](https://supabase.com) e crie um projeto
+2. No SQL Editor, execute o ficheiro `supabase-schema.sql`
+3. Isto irá criar:
+   - Todas as tabelas necessárias
+   - Índices para performance
+   - Políticas de segurança (RLS)
+   - 12 produtos de teste
+
+### 2. Configurar Variáveis de Ambiente
+
+As credenciais do Supabase já estão no código:
+- URL: `https://nzwfquivulxkmxrwqalz.supabase.co`
+- ANON KEY: Já configurada em `logic.js`
+
+**IMPORTANTE**: Para produção, mova estas credenciais para variáveis de ambiente.
+
+### 3. Deploy
+
+#### Opção A: Vercel (Recomendado)
+```bash
+# Instalar Vercel CLI
+npm i -g vercel
+
+# Deploy
+vercel
+```
+
+#### Opção B: Netlify
+```bash
+# Instalar Netlify CLI
+npm i -g netlify-cli
+
+# Deploy
+netlify deploy --prod
+```
+
+#### Opção C: Servidor Local
+```bash
+# Usar qualquer servidor HTTP
+python -m http.server 8000
+# ou
+npx serve
+```
+
+## 📊 Aceder ao Painel Admin
+
+1. Navegue para `/admin.html`
+2. O painel está protegido - configure autenticação no Supabase
+3. Funcionalidades disponíveis:
+   - Dashboard com estatísticas
+   - Adicionar/Editar/Eliminar produtos
+   - Ver encomendas e clientes
+   - Gerir contactos recebidos
+
+## 🎨 Personalização
+
+### Cores
+Edite as variáveis CSS em `style.css`:
+```css
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #4f46e5;
+    --accent: #06b6d4;
+}
+```
+
+### Conteúdo
+- **Contactos**: Atualize email e telefone em todos os ficheiros HTML
+- **Morada**: Edite em `contacto.html` e `envios.html`
+- **Redes Sociais**: Adicione links reais no footer
+- **Imagens**: Substitua URLs do Unsplash por imagens próprias
+
+### Produtos
+Adicione produtos através de:
+1. Painel Admin (`/admin.html`)
+2. Diretamente no Supabase
+3. SQL: `INSERT INTO produtos (...) VALUES (...)`
+
+## 🔧 Funcionalidades Principais
+
+### Carrinho de Compras
+- Adicionar/Remover produtos
+- Atualizar quantidades
+- Persistência com localStorage
+- Sidebar animado
+
+### Filtros de Produtos
+- Por categoria (Flybanners, Roll-ups, Lonas)
+- Por faixa de preço
+- Ordenação (preço, nome)
+- Pesquisa em tempo real
+
+### Formulário de Contacto
+- Validação completa
+- Envio para Supabase
+- Notificações toast
+- Proteção GDPR
+
+### Animações
+- Marquee no banner superior
+- Floating shapes no hero
+- Hover effects nos cards
+- Skeleton loading
+- Page transitions
+- Smooth scrolling
+
+## 📱 Páginas Criadas
+
+- ✅ **Homepage** (`index.html`) - Hero, categorias, produtos em destaque
+- ✅ **Produtos** (`produtos.html`) - Catálogo completo com filtros
+- ✅ **Contacto** (`contacto.html`) - Formulário funcional
+- ✅ **FAQ** (`faq.html`) - Accordion com pesquisa
+- ✅ **Envios** (`envios.html`) - Informações de entrega
+- ✅ **Admin** (`admin.html`) - Painel de gestão completo
+
+## 🔐 Segurança
+
+- Row Level Security (RLS) ativado
+- Políticas de acesso configuradas
+- Validação de formulários
+- Proteção contra SQL injection (Supabase)
+- HTTPS obrigatório em produção
+
+## 📈 Próximos Passos
+
+1. **Autenticação Admin**: Implementar login seguro
+2. **Checkout**: Página de finalização de compra
+3. **Pagamentos**: Integração com Stripe/PayPal
+4. **Email**: Notificações automáticas
+5. **Analytics**: Google Analytics ou Plausible
+6. **Blog**: Secção de notícias/artigos
+7. **Reviews**: Sistema de avaliações
+
+## 🐛 Troubleshooting
+
+### Produtos não aparecem
+- Verifique se executou o `supabase-schema.sql`
+- Confirme as credenciais do Supabase
+- Veja o console do browser (F12)
+
+### Carrinho não funciona
+- Limpe o localStorage: `localStorage.clear()`
+- Verifique se JavaScript está ativado
+
+### Admin não carrega
+- Verifique permissões no Supabase
+- Configure RLS policies corretamente
+
+## 📞 Suporte
+
+Para dúvidas ou problemas:
+- Email: geral@latinflag.pt
+- Telefone: +351 900 000 000
+
+## 📄 Licença
+
+Projeto proprietário - LatinFlag © 2024
+
+---
+
+**Desenvolvido com ❤️ para LatinFlag** - WebApp de Publicidade Outdoor
 
 Esta é uma aplicação web simples e moderna para venda de produtos de publicidade exterior, preparada para ser alojada na **Vercel** e utilizar o **Supabase** como base de dados.
 

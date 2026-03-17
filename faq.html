@@ -1,0 +1,330 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ - Perguntas Frequentes | LatinFlag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 text-center text-sm overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link text-blue-600">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/faq.html" class="block py-2 text-blue-600">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Perguntas Frequentes</h1>
+            <p class="text-xl text-blue-100">Encontre respostas para as suas dúvidas</p>
+        </div>
+    </section>
+
+    <!-- FAQ Section -->
+    <section class="py-16">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+            
+            <!-- Search -->
+            <div class="mb-12">
+                <div class="search-container">
+                    <i data-lucide="search" class="search-icon"></i>
+                    <input type="text" id="faq-search" class="search-input" placeholder="Pesquisar perguntas...">
+                </div>
+            </div>
+
+            <!-- Categories -->
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
+                <button class="filter-btn active" data-category="all">Todas</button>
+                <button class="filter-btn" data-category="encomendas">Encomendas</button>
+                <button class="filter-btn" data-category="produtos">Produtos</button>
+                <button class="filter-btn" data-category="pagamento">Pagamento</button>
+            </div>
+
+            <!-- FAQ Items -->
+            <div id="faq-container" class="space-y-4">
+                
+                <!-- Encomendas -->
+                <div class="accordion-item" data-category="encomendas" id="prazos">
+                    <div class="accordion-header">
+                        <span>Qual é o prazo de produção e entrega?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>O prazo de produção standard é de 24-48 horas úteis após aprovação do design. A entrega em Portugal Continental demora entre 1-2 dias úteis após produção. Oferecemos também serviço express com produção no mesmo dia para Lisboa e Porto (sujeito a disponibilidade).</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Como posso acompanhar a minha encomenda?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Após o envio da sua encomenda, receberá um email com o número de tracking. Pode acompanhar o estado da encomenda através do site da transportadora ou contactando-nos diretamente.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Fazem entregas ao fim de semana?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>As entregas standard são realizadas de segunda a sexta-feira. Para entregas urgentes ao fim de semana, contacte-nos para verificar disponibilidade e custos adicionais.</p>
+                    </div>
+                </div>
+
+                <!-- Produtos -->
+                <div class="accordion-item" data-category="produtos" id="design">
+                    <div class="accordion-header">
+                        <span>Oferecem serviço de design gráfico?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim! Oferecemos apoio gráfico gratuito em todas as encomendas. A nossa equipa pode ajudar a adaptar o seu design ou criar um layout profissional do zero. Basta enviar-nos o seu logotipo e informações, e tratamos do resto.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="produtos">
+                    <div class="accordion-header">
+                        <span>Que formatos de ficheiro aceitam?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Aceitamos ficheiros em PDF, AI, EPS, PSD e JPG de alta resolução (mínimo 300 dpi). Para melhores resultados, recomendamos ficheiros vetoriais (AI ou EPS) com fontes convertidas em curvas.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="produtos">
+                    <div class="accordion-header">
+                        <span>Os flybanners incluem estrutura e base?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim! Todos os nossos flybanners incluem a estrutura em fibra de vidro e base. Pode escolher entre base com água ou base com areia, dependendo do local de utilização.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="produtos">
+                    <div class="accordion-header">
+                        <span>Qual a durabilidade dos produtos outdoor?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Os nossos produtos são fabricados com materiais de alta qualidade resistentes a UV e intempéries. Com os cuidados adequados, os flybanners e lonas podem durar vários anos em ambiente exterior.</p>
+                    </div>
+                </div>
+
+                <!-- Pagamento -->
+                <div class="accordion-item" data-category="pagamento" id="pagamento">
+                    <div class="accordion-header">
+                        <span>Que métodos de pagamento aceitam?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Aceitamos transferência bancária, MB WAY, cartão de crédito/débito e pagamento por referência multibanco. Para empresas, oferecemos também pagamento a 30 dias mediante aprovação de crédito.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="pagamento">
+                    <div class="accordion-header">
+                        <span>Emitem fatura?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim, emitimos fatura com todos os dados fiscais para todas as encomendas. Basta fornecer o NIF e dados da empresa durante o processo de encomenda.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Qual é o valor mínimo de encomenda?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Não temos valor mínimo de encomenda. No entanto, encomendas acima de 150€ têm envio grátis para Portugal Continental.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Posso cancelar ou alterar a minha encomenda?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Pode cancelar ou alterar a encomenda gratuitamente antes da aprovação do design e início da produção. Após o início da produção, não é possível cancelar, mas podemos discutar alterações caso a caso.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="produtos">
+                    <div class="accordion-header">
+                        <span>Fazem produtos personalizados ou tamanhos especiais?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim! Além dos tamanhos standard, produzimos produtos totalmente personalizados. Contacte-nos com as suas especificações e faremos um orçamento à medida.</p>
+                    </div>
+                </div>
+
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Fazem envios para as ilhas e estrangeiro?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim, fazemos envios para Açores, Madeira e países da União Europeia. Os prazos e custos variam consoante o destino. Contacte-nos para orçamento de envio.</p>
+                    </div>
+                </div>
+
+            </div>
+
+            <!-- Still have questions? -->
+            <div class="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white text-center">
+                <h2 class="text-2xl font-bold mb-4">Ainda tem dúvidas?</h2>
+                <p class="mb-6">A nossa equipa está pronta para ajudar!</p>
+                <div class="flex flex-col sm:flex-row gap-4 justify-center">
+                    <a href="/contacto.html" class="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition inline-flex items-center justify-center gap-2">
+                        <i data-lucide="mail" class="w-5 h-5"></i>
+                        Enviar Mensagem
+                    </a>
+                    <a href="tel:+351900000000" class="border-2 border-white px-6 py-3 rounded-lg font-bold hover:bg-white hover:text-blue-600 transition inline-flex items-center justify-center gap-2">
+                        <i data-lucide="phone" class="w-5 h-5"></i>
+                        Ligar Agora
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-white mb-6">
+                        <i data-lucide="flag" class="text-blue-500 w-8 h-8"></i>
+                        <span class="text-2xl font-bold">LatinFlag</span>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners, roll-ups e publicidade exterior de alta performance. Qualidade premium, entrega rápida.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2024 LatinFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-white transition">geral@latinflag.pt</a>
+                        <span class="mx-2">|</span>
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <a href="tel:+351900000000" class="hover:text-white transition">+351 900 000 000</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <script src="logic.js"></script>
+    <script src="faq.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

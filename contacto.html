@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contacto - LatinFlag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 text-center text-sm overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link text-blue-600">Contacto</a>
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 text-blue-600">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Page Header -->
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Entre em Contacto</h1>
+            <p class="text-xl text-blue-100">Estamos aqui para ajudar. Fale connosco!</p>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Contact Info -->
+                <div class="lg:col-span-1 space-y-6">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i data-lucide="mail" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Email</h3>
+                                <a href="mailto:geral@latinflag.pt" class="text-blue-600 hover:underline">geral@latinflag.pt</a>
+                                <p class="text-sm text-gray-600 mt-1">Resposta em 24h</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i data-lucide="phone" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Telefone</h3>
+                                <a href="tel:+351900000000" class="text-blue-600 hover:underline">+351 900 000 000</a>
+                                <p class="text-sm text-gray-600 mt-1">Seg-Sex: 9h-18h</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i data-lucide="map-pin" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Morada</h3>
+                                <p class="text-gray-600">Rua Exemplo, 123<br>1000-000 Lisboa<br>Portugal</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <div class="flex items-start gap-4">
+                            <div class="bg-blue-100 p-3 rounded-lg">
+                                <i data-lucide="clock" class="w-6 h-6 text-blue-600"></i>
+                            </div>
+                            <div>
+                                <h3 class="font-bold mb-1">Horário</h3>
+                                <p class="text-gray-600">Segunda a Sexta: 9h - 18h<br>Sábado: 9h - 13h<br>Domingo: Fechado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Contact Form -->
+                <div class="lg:col-span-2">
+                    <div class="bg-white rounded-xl p-8 border border-gray-200">
+                        <h2 class="text-2xl font-bold mb-6">Envie-nos uma Mensagem</h2>
+                        
+                        <form id="contact-form" class="space-y-6">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="form-label">Nome Completo *</label>
+                                    <input type="text" name="nome" required class="form-input" placeholder="O seu nome">
+                                </div>
+                                <div>
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" name="email" required class="form-input" placeholder="seu@email.com">
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                <div>
+                                    <label class="form-label">Telefone</label>
+                                    <input type="tel" name="telefone" class="form-input" placeholder="+351 900 000 000">
+                                </div>
+                                <div>
+                                    <label class="form-label">Assunto *</label>
+                                    <select name="assunto" required class="form-input">
+                                        <option value="">Selecione um assunto</option>
+                                        <option value="orcamento">Pedido de Orçamento</option>
+                                        <option value="informacao">Informação sobre Produtos</option>
+                                        <option value="encomenda">Estado de Encomenda</option>
+                                        <option value="reclamacao">Reclamação</option>
+                                        <option value="outro">Outro</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Mensagem *</label>
+                                <textarea name="mensagem" required rows="6" class="form-input" placeholder="Escreva a sua mensagem aqui..."></textarea>
+                            </div>
+
+                            <div class="flex items-start gap-3">
+                                <input type="checkbox" id="privacy" required class="custom-checkbox mt-1">
+                                <label for="privacy" class="text-sm text-gray-600">
+                                    Aceito a <a href="/privacidade.html" class="text-blue-600 hover:underline">Política de Privacidade</a> e autorizo o tratamento dos meus dados pessoais.
+                                </label>
+                            </div>
+
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-5 h-5"></i>
+                                Enviar Mensagem
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- FAQ Quick Links -->
+    <section class="py-16 bg-white">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-12">
+                <h2 class="text-3xl font-bold mb-4">Perguntas Frequentes</h2>
+                <p class="text-gray-600">Talvez a sua resposta já esteja aqui</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <a href="/faq.html#prazos" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                    <i data-lucide="clock" class="w-8 h-8 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold mb-2">Prazos de Entrega</h3>
+                    <p class="text-sm text-gray-600">Informação sobre tempos de produção e envio</p>
+                </a>
+                <a href="/faq.html#pagamento" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                    <i data-lucide="credit-card" class="w-8 h-8 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold mb-2">Métodos de Pagamento</h3>
+                    <p class="text-sm text-gray-600">Formas de pagamento aceites</p>
+                </a>
+                <a href="/faq.html#design" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                    <i data-lucide="palette" class="w-8 h-8 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold mb-2">Design Gráfico</h3>
+                    <p class="text-sm text-gray-600">Apoio no design dos seus produtos</p>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-white mb-6">
+                        <i data-lucide="flag" class="text-blue-500 w-8 h-8"></i>
+                        <span class="text-2xl font-bold">LatinFlag</span>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners, roll-ups e publicidade exterior de alta performance. Qualidade premium, entrega rápida.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon"><i data-lucide="facebook" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="instagram" class="w-5 h-5"></i></a>
+                        <a href="#" class="social-icon"><i data-lucide="linkedin" class="w-5 h-5"></i></a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2024 LatinFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-white transition">geral@latinflag.pt</a>
+                        <span class="mx-2">|</span>
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <a href="tel:+351900000000" class="hover:text-white transition">+351 900 000 000</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <script src="logic.js"></script>
+    <script src="contacto.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

@@ -1,0 +1,270 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Produtos - LatinFlag | Flybanners & Publicidade Outdoor</title>
+    <meta name="description" content="Catálogo completo de flybanners, roll-ups e produtos de publicidade outdoor. Qualidade premium e preços competitivos.">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+
+    <!-- Top Banner -->
+    <div class="bg-gradient-to-r from-blue-600 to-blue-700 text-white py-2 text-center text-sm overflow-hidden">
+        <div class="marquee-container">
+            <div class="marquee-content">
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+                <span class="mx-8">🚀 Envio Grátis em encomendas acima de 150€</span>
+                <span class="mx-8">⚡ Produção Express em 24-48h</span>
+                <span class="mx-8">🎨 Design Gráfico Gratuito</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8 group-hover:scale-110 transition-transform"></i>
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link text-blue-600">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
+                <a href="/produtos.html" class="block py-2 text-blue-600">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Breadcrumb -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <div class="breadcrumb">
+                <a href="/">Início</a>
+                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                <span class="text-gray-900 font-semibold">Produtos</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Page Header -->
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Catálogo de Produtos</h1>
+            <p class="text-xl text-blue-100">Descubra a nossa gama completa de soluções de publicidade outdoor</p>
+        </div>
+    </section>
+
+    <!-- Products Section -->
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex flex-col lg:flex-row gap-8">
+                
+                <!-- Filters Sidebar -->
+                <aside class="lg:w-64 flex-shrink-0">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
+                        <h3 class="font-bold text-lg mb-4">Filtros</h3>
+                        
+                        <!-- Category Filter -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3 text-sm text-gray-700">Categoria</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="category" value="all" class="custom-radio" checked>
+                                    <span class="ml-2 text-sm">Todos os Produtos</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="category" value="flybanners" class="custom-radio">
+                                    <span class="ml-2 text-sm">Flybanners</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="category" value="rollups" class="custom-radio">
+                                    <span class="ml-2 text-sm">Roll-ups</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="radio" name="category" value="lonas" class="custom-radio">
+                                    <span class="ml-2 text-sm">Lonas & Banners</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <!-- Price Filter -->
+                        <div class="mb-6">
+                            <h4 class="font-semibold mb-3 text-sm text-gray-700">Preço</h4>
+                            <div class="space-y-2">
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="0" data-max="50">
+                                    <span class="ml-2 text-sm">Até 50€</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="50" data-max="100">
+                                    <span class="ml-2 text-sm">50€ - 100€</span>
+                                </label>
+                                <label class="flex items-center cursor-pointer">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="100" data-max="999999">
+                                    <span class="ml-2 text-sm">Acima de 100€</span>
+                                </label>
+                            </div>
+                        </div>
+
+                        <button id="clear-filters" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-semibold">
+                            Limpar Filtros
+                        </button>
+                    </div>
+                </aside>
+
+                <!-- Products Grid -->
+                <main class="flex-1">
+                    <!-- Toolbar -->
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <div class="text-gray-600">
+                            <span id="product-count">0</span> produtos encontrados
+                        </div>
+                        <div class="flex gap-2 items-center">
+                            <label class="text-sm text-gray-600">Ordenar:</label>
+                            <select id="sort-select" class="form-input py-2 px-3 text-sm">
+                                <option value="default">Padrão</option>
+                                <option value="price-asc">Preço: Menor para Maior</option>
+                                <option value="price-desc">Preço: Maior para Menor</option>
+                                <option value="name-asc">Nome: A-Z</option>
+                                <option value="name-desc">Nome: Z-A</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Products Container -->
+                    <div id="products-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                        <!-- Products will be loaded here -->
+                    </div>
+
+                    <!-- Empty State -->
+                    <div id="empty-state" class="hidden empty-state">
+                        <i data-lucide="package-x" class="empty-state-icon"></i>
+                        <h3 class="text-xl font-bold mb-2">Nenhum produto encontrado</h3>
+                        <p>Tente ajustar os seus filtros</p>
+                    </div>
+                </main>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-white mb-6">
+                        <i data-lucide="flag" class="text-blue-500 w-8 h-8"></i>
+                        <span class="text-2xl font-bold">LatinFlag</span>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners, roll-ups e publicidade exterior de alta performance. Qualidade premium, entrega rápida.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">
+                        © 2024 LatinFlag. Todos os direitos reservados.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-white transition">geral@latinflag.pt</a>
+                        <span class="mx-2">|</span>
+                        <i data-lucide="phone" class="w-4 h-4"></i>
+                        <a href="tel:+351900000000" class="hover:text-white transition">+351 900 000 000</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <script src="logic.js"></script>
+    <script src="produtos.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
