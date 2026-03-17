@@ -1201,13 +1201,37 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 /* Resize handles */
 .resize-handle {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background: white;
     border: 2px solid #2563eb;
     border-radius: 50%;
-    z-index: 1001;
+    z-index: 1000;
+}
+
+.rotate-handle {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
     transition: all 0.2s;
+}
+
+.rotate-handle:hover {
+    background: #2563eb;
+    color: white;
+    cursor: grab;
+}
+
+.rotate-handle:active {
+    cursor: grabbing;
 }
 
 .resize-handle:hover {
@@ -1223,6 +1247,21 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 .resize-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
 .resize-handle.e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
 .resize-handle.w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
+
+/* Prevent text selection on SVG elements */
+svg text {
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+svg text.element-selected {
+    user-select: text;
+    -webkit-user-select: text;
+    -moz-user-select: text;
+    -ms-user-select: text;
+}
 
 /* Element wrapper for selection */
 .element-wrapper {
@@ -1298,6 +1337,9 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     #design-canvas { 
         width: 100% !important; 
         height: 100% !important;
+        cursor: default;
+        user-select: none;
+        -webkit-user-select: none;
     }
     
     /* Resize handles smaller on mobile */
