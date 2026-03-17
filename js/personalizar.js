@@ -12,8 +12,10 @@ class DesignEditor {
         this.zoom = 1;
         this.isDragging = false;
         this.isResizing = false;
+        this.isRotating = false;
         this.dragStart = { x: 0, y: 0 };
         this.resizeHandle = null;
+        this.rotationStart = 0;
         this.currentProduct = null;
         this.editIndex = null;
         
@@ -170,11 +172,23 @@ class DesignEditor {
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
         
+        const textRotation = document.getElementById('prop-text-rotation');
+        if (textRotation) textRotation.addEventListener('input', (e) => {
+            this.updateRotation(e.target.value);
+            document.getElementById('prop-text-rotation-val').textContent = e.target.value;
+        });
+        
         // Image properties
         const imageOpacity = document.getElementById('prop-image-opacity');
         if (imageOpacity) imageOpacity.addEventListener('input', (e) => {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
+        });
+        
+        const imageRotation = document.getElementById('prop-image-rotation');
+        if (imageRotation) imageRotation.addEventListener('input', (e) => {
+            this.updateRotation(e.target.value);
+            document.getElementById('prop-image-rotation-val').textContent = e.target.value;
         });
         
         // Shape properties
@@ -187,6 +201,12 @@ class DesignEditor {
         if (shapeStrokeWidth) shapeStrokeWidth.addEventListener('input', (e) => {
             this.updateShapeStrokeWidth(e.target.value);
             document.getElementById('prop-shape-stroke-val').textContent = e.target.value;
+        });
+        
+        const shapeRotation = document.getElementById('prop-shape-rotation');
+        if (shapeRotation) shapeRotation.addEventListener('input', (e) => {
+            this.updateRotation(e.target.value);
+            document.getElementById('prop-shape-rotation-val').textContent = e.target.value;
         });
     }
     
@@ -228,7 +248,8 @@ class DesignEditor {
             size: 24,
             color: '#000000',
             bold: false,
-            italic: false
+            italic: false,
+            rotation: 0
         };
         
         this.elements.push(elementData);
@@ -260,7 +281,8 @@ class DesignEditor {
                 element: img,
                 type: 'image',
                 src: event.target.result,
-                opacity: 1
+                opacity: 1,
+                rotation: 0
             };
             
             this.elements.push(elementData);
@@ -304,6 +326,7 @@ class DesignEditor {
             id: Date.now(),
             element: shape,
             type: 'shape',
+            rotation: 0,
             shapeType: shapeType,
             fill: '#3b82f6',
             stroke: '#000000',
@@ -319,14 +342,24 @@ class DesignEditor {
     
     // ===== ELEMENT INTERACTION =====
     makeElementInteractive(elementData) {
+        // Prevent text selection on element
+        elementData.element.style.userSelect = 'none';
+        elementData.element.style.webkitUserSelect = 'none';
+        
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
+            e.preventDefault(); // Prevent text selection
             this.selectElement(elementData);
             this.startDrag(e, elementData);
         });
     }
     
     selectElement(elementData) {
+        // Blur any active input to prevent focus blocking drag
+        if (document.activeElement && document.activeElement.tagName === 'INPUT') {
+            document.activeElement.blur();
+        }
+        
         // Deselect all
         this.elements.forEach(el => {
             el.element.classList.remove('element-selected');
@@ -382,6 +415,21 @@ class DesignEditor {
             
             handlesContainer.appendChild(handle);
         });
+        
+        // Add rotation handle
+        const rotateHandle = document.createElement('div');
+        rotateHandle.className = 'rotate-handle';
+        rotateHandle.style.cursor = 'grab';
+        rotateHandle.style.left = (bbox.x + bbox.width/2 - 8) + 'px';
+        rotateHandle.style.top = (bbox.y - 35) + 'px';
+        rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
+        
+        rotateHandle.addEventListener('mousedown', (e) => {
+            e.stopPropagation();
+            this.startRotate(e, elementData);
+        });
+        
+        handlesContainer.appendChild(rotateHandle);
     }
     
     hideResizeHandles() {
@@ -402,16 +450,22 @@ class DesignEditor {
             document.getElementById('prop-text-size').value = elementData.size;
             document.getElementById('prop-text-size-val').textContent = elementData.size;
             document.getElementById('prop-text-color').value = elementData.color;
+            document.getElementById('prop-text-rotation').value = elementData.rotation || 0;
+            document.getElementById('prop-text-rotation-val').textContent = elementData.rotation || 0;
         } else if (elementData.type === 'image') {
             document.getElementById('image-properties').classList.remove('hidden');
             document.getElementById('prop-image-opacity').value = (elementData.opacity || 1) * 100;
             document.getElementById('prop-image-opacity-val').textContent = Math.round((elementData.opacity || 1) * 100);
+            document.getElementById('prop-image-rotation').value = elementData.rotation || 0;
+            document.getElementById('prop-image-rotation-val').textContent = elementData.rotation || 0;
         } else if (elementData.type === 'shape') {
             document.getElementById('shape-properties').classList.remove('hidden');
             document.getElementById('prop-shape-fill').value = elementData.fill;
             document.getElementById('prop-shape-stroke').value = elementData.stroke;
             document.getElementById('prop-shape-stroke-width').value = elementData.strokeWidth;
             document.getElementById('prop-shape-stroke-val').textContent = elementData.strokeWidth;
+            document.getElementById('prop-shape-rotation').value = elementData.rotation || 0;
+            document.getElementById('prop-shape-rotation-val').textContent = elementData.rotation || 0;
         }
     }
     
@@ -469,15 +523,18 @@ class DesignEditor {
             this.showResizeHandles(this.selectedElement);
         } else if (this.isResizing && this.selectedElement) {
             this.doResize(e);
+        } else if (this.isRotating && this.selectedElement) {
+            this.doRotate(e);
         }
     }
     
     handleMouseUp() {
-        if (this.isDragging || this.isResizing) {
+        if (this.isDragging || this.isResizing || this.isRotating) {
             this.saveHistory();
         }
         this.isDragging = false;
         this.isResizing = false;
+        this.isRotating = false;
         this.resizeHandle = null;
     }
     
@@ -584,6 +641,56 @@ class DesignEditor {
         
         this.dragStart = { x: e.clientX, y: e.clientY };
         this.showResizeHandles(this.selectedElement);
+    }
+    
+    // ===== ROTATION =====
+    startRotate(e, elementData) {
+        this.isRotating = true;
+        const bbox = elementData.element.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        
+        this.rotationStart = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+        this.rotationStart -= (elementData.rotation || 0);
+    }
+    
+    doRotate(e) {
+        if (!this.selectedElement) return;
+        
+        const bbox = this.selectedElement.element.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        
+        const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+        let rotation = angle - this.rotationStart;
+        
+        // Snap to 15 degree increments if shift is held
+        if (e.shiftKey) {
+            rotation = Math.round(rotation / 15) * 15;
+        }
+        
+        this.selectedElement.rotation = rotation;
+        this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
+        this.showResizeHandles(this.selectedElement);
+    }
+    
+    updateRotation(value) {
+        if (this.selectedElement) {
+            const bbox = this.selectedElement.element.getBBox();
+            const centerX = bbox.x + bbox.width / 2;
+            const centerY = bbox.y + bbox.height / 2;
+            
+            this.selectedElement.rotation = parseFloat(value);
+            this.selectedElement.element.setAttribute('transform', `rotate(${value} ${centerX} ${centerY})`);
+            this.showResizeHandles(this.selectedElement);
+            this.saveHistory();
+        }
     }
     
     // ===== PROPERTY UPDATES =====

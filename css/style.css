@@ -1201,13 +1201,38 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 /* Resize handles */
 .resize-handle {
     position: absolute;
-    width: 12px;
-    height: 12px;
+    width: 10px;
+    height: 10px;
     background: white;
     border: 2px solid #2563eb;
     border-radius: 50%;
-    z-index: 1001;
+    z-index: 1000;
+}
+
+.rotate-handle {
+    position: absolute;
+    width: 32px;
+    height: 32px;
+    background: white;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563eb;
     transition: all 0.2s;
+}
+
+.rotate-handle:hover {
+    background: #2563eb;
+    color: white;
+    transform: scale(1.1);
+    cursor: grab;
+}
+
+.rotate-handle:active {
+    cursor: grabbing;
 }
 
 .resize-handle:hover {
