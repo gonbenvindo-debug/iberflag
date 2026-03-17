@@ -15,7 +15,7 @@ class DesignEditor {
         this.isRotating = false;
         this.dragStart = { x: 0, y: 0 };
         this.resizeHandle = null;
-        this.initialAspectRatio = 1;
+        this.rotationStart = 0;
         this.currentProduct = null;
         this.editIndex = null;
         
@@ -323,37 +323,19 @@ class DesignEditor {
     makeElementInteractive(elementData) {
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            e.preventDefault(); // Prevent text selection when dragging
             this.selectElement(elementData);
             this.startDrag(e, elementData);
         });
-        
-        // Prevent text selection unless element is selected
-        if (elementData.type === 'text') {
-            elementData.element.style.userSelect = 'none';
-            elementData.element.style.webkitUserSelect = 'none';
-        }
     }
     
     selectElement(elementData) {
         // Deselect all
         this.elements.forEach(el => {
             el.element.classList.remove('element-selected');
-            // Disable text selection on deselected text elements
-            if (el.type === 'text') {
-                el.element.style.userSelect = 'none';
-                el.element.style.webkitUserSelect = 'none';
-            }
         });
         
         this.selectedElement = elementData;
         elementData.element.classList.add('element-selected');
-        
-        // Enable text selection only on selected text element
-        if (elementData.type === 'text') {
-            elementData.element.style.userSelect = 'text';
-            elementData.element.style.webkitUserSelect = 'text';
-        }
         
         // Show resize handles
         this.showResizeHandles(elementData);
@@ -370,10 +352,31 @@ class DesignEditor {
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
         
-        const bbox = elementData.element.getBBox();
-        const positions = ['nw', 'ne', 'sw', 'se'];
+        // Get element dimensions from attributes
+        let x, y, width, height;
+        if (elementData.type === 'text') {
+            const bbox = elementData.element.getBBox();
+            x = parseFloat(elementData.element.getAttribute('x') || 0);
+            y = parseFloat(elementData.element.getAttribute('y') || 0) - bbox.height;
+            width = bbox.width;
+            height = bbox.height;
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            x = parseFloat(elementData.element.getAttribute('x') || 0);
+            y = parseFloat(elementData.element.getAttribute('y') || 0);
+            width = parseFloat(elementData.element.getAttribute('width') || 0);
+            height = parseFloat(elementData.element.getAttribute('height') || 0);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const r = parseFloat(elementData.element.getAttribute('r') || 0);
+            const cx = parseFloat(elementData.element.getAttribute('cx') || 0);
+            const cy = parseFloat(elementData.element.getAttribute('cy') || 0);
+            x = cx - r;
+            y = cy - r;
+            width = r * 2;
+            height = r * 2;
+        }
         
-        // Corner handles only for aspect ratio lock
+        const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
+        
         positions.forEach(pos => {
             const handle = document.createElement('div');
             handle.className = 'resize-handle';
@@ -383,10 +386,14 @@ class DesignEditor {
             // Position handle
             let left, top;
             switch(pos) {
-                case 'nw': left = bbox.x - 5; top = bbox.y - 5; break;
-                case 'ne': left = bbox.x + bbox.width - 5; top = bbox.y - 5; break;
-                case 'sw': left = bbox.x - 5; top = bbox.y + bbox.height - 5; break;
-                case 'se': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height - 5; break;
+                case 'nw': left = x - 5; top = y - 5; break;
+                case 'ne': left = x + width - 5; top = y - 5; break;
+                case 'sw': left = x - 5; top = y + height - 5; break;
+                case 'se': left = x + width - 5; top = y + height - 5; break;
+                case 'n': left = x + width/2 - 5; top = y - 5; break;
+                case 's': left = x + width/2 - 5; top = y + height - 5; break;
+                case 'e': left = x + width - 5; top = y + height/2 - 5; break;
+                case 'w': left = x - 5; top = y + height/2 - 5; break;
             }
             
             handle.style.left = left + 'px';
@@ -402,17 +409,16 @@ class DesignEditor {
         
         // Add rotation handle
         const rotateHandle = document.createElement('div');
-        rotateHandle.className = 'rotate-handle';
+        rotateHandle.className = 'resize-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (bbox.x + bbox.width/2 - 8) + 'px';
-        rotateHandle.style.top = (bbox.y - 30) + 'px';
-        rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
-        
+        rotateHandle.style.left = (x + width/2 - 5) + 'px';
+        rotateHandle.style.top = (y - 25) + 'px';
+        rotateHandle.style.backgroundColor = '#10b981';
+        rotateHandle.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         rotateHandle.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            this.startRotate(e);
+            this.startRotate(e, elementData);
         });
-        
         handlesContainer.appendChild(rotateHandle);
     }
     
@@ -534,10 +540,66 @@ class DesignEditor {
         this.isResizing = true;
         this.resizeHandle = position;
         this.dragStart = { x: e.clientX, y: e.clientY };
+    }
+    
+    startRotate(e, elementData) {
+        this.isRotating = true;
+        const canvasRect = this.canvas.getBoundingClientRect();
         
-        // Store initial aspect ratio
-        const bbox = this.selectedElement.element.getBBox();
-        this.initialAspectRatio = bbox.width / bbox.height;
+        // Get element center
+        let centerX, centerY;
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            const x = parseFloat(elementData.element.getAttribute('x') || 0);
+            const y = parseFloat(elementData.element.getAttribute('y') || 0);
+            const width = parseFloat(elementData.element.getAttribute('width') || 100);
+            const height = parseFloat(elementData.element.getAttribute('height') || 100);
+            centerX = x + width / 2;
+            centerY = y + height / 2;
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            centerX = parseFloat(elementData.element.getAttribute('cx') || 0);
+            centerY = parseFloat(elementData.element.getAttribute('cy') || 0);
+        }
+        
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        this.rotationStart = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
+        
+        const currentRotation = elementData.element.getAttribute('transform');
+        if (currentRotation && currentRotation.includes('rotate')) {
+            const match = currentRotation.match(/rotate\(([^)]+)\)/);
+            if (match) {
+                this.rotationStart -= parseFloat(match[1].split(' ')[0]);
+            }
+        }
+    }
+    
+    doRotate(e) {
+        if (!this.selectedElement) return;
+        
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
+        // Get element center
+        let centerX, centerY;
+        if (this.selectedElement.type === 'text' || this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+            const x = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
+            const y = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
+            const width = parseFloat(this.selectedElement.element.getAttribute('width') || 100);
+            const height = parseFloat(this.selectedElement.element.getAttribute('height') || 100);
+            centerX = x + width / 2;
+            centerY = y + height / 2;
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
+            centerX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
+            centerY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
+        }
+        
+        const mouseX = e.clientX - canvasRect.left;
+        const mouseY = e.clientY - canvasRect.top;
+        const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
+        const rotation = angle - this.rotationStart;
+        
+        this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
+        this.selectedElement.rotation = rotation;
+        this.showResizeHandles(this.selectedElement);
     }
     
     doResize(e) {
@@ -553,32 +615,40 @@ class DesignEditor {
         let newX = bbox.x;
         let newY = bbox.y;
         
-        // Calculate new dimensions maintaining aspect ratio
-        let scale = 1;
         switch(this.resizeHandle) {
             case 'se':
-                scale = Math.max((bbox.width + dx) / bbox.width, (bbox.height + dy) / bbox.height);
-                newWidth = bbox.width * scale;
-                newHeight = newWidth / this.initialAspectRatio;
+                newWidth = Math.max(20, bbox.width + dx);
+                newHeight = Math.max(20, bbox.height + dy);
                 break;
             case 'sw':
-                scale = Math.max((bbox.width - dx) / bbox.width, (bbox.height + dy) / bbox.height);
-                newWidth = bbox.width * scale;
-                newHeight = newWidth / this.initialAspectRatio;
-                newX = bbox.x + bbox.width - newWidth;
+                newWidth = Math.max(20, bbox.width - dx);
+                newHeight = Math.max(20, bbox.height + dy);
+                newX = bbox.x + dx;
                 break;
             case 'ne':
-                scale = Math.max((bbox.width + dx) / bbox.width, (bbox.height - dy) / bbox.height);
-                newWidth = bbox.width * scale;
-                newHeight = newWidth / this.initialAspectRatio;
-                newY = bbox.y + bbox.height - newHeight;
+                newWidth = Math.max(20, bbox.width + dx);
+                newHeight = Math.max(20, bbox.height - dy);
+                newY = bbox.y + dy;
                 break;
             case 'nw':
-                scale = Math.max((bbox.width - dx) / bbox.width, (bbox.height - dy) / bbox.height);
-                newWidth = bbox.width * scale;
-                newHeight = newWidth / this.initialAspectRatio;
-                newX = bbox.x + bbox.width - newWidth;
-                newY = bbox.y + bbox.height - newHeight;
+                newWidth = Math.max(20, bbox.width - dx);
+                newHeight = Math.max(20, bbox.height - dy);
+                newX = bbox.x + dx;
+                newY = bbox.y + dy;
+                break;
+            case 'e':
+                newWidth = Math.max(20, bbox.width + dx);
+                break;
+            case 'w':
+                newWidth = Math.max(20, bbox.width - dx);
+                newX = bbox.x + dx;
+                break;
+            case 's':
+                newHeight = Math.max(20, bbox.height + dy);
+                break;
+            case 'n':
+                newHeight = Math.max(20, bbox.height - dy);
+                newY = bbox.y + dy;
                 break;
         }
         
@@ -614,46 +684,6 @@ class DesignEditor {
         }
         
         this.dragStart = { x: e.clientX, y: e.clientY };
-        this.showResizeHandles(this.selectedElement);
-    }
-    
-    // ===== ROTATION =====
-    startRotate(e) {
-        this.isRotating = true;
-        const bbox = this.selectedElement.element.getBBox();
-        this.rotationCenter = {
-            x: bbox.x + bbox.width / 2,
-            y: bbox.y + bbox.height / 2
-        };
-        
-        const angle = Math.atan2(
-            e.clientY - this.canvas.getBoundingClientRect().top - this.rotationCenter.y,
-            e.clientX - this.canvas.getBoundingClientRect().left - this.rotationCenter.x
-        );
-        this.initialRotationAngle = angle;
-        this.currentRotation = parseFloat(this.selectedElement.element.getAttribute('data-rotation') || 0);
-    }
-    
-    doRotate(e) {
-        if (!this.selectedElement) return;
-        
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const angle = Math.atan2(
-            e.clientY - canvasRect.top - this.rotationCenter.y,
-            e.clientX - canvasRect.left - this.rotationCenter.x
-        );
-        
-        const deltaAngle = (angle - this.initialRotationAngle) * (180 / Math.PI);
-        const newRotation = this.currentRotation + deltaAngle;
-        
-        const bbox = this.selectedElement.element.getBBox();
-        const cx = bbox.x + bbox.width / 2;
-        const cy = bbox.y + bbox.height / 2;
-        
-        this.selectedElement.element.setAttribute('transform', `rotate(${newRotation} ${cx} ${cy})`);
-        this.selectedElement.element.setAttribute('data-rotation', newRotation);
-        this.selectedElement.rotation = newRotation;
-        
         this.showResizeHandles(this.selectedElement);
     }
     
