@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Finalizar Encomenda - LatinFlag</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50">
+    
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8"></i>
+                    <span class="text-2xl font-bold">LatinFlag</span>
+                </a>
+                <div class="flex items-center gap-4">
+                    <div class="text-sm text-gray-600">
+                        <i data-lucide="shield-check" class="w-4 h-4 inline text-green-600"></i>
+                        Checkout Seguro
+                    </div>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Checkout Steps -->
+    <div class="bg-white border-b">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+            <div class="flex items-center justify-center gap-4">
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">1</div>
+                    <span class="font-semibold">Carrinho</span>
+                </div>
+                <div class="w-12 h-0.5 bg-blue-600"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center font-bold">2</div>
+                    <span class="font-semibold">Dados</span>
+                </div>
+                <div class="w-12 h-0.5 bg-gray-300"></div>
+                <div class="flex items-center gap-2">
+                    <div class="w-8 h-8 bg-gray-300 text-gray-600 rounded-full flex items-center justify-center font-bold">3</div>
+                    <span class="text-gray-600">Pagamento</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <section class="py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                
+                <!-- Checkout Form -->
+                <div class="lg:col-span-2 space-y-6">
+                    
+                    <!-- Customer Info -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <h2 class="text-2xl font-bold mb-6">Dados de Faturação</h2>
+                        <form id="checkout-form" class="space-y-4">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Nome Completo *</label>
+                                    <input type="text" name="nome" required class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">Email *</label>
+                                    <input type="email" name="email" required class="form-input">
+                                </div>
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Telefone *</label>
+                                    <input type="tel" name="telefone" required class="form-input">
+                                </div>
+                                <div>
+                                    <label class="form-label">NIF (opcional)</label>
+                                    <input type="text" name="nif" class="form-input">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Empresa (opcional)</label>
+                                <input type="text" name="empresa" class="form-input">
+                            </div>
+                            
+                            <div>
+                                <label class="form-label">Morada *</label>
+                                <input type="text" name="morada" required class="form-input">
+                            </div>
+                            
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label class="form-label">Código Postal *</label>
+                                    <input type="text" name="codigo_postal" required class="form-input" placeholder="0000-000">
+                                </div>
+                                <div>
+                                    <label class="form-label">Cidade *</label>
+                                    <input type="text" name="cidade" required class="form-input">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label class="form-label">Notas da Encomenda (opcional)</label>
+                                <textarea name="notas" rows="3" class="form-input" placeholder="Informações adicionais sobre a entrega..."></textarea>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Payment Method -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <h2 class="text-2xl font-bold mb-6">Método de Pagamento</h2>
+                        
+                        <div class="space-y-4">
+                            <label class="flex items-center p-4 border-2 border-blue-600 rounded-lg cursor-pointer bg-blue-50">
+                                <input type="radio" name="payment" value="stripe" checked class="custom-radio">
+                                <div class="ml-3 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold">Cartão de Crédito/Débito</span>
+                                        <div class="flex gap-2">
+                                            <i data-lucide="credit-card" class="w-5 h-5 text-blue-600"></i>
+                                        </div>
+                                    </div>
+                                    <p class="text-sm text-gray-600 mt-1">Pagamento seguro via Stripe</p>
+                                </div>
+                            </label>
+
+                            <div class="bg-gray-50 p-6 rounded-lg border border-gray-200">
+                                <div class="flex items-start gap-3 mb-4">
+                                    <i data-lucide="info" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
+                                    <div class="text-sm text-gray-700">
+                                        <p class="font-semibold mb-2">Integração Stripe em Desenvolvimento</p>
+                                        <p>O sistema de pagamento via Stripe será integrado em breve. Por enquanto, este é um placeholder para demonstração.</p>
+                                    </div>
+                                </div>
+                                
+                                <!-- Stripe Placeholder -->
+                                <div class="space-y-3">
+                                    <div>
+                                        <label class="form-label">Número do Cartão</label>
+                                        <div class="form-input bg-white flex items-center gap-2">
+                                            <i data-lucide="credit-card" class="w-4 h-4 text-gray-400"></i>
+                                            <span class="text-gray-400">•••• •••• •••• ••••</span>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-2 gap-3">
+                                        <div>
+                                            <label class="form-label">Validade</label>
+                                            <div class="form-input bg-white text-gray-400">MM / AA</div>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">CVV</label>
+                                            <div class="form-input bg-white text-gray-400">•••</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Terms -->
+                    <div class="bg-white rounded-xl p-6 border border-gray-200">
+                        <label class="flex items-start gap-3 cursor-pointer">
+                            <input type="checkbox" id="terms-checkbox" required class="custom-checkbox mt-1">
+                            <span class="text-sm text-gray-700">
+                                Li e aceito os <a href="/termos.html" class="text-blue-600 hover:underline">Termos e Condições</a> e a 
+                                <a href="/privacidade.html" class="text-blue-600 hover:underline">Política de Privacidade</a>
+                            </span>
+                        </label>
+                    </div>
+
+                    <button id="place-order-btn" class="w-full bg-blue-600 text-white py-4 rounded-xl font-bold text-lg hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                        <i data-lucide="lock" class="w-5 h-5"></i>
+                        Finalizar Encomenda
+                    </button>
+                </div>
+
+                <!-- Order Summary -->
+                <div class="lg:col-span-1">
+                    <div class="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
+                        <h2 class="text-xl font-bold mb-6">Resumo da Encomenda</h2>
+                        
+                        <div id="order-items" class="space-y-4 mb-6">
+                            <!-- Items will be loaded here -->
+                        </div>
+
+                        <div class="border-t pt-4 space-y-3">
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Subtotal</span>
+                                <span id="subtotal" class="font-semibold">0.00€</span>
+                            </div>
+                            <div class="flex justify-between text-sm">
+                                <span class="text-gray-600">Envio</span>
+                                <span id="shipping" class="font-semibold">7.50€</span>
+                            </div>
+                            <div class="flex justify-between text-lg font-bold border-t pt-3">
+                                <span>Total</span>
+                                <span id="total" class="text-blue-600">0.00€</span>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 p-4 bg-green-50 rounded-lg border border-green-200">
+                            <div class="flex items-start gap-2">
+                                <i data-lucide="truck" class="w-5 h-5 text-green-600 flex-shrink-0 mt-0.5"></i>
+                                <div class="text-sm text-green-800">
+                                    <p class="font-semibold">Envio Grátis</p>
+                                    <p id="free-shipping-msg">Faltam <span id="remaining">0.00€</span> para envio grátis</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="mt-6 space-y-2 text-xs text-gray-600">
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="shield-check" class="w-4 h-4 text-green-600"></i>
+                                <span>Pagamento 100% seguro</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="clock" class="w-4 h-4 text-blue-600"></i>
+                                <span>Produção em 12-24h</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="package" class="w-4 h-4 text-blue-600"></i>
+                                <span>Entrega em 2-4 dias úteis</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-8 mt-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <p class="text-sm">© 2024 LatinFlag. Todos os direitos reservados.</p>
+        </div>
+    </footer>
+
+    <script src="logic.js"></script>
+    <script src="checkout.js"></script>
+    <script>lucide.createIcons();</script>
+</body>
+</html>

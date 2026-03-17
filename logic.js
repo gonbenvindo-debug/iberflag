@@ -93,21 +93,16 @@ function renderProducts(products) {
             <div class="relative h-64 overflow-hidden image-zoom">
                 <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
                 <div class="product-badge">
-                    A partir de ${product.preco.toFixed(2)}€
+                    ${product.preco.toFixed(2)}€
                 </div>
             </div>
             <div class="p-6 flex flex-col flex-grow">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">${product.nome}</h3>
                 <p class="text-gray-600 text-sm mb-6 flex-grow">${product.descricao}</p>
-                <div class="flex gap-2">
-                    <button onclick="addToCart(${product.id})" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                        Adicionar
-                    </button>
-                    <button onclick="quickView(${product.id})" class="bg-gray-100 text-gray-700 font-bold px-4 py-3 rounded-xl hover:bg-gray-200 transition-all">
-                        <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
-                </div>
+                <a href="/personalizar.html?produto=${product.id}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="palette" class="w-4 h-4"></i>
+                    Personalizar e Comprar
+                </a>
             </div>
         </div>
     `).join('');

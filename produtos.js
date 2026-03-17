@@ -73,15 +73,10 @@ function renderProductsGrid(products) {
                     <div class="price-tag">${product.preco.toFixed(2)}€</div>
                     <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>
                 </div>
-                <div class="flex gap-2">
-                    <button onclick="addToCart(${product.id})" class="flex-1 bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                        Adicionar
-                    </button>
-                    <button onclick="viewProductDetails(${product.id})" class="bg-gray-100 text-gray-700 font-bold px-4 py-3 rounded-xl hover:bg-gray-200 transition-all">
-                        <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
-                </div>
+                <a href="/personalizar.html?produto=${product.id}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                    <i data-lucide="palette" class="w-4 h-4"></i>
+                    Personalizar e Comprar
+                </a>
             </div>
         </div>
     `).join('');
