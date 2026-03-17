@@ -1151,6 +1151,71 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     outline-offset: 2px;
 }
 
+/* ===== CANVA-LIKE CURSOR STYLES ===== */
+.cursor-default { cursor: default !important; }
+.cursor-pointer { cursor: pointer !important; }
+.cursor-move { cursor: move !important; }
+.cursor-grab { cursor: grab !important; }
+.cursor-grabbing { cursor: grabbing !important; }
+.cursor-text { cursor: text !important; }
+.cursor-crosshair { cursor: crosshair !important; }
+
+/* Resize cursors */
+.cursor-nw-resize { cursor: nw-resize !important; }
+.cursor-ne-resize { cursor: ne-resize !important; }
+.cursor-sw-resize { cursor: sw-resize !important; }
+.cursor-se-resize { cursor: se-resize !important; }
+.cursor-n-resize { cursor: n-resize !important; }
+.cursor-s-resize { cursor: s-resize !important; }
+.cursor-e-resize { cursor: e-resize !important; }
+.cursor-w-resize { cursor: w-resize !important; }
+
+/* Selection box */
+.selection-box {
+    position: absolute;
+    border: 2px solid #2563eb;
+    background: rgba(37, 99, 235, 0.1);
+    pointer-events: none;
+    z-index: 1000;
+}
+
+/* Resize handles */
+.resize-handle {
+    position: absolute;
+    width: 12px;
+    height: 12px;
+    background: white;
+    border: 2px solid #2563eb;
+    border-radius: 50%;
+    z-index: 1001;
+    transition: all 0.2s;
+}
+
+.resize-handle:hover {
+    background: #2563eb;
+    transform: scale(1.2);
+}
+
+.resize-handle.nw { top: -6px; left: -6px; cursor: nw-resize; }
+.resize-handle.ne { top: -6px; right: -6px; cursor: ne-resize; }
+.resize-handle.sw { bottom: -6px; left: -6px; cursor: sw-resize; }
+.resize-handle.se { bottom: -6px; right: -6px; cursor: se-resize; }
+.resize-handle.n { top: -6px; left: 50%; transform: translateX(-50%); cursor: n-resize; }
+.resize-handle.s { bottom: -6px; left: 50%; transform: translateX(-50%); cursor: s-resize; }
+.resize-handle.e { top: 50%; right: -6px; transform: translateY(-50%); cursor: e-resize; }
+.resize-handle.w { top: 50%; left: -6px; transform: translateY(-50%); cursor: w-resize; }
+
+/* Element wrapper for selection */
+.element-wrapper {
+    position: relative;
+    display: inline-block;
+}
+
+.element-wrapper.selected {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
 /* ===== MOBILE RESPONSIVE STYLES ===== */
 @media (max-width: 768px) {
     /* Typography */
@@ -1161,8 +1226,14 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     /* Container padding */
     .max-w-7xl { padding-left: 1rem !important; padding-right: 1rem !important; }
     
-    /* Navigation */
+    /* Navigation - Fixed */
+    nav { padding: 0 !important; }
+    nav .flex.justify-between { padding: 0 1rem !important; }
     nav .hidden.md\:flex { display: none !important; }
+    nav .text-2xl { font-size: 1.25rem !important; }
+    
+    /* Mobile menu button */
+    #mobile-menu-btn { display: flex !important; }
     
     /* Hero section */
     .hero-section { padding: 2rem 0 !important; }
@@ -1192,11 +1263,29 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     .admin-sidebar { width: 100% !important; position: relative !important; }
     .admin-content { margin-left: 0 !important; }
     
-    /* Customizer */
-    .flex.h-\[calc\(100vh-64px\)\] { flex-direction: column !important; }
-    aside.w-80 { width: 100% !important; max-height: 40vh; }
-    #canvas-container { width: 100% !important; height: 400px !important; }
-    #design-canvas { width: 100% !important; height: 400px !important; }
+    /* Customizer - Improved */
+    .flex.h-\[calc\(100vh-64px\)\] { flex-direction: column !important; height: auto !important; }
+    aside.w-80 { 
+        width: 100% !important; 
+        max-height: none !important;
+        border-right: none !important;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    #canvas-container { 
+        width: 100% !important; 
+        height: 60vh !important;
+        padding: 1rem !important;
+    }
+    #design-canvas { 
+        width: 100% !important; 
+        height: 100% !important;
+    }
+    
+    /* Resize handles smaller on mobile */
+    .resize-handle {
+        width: 16px;
+        height: 16px;
+    }
     
     /* Tool tabs */
     .tool-tab { flex: 1; font-size: 0.75rem !important; padding: 0.5rem !important; }

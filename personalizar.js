@@ -7,7 +7,12 @@ let history = [];
 let historyIndex = -1;
 let zoom = 1;
 let isDragging = false;
+let isResizing = false;
+let resizeHandle = null;
 let dragOffset = { x: 0, y: 0 };
+let resizeStart = { x: 0, y: 0, width: 0, height: 0 };
+let selectionBox = null;
+let resizeHandles = [];
 
 // ===== DOM ELEMENTS =====
 const canvas = document.getElementById('design-canvas');
@@ -100,463 +105,294 @@ toolTabs.forEach(tab => {
     });
 });
 
-// ===== ADD TEXT =====
-if (addTextBtn) {
-    addTextBtn.addEventListener('click', () => {
-        const text = createTextElement('Clique para editar', 400, 300);
-        elements.push(text);
-        canvas.appendChild(text.element);
-        selectElement(text);
-        textControls.classList.remove('hidden');
-        saveHistory();
-        updateLayers();
-    });
-}
-
-function createTextElement(content, x, y) {
-    const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-    text.setAttribute('x', x);
-    text.setAttribute('y', y);
-    text.setAttribute('font-family', 'Arial');
-    text.setAttribute('font-size', '24');
-    text.setAttribute('fill', '#000000');
-    text.textContent = content;
-    text.style.cursor = 'move';
+// ===== CREATE RESIZE HANDLES =====
+function createResizeHandles(element) {
+    removeResizeHandles();
     
-    const elementData = {
-        type: 'text',
-        element: text,
-        id: Date.now(),
-        content: content,
-        x: x,
-        y: y,
-        fontSize: 24,
-        fontFamily: 'Arial',
-        color: '#000000',
-        bold: false,
-        italic: false,
-        underline: false
-    };
+    if (!element || !element.element) return;
     
-    text.addEventListener('mousedown', (e) => startDrag(e, elementData));
-    text.addEventListener('click', () => selectElement(elementData));
+    const bbox = element.element.getBBox();
+    const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
     
-    return elementData;
-}
-
-// ===== TEXT CONTROLS =====
-if (textContent) {
-    textContent.addEventListener('input', (e) => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.content = e.target.value;
-            selectedElement.element.textContent = e.target.value;
-            saveHistory();
+    positions.forEach(pos => {
+        const handle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        handle.setAttribute('class', `resize-handle ${pos}`);
+        handle.setAttribute('r', '6');
+        handle.setAttribute('fill', 'white');
+        handle.setAttribute('stroke', '#2563eb');
+        handle.setAttribute('stroke-width', '2');
+        handle.style.cursor = `${pos}-resize`;
+        
+        // Position handle
+        let cx, cy;
+        switch(pos) {
+            case 'nw': cx = bbox.x; cy = bbox.y; break;
+            case 'ne': cx = bbox.x + bbox.width; cy = bbox.y; break;
+            case 'sw': cx = bbox.x; cy = bbox.y + bbox.height; break;
+            case 'se': cx = bbox.x + bbox.width; cy = bbox.y + bbox.height; break;
+            case 'n': cx = bbox.x + bbox.width/2; cy = bbox.y; break;
+            case 's': cx = bbox.x + bbox.width/2; cy = bbox.y + bbox.height; break;
+            case 'e': cx = bbox.x + bbox.width; cy = bbox.y + bbox.height/2; break;
+            case 'w': cx = bbox.x; cy = bbox.y + bbox.height/2; break;
         }
+        
+        handle.setAttribute('cx', cx);
+        handle.setAttribute('cy', cy);
+        
+        handle.addEventListener('mousedown', (e) => startResize(e, element, pos));
+        
+        canvas.appendChild(handle);
+        resizeHandles.push(handle);
     });
 }
 
-if (textFont) {
-    textFont.addEventListener('change', (e) => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.fontFamily = e.target.value;
-            selectedElement.element.setAttribute('font-family', e.target.value);
-            saveHistory();
-        }
-    });
+function removeResizeHandles() {
+    resizeHandles.forEach(handle => handle.remove());
+    resizeHandles = [];
 }
 
-if (textSize) {
-    textSize.addEventListener('input', (e) => {
-        textSizeValue.textContent = `${e.target.value}px`;
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.fontSize = e.target.value;
-            selectedElement.element.setAttribute('font-size', e.target.value);
-            saveHistory();
-        }
-    });
-}
-
-if (textColor) {
-    textColor.addEventListener('input', (e) => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.color = e.target.value;
-            selectedElement.element.setAttribute('fill', e.target.value);
-            saveHistory();
-        }
-    });
-}
-
-if (textBold) {
-    textBold.addEventListener('click', () => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.bold = !selectedElement.bold;
-            selectedElement.element.setAttribute('font-weight', selectedElement.bold ? 'bold' : 'normal');
-            textBold.classList.toggle('bg-blue-100');
-            saveHistory();
-        }
-    });
-}
-
-if (textItalic) {
-    textItalic.addEventListener('click', () => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.italic = !selectedElement.italic;
-            selectedElement.element.setAttribute('font-style', selectedElement.italic ? 'italic' : 'normal');
-            textItalic.classList.toggle('bg-blue-100');
-            saveHistory();
-        }
-    });
-}
-
-if (textUnderline) {
-    textUnderline.addEventListener('click', () => {
-        if (selectedElement && selectedElement.type === 'text') {
-            selectedElement.underline = !selectedElement.underline;
-            selectedElement.element.setAttribute('text-decoration', selectedElement.underline ? 'underline' : 'none');
-            textUnderline.classList.toggle('bg-blue-100');
-            saveHistory();
-        }
-    });
-}
-
-// ===== ADD IMAGE =====
-if (addImageBtn) {
-    addImageBtn.addEventListener('click', () => {
-        imageUpload.click();
-    });
-}
-
-if (imageUpload) {
-    imageUpload.addEventListener('change', (e) => {
-        const file = e.target.files[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (event) => {
-                addImage(event.target.result);
-            };
-            reader.readAsDataURL(file);
-        }
-    });
-}
-
-if (addImageUrlBtn) {
-    addImageUrlBtn.addEventListener('click', () => {
-        const url = imageUrl.value.trim();
-        if (url) {
-            addImage(url);
-            imageUrl.value = '';
-        }
-    });
-}
-
-function addImage(src) {
-    const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-    image.setAttribute('href', src);
-    image.setAttribute('x', 200);
-    image.setAttribute('y', 200);
-    image.setAttribute('width', 200);
-    image.setAttribute('height', 200);
-    image.style.cursor = 'move';
-    
-    const elementData = {
-        type: 'image',
-        element: image,
-        id: Date.now(),
-        src: src,
-        x: 200,
-        y: 200,
-        width: 200,
-        height: 200,
-        opacity: 1
-    };
-    
-    image.addEventListener('mousedown', (e) => startDrag(e, elementData));
-    image.addEventListener('click', () => selectElement(elementData));
-    
-    elements.push(elementData);
-    canvas.appendChild(image);
-    selectElement(elementData);
-    imageControls.classList.remove('hidden');
-    saveHistory();
-    updateLayers();
-}
-
-// ===== IMAGE CONTROLS =====
-if (imageOpacity) {
-    imageOpacity.addEventListener('input', (e) => {
-        imageOpacityValue.textContent = `${e.target.value}%`;
-        if (selectedElement && selectedElement.type === 'image') {
-            selectedElement.opacity = e.target.value / 100;
-            selectedElement.element.setAttribute('opacity', selectedElement.opacity);
-            saveHistory();
-        }
-    });
-}
-
-// ===== ADD SHAPES =====
-shapeBtns.forEach(btn => {
-    btn.addEventListener('click', () => {
-        const shapeType = btn.dataset.shape;
-        addShape(shapeType);
-    });
-});
-
-function addShape(type) {
-    let shape;
-    const elementData = {
-        type: 'shape',
-        shapeType: type,
-        id: Date.now(),
-        x: 300,
-        y: 250,
-        fill: '#3b82f6',
-        stroke: 'none',
-        strokeWidth: 0
-    };
-    
-    switch(type) {
-        case 'rectangle':
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shape.setAttribute('x', 300);
-            shape.setAttribute('y', 250);
-            shape.setAttribute('width', 150);
-            shape.setAttribute('height', 100);
-            elementData.width = 150;
-            elementData.height = 100;
-            break;
-        case 'circle':
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            shape.setAttribute('cx', 375);
-            shape.setAttribute('cy', 300);
-            shape.setAttribute('r', 75);
-            elementData.cx = 375;
-            elementData.cy = 300;
-            elementData.r = 75;
-            break;
-        case 'triangle':
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            shape.setAttribute('points', '400,250 325,350 475,350');
-            elementData.points = '400,250 325,350 475,350';
-            break;
-        case 'star':
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            shape.setAttribute('points', '400,250 420,310 480,310 430,350 450,410 400,370 350,410 370,350 320,310 380,310');
-            elementData.points = '400,250 420,310 480,310 430,350 450,410 400,370 350,410 370,350 320,310 380,310';
-            break;
+function updateResizeHandles() {
+    if (selectedElement) {
+        createResizeHandles(selectedElement);
     }
-    
-    shape.setAttribute('fill', elementData.fill);
-    if (elementData.stroke !== 'none') {
-        shape.setAttribute('stroke', elementData.stroke);
-        shape.setAttribute('stroke-width', elementData.strokeWidth);
-    }
-    shape.style.cursor = 'move';
-    
-    elementData.element = shape;
-    
-    shape.addEventListener('mousedown', (e) => startDrag(e, elementData));
-    shape.addEventListener('click', () => selectElement(elementData));
-    
-    elements.push(elementData);
-    canvas.appendChild(shape);
-    selectElement(elementData);
-    shapeControls.classList.remove('hidden');
-    saveHistory();
-    updateLayers();
 }
 
-// ===== SHAPE CONTROLS =====
-if (shapeFill) {
-    shapeFill.addEventListener('input', (e) => {
-        if (selectedElement && selectedElement.type === 'shape') {
-            selectedElement.fill = e.target.value;
-            selectedElement.element.setAttribute('fill', e.target.value);
-            saveHistory();
-        }
-    });
-}
-
-if (shapeStroke) {
-    shapeStroke.addEventListener('input', (e) => {
-        if (selectedElement && selectedElement.type === 'shape') {
-            selectedElement.stroke = e.target.value;
-            selectedElement.element.setAttribute('stroke', e.target.value);
-            saveHistory();
-        }
-    });
-}
-
-if (shapeStrokeWidth) {
-    shapeStrokeWidth.addEventListener('input', (e) => {
-        shapeStrokeValue.textContent = `${e.target.value}px`;
-        if (selectedElement && selectedElement.type === 'shape') {
-            selectedElement.strokeWidth = e.target.value;
-            selectedElement.element.setAttribute('stroke-width', e.target.value);
-            saveHistory();
-        }
-    });
-}
-
-// ===== DRAG & DROP =====
-function startDrag(e, elementData) {
+// ===== RESIZE FUNCTIONALITY =====
+function startResize(e, element, handle) {
+    e.stopPropagation();
     e.preventDefault();
-    isDragging = true;
-    selectedElement = elementData;
     
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    isResizing = true;
+    resizeHandle = handle;
+    selectedElement = element;
     
-    if (elementData.type === 'text') {
-        dragOffset.x = mouseX - parseFloat(elementData.element.getAttribute('x'));
-        dragOffset.y = mouseY - parseFloat(elementData.element.getAttribute('y'));
-    } else if (elementData.type === 'image') {
-        dragOffset.x = mouseX - parseFloat(elementData.element.getAttribute('x'));
-        dragOffset.y = mouseY - parseFloat(elementData.element.getAttribute('y'));
-    }
+    const bbox = element.element.getBBox();
+    resizeStart = {
+        x: e.clientX,
+        y: e.clientY,
+        width: bbox.width,
+        height: bbox.height,
+        elementX: bbox.x,
+        elementY: bbox.y
+    };
     
-    document.addEventListener('mousemove', drag);
-    document.addEventListener('mouseup', stopDrag);
+    canvas.style.cursor = `${handle}-resize`;
 }
 
-function drag(e) {
-    if (!isDragging || !selectedElement) return;
+function doResize(e) {
+    if (!isResizing || !selectedElement) return;
     
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    const mouseY = e.clientY - rect.top;
+    const dx = e.clientX - resizeStart.x;
+    const dy = e.clientY - resizeStart.y;
     
-    const newX = mouseX - dragOffset.x;
-    const newY = mouseY - dragOffset.y;
+    let newWidth = resizeStart.width;
+    let newHeight = resizeStart.height;
+    let newX = resizeStart.elementX;
+    let newY = resizeStart.elementY;
     
-    if (selectedElement.type === 'text') {
+    // Calculate new dimensions based on handle
+    switch(resizeHandle) {
+        case 'se':
+            newWidth = Math.max(20, resizeStart.width + dx);
+            newHeight = Math.max(20, resizeStart.height + dy);
+            break;
+        case 'sw':
+            newWidth = Math.max(20, resizeStart.width - dx);
+            newHeight = Math.max(20, resizeStart.height + dy);
+            newX = resizeStart.elementX + dx;
+            break;
+        case 'ne':
+            newWidth = Math.max(20, resizeStart.width + dx);
+            newHeight = Math.max(20, resizeStart.height - dy);
+            newY = resizeStart.elementY + dy;
+            break;
+        case 'nw':
+            newWidth = Math.max(20, resizeStart.width - dx);
+            newHeight = Math.max(20, resizeStart.height - dy);
+            newX = resizeStart.elementX + dx;
+            newY = resizeStart.elementY + dy;
+            break;
+        case 'e':
+            newWidth = Math.max(20, resizeStart.width + dx);
+            break;
+        case 'w':
+            newWidth = Math.max(20, resizeStart.width - dx);
+            newX = resizeStart.elementX + dx;
+            break;
+        case 's':
+            newHeight = Math.max(20, resizeStart.height + dy);
+            break;
+        case 'n':
+            newHeight = Math.max(20, resizeStart.height - dy);
+            newY = resizeStart.elementY + dy;
+            break;
+    }
+    
+    // Apply resize based on element type
+    if (selectedElement.type === 'image') {
+        selectedElement.element.setAttribute('width', newWidth);
+        selectedElement.element.setAttribute('height', newHeight);
         selectedElement.element.setAttribute('x', newX);
         selectedElement.element.setAttribute('y', newY);
+        selectedElement.width = newWidth;
+        selectedElement.height = newHeight;
         selectedElement.x = newX;
         selectedElement.y = newY;
-    } else if (selectedElement.type === 'image') {
+    } else if (selectedElement.type === 'shape') {
+        if (selectedElement.shapeType === 'rectangle') {
+            selectedElement.element.setAttribute('width', newWidth);
+            selectedElement.element.setAttribute('height', newHeight);
+            selectedElement.element.setAttribute('x', newX);
+            selectedElement.element.setAttribute('y', newY);
+        } else if (selectedElement.shapeType === 'circle') {
+            const radius = Math.max(newWidth, newHeight) / 2;
+            selectedElement.element.setAttribute('r', radius);
+            selectedElement.element.setAttribute('cx', newX + radius);
+            selectedElement.element.setAttribute('cy', newY + radius);
+        }
+        selectedElement.width = newWidth;
+        selectedElement.height = newHeight;
+        selectedElement.x = newX;
+        selectedElement.y = newY;
+    } else if (selectedElement.type === 'text') {
+        selectedElement.element.setAttribute('font-size', Math.max(12, newHeight));
         selectedElement.element.setAttribute('x', newX);
         selectedElement.element.setAttribute('y', newY);
+        selectedElement.size = Math.max(12, newHeight);
         selectedElement.x = newX;
         selectedElement.y = newY;
     }
+    
+    updateResizeHandles();
 }
 
-function stopDrag() {
-    if (isDragging) {
-        isDragging = false;
+function stopResize() {
+    if (isResizing) {
+        isResizing = false;
+        resizeHandle = null;
+        canvas.style.cursor = 'default';
         saveHistory();
-        document.removeEventListener('mousemove', drag);
-        document.removeEventListener('mouseup', stopDrag);
+        autoSaveDesign();
     }
 }
 
-// ===== SELECT ELEMENT =====
-function selectElement(elementData) {
-    selectedElement = elementData;
+// ===== DRAG FUNCTIONALITY =====
+function startDrag(e, element) {
+    if (isResizing) return;
     
-    // Update controls based on type
-    if (elementData.type === 'text') {
-        textControls.classList.remove('hidden');
-        textContent.value = elementData.content;
-        textFont.value = elementData.fontFamily;
-        textSize.value = elementData.fontSize;
-        textSizeValue.textContent = `${elementData.fontSize}px`;
-        textColor.value = elementData.color;
-    } else if (elementData.type === 'image') {
-        imageControls.classList.remove('hidden');
-        imageOpacity.value = elementData.opacity * 100;
-        imageOpacityValue.textContent = `${Math.round(elementData.opacity * 100)}%`;
-    } else if (elementData.type === 'shape') {
-        shapeControls.classList.remove('hidden');
-        shapeFill.value = elementData.fill;
-        shapeStroke.value = elementData.stroke;
-        shapeStrokeWidth.value = elementData.strokeWidth;
-        shapeStrokeValue.textContent = `${elementData.strokeWidth}px`;
-    }
+    isDragging = true;
+    selectedElement = element;
+    selectElement(element);
+    
+    const bbox = element.element.getBBox();
+    dragOffset = {
+        x: e.clientX - bbox.x,
+        y: e.clientY - bbox.y
+    };
+    
+    canvas.style.cursor = 'grabbing';
+    element.element.style.cursor = 'grabbing';
+    
+    e.preventDefault();
 }
 
-// ===== LAYERS =====
-function updateLayers() {
-    if (elements.length === 0) {
-        layersList.innerHTML = '<p class="text-sm text-gray-500 text-center py-4">Nenhuma camada ainda</p>';
+document.addEventListener('mousemove', (e) => {
+    if (isResizing) {
+        doResize(e);
         return;
     }
     
-    layersList.innerHTML = elements.map((el, index) => `
-        <div class="flex items-center gap-2 p-2 bg-gray-50 rounded hover:bg-gray-100" data-layer-id="${el.id}">
-            <div class="flex flex-col gap-1">
-                <button class="layer-move-up text-gray-600 hover:text-blue-600" data-layer-index="${index}" ${index === elements.length - 1 ? 'disabled' : ''}>
-                    <i data-lucide="chevron-up" class="w-3 h-3"></i>
-                </button>
-                <button class="layer-move-down text-gray-600 hover:text-blue-600" data-layer-index="${index}" ${index === 0 ? 'disabled' : ''}>
-                    <i data-lucide="chevron-down" class="w-3 h-3"></i>
-                </button>
-            </div>
-            <div class="flex items-center gap-2 flex-1 cursor-pointer">
-                <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? 'image' : 'square'}" class="w-4 h-4"></i>
-                <span class="text-sm">${el.type === 'text' ? el.content.substring(0, 20) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
-            </div>
-            <button class="delete-layer text-red-600 hover:text-red-700" data-layer-index="${index}">
-                <i data-lucide="trash-2" class="w-4 h-4"></i>
-            </button>
-        </div>
-    `).reverse().join('');
-    
-    if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-    }
-    
-    // Add event listeners
-    document.querySelectorAll('.delete-layer').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.layerIndex);
-            deleteLayer(index);
-        });
-    });
-    
-    document.querySelectorAll('.layer-move-up').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.layerIndex);
-            moveLayer(index, 1);
-        });
-    });
-    
-    document.querySelectorAll('.layer-move-down').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const index = parseInt(btn.dataset.layerIndex);
-            moveLayer(index, -1);
-        });
-    });
-    
-    document.querySelectorAll('[data-layer-id]').forEach(layer => {
-        const clickableArea = layer.querySelector('.flex-1');
-        if (clickableArea) {
-            clickableArea.addEventListener('click', () => {
-                const id = parseInt(layer.dataset.layerId);
-                const element = elements.find(el => el.id === id);
-                if (element) selectElement(element);
-            });
+    if (isDragging && selectedElement) {
+        const canvasRect = canvas.getBoundingClientRect();
+        const x = e.clientX - canvasRect.left - dragOffset.x;
+        const y = e.clientY - canvasRect.top - dragOffset.y;
+        
+        if (selectedElement.type === 'text') {
+            selectedElement.element.setAttribute('x', x);
+            selectedElement.element.setAttribute('y', y);
+            selectedElement.x = x;
+            selectedElement.y = y;
+        } else if (selectedElement.type === 'image') {
+            selectedElement.element.setAttribute('x', x);
+            selectedElement.element.setAttribute('y', y);
+            selectedElement.x = x;
+            selectedElement.y = y;
         }
-    });
-}
+        
+        updateResizeHandles();
+    }
+});
 
-function deleteLayer(index) {
-    const element = elements[index];
-    element.element.remove();
-    elements.splice(index, 1);
-    if (selectedElement === element) {
+document.addEventListener('mouseup', () => {
+    if (isDragging) {
+        isDragging = false;
+        canvas.style.cursor = 'default';
+        if (selectedElement && selectedElement.element) {
+            selectedElement.element.style.cursor = 'move';
+        }
+        saveHistory();
+        autoSaveDesign();
+    }
+    stopResize();
+});
+
+// ===== CANVAS CLICK - DESELECT =====
+canvas.addEventListener('click', (e) => {
+    if (e.target === canvas || e.target === printArea) {
         selectedElement = null;
+        removeResizeHandles();
+        elements.forEach(el => {
+            if (el.element) el.element.style.outline = 'none';
+        });
         textControls.classList.add('hidden');
         imageControls.classList.add('hidden');
         shapeControls.classList.add('hidden');
     }
-    updateLayers();
-    saveHistory();
-    autoSaveDesign();
+});
+
+// ===== SELECT ELEMENT =====
+function selectElement(element) {
+    selectedElement = element;
+    
+    // Remove previous selection styling
+    elements.forEach(el => {
+        if (el.element) {
+            el.element.style.outline = 'none';
+        }
+    });
+    
+    // Add selection styling
+    if (element && element.element) {
+        element.element.style.outline = '2px solid #2563eb';
+        element.element.style.outlineOffset = '2px';
+        createResizeHandles(element);
+    } else {
+        removeResizeHandles();
+    }
+    
+    // Update controls based on element type
+    textControls.classList.add('hidden');
+    imageControls.classList.add('hidden');
+    shapeControls.classList.add('hidden');
+    
+    if (element.type === 'text') {
+        textControls.classList.remove('hidden');
+        textContent.value = element.content;
+        textFont.value = element.font;
+        textSize.value = element.size;
+        textSizeValue.textContent = element.size + 'px';
+        textColor.value = element.color;
+    } else if (element.type === 'image') {
+        imageControls.classList.remove('hidden');
+        imageOpacity.value = (element.opacity || 1) * 100;
+        imageOpacityValue.textContent = Math.round((element.opacity || 1) * 100) + '%';
+    } else if (element.type === 'shape') {
+        shapeControls.classList.remove('hidden');
+        shapeFill.value = element.fill;
+        shapeStroke.value = element.stroke;
+        shapeStrokeWidth.value = element.strokeWidth;
+        shapeStrokeValue.textContent = element.strokeWidth + 'px';
+    }
 }
 
 function moveLayer(index, direction) {
