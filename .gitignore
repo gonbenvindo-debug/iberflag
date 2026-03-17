@@ -5,8 +5,6 @@ dist
 .DS_Store
 supabase/
 .supabase/
-
 .vercel
-
 .vercel
 .env*.local
