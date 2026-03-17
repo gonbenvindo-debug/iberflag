@@ -418,10 +418,21 @@ class DesignEditor {
     // ===== DRAG & DROP =====
     startDrag(e, elementData) {
         this.isDragging = true;
-        const bbox = elementData.element.getBBox();
+        const canvasRect = this.canvas.getBoundingClientRect();
+        
+        let elementX, elementY;
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            elementX = parseFloat(elementData.element.getAttribute('x') || 0);
+            elementY = parseFloat(elementData.element.getAttribute('y') || 0);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const r = parseFloat(elementData.element.getAttribute('r') || 0);
+            elementX = parseFloat(elementData.element.getAttribute('cx') || 0) - r;
+            elementY = parseFloat(elementData.element.getAttribute('cy') || 0) - r;
+        }
+        
         this.dragStart = {
-            x: e.clientX - bbox.x,
-            y: e.clientY - bbox.y
+            x: e.clientX - canvasRect.left - elementX,
+            y: e.clientY - canvasRect.top - elementY
         };
     }
     
