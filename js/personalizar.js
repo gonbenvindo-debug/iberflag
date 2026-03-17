@@ -658,10 +658,14 @@ class DesignEditor {
             
             const newFontSize = Math.max(12, Math.min(120, this.selectedElement.size * scale));
             
+            // For text, y is the baseline position
+            // Calculate the offset from top to baseline (approximately 0.8 * fontSize for most fonts)
+            const baselineOffset = newFontSize * 0.8;
+            
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
             this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', newY + newFontSize);
+            this.selectedElement.element.setAttribute('y', newY + baselineOffset);
             
             // Update stored dimensions
             const newBBox = this.selectedElement.element.getBBox();
