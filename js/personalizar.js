@@ -433,16 +433,18 @@ class DesignEditor {
             
             // Get print area boundaries
             const printArea = this.printArea.getBBox();
-            const elementBBox = this.selectedElement.element.getBBox();
-            
-            // Constrain to print area boundaries
-            x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - elementBBox.width));
-            y = Math.max(printArea.y, Math.min(y, printArea.y + printArea.height - elementBBox.height));
             
             if (this.selectedElement.type === 'text') {
+                // Constrain text position
+                x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - 50));
+                y = Math.max(printArea.y + 20, Math.min(y, printArea.y + printArea.height));
                 this.selectedElement.element.setAttribute('x', x);
                 this.selectedElement.element.setAttribute('y', y);
             } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+                const width = parseFloat(this.selectedElement.element.getAttribute('width'));
+                const height = parseFloat(this.selectedElement.element.getAttribute('height'));
+                x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - width));
+                y = Math.max(printArea.y, Math.min(y, printArea.y + printArea.height - height));
                 this.selectedElement.element.setAttribute('x', x);
                 this.selectedElement.element.setAttribute('y', y);
             } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
