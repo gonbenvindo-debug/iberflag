@@ -232,6 +232,18 @@ function removeFromCart(index) {
     showToast('Produto removido do carrinho', 'info');
 }
 
+function updateQuantity(index, newQuantity) {
+    if (newQuantity <= 0) {
+        removeFromCart(index);
+        return;
+    }
+
+    if (cart[index]) {
+        cart[index].quantity = newQuantity;
+        updateCart();
+    }
+}
+
 function openCart() {
     if (cartSidebar && cartOverlay) {
         cartSidebar.classList.add('cart-open');
