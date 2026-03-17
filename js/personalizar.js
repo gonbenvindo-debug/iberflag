@@ -428,8 +428,16 @@ class DesignEditor {
     handleMouseMove(e) {
         if (this.isDragging && this.selectedElement) {
             const canvasRect = this.canvas.getBoundingClientRect();
-            const x = e.clientX - canvasRect.left - this.dragStart.x;
-            const y = e.clientY - canvasRect.top - this.dragStart.y;
+            let x = e.clientX - canvasRect.left - this.dragStart.x;
+            let y = e.clientY - canvasRect.top - this.dragStart.y;
+            
+            // Get print area boundaries
+            const printArea = this.printArea.getBBox();
+            const elementBBox = this.selectedElement.element.getBBox();
+            
+            // Constrain to print area boundaries
+            x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - elementBBox.width));
+            y = Math.max(printArea.y, Math.min(y, printArea.y + printArea.height - elementBBox.height));
             
             if (this.selectedElement.type === 'text') {
                 this.selectedElement.element.setAttribute('x', x);
@@ -439,8 +447,10 @@ class DesignEditor {
                 this.selectedElement.element.setAttribute('y', y);
             } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
                 const r = parseFloat(this.selectedElement.element.getAttribute('r'));
-                this.selectedElement.element.setAttribute('cx', x + r);
-                this.selectedElement.element.setAttribute('cy', y + r);
+                const cx = Math.max(printArea.x + r, Math.min(x + r, printArea.x + printArea.width - r));
+                const cy = Math.max(printArea.y + r, Math.min(y + r, printArea.y + printArea.height - r));
+                this.selectedElement.element.setAttribute('cx', cx);
+                this.selectedElement.element.setAttribute('cy', cy);
             }
             
             this.showResizeHandles(this.selectedElement);
@@ -484,6 +494,7 @@ class DesignEditor {
         const dx = e.clientX - this.dragStart.x;
         const dy = e.clientY - this.dragStart.y;
         const bbox = this.selectedElement.element.getBBox();
+        const printArea = this.printArea.getBBox();
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -527,6 +538,16 @@ class DesignEditor {
                 break;
         }
         
+        // Constrain to print area boundaries
+        newX = Math.max(printArea.x, newX);
+        newY = Math.max(printArea.y, newY);
+        newWidth = Math.min(newWidth, printArea.x + printArea.width - newX);
+        newHeight = Math.min(newHeight, printArea.y + printArea.height - newY);
+        
+        // Ensure minimum size
+        newWidth = Math.max(20, newWidth);
+        newHeight = Math.max(20, newHeight);
+        
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
             this.selectedElement.element.setAttribute('width', newWidth);
             this.selectedElement.element.setAttribute('height', newHeight);
@@ -534,12 +555,18 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('y', newY);
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(newWidth, newHeight) / 2;
-            this.selectedElement.element.setAttribute('r', radius);
-            this.selectedElement.element.setAttribute('cx', newX + radius);
-            this.selectedElement.element.setAttribute('cy', newY + radius);
+            const maxRadius = Math.min(
+                (printArea.width - (newX - printArea.x)) / 2,
+                (printArea.height - (newY - printArea.y)) / 2
+            );
+            const constrainedRadius = Math.min(radius, maxRadius);
+            this.selectedElement.element.setAttribute('r', constrainedRadius);
+            this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
+            this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
         } else if (this.selectedElement.type === 'text') {
-            this.selectedElement.element.setAttribute('font-size', Math.max(12, newHeight));
-            this.selectedElement.size = Math.max(12, newHeight);
+            const maxFontSize = Math.min(120, newHeight);
+            this.selectedElement.element.setAttribute('font-size', Math.max(12, maxFontSize));
+            this.selectedElement.size = Math.max(12, maxFontSize);
         }
         
         this.dragStart = { x: e.clientX, y: e.clientY };
