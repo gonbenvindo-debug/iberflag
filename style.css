@@ -28,6 +28,25 @@ body {
     100% { transform: translateX(-50%); }
 }
 
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes spin {
+    to { transform: rotate(360deg); }
+}
+
+.slide-down {
+    animation: slideDown 0.3s ease-out;
+}
+
 @keyframes fadeInUp {
     from {
         opacity: 0;
@@ -1379,10 +1398,43 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 .tool-tab.active {
     background: #2563eb;
     color: white;
+    transform: scale(1.02);
+    box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
 }
 
 .tool-tab:hover:not(.active) {
     background: #f3f4f6;
+    transform: translateY(-1px);
+}
+
+/* Loading spinner */
+.loading {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 3px solid rgba(255, 255, 255, 0.3);
+    border-radius: 50%;
+    border-top-color: white;
+    animation: spin 0.8s linear infinite;
+}
+
+/* Button improvements */
+button, .btn {
+    transition: all 0.2s ease;
+}
+
+button:hover, .btn:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+button:active, .btn:active {
+    transform: translateY(0);
+}
+
+/* Smooth page transitions */
+* {
+    transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
 
 /* ===== DARK MODE SUPPORT (Optional) ===== */

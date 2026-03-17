@@ -16,8 +16,6 @@ const closeCartBtn = document.getElementById('close-cart');
 const cartItemsContainer = document.getElementById('cart-items');
 const cartTotal = document.getElementById('cart-total');
 const cartCount = document.getElementById('cart-count');
-const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileMenu = document.getElementById('mobile-menu');
 
 // ===== INITIAL PRODUCTS (FALLBACK) =====
 const initialProducts = [
@@ -140,18 +138,27 @@ async function fetchProducts() {
 // ===== CART FUNCTIONS =====
 function updateCart() {
     localStorage.setItem('latinflag_cart', JSON.stringify(cart));
-    updateCartUI();
-}
-
-function updateCartUI() {
+    
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    
     if (cartCount) {
         if (totalItems > 0) {
             cartCount.textContent = totalItems;
             cartCount.classList.remove('hidden');
         } else {
             cartCount.classList.add('hidden');
+        }
+    }
+    
+    // Update mobile cart count
+    const cartCountMobile = document.getElementById('cart-count-mobile');
+    if (cartCountMobile) {
+        if (totalItems > 0) {
+            cartCountMobile.textContent = totalItems;
+            cartCountMobile.classList.remove('hidden');
+        } else {
+            cartCountMobile.classList.add('hidden');
         }
     }
 
@@ -312,16 +319,26 @@ if (cartOverlay) {
     cartOverlay.addEventListener('click', closeCart);
 }
 
-if (mobileMenuBtn) {
-    mobileMenuBtn.addEventListener('click', toggleMobileMenu);
+// ===== MOBILE MENU =====
+const mobileMenuBtn = document.getElementById('mobile-menu-btn');
+const mobileMenu = document.getElementById('mobile-menu');
+const cartBtnMobile = document.getElementById('cart-btn-mobile');
+
+if (mobileMenuBtn && mobileMenu) {
+    mobileMenuBtn.addEventListener('click', () => {
+        mobileMenu.classList.toggle('hidden');
+    });
+}
+
+if (cartBtnMobile) {
+    cartBtnMobile.addEventListener('click', openCart);
 }
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
-    updateCartUI();
+    updateCart();
     
-    // Initialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }

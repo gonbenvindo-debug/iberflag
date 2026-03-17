@@ -1,16 +1,18 @@
 # LatinFlag - E-commerce de Publicidade Outdoor Premium
 
-Plataforma completa de e-commerce especializada em flybanners, roll-ups e produtos de publicidade outdoor.
+Plataforma completa de e-commerce especializada em flybanners, roll-ups e produtos de publicidade outdoor com **personalizador estilo Canva**.
 
 ## 🚀 Características
 
 ### Frontend
 - **Design Moderno**: Interface clean e apelativa com animações CSS inovadoras
-- **Totalmente Responsivo**: Otimizado para desktop, tablet e mobile
-- **Carrinho de Compras**: Sistema completo com localStorage
+- **Totalmente Responsivo**: Otimizado para desktop, tablet e mobile com menu hamburger
+- **Personalizador Avançado**: Editor SVG estilo Canva com resize handles, drag & drop, e camadas
+- **Carrinho de Compras**: Sistema completo com localStorage e edição de designs
 - **Filtros Avançados**: Pesquisa e filtragem por categoria e preço
-- **Animações Premium**: Efeitos visuais dignos de grandes sites
+- **Animações Premium**: Transições suaves, hover effects, e loading states
 - **SEO Otimizado**: Meta tags e estrutura semântica
+- **Mobile Menu**: Menu hamburger funcional em todas as páginas
 
 ### Backend (Supabase)
 - **Base de Dados PostgreSQL**: Schema completo para produtos, encomendas, clientes
@@ -20,10 +22,24 @@ Plataforma completa de e-commerce especializada em flybanners, roll-ups e produt
 
 ### Painel Admin
 - **Dashboard Completo**: Estatísticas e métricas em tempo real
-- **Gestão de Produtos**: CRUD completo com upload de imagens
-- **Gestão de Encomendas**: Acompanhamento de pedidos
+- **Gestão de Produtos**: CRUD completo com upload de imagens e SVG templates
+- **Upload de SVG**: Sistema de upload direto de ficheiros SVG para templates
+- **Gestão de Encomendas**: Acompanhamento de pedidos com designs personalizados
 - **Gestão de Clientes**: Base de dados de clientes
 - **Gestão de Contactos**: Mensagens recebidas via formulário
+
+### Personalizador (Novo!)
+- **Interface Estilo Canva**: Layout moderno com 3 painéis (Ferramentas | Canvas | Camadas)
+- **Resize Handles**: 8 handles de redimensionamento (cantos + lados)
+- **Drag & Drop**: Arrastar elementos com cursores personalizados
+- **Camadas**: Sistema de camadas com reordenação (move up/down)
+- **Propriedades Dinâmicas**: Painel de propriedades contextual por tipo de elemento
+- **Auto-save**: Salvamento automático a cada 5 segundos
+- **Edição Persistente**: Continuar a editar designs do carrinho
+- **Templates SVG**: Carregamento de templates personalizados por produto
+- **Undo/Redo**: Sistema de histórico completo
+- **Zoom**: Controlo de zoom (50% - 200%)
+- **Grid Background**: Fundo em grelha estilo design profissional
 
 ## 📁 Estrutura do Projeto
 
@@ -41,6 +57,11 @@ latinflag/
 ├── contacto.js            # Lógica do formulário
 ├── faq.js                 # Lógica da FAQ
 ├── admin.js               # Lógica do painel admin
+├── personalizar.html      # Personalizador de produtos (Canva-style)
+├── personalizar.js        # Lógica do personalizador
+├── populate-products.js   # Script para popular DB com produtos teste
+├── package.json           # Dependências Node.js
+├── .env                   # Variáveis de ambiente (Supabase)
 ├── supabase-schema.sql    # Schema da base de dados
 └── vercel.json            # Configuração Vercel
 ```
@@ -55,7 +76,25 @@ latinflag/
    - Todas as tabelas necessárias
    - Índices para performance
    - Políticas de segurança (RLS)
-   - 12 produtos de teste
+
+### 2. Popular Base de Dados com Produtos de Teste
+
+Execute o script de população para adicionar 6 produtos com templates SVG:
+
+```bash
+# Instalar dependências
+npm install
+
+# Executar script de população
+npm run populate
+```
+
+Isto irá adicionar:
+- 3 Flybanners (Pequeno, Médio, Grande) com templates SVG
+- 2 Roll-ups (Standard, Premium) com templates SVG
+- 1 Banner Horizontal com template SVG
+
+Cada produto inclui um template SVG otimizado com área de impressão delimitada.
 
 ### 2. Configurar Variáveis de Ambiente
 
