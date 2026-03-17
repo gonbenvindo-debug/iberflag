@@ -12,10 +12,8 @@ class DesignEditor {
         this.zoom = 1;
         this.isDragging = false;
         this.isResizing = false;
-        this.isRotating = false;
         this.dragStart = { x: 0, y: 0 };
         this.resizeHandle = null;
-        this.rotationStart = 0;
         this.currentProduct = null;
         this.editIndex = null;
         
@@ -352,29 +350,7 @@ class DesignEditor {
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
         
-        // Get element dimensions from attributes
-        let x, y, width, height;
-        if (elementData.type === 'text') {
-            const bbox = elementData.element.getBBox();
-            x = parseFloat(elementData.element.getAttribute('x') || 0);
-            y = parseFloat(elementData.element.getAttribute('y') || 0) - bbox.height;
-            width = bbox.width;
-            height = bbox.height;
-        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            x = parseFloat(elementData.element.getAttribute('x') || 0);
-            y = parseFloat(elementData.element.getAttribute('y') || 0);
-            width = parseFloat(elementData.element.getAttribute('width') || 0);
-            height = parseFloat(elementData.element.getAttribute('height') || 0);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            const r = parseFloat(elementData.element.getAttribute('r') || 0);
-            const cx = parseFloat(elementData.element.getAttribute('cx') || 0);
-            const cy = parseFloat(elementData.element.getAttribute('cy') || 0);
-            x = cx - r;
-            y = cy - r;
-            width = r * 2;
-            height = r * 2;
-        }
-        
+        const bbox = elementData.element.getBBox();
         const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
         
         positions.forEach(pos => {
@@ -386,14 +362,14 @@ class DesignEditor {
             // Position handle
             let left, top;
             switch(pos) {
-                case 'nw': left = x - 5; top = y - 5; break;
-                case 'ne': left = x + width - 5; top = y - 5; break;
-                case 'sw': left = x - 5; top = y + height - 5; break;
-                case 'se': left = x + width - 5; top = y + height - 5; break;
-                case 'n': left = x + width/2 - 5; top = y - 5; break;
-                case 's': left = x + width/2 - 5; top = y + height - 5; break;
-                case 'e': left = x + width - 5; top = y + height/2 - 5; break;
-                case 'w': left = x - 5; top = y + height/2 - 5; break;
+                case 'nw': left = bbox.x - 5; top = bbox.y - 5; break;
+                case 'ne': left = bbox.x + bbox.width - 5; top = bbox.y - 5; break;
+                case 'sw': left = bbox.x - 5; top = bbox.y + bbox.height - 5; break;
+                case 'se': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height - 5; break;
+                case 'n': left = bbox.x + bbox.width/2 - 5; top = bbox.y - 5; break;
+                case 's': left = bbox.x + bbox.width/2 - 5; top = bbox.y + bbox.height - 5; break;
+                case 'e': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height/2 - 5; break;
+                case 'w': left = bbox.x - 5; top = bbox.y + bbox.height/2 - 5; break;
             }
             
             handle.style.left = left + 'px';
@@ -406,20 +382,6 @@ class DesignEditor {
             
             handlesContainer.appendChild(handle);
         });
-        
-        // Add rotation handle
-        const rotateHandle = document.createElement('div');
-        rotateHandle.className = 'resize-handle';
-        rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (x + width/2 - 5) + 'px';
-        rotateHandle.style.top = (y - 25) + 'px';
-        rotateHandle.style.backgroundColor = '#10b981';
-        rotateHandle.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
-        rotateHandle.addEventListener('mousedown', (e) => {
-            e.stopPropagation();
-            this.startRotate(e, elementData);
-        });
-        handlesContainer.appendChild(rotateHandle);
     }
     
     hideResizeHandles() {
@@ -507,18 +469,15 @@ class DesignEditor {
             this.showResizeHandles(this.selectedElement);
         } else if (this.isResizing && this.selectedElement) {
             this.doResize(e);
-        } else if (this.isRotating && this.selectedElement) {
-            this.doRotate(e);
         }
     }
     
     handleMouseUp() {
-        if (this.isDragging || this.isResizing || this.isRotating) {
+        if (this.isDragging || this.isResizing) {
             this.saveHistory();
         }
         this.isDragging = false;
         this.isResizing = false;
-        this.isRotating = false;
         this.resizeHandle = null;
     }
     
@@ -540,66 +499,6 @@ class DesignEditor {
         this.isResizing = true;
         this.resizeHandle = position;
         this.dragStart = { x: e.clientX, y: e.clientY };
-    }
-    
-    startRotate(e, elementData) {
-        this.isRotating = true;
-        const canvasRect = this.canvas.getBoundingClientRect();
-        
-        // Get element center
-        let centerX, centerY;
-        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            const x = parseFloat(elementData.element.getAttribute('x') || 0);
-            const y = parseFloat(elementData.element.getAttribute('y') || 0);
-            const width = parseFloat(elementData.element.getAttribute('width') || 100);
-            const height = parseFloat(elementData.element.getAttribute('height') || 100);
-            centerX = x + width / 2;
-            centerY = y + height / 2;
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            centerX = parseFloat(elementData.element.getAttribute('cx') || 0);
-            centerY = parseFloat(elementData.element.getAttribute('cy') || 0);
-        }
-        
-        const mouseX = e.clientX - canvasRect.left;
-        const mouseY = e.clientY - canvasRect.top;
-        this.rotationStart = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
-        
-        const currentRotation = elementData.element.getAttribute('transform');
-        if (currentRotation && currentRotation.includes('rotate')) {
-            const match = currentRotation.match(/rotate\(([^)]+)\)/);
-            if (match) {
-                this.rotationStart -= parseFloat(match[1].split(' ')[0]);
-            }
-        }
-    }
-    
-    doRotate(e) {
-        if (!this.selectedElement) return;
-        
-        const canvasRect = this.canvas.getBoundingClientRect();
-        
-        // Get element center
-        let centerX, centerY;
-        if (this.selectedElement.type === 'text' || this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            const x = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
-            const y = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
-            const width = parseFloat(this.selectedElement.element.getAttribute('width') || 100);
-            const height = parseFloat(this.selectedElement.element.getAttribute('height') || 100);
-            centerX = x + width / 2;
-            centerY = y + height / 2;
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-            centerX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
-            centerY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
-        }
-        
-        const mouseX = e.clientX - canvasRect.left;
-        const mouseY = e.clientY - canvasRect.top;
-        const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * 180 / Math.PI;
-        const rotation = angle - this.rotationStart;
-        
-        this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
-        this.selectedElement.rotation = rotation;
-        this.showResizeHandles(this.selectedElement);
     }
     
     doResize(e) {
