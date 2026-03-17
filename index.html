@@ -1,1 +1,107 @@
-ola
+<!DOCTYPE html>
+<html lang="pt-pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>LatinFlag - Publicidade Outdoor</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body class="bg-gray-50 font-sans text-gray-900">
+
+    <!-- Navigation -->
+    <nav class="bg-white shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-2">
+                    <i data-lucide="flag" class="text-blue-600 w-8 h-8"></i>
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">LatinFlag</span>
+                </div>
+                <div class="hidden md:flex space-x-8 items-center">
+                    <a href="#produtos" class="hover:text-blue-600 transition">Produtos</a>
+                    <a href="#servicos" class="hover:text-blue-600 transition">Serviços</a>
+                    <a href="#contacto" class="hover:text-blue-600 transition">Contacto</a>
+                    <button class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        Orçamento
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <header class="relative bg-blue-900 text-white py-24 overflow-hidden">
+        <div class="absolute inset-0 opacity-20">
+            <img src="https://images.unsplash.com/photo-1542744173-8e7e53415bb0?auto=format&fit=crop&q=80" alt="Background" class="w-full h-full object-cover">
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            <h1 class="text-4xl md:text-6xl font-extrabold mb-6">A Sua Marca em Grande Destaque</h1>
+            <p class="text-xl mb-10 text-blue-100 max-w-2xl mx-auto">Soluções premium de publicidade outdoor: Banners, Roll-ups, Bandeiras e Estruturas de Grande Formato.</p>
+            <div class="flex flex-col sm:flex-row justify-center gap-4">
+                <a href="#produtos" class="bg-white text-blue-900 px-8 py-4 rounded-xl font-bold hover:bg-gray-100 transition">Ver Catálogo</a>
+                <a href="#contacto" class="border-2 border-white px-8 py-4 rounded-xl font-bold hover:bg-white hover:text-blue-900 transition">Falar com Consultor</a>
+            </div>
+        </div>
+    </header>
+
+    <!-- Products Grid -->
+    <main id="produtos" class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+        <div class="text-center mb-16">
+            <h2 class="text-3xl font-bold text-gray-900 mb-4">Nossos Produtos</h2>
+            <p class="text-gray-600">Qualidade superior para máxima durabilidade exterior.</p>
+        </div>
+
+        <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            <!-- Skeleton Loading -->
+            <div class="animate-pulse bg-white rounded-2xl shadow-sm overflow-hidden border border-gray-100">
+                <div class="bg-gray-200 h-64 w-full"></div>
+                <div class="p-6">
+                    <div class="h-6 bg-gray-200 rounded w-3/4 mb-4"></div>
+                    <div class="h-4 bg-gray-200 rounded w-full mb-2"></div>
+                    <div class="h-4 bg-gray-200 rounded w-5/6"></div>
+                </div>
+            </div>
+            <!-- More skeletons... -->
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-gray-900 text-gray-400 py-12">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-white mb-6">
+                        <i data-lucide="flag" class="text-blue-500 w-6 h-6"></i>
+                        <span class="text-xl font-bold">LatinFlag</span>
+                    </div>
+                    <p class="max-w-sm">Especialistas em sistemas de exibição e publicidade exterior de alta performance.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links</h4>
+                    <ul class="space-y-2">
+                        <li><a href="#" class="hover:text-white transition">Início</a></li>
+                        <li><a href="#produtos" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="#contacto" class="hover:text-white transition">Orçamentos</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Contacto</h4>
+                    <p>geral@latinflag.pt</p>
+                    <p>+351 9xx xxx xxx</p>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 mt-12 pt-8 text-sm text-center">
+                © 2024 LatinFlag. Todos os direitos reservados.
+            </div>
+        </div>
+    </footer>
+
+    <script src="logic.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
+</body>
+</html>
