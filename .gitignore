@@ -7,3 +7,6 @@ supabase/
 .supabase/
 
 .vercel
+
+.vercel
+.env*.local
