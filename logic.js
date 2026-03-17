@@ -1,8 +1,8 @@
-// Configuração Supabase (Substituir pelas credenciais do utilizador)
-const SUPABASE_URL = 'https://YOUR_PROJECT_ID.supabase.co';
-const SUPABASE_ANON_KEY = 'YOUR_ANON_KEY';
+// Configuração Supabase
+const SUPABASE_URL = 'https://nzwfquivulxkmxrwqalz.supabase.co';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
 
-const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // Elementos do DOM
 const productsContainer = document.getElementById('products-container');
@@ -61,7 +61,7 @@ function renderProducts(products) {
 // Função para buscar produtos do Supabase
 async function fetchProducts() {
     try {
-        const { data, error } = await supabase
+        const { data, error } = await supabaseClient
             .from('produtos')
             .select('*');
 
