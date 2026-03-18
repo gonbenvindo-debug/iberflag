@@ -558,23 +558,38 @@ class DesignEditor {
             
             // For rotated elements, use translate transform
             if (this.selectedElement.rotation && this.selectedElement.rotation !== 0) {
-                // Update translate values
-                const translateX = (this.selectedElement.translateX || 0) + deltaX;
-                const translateY = (this.selectedElement.translateY || 0) + deltaY;
+                // Calculate new translate values
+                let translateX = (this.selectedElement.translateX || 0) + deltaX;
+                let translateY = (this.selectedElement.translateY || 0) + deltaY;
                 
-                this.selectedElement.translateX = translateX;
-                this.selectedElement.translateY = translateY;
-                
-                // Update transform with translate + rotate
+                // Apply translate temporarily to check boundaries
                 const bbox = this.selectedElement.element.getBBox();
                 const centerX = bbox.x + bbox.width / 2;
                 const centerY = bbox.y + bbox.height / 2;
                 this.selectedElement.element.setAttribute('transform', 
                     `translate(${translateX} ${translateY}) rotate(${this.selectedElement.rotation} ${centerX} ${centerY})`);
                 
-                // Update dragStart for next move
-                this.dragStart.mouseX = e.clientX;
-                this.dragStart.mouseY = e.clientY;
+                // Check if element exceeds print area boundaries
+                const elementRect = this.selectedElement.element.getBoundingClientRect();
+                const printAreaRect = this.printArea.getBoundingClientRect();
+                
+                // If exceeds boundaries, revert to previous translate
+                if (elementRect.left < printAreaRect.left ||
+                    elementRect.right > printAreaRect.right ||
+                    elementRect.top < printAreaRect.top ||
+                    elementRect.bottom > printAreaRect.bottom) {
+                    // Revert to previous position
+                    translateX = this.selectedElement.translateX || 0;
+                    translateY = this.selectedElement.translateY || 0;
+                    this.selectedElement.element.setAttribute('transform', 
+                        `translate(${translateX} ${translateY}) rotate(${this.selectedElement.rotation} ${centerX} ${centerY})`);
+                } else {
+                    // Accept new position
+                    this.selectedElement.translateX = translateX;
+                    this.selectedElement.translateY = translateY;
+                    this.dragStart.mouseX = e.clientX;
+                    this.dragStart.mouseY = e.clientY;
+                }
             } else {
                 // For non-rotated elements, use x/y attributes as before
                 let newX = this.dragStart.elementX + deltaX;
@@ -703,21 +718,48 @@ class DesignEditor {
                 break;
         }
         
-        // Constrain to print area boundaries
-        newX = Math.max(printArea.x, newX);
-        newY = Math.max(printArea.y, newY);
-        newWidth = Math.min(newWidth, printArea.x + printArea.width - newX);
-        newHeight = Math.min(newHeight, printArea.y + printArea.height - newY);
+        // For non-rotated elements, constrain to print area boundaries
+        if (!rotation || rotation === 0) {
+            newX = Math.max(printArea.x, newX);
+            newY = Math.max(printArea.y, newY);
+            newWidth = Math.min(newWidth, printArea.x + printArea.width - newX);
+            newHeight = Math.min(newHeight, printArea.y + printArea.height - newY);
+        }
         
         // Ensure minimum size
         newWidth = Math.max(20, newWidth);
         newHeight = Math.max(20, newHeight);
         
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+            // Store old values
+            const oldWidth = this.selectedElement.element.getAttribute('width');
+            const oldHeight = this.selectedElement.element.getAttribute('height');
+            const oldX = this.selectedElement.element.getAttribute('x');
+            const oldY = this.selectedElement.element.getAttribute('y');
+            
+            // Apply new values
             this.selectedElement.element.setAttribute('width', newWidth);
             this.selectedElement.element.setAttribute('height', newHeight);
             this.selectedElement.element.setAttribute('x', newX);
             this.selectedElement.element.setAttribute('y', newY);
+            
+            // For rotated elements, check boundaries
+            if (rotation !== 0) {
+                const elementRect = this.selectedElement.element.getBoundingClientRect();
+                const printAreaRect = this.printArea.getBoundingClientRect();
+                
+                if (elementRect.left < printAreaRect.left ||
+                    elementRect.right > printAreaRect.right ||
+                    elementRect.top < printAreaRect.top ||
+                    elementRect.bottom > printAreaRect.bottom) {
+                    // Revert to old values
+                    this.selectedElement.element.setAttribute('width', oldWidth);
+                    this.selectedElement.element.setAttribute('height', oldHeight);
+                    this.selectedElement.element.setAttribute('x', oldX);
+                    this.selectedElement.element.setAttribute('y', oldY);
+                    return; // Exit early
+                }
+            }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(newWidth, newHeight) / 2;
             const maxRadius = Math.min(
