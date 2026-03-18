@@ -408,50 +408,25 @@ class DesignEditor {
         
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
-            // Calculate handle positions in screen space
-            const rotRad = rotation * Math.PI / 180;
-            const cos = Math.cos(rotRad);
-            const sin = Math.sin(rotRad);
-            
-            // Center of element in screen space
-            const centerScreenX = left + width / 2;
-            const centerScreenY = top + height / 2;
-            
-            // Helper to rotate a point around screen center
-            const rotateScreenPoint = (localX, localY) => {
-                // Convert local bbox coords to offset from center
-                const dx = localX - centerX;
-                const dy = localY - centerY;
-                // Rotate around origin
-                const rotX = dx * cos - dy * sin;
-                const rotY = dx * sin + dy * cos;
-                // Translate to screen position
-                return {
-                    x: centerScreenX + rotX,
-                    y: centerScreenY + rotY
-                };
-            };
-            
+            // Use screen coordinates directly from getBoundingClientRect
             const handlePositions = {
-                'nw': { x: bbox.x, y: bbox.y },
-                'ne': { x: bbox.x + bbox.width, y: bbox.y },
-                'sw': { x: bbox.x, y: bbox.y + bbox.height },
-                'se': { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
-                'n': { x: bbox.x + bbox.width/2, y: bbox.y },
-                's': { x: bbox.x + bbox.width/2, y: bbox.y + bbox.height },
-                'e': { x: bbox.x + bbox.width, y: bbox.y + bbox.height/2 },
-                'w': { x: bbox.x, y: bbox.y + bbox.height/2 }
+                'nw': { x: left, y: top },
+                'ne': { x: left + width, y: top },
+                'sw': { x: left, y: top + height },
+                'se': { x: left + width, y: top + height },
+                'n': { x: left + width/2, y: top },
+                's': { x: left + width/2, y: top + height },
+                'e': { x: left + width, y: top + height/2 },
+                'w': { x: left, y: top + height/2 }
             };
             
             Object.entries(handlePositions).forEach(([pos, point]) => {
-                const screenPos = rotateScreenPoint(point.x, point.y);
-                
                 const handle = document.createElement('div');
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
                 handle.style.cursor = `${pos}-resize`;
-                handle.style.left = (screenPos.x - 5) + 'px';
-                handle.style.top = (screenPos.y - 5) + 'px';
+                handle.style.left = (point.x - 5) + 'px';
+                handle.style.top = (point.y - 5) + 'px';
                 
                 handle.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
