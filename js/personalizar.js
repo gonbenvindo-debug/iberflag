@@ -401,37 +401,40 @@ class DesignEditor {
         selectionBox.style.height = (bbox.height + 4) + 'px';
         handlesContainer.appendChild(selectionBox);
         
-        const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
-        
-        positions.forEach(pos => {
-            const handle = document.createElement('div');
-            handle.className = 'resize-handle';
-            handle.dataset.position = pos;
-            handle.style.cursor = `${pos}-resize`;
+        // Only show resize handles for non-text elements
+        if (elementData.type !== 'text') {
+            const positions = ['nw', 'ne', 'sw', 'se', 'n', 's', 'e', 'w'];
             
-            // Position handle
-            let left, top;
-            switch(pos) {
-                case 'nw': left = bbox.x - 5; top = bbox.y - 5; break;
-                case 'ne': left = bbox.x + bbox.width - 5; top = bbox.y - 5; break;
-                case 'sw': left = bbox.x - 5; top = bbox.y + bbox.height - 5; break;
-                case 'se': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height - 5; break;
-                case 'n': left = bbox.x + bbox.width/2 - 5; top = bbox.y - 5; break;
-                case 's': left = bbox.x + bbox.width/2 - 5; top = bbox.y + bbox.height - 5; break;
-                case 'e': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height/2 - 5; break;
-                case 'w': left = bbox.x - 5; top = bbox.y + bbox.height/2 - 5; break;
-            }
-            
-            handle.style.left = left + 'px';
-            handle.style.top = top + 'px';
-            
-            handle.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-                this.startResize(e, pos);
+            positions.forEach(pos => {
+                const handle = document.createElement('div');
+                handle.className = 'resize-handle';
+                handle.dataset.position = pos;
+                handle.style.cursor = `${pos}-resize`;
+                
+                // Position handle
+                let left, top;
+                switch(pos) {
+                    case 'nw': left = bbox.x - 5; top = bbox.y - 5; break;
+                    case 'ne': left = bbox.x + bbox.width - 5; top = bbox.y - 5; break;
+                    case 'sw': left = bbox.x - 5; top = bbox.y + bbox.height - 5; break;
+                    case 'se': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height - 5; break;
+                    case 'n': left = bbox.x + bbox.width/2 - 5; top = bbox.y - 5; break;
+                    case 's': left = bbox.x + bbox.width/2 - 5; top = bbox.y + bbox.height - 5; break;
+                    case 'e': left = bbox.x + bbox.width - 5; top = bbox.y + bbox.height/2 - 5; break;
+                    case 'w': left = bbox.x - 5; top = bbox.y + bbox.height/2 - 5; break;
+                }
+                
+                handle.style.left = left + 'px';
+                handle.style.top = top + 'px';
+                
+                handle.addEventListener('mousedown', (e) => {
+                    e.stopPropagation();
+                    this.startResize(e, pos);
+                });
+                
+                handlesContainer.appendChild(handle);
             });
-            
-            handlesContainer.appendChild(handle);
-        });
+        }
         
         // Add rotation handle
         const rotateHandle = document.createElement('div');
