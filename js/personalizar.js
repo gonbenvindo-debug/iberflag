@@ -3,7 +3,7 @@
 class DesignEditor {
     constructor() {
         this.canvas = document.getElementById('design-canvas');
-        this.printArea = document.getElementById('print-area');
+        this.printArea = document.getElementById('print-area-outline');
         this.canvasWrapper = document.getElementById('canvas-wrapper');
         this.elements = [];
         this.selectedElement = null;
@@ -359,14 +359,6 @@ class DesignEditor {
             this.selectElement(elementData);
             this.startDrag(e, elementData);
         });
-        
-        // Add double-click to edit text
-        if (elementData.type === 'text') {
-            elementData.element.addEventListener('dblclick', (e) => {
-                e.stopPropagation();
-                this.startTextEdit(elementData);
-            });
-        }
     }
     
     selectElement(elementData) {
@@ -603,15 +595,8 @@ class DesignEditor {
                 let newX = this.dragStart.elementX + deltaX;
                 let newY = this.dragStart.elementY + deltaY;
                 
-                // Get canvas-wrapper boundaries (entire visible area)
-                const wrapperRect = document.querySelector('.canvas-wrapper').getBoundingClientRect();
-                const canvasRect = this.canvas.getBoundingClientRect();
-                const canvasBounds = { 
-                    x: -(wrapperRect.width - canvasRect.width) / 2, 
-                    y: -(wrapperRect.height - canvasRect.height) / 2, 
-                    width: wrapperRect.width, 
-                    height: wrapperRect.height 
-                };
+                // Get canvas boundaries (SVG viewBox)
+                const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
                 
                 if (this.selectedElement.type === 'text') {
                     newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
@@ -689,14 +674,7 @@ class DesignEditor {
         }
         
         const bbox = this.selectedElement.element.getBBox();
-        const wrapperRect = document.querySelector('.canvas-wrapper').getBoundingClientRect();
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const canvasBounds = { 
-            x: -(wrapperRect.width - canvasRect.width) / 2, 
-            y: -(wrapperRect.height - canvasRect.height) / 2, 
-            width: wrapperRect.width, 
-            height: wrapperRect.height 
-        };
+        const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -879,65 +857,6 @@ class DesignEditor {
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
-    }
-    
-    // ===== TEXT EDITING =====
-    startTextEdit(elementData) {
-        if (elementData.type !== 'text') return;
-        
-        // Hide resize handles during editing
-        this.hideResizeHandles();
-        
-        // Create a temporary input overlay
-        const textElement = elementData.element;
-        const bbox = textElement.getBBox();
-        
-        // Create input element
-        const input = document.createElement('input');
-        input.type = 'text';
-        input.value = elementData.content;
-        input.style.position = 'absolute';
-        input.style.left = (bbox.x) + 'px';
-        input.style.top = (bbox.y - elementData.size * 0.8) + 'px';
-        input.style.width = Math.max(100, bbox.width + 20) + 'px';
-        input.style.fontSize = elementData.size + 'px';
-        input.style.fontFamily = elementData.font;
-        input.style.color = elementData.color;
-        input.style.background = 'rgba(255, 255, 255, 0.9)';
-        input.style.border = '2px solid #3b82f6';
-        input.style.padding = '2px 4px';
-        input.style.zIndex = '1000';
-        input.className = 'text-edit-input';
-        
-        // Add to canvas wrapper
-        const wrapper = document.querySelector('.canvas-wrapper');
-        wrapper.appendChild(input);
-        
-        // Focus and select
-        input.focus();
-        input.select();
-        
-        // Handle finish editing
-        const finishEdit = () => {
-            const newValue = input.value.trim();
-            if (newValue && newValue !== elementData.content) {
-                this.updateTextContent(newValue);
-                document.getElementById('prop-text-content').value = newValue;
-            }
-            input.remove();
-            this.showResizeHandles(elementData);
-        };
-        
-        // Event listeners
-        input.addEventListener('blur', finishEdit);
-        input.addEventListener('keydown', (e) => {
-            if (e.key === 'Enter') {
-                finishEdit();
-            } else if (e.key === 'Escape') {
-                input.remove();
-                this.showResizeHandles(elementData);
-            }
-        });
     }
     
     // ===== PROPERTY UPDATES =====

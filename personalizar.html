@@ -205,9 +205,14 @@
                 <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
                     <svg id="design-canvas" width="800" height="600" class="absolute inset-0">
                         <!-- Template will be loaded here -->
-                        <rect id="print-area" x="50" y="50" width="700" height="500" fill="white" stroke="#e5e7eb" stroke-width="2" stroke-dasharray="5,5"/>
                     </svg>
                     <div id="resize-handles" class="hidden"></div>
+                    <!-- Print Area Outline Overlay -->
+                    <div class="absolute inset-0" style="pointer-events: none; z-index: 1000;">
+                        <svg width="800" height="600">
+                            <rect id="print-area-outline" x="50" y="50" width="700" height="500" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8,4" opacity="0.5"/>
+                        </svg>
+                    </div>
                 </div>
             </div>
             
