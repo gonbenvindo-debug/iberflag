@@ -424,8 +424,8 @@ class DesignEditor {
         selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
         
-        // Only show resize handles for non-text elements
-        if (elementData.type !== 'text') {
+        // Only show resize handles for non-text and non-rotated elements
+        if (elementData.type !== 'text' && (!rotation || rotation === 0)) {
             const handlePositions = {
                 'nw': { x: bbox.x, y: bbox.y },
                 'ne': { x: bbox.x + bbox.width, y: bbox.y },
