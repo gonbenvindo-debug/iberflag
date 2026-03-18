@@ -395,6 +395,10 @@ class DesignEditor {
         const rotation = elementData.rotation || 0;
         const rotRad = rotation * Math.PI / 180;
         
+        // Get translate offset for rotated elements
+        const translateX = elementData.translateX || 0;
+        const translateY = elementData.translateY || 0;
+        
         // Calculate center point
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
@@ -404,16 +408,16 @@ class DesignEditor {
             const dx = x - centerX;
             const dy = y - centerY;
             return {
-                x: centerX + dx * Math.cos(rotRad) - dy * Math.sin(rotRad),
-                y: centerY + dx * Math.sin(rotRad) + dy * Math.cos(rotRad)
+                x: centerX + dx * Math.cos(rotRad) - dy * Math.sin(rotRad) + translateX,
+                y: centerY + dx * Math.sin(rotRad) + dy * Math.cos(rotRad) + translateY
             };
         };
         
         // Create selection box
         const selectionBox = document.createElement('div');
         selectionBox.className = 'selection-box';
-        selectionBox.style.left = (bbox.x - 2) + 'px';
-        selectionBox.style.top = (bbox.y - 2) + 'px';
+        selectionBox.style.left = (bbox.x - 2 + translateX) + 'px';
+        selectionBox.style.top = (bbox.y - 2 + translateY) + 'px';
         selectionBox.style.width = (bbox.width + 4) + 'px';
         selectionBox.style.height = (bbox.height + 4) + 'px';
         selectionBox.style.transformOrigin = `${centerX - bbox.x + 2}px ${centerY - bbox.y + 2}px`;
