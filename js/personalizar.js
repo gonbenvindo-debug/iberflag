@@ -390,42 +390,59 @@ class DesignEditor {
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
         
-        // Get unrotated bounding box
-        const bbox = elementData.element.getBBox();
+        // Get element's actual screen position (includes all transforms)
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const elementRect = elementData.element.getBoundingClientRect();
+        
+        // Calculate position relative to canvas
+        const left = elementRect.left - canvasRect.left;
+        const top = elementRect.top - canvasRect.top;
+        const width = elementRect.width;
+        const height = elementRect.height;
         const rotation = elementData.rotation || 0;
-        const rotRad = rotation * Math.PI / 180;
         
-        // Get translate offset for rotated elements
-        const translateX = elementData.translateX || 0;
-        const translateY = elementData.translateY || 0;
-        
-        // Calculate center point
+        // Get unrotated bbox for calculating handle positions in local space
+        const bbox = elementData.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Helper function to rotate a point around center
-        const rotatePoint = (x, y) => {
-            const dx = x - centerX;
-            const dy = y - centerY;
-            return {
-                x: centerX + dx * Math.cos(rotRad) - dy * Math.sin(rotRad) + translateX,
-                y: centerY + dx * Math.sin(rotRad) + dy * Math.cos(rotRad) + translateY
-            };
-        };
-        
-        // Create selection box
+        // Create selection box using actual screen position
         const selectionBox = document.createElement('div');
         selectionBox.className = 'selection-box';
-        selectionBox.style.left = (bbox.x - 2 + translateX) + 'px';
-        selectionBox.style.top = (bbox.y - 2 + translateY) + 'px';
-        selectionBox.style.width = (bbox.width + 4) + 'px';
-        selectionBox.style.height = (bbox.height + 4) + 'px';
-        selectionBox.style.transformOrigin = `${centerX - bbox.x + 2}px ${centerY - bbox.y + 2}px`;
+        selectionBox.style.left = (left - 2) + 'px';
+        selectionBox.style.top = (top - 2) + 'px';
+        selectionBox.style.width = (width + 4) + 'px';
+        selectionBox.style.height = (height + 4) + 'px';
+        selectionBox.style.transformOrigin = 'center center';
         selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
         
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
+            // Calculate handle positions in screen space
+            const rotRad = rotation * Math.PI / 180;
+            const cos = Math.cos(rotRad);
+            const sin = Math.sin(rotRad);
+            
+            // Center of element in screen space
+            const centerScreenX = left + width / 2;
+            const centerScreenY = top + height / 2;
+            
+            // Helper to rotate a point around screen center
+            const rotateScreenPoint = (localX, localY) => {
+                // Convert local bbox coords to offset from center
+                const dx = localX - centerX;
+                const dy = localY - centerY;
+                // Rotate around origin
+                const rotX = dx * cos - dy * sin;
+                const rotY = dx * sin + dy * cos;
+                // Translate to screen position
+                return {
+                    x: centerScreenX + rotX,
+                    y: centerScreenY + rotY
+                };
+            };
+            
             const handlePositions = {
                 'nw': { x: bbox.x, y: bbox.y },
                 'ne': { x: bbox.x + bbox.width, y: bbox.y },
@@ -438,14 +455,14 @@ class DesignEditor {
             };
             
             Object.entries(handlePositions).forEach(([pos, point]) => {
-                const rotated = rotatePoint(point.x, point.y);
+                const screenPos = rotateScreenPoint(point.x, point.y);
                 
                 const handle = document.createElement('div');
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
                 handle.style.cursor = `${pos}-resize`;
-                handle.style.left = (rotated.x - 5) + 'px';
-                handle.style.top = (rotated.y - 5) + 'px';
+                handle.style.left = (screenPos.x - 5) + 'px';
+                handle.style.top = (screenPos.y - 5) + 'px';
                 
                 handle.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
@@ -457,12 +474,23 @@ class DesignEditor {
         }
         
         // Add rotation handle
-        const rotatedPoint = rotatePoint(centerX, bbox.y - 35);
+        const rotRad = rotation * Math.PI / 180;
+        const centerScreenX = left + width / 2;
+        const centerScreenY = top + height / 2;
+        
+        // Position 35px above center in local space
+        const localRotateX = centerX;
+        const localRotateY = bbox.y - 35;
+        const dx = localRotateX - centerX;
+        const dy = localRotateY - centerY;
+        const rotX = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+        const rotY = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+        
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (rotatedPoint.x - 16) + 'px';
-        rotateHandle.style.top = (rotatedPoint.y - 16) + 'px';
+        rotateHandle.style.left = (centerScreenX + rotX - 16) + 'px';
+        rotateHandle.style.top = (centerScreenY + rotY - 16) + 'px';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
         rotateHandle.addEventListener('mousedown', (e) => {
