@@ -569,15 +569,15 @@ class DesignEditor {
                 this.selectedElement.element.setAttribute('transform', 
                     `translate(${translateX} ${translateY}) rotate(${this.selectedElement.rotation} ${centerX} ${centerY})`);
                 
-                // Check if element exceeds print area boundaries
+                // Check if element exceeds canvas boundaries
                 const elementRect = this.selectedElement.element.getBoundingClientRect();
-                const printAreaRect = this.printArea.getBoundingClientRect();
+                const canvasRect = this.canvas.getBoundingClientRect();
                 
                 // If exceeds boundaries, revert to previous translate
-                if (elementRect.left < printAreaRect.left ||
-                    elementRect.right > printAreaRect.right ||
-                    elementRect.top < printAreaRect.top ||
-                    elementRect.bottom > printAreaRect.bottom) {
+                if (elementRect.left < canvasRect.left ||
+                    elementRect.right > canvasRect.right ||
+                    elementRect.top < canvasRect.top ||
+                    elementRect.bottom > canvasRect.bottom) {
                     // Revert to previous position
                     translateX = this.selectedElement.translateX || 0;
                     translateY = this.selectedElement.translateY || 0;
@@ -595,25 +595,25 @@ class DesignEditor {
                 let newX = this.dragStart.elementX + deltaX;
                 let newY = this.dragStart.elementY + deltaY;
                 
-                // Get print area boundaries
-                const printArea = this.printArea.getBBox();
+                // Get canvas boundaries (SVG viewBox)
+                const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
                 
                 if (this.selectedElement.type === 'text') {
-                    newX = Math.max(printArea.x, Math.min(newX, printArea.x + printArea.width - 50));
-                    newY = Math.max(printArea.y + 20, Math.min(newY, printArea.y + printArea.height));
+                    newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
+                    newY = Math.max(canvasBounds.y + 20, Math.min(newY, canvasBounds.y + canvasBounds.height));
                     this.selectedElement.element.setAttribute('x', newX);
                     this.selectedElement.element.setAttribute('y', newY);
                 } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
                     const width = parseFloat(this.selectedElement.element.getAttribute('width'));
                     const height = parseFloat(this.selectedElement.element.getAttribute('height'));
-                    newX = Math.max(printArea.x, Math.min(newX, printArea.x + printArea.width - width));
-                    newY = Math.max(printArea.y, Math.min(newY, printArea.y + printArea.height - height));
+                    newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - width));
+                    newY = Math.max(canvasBounds.y, Math.min(newY, canvasBounds.y + canvasBounds.height - height));
                     this.selectedElement.element.setAttribute('x', newX);
                     this.selectedElement.element.setAttribute('y', newY);
                 } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
                     const r = parseFloat(this.selectedElement.element.getAttribute('r'));
-                    newX = Math.max(printArea.x + r, Math.min(newX, printArea.x + printArea.width - r));
-                    newY = Math.max(printArea.y + r, Math.min(newY, printArea.y + printArea.height - r));
+                    newX = Math.max(canvasBounds.x + r, Math.min(newX, canvasBounds.x + canvasBounds.width - r));
+                    newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
                     this.selectedElement.element.setAttribute('cx', newX);
                     this.selectedElement.element.setAttribute('cy', newY);
                 }
@@ -674,7 +674,7 @@ class DesignEditor {
         }
         
         const bbox = this.selectedElement.element.getBBox();
-        const printArea = this.printArea.getBBox();
+        const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -718,12 +718,12 @@ class DesignEditor {
                 break;
         }
         
-        // For non-rotated elements, constrain to print area boundaries
+        // For non-rotated elements, constrain to canvas boundaries
         if (!rotation || rotation === 0) {
-            newX = Math.max(printArea.x, newX);
-            newY = Math.max(printArea.y, newY);
-            newWidth = Math.min(newWidth, printArea.x + printArea.width - newX);
-            newHeight = Math.min(newHeight, printArea.y + printArea.height - newY);
+            newX = Math.max(canvasBounds.x, newX);
+            newY = Math.max(canvasBounds.y, newY);
+            newWidth = Math.min(newWidth, canvasBounds.x + canvasBounds.width - newX);
+            newHeight = Math.min(newHeight, canvasBounds.y + canvasBounds.height - newY);
         }
         
         // Ensure minimum size
@@ -746,12 +746,12 @@ class DesignEditor {
             // For rotated elements, check boundaries
             if (rotation !== 0) {
                 const elementRect = this.selectedElement.element.getBoundingClientRect();
-                const printAreaRect = this.printArea.getBoundingClientRect();
+                const canvasRect = this.canvas.getBoundingClientRect();
                 
-                if (elementRect.left < printAreaRect.left ||
-                    elementRect.right > printAreaRect.right ||
-                    elementRect.top < printAreaRect.top ||
-                    elementRect.bottom > printAreaRect.bottom) {
+                if (elementRect.left < canvasRect.left ||
+                    elementRect.right > canvasRect.right ||
+                    elementRect.top < canvasRect.top ||
+                    elementRect.bottom > canvasRect.bottom) {
                     // Revert to old values
                     this.selectedElement.element.setAttribute('width', oldWidth);
                     this.selectedElement.element.setAttribute('height', oldHeight);
@@ -763,8 +763,8 @@ class DesignEditor {
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(newWidth, newHeight) / 2;
             const maxRadius = Math.min(
-                (printArea.width - (newX - printArea.x)) / 2,
-                (printArea.height - (newY - printArea.y)) / 2
+                (canvasBounds.width - (newX - canvasBounds.x)) / 2,
+                (canvasBounds.height - (newY - canvasBounds.y)) / 2
             );
             const constrainedRadius = Math.min(radius, maxRadius);
             this.selectedElement.element.setAttribute('r', constrainedRadius);
