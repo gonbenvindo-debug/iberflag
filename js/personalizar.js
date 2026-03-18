@@ -272,31 +272,48 @@ class DesignEditor {
         
         const reader = new FileReader();
         reader.onload = (event) => {
-            const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-            img.setAttribute('x', '200');
-            img.setAttribute('y', '200');
-            img.setAttribute('width', '200');
-            img.setAttribute('height', '200');
-            img.setAttribute('href', event.target.result);
-            img.setAttribute('data-editable', 'true');
-            img.style.cursor = 'move';
-            
-            this.canvas.appendChild(img);
-            
-            const elementData = {
-                id: Date.now(),
-                element: img,
-                type: 'image',
-                src: event.target.result,
-                opacity: 1,
-                rotation: 0
+            // Load image to get natural dimensions
+            const tempImg = new Image();
+            tempImg.onload = () => {
+                // Calculate dimensions maintaining aspect ratio
+                const maxSize = 200;
+                let width = tempImg.naturalWidth;
+                let height = tempImg.naturalHeight;
+                
+                if (width > maxSize || height > maxSize) {
+                    const ratio = Math.min(maxSize / width, maxSize / height);
+                    width = width * ratio;
+                    height = height * ratio;
+                }
+                
+                const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+                img.setAttribute('x', '200');
+                img.setAttribute('y', '200');
+                img.setAttribute('width', width);
+                img.setAttribute('height', height);
+                img.setAttribute('href', event.target.result);
+                img.setAttribute('preserveAspectRatio', 'none');
+                img.setAttribute('data-editable', 'true');
+                img.style.cursor = 'move';
+                
+                this.canvas.appendChild(img);
+                
+                const elementData = {
+                    id: Date.now(),
+                    element: img,
+                    type: 'image',
+                    src: event.target.result,
+                    opacity: 1,
+                    rotation: 0
+                };
+                
+                this.elements.push(elementData);
+                this.makeElementInteractive(elementData);
+                this.selectElement(elementData);
+                this.updateLayers();
+                this.saveHistory();
             };
-            
-            this.elements.push(elementData);
-            this.makeElementInteractive(elementData);
-            this.selectElement(elementData);
-            this.updateLayers();
-            this.saveHistory();
+            tempImg.src = event.target.result;
         };
         reader.readAsDataURL(file);
         e.target.value = '';
