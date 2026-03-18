@@ -656,16 +656,19 @@ class DesignEditor {
             const scaleY = newHeight / this.selectedElement.height;
             const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
             
-            const newFontSize = Math.max(12, Math.min(120, this.selectedElement.size * scale));
+            const oldFontSize = this.selectedElement.size;
+            const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             
-            // For text, y is the baseline position
-            // Calculate the offset from top to baseline (approximately 0.8 * fontSize for most fonts)
-            const baselineOffset = newFontSize * 0.8;
+            // Get current baseline position
+            const currentY = parseFloat(this.selectedElement.element.getAttribute('y'));
+            
+            // Calculate how much the baseline should move based on bbox.y change
+            const yOffset = newY - bbox.y;
             
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
             this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', newY + baselineOffset);
+            this.selectedElement.element.setAttribute('y', currentY + yOffset);
             
             // Update stored dimensions
             const newBBox = this.selectedElement.element.getBBox();
