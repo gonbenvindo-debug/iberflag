@@ -406,13 +406,13 @@ class DesignEditor {
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Create selection box using actual screen position
+        // Create selection box using exact element dimensions
         const selectionBox = document.createElement('div');
         selectionBox.className = 'selection-box';
-        selectionBox.style.left = (left - 2) + 'px';
-        selectionBox.style.top = (top - 2) + 'px';
-        selectionBox.style.width = (width + 4) + 'px';
-        selectionBox.style.height = (height + 4) + 'px';
+        selectionBox.style.left = left + 'px';
+        selectionBox.style.top = top + 'px';
+        selectionBox.style.width = width + 'px';
+        selectionBox.style.height = height + 'px';
         selectionBox.style.transformOrigin = 'center center';
         selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
