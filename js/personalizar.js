@@ -406,17 +406,6 @@ class DesignEditor {
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Create selection box using exact element dimensions
-        const selectionBox = document.createElement('div');
-        selectionBox.className = 'selection-box';
-        selectionBox.style.left = left + 'px';
-        selectionBox.style.top = top + 'px';
-        selectionBox.style.width = width + 'px';
-        selectionBox.style.height = height + 'px';
-        selectionBox.style.transformOrigin = 'center center';
-        selectionBox.style.transform = `rotate(${rotation}deg)`;
-        handlesContainer.appendChild(selectionBox);
-        
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
             // Calculate handle positions in screen space
