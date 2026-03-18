@@ -511,50 +511,60 @@ class DesignEditor {
         this.isDragging = true;
         const canvasRect = this.canvas.getBoundingClientRect();
         
-        let elementX, elementY;
-        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            elementX = parseFloat(elementData.element.getAttribute('x') || 0);
-            elementY = parseFloat(elementData.element.getAttribute('y') || 0);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            const r = parseFloat(elementData.element.getAttribute('r') || 0);
-            elementX = parseFloat(elementData.element.getAttribute('cx') || 0) - r;
-            elementY = parseFloat(elementData.element.getAttribute('cy') || 0) - r;
-        }
-        
+        // Store the mouse position at drag start
         this.dragStart = {
-            x: e.clientX - canvasRect.left - elementX,
-            y: e.clientY - canvasRect.top - elementY
+            mouseX: e.clientX,
+            mouseY: e.clientY
         };
+        
+        // Store current element position
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            this.dragStart.elementX = parseFloat(elementData.element.getAttribute('x') || 0);
+            this.dragStart.elementY = parseFloat(elementData.element.getAttribute('y') || 0);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            this.dragStart.elementX = parseFloat(elementData.element.getAttribute('cx') || 0);
+            this.dragStart.elementY = parseFloat(elementData.element.getAttribute('cy') || 0);
+        }
     }
     
     handleMouseMove(e) {
         if (this.isDragging && this.selectedElement) {
             const canvasRect = this.canvas.getBoundingClientRect();
-            let x = e.clientX - canvasRect.left - this.dragStart.x;
-            let y = e.clientY - canvasRect.top - this.dragStart.y;
+            
+            // Calculate mouse delta in screen space
+            const deltaX = e.clientX - this.dragStart.mouseX;
+            const deltaY = e.clientY - this.dragStart.mouseY;
+            
+            // Convert screen delta to canvas space (accounting for canvas position)
+            const canvasDeltaX = deltaX;
+            const canvasDeltaY = deltaY;
+            
+            // Calculate new position
+            let newX = this.dragStart.elementX + canvasDeltaX;
+            let newY = this.dragStart.elementY + canvasDeltaY;
             
             // Get print area boundaries
             const printArea = this.printArea.getBBox();
             
             if (this.selectedElement.type === 'text') {
                 // Constrain text position
-                x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - 50));
-                y = Math.max(printArea.y + 20, Math.min(y, printArea.y + printArea.height));
-                this.selectedElement.element.setAttribute('x', x);
-                this.selectedElement.element.setAttribute('y', y);
+                newX = Math.max(printArea.x, Math.min(newX, printArea.x + printArea.width - 50));
+                newY = Math.max(printArea.y + 20, Math.min(newY, printArea.y + printArea.height));
+                this.selectedElement.element.setAttribute('x', newX);
+                this.selectedElement.element.setAttribute('y', newY);
             } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
                 const width = parseFloat(this.selectedElement.element.getAttribute('width'));
                 const height = parseFloat(this.selectedElement.element.getAttribute('height'));
-                x = Math.max(printArea.x, Math.min(x, printArea.x + printArea.width - width));
-                y = Math.max(printArea.y, Math.min(y, printArea.y + printArea.height - height));
-                this.selectedElement.element.setAttribute('x', x);
-                this.selectedElement.element.setAttribute('y', y);
+                newX = Math.max(printArea.x, Math.min(newX, printArea.x + printArea.width - width));
+                newY = Math.max(printArea.y, Math.min(newY, printArea.y + printArea.height - height));
+                this.selectedElement.element.setAttribute('x', newX);
+                this.selectedElement.element.setAttribute('y', newY);
             } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
                 const r = parseFloat(this.selectedElement.element.getAttribute('r'));
-                const cx = Math.max(printArea.x + r, Math.min(x + r, printArea.x + printArea.width - r));
-                const cy = Math.max(printArea.y + r, Math.min(y + r, printArea.y + printArea.height - r));
-                this.selectedElement.element.setAttribute('cx', cx);
-                this.selectedElement.element.setAttribute('cy', cy);
+                newX = Math.max(printArea.x + r, Math.min(newX, printArea.x + printArea.width - r));
+                newY = Math.max(printArea.y + r, Math.min(newY, printArea.y + printArea.height - r));
+                this.selectedElement.element.setAttribute('cx', newX);
+                this.selectedElement.element.setAttribute('cy', newY);
             }
             
             this.showResizeHandles(this.selectedElement);
