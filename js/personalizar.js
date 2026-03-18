@@ -390,43 +390,35 @@ class DesignEditor {
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
         
-        // Get element's actual screen position (includes all transforms)
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const elementRect = elementData.element.getBoundingClientRect();
-        
-        // Calculate position relative to canvas
-        const left = elementRect.left - canvasRect.left;
-        const top = elementRect.top - canvasRect.top;
-        const width = elementRect.width;
-        const height = elementRect.height;
-        const rotation = elementData.rotation || 0;
-        
-        // Get unrotated bbox for calculating handle positions in local space
+        // Get unrotated bbox dimensions
         const bbox = elementData.element.getBBox();
+        const rotation = elementData.rotation || 0;
+        const rotRad = rotation * Math.PI / 180;
+        
+        // Get translate offset
+        const translateX = elementData.translateX || 0;
+        const translateY = elementData.translateY || 0;
+        
+        // Calculate center point
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         
-        // Create selection box using exact element dimensions
+        // Create selection box using unrotated dimensions
         const selectionBox = document.createElement('div');
         selectionBox.className = 'selection-box';
-        selectionBox.style.left = left + 'px';
-        selectionBox.style.top = top + 'px';
-        selectionBox.style.width = width + 'px';
-        selectionBox.style.height = height + 'px';
-        selectionBox.style.transformOrigin = 'center center';
+        selectionBox.style.left = (bbox.x + translateX) + 'px';
+        selectionBox.style.top = (bbox.y + translateY) + 'px';
+        selectionBox.style.width = bbox.width + 'px';
+        selectionBox.style.height = bbox.height + 'px';
+        selectionBox.style.transformOrigin = `${centerX - bbox.x}px ${centerY - bbox.y}px`;
         selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
         
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
             // Calculate handle positions in screen space
-            const rotRad = rotation * Math.PI / 180;
             const cos = Math.cos(rotRad);
             const sin = Math.sin(rotRad);
-            
-            // Center of element in screen space
-            const centerScreenX = left + width / 2;
-            const centerScreenY = top + height / 2;
             
             // Helper to rotate a point around screen center
             const rotateScreenPoint = (localX, localY) => {
@@ -474,11 +466,7 @@ class DesignEditor {
         }
         
         // Add rotation handle
-        const rotRad = rotation * Math.PI / 180;
-        const centerScreenX = left + width / 2;
-        const centerScreenY = top + height / 2;
-        
-        // Position 35px above center in local space
+        // Position 35px above center in local space, then rotate
         const localRotateX = centerX;
         const localRotateY = bbox.y - 35;
         const dx = localRotateX - centerX;
@@ -489,8 +477,8 @@ class DesignEditor {
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (centerScreenX + rotX - 16) + 'px';
-        rotateHandle.style.top = (centerScreenY + rotY - 16) + 'px';
+        rotateHandle.style.left = (centerX + rotX + translateX - 16) + 'px';
+        rotateHandle.style.top = (centerY + rotY + translateY - 16) + 'px';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
         rotateHandle.addEventListener('mousedown', (e) => {
