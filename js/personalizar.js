@@ -424,8 +424,8 @@ class DesignEditor {
         selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
         
-        // Only show resize handles for non-text and non-rotated elements
-        if (elementData.type !== 'text' && (!rotation || rotation === 0)) {
+        // Only show resize handles for non-text elements
+        if (elementData.type !== 'text') {
             const handlePositions = {
                 'nw': { x: bbox.x, y: bbox.y },
                 'ne': { x: bbox.x + bbox.width, y: bbox.y },
@@ -628,8 +628,19 @@ class DesignEditor {
     doResize(e) {
         if (!this.selectedElement) return;
         
-        const dx = e.clientX - this.dragStart.x;
-        const dy = e.clientY - this.dragStart.y;
+        let dx = e.clientX - this.dragStart.x;
+        let dy = e.clientY - this.dragStart.y;
+        
+        // If element is rotated, convert mouse delta to element's local coordinate space
+        const rotation = this.selectedElement.rotation || 0;
+        if (rotation !== 0) {
+            const rotRad = -rotation * Math.PI / 180; // Negative for inverse rotation
+            const rotatedDx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+            const rotatedDy = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+            dx = rotatedDx;
+            dy = rotatedDy;
+        }
+        
         const bbox = this.selectedElement.element.getBBox();
         const printArea = this.printArea.getBBox();
         
