@@ -391,6 +391,9 @@ class DesignEditor {
         handlesContainer.classList.remove('hidden');
         
         const bbox = elementData.element.getBBox();
+        const rotation = elementData.rotation || 0;
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
         
         // Create selection box
         const selectionBox = document.createElement('div');
@@ -399,6 +402,8 @@ class DesignEditor {
         selectionBox.style.top = (bbox.y - 2) + 'px';
         selectionBox.style.width = (bbox.width + 4) + 'px';
         selectionBox.style.height = (bbox.height + 4) + 'px';
+        selectionBox.style.transformOrigin = 'center center';
+        selectionBox.style.transform = `rotate(${rotation}deg)`;
         handlesContainer.appendChild(selectionBox);
         
         // Only show resize handles for non-text elements
@@ -426,6 +431,8 @@ class DesignEditor {
                 
                 handle.style.left = left + 'px';
                 handle.style.top = top + 'px';
+                handle.style.transformOrigin = `${centerX - left}px ${centerY - top}px`;
+                handle.style.transform = `rotate(${rotation}deg)`;
                 
                 handle.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
@@ -440,8 +447,12 @@ class DesignEditor {
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (bbox.x + bbox.width/2 - 8) + 'px';
-        rotateHandle.style.top = (bbox.y - 35) + 'px';
+        const rotateLeft = bbox.x + bbox.width/2 - 16;
+        const rotateTop = bbox.y - 35;
+        rotateHandle.style.left = rotateLeft + 'px';
+        rotateHandle.style.top = rotateTop + 'px';
+        rotateHandle.style.transformOrigin = `${centerX - rotateLeft}px ${centerY - rotateTop}px`;
+        rotateHandle.style.transform = `rotate(${rotation}deg)`;
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
         rotateHandle.addEventListener('mousedown', (e) => {
