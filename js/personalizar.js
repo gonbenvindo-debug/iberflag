@@ -1487,39 +1487,74 @@ class DesignEditor {
         if (!this.selectedElement) return;
 
         const bounds = this.getCanvasBounds();
+        const canvasCenterX = bounds.x + (bounds.width / 2);
+        const canvasCenterY = bounds.y + (bounds.height / 2);
+
         const bbox = this.selectedElement.element.getBBox();
-        const centerX = bounds.x + (bounds.width / 2);
-        const centerY = bounds.y + (bounds.height / 2);
+        const svgCenterX = bbox.x + bbox.width / 2;
+        const svgCenterY = bbox.y + bbox.height / 2;
+
+        // Get transformed visual center using CTM
+        const ctm = this.selectedElement.element.getScreenCTM();
+        const visualCenter = ctm ? new DOMPoint(svgCenterX, svgCenterY).matrixTransform(ctm) : null;
 
         if (this.selectedElement.type === 'text') {
-            if (axis === 'horizontal') {
-                this.selectedElement.element.setAttribute('x', centerX - (bbox.width / 2));
+            if (axis === 'horizontal' && visualCenter) {
+                const screenDeltaX = canvasCenterX - visualCenter.x;
+                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
+                const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
+                this.selectedElement.element.setAttribute('x', currentX + svgDeltaX);
             }
-            if (axis === 'vertical') {
-                this.selectedElement.element.setAttribute('y', centerY + (bbox.height / 2));
+            if (axis === 'vertical' && visualCenter) {
+                const screenDeltaY = canvasCenterY - visualCenter.y;
+                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
+                const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
+                this.selectedElement.element.setAttribute('y', currentY + svgDeltaY);
             }
         } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            if (axis === 'horizontal') {
-                this.selectedElement.element.setAttribute('x', centerX - (bbox.width / 2));
+            if (axis === 'horizontal' && visualCenter) {
+                const screenDeltaX = canvasCenterX - visualCenter.x;
+                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
+                const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
+                this.selectedElement.element.setAttribute('x', currentX + svgDeltaX);
             }
-            if (axis === 'vertical') {
-                this.selectedElement.element.setAttribute('y', centerY - (bbox.height / 2));
+            if (axis === 'vertical' && visualCenter) {
+                const screenDeltaY = canvasCenterY - visualCenter.y;
+                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
+                const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
+                this.selectedElement.element.setAttribute('y', currentY + svgDeltaY);
             }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-            if (axis === 'horizontal') {
-                this.selectedElement.element.setAttribute('cx', centerX);
+            if (axis === 'horizontal' && visualCenter) {
+                const screenDeltaX = canvasCenterX - visualCenter.x;
+                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
+                const currentCx = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
+                this.selectedElement.element.setAttribute('cx', currentCx + svgDeltaX);
             }
-            if (axis === 'vertical') {
-                this.selectedElement.element.setAttribute('cy', centerY);
+            if (axis === 'vertical' && visualCenter) {
+                const screenDeltaY = canvasCenterY - visualCenter.y;
+                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
+                const currentCy = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
+                this.selectedElement.element.setAttribute('cy', currentCy + svgDeltaY);
             }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
             const points = (this.selectedElement.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)
                 .map((pair) => pair.split(',').map(Number));
-            if (points.length >= 3) {
-                const deltaX = axis === 'horizontal' ? centerX - (bbox.x + bbox.width / 2) : 0;
-                const deltaY = axis === 'vertical' ? centerY - (bbox.y + bbox.height / 2) : 0;
+            if (points.length >= 3 && visualCenter) {
+                let deltaX = 0;
+                let deltaY = 0;
+                
+                if (axis === 'horizontal') {
+                    const screenDeltaX = canvasCenterX - visualCenter.x;
+                    deltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
+                }
+                if (axis === 'vertical') {
+                    const screenDeltaY = canvasCenterY - visualCenter.y;
+                    deltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
+                }
+                
                 const moved = points.map(([x, y]) => `${x + deltaX},${y + deltaY}`).join(' ');
                 this.selectedElement.element.setAttribute('points', moved);
             }
