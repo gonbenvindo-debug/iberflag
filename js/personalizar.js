@@ -1747,8 +1747,6 @@ class DesignEditor {
         this.canvasWrapper.style.width = `${scaledWidth}px`;
         this.canvasWrapper.style.height = `${scaledHeight}px`;
         this.canvasWrapper.style.transform = 'none';
-
-        this.canvasStage.style.overflow = this.zoom <= 1 ? 'hidden' : 'auto';
     }
 
     setZoom(newZoom) {
