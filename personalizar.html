@@ -101,6 +101,27 @@
             border-color: #c7d2fe;
             color: #1d4ed8;
         }
+
+        #text-properties.active input,
+        #text-properties.active select,
+        #text-properties.active button {
+            border-left: 3px solid #2563eb;
+            border-radius: 8px 10px 10px 8px;
+        }
+
+        #text-properties.active input:focus,
+        #text-properties.active select:focus,
+        #text-properties.active button:focus {
+            outline: none;
+            border-left-color: #1d4ed8;
+            box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+        }
+
+        #text-properties.active {
+            background: #f0f4ff;
+            border-radius: 8px;
+            padding: 1rem;
+        }
     </style>
 </head>
 <body class="overflow-hidden">

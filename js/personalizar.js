@@ -818,11 +818,15 @@ class DesignEditor {
         // Hide all property panels
         document.getElementById('no-selection').classList.add('hidden');
         document.getElementById('text-properties').classList.add('hidden');
+        document.getElementById('text-properties').classList.remove('active');
         document.getElementById('image-properties').classList.add('hidden');
+        document.getElementById('image-properties').classList.remove('active');
         document.getElementById('shape-properties').classList.add('hidden');
+        document.getElementById('shape-properties').classList.remove('active');
         
         if (elementData.type === 'text') {
             document.getElementById('text-properties').classList.remove('hidden');
+            document.getElementById('text-properties').classList.add('active');
             document.getElementById('prop-text-content').value = elementData.content;
             document.getElementById('prop-text-font').value = elementData.font;
             document.getElementById('prop-text-size').value = elementData.size;
@@ -833,6 +837,7 @@ class DesignEditor {
             document.getElementById('prop-text-rotation-val').textContent = textRot;
         } else if (elementData.type === 'image') {
             document.getElementById('image-properties').classList.remove('hidden');
+            document.getElementById('image-properties').classList.add('active');
             document.getElementById('prop-image-opacity').value = (elementData.opacity || 1) * 100;
             document.getElementById('prop-image-opacity-val').textContent = Math.round((elementData.opacity || 1) * 100);
             const imageRot = this.normalizeRotation(elementData.rotation || 0);
@@ -840,6 +845,7 @@ class DesignEditor {
             document.getElementById('prop-image-rotation-val').textContent = imageRot;
         } else if (elementData.type === 'shape') {
             document.getElementById('shape-properties').classList.remove('hidden');
+            document.getElementById('shape-properties').classList.add('active');
             document.getElementById('prop-shape-fill').value = elementData.fill;
             document.getElementById('prop-shape-stroke').value = elementData.stroke;
             document.getElementById('prop-shape-stroke-width').value = elementData.strokeWidth;
