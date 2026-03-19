@@ -649,6 +649,7 @@ class DesignEditor {
         
         // Canvas interactions
         this.canvas.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
+        document.addEventListener('mousedown', (e) => this.handleDocumentMouseDown(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
@@ -748,6 +749,7 @@ class DesignEditor {
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
         this.clearPropertiesSections();
         this.updateSidebarMode();
+        this.updateLayers();
     }
     
     // ===== ADD ELEMENTS =====
@@ -989,6 +991,17 @@ class DesignEditor {
             top: minY,
             bottom: maxY
         };
+    }
+
+    isBoundsInsideEditableArea(transformedBounds, editableBounds = this.getEditableBounds()) {
+        const epsilon = 0.01;
+
+        return (
+            transformedBounds.left >= editableBounds.x - epsilon &&
+            transformedBounds.right <= editableBounds.x + editableBounds.width + epsilon &&
+            transformedBounds.top >= editableBounds.y - epsilon &&
+            transformedBounds.bottom <= editableBounds.y + editableBounds.height + epsilon
+        );
     }
     
     bringElementInBounds(elementData) {
@@ -1299,20 +1312,61 @@ class DesignEditor {
             this.clearSelection();
         }
     }
+
+    handleDocumentMouseDown(e) {
+        if (!this.selectedElement || this.isDragging || this.isResizing || this.isRotating) {
+            return;
+        }
+
+        const target = e.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+
+        if (target.closest('#canvas-wrapper')) {
+            return;
+        }
+
+        // Keep current selection when the user clicks actionable controls.
+        if (target.closest('button, input, select, textarea, label, a')) {
+            return;
+        }
+
+        this.clearSelection();
+    }
     
     // ===== RESIZE =====
     startResize(e, position) {
+        if (!this.selectedElement) return;
+
         this.isResizing = true;
         this.resizeHandle = position;
-        this.dragStart = { x: e.clientX, y: e.clientY };
+        this.dragStart = {
+            x: e.clientX,
+            y: e.clientY,
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            bbox: this.selectedElement.element.getBBox(),
+            textWidth: this.selectedElement.width,
+            textHeight: this.selectedElement.height,
+            fontSize: this.selectedElement.size,
+            textX: parseFloat(this.selectedElement.element.getAttribute('x') || '0'),
+            textY: parseFloat(this.selectedElement.element.getAttribute('y') || '0'),
+            points: this.selectedElement.shapeType === 'triangle'
+                ? (this.selectedElement.element.getAttribute('points') || '')
+                    .trim()
+                    .split(/\s+/)
+                    .map((pair) => pair.split(',').map(Number))
+                : null
+        };
     }
     
     doResize(e) {
         if (!this.selectedElement) return;
 
         const svgDelta = this.clientDeltaToSvgDelta(
-            e.clientX - this.dragStart.x,
-            e.clientY - this.dragStart.y
+            e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
+            e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
         );
         let dx = svgDelta.dx;
         let dy = svgDelta.dy;
@@ -1327,7 +1381,7 @@ class DesignEditor {
             dy = rotatedDy;
         }
         
-        const bbox = this.selectedElement.element.getBBox();
+        const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getCanvasBounds();
         
         let newWidth = bbox.width;
@@ -1466,7 +1520,7 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
-            const currentPoints = (this.selectedElement.element.getAttribute('points') || '')
+            const currentPoints = this.dragStart.points || (this.selectedElement.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)
                 .map((pair) => pair.split(',').map(Number));
@@ -1483,15 +1537,17 @@ class DesignEditor {
             }
         } else if (this.selectedElement.type === 'text') {
             // Calculate scale based on stored dimensions
-            const scaleX = newWidth / this.selectedElement.width;
-            const scaleY = newHeight / this.selectedElement.height;
+            const baseTextWidth = this.dragStart.textWidth || this.selectedElement.width;
+            const baseTextHeight = this.dragStart.textHeight || this.selectedElement.height;
+            const scaleX = newWidth / baseTextWidth;
+            const scaleY = newHeight / baseTextHeight;
             const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
             
-            const oldFontSize = this.selectedElement.size;
+            const oldFontSize = this.dragStart.fontSize || this.selectedElement.size;
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             
             // Get current baseline position
-            const currentY = parseFloat(this.selectedElement.element.getAttribute('y'));
+            const currentY = this.dragStart.textY ?? parseFloat(this.selectedElement.element.getAttribute('y') || '0');
             
             // Calculate how much the baseline should move based on bbox.y change
             const yOffset = newY - bbox.y;
@@ -1506,8 +1562,7 @@ class DesignEditor {
             this.selectedElement.width = newBBox.width;
             this.selectedElement.height = newBBox.height;
         }
-        
-        this.dragStart = { x: e.clientX, y: e.clientY };
+
         this.showResizeHandles(this.selectedElement);
     }
     
@@ -1568,14 +1623,8 @@ class DesignEditor {
         
         const transformed = this.getTransformedBounds(this.selectedElement);
         const bounds = this.getEditableBounds();
-        
-        // Check if element is completely outside bounds (all corners out on same side)
-        const isCompletelyOutLeft = transformed.right < bounds.x;
-        const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
-        const isCompletelyOutTop = transformed.bottom < bounds.y;
-        const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
-        
-        if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
+
+        if (!this.isBoundsInsideEditableArea(transformed, bounds)) {
             // Revert to previous rotation - not allowed to escape completely
             const prevRotation = this.selectedElement.rotation || 0;
             this.selectedElement.element.setAttribute('transform', 
@@ -1624,14 +1673,8 @@ class DesignEditor {
             
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
-            
-            // Check if element would be completely outside bounds
-            const isCompletelyOutLeft = transformed.right < bounds.x;
-            const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
-            const isCompletelyOutTop = transformed.bottom < bounds.y;
-            const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
-            
-            if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
+
+            if (!this.isBoundsInsideEditableArea(transformed, bounds)) {
                 // Reject this rotation - revert to previous
                 const prevRotation = this.selectedElement.rotation || 0;
                 this.selectedElement.element.setAttribute('transform', 
