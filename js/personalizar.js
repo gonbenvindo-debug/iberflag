@@ -25,6 +25,7 @@ class DesignEditor {
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.keepAspectRatio = true;
         this.baseCanvasSize = { width: 800, height: 600 };
+        this.initialCanvasSize = null; // Will store computed base size at 100% zoom
         this.handlesFrameRequest = null;
         
         this.init();
@@ -1713,29 +1714,35 @@ class DesignEditor {
     syncCanvasViewport() {
         if (!this.canvasStage || !this.canvasWrapper) return;
 
-        const stageWidth = this.canvasStage.clientWidth;
-        const stageHeight = this.canvasStage.clientHeight;
-        if (!stageWidth || !stageHeight) return;
+        // Compute base canvas size only once (at zoom 100%)
+        if (!this.initialCanvasSize) {
+            const stageWidth = this.canvasStage.clientWidth;
+            const stageHeight = this.canvasStage.clientHeight;
+            if (!stageWidth || !stageHeight) return;
 
-        const targetWidth = stageWidth * 0.9;
-        const targetHeight = stageHeight * 0.9;
-        const ratio = 800 / 600;
+            const targetWidth = stageWidth * 0.9;
+            const targetHeight = stageHeight * 0.9;
+            const ratio = 800 / 600;
 
-        let baseWidth = targetWidth;
-        let baseHeight = baseWidth / ratio;
+            let baseWidth = targetWidth;
+            let baseHeight = baseWidth / ratio;
 
-        if (baseHeight > targetHeight) {
-            baseHeight = targetHeight;
-            baseWidth = baseHeight * ratio;
+            if (baseHeight > targetHeight) {
+                baseHeight = targetHeight;
+                baseWidth = baseHeight * ratio;
+            }
+
+            this.initialCanvasSize = {
+                width: baseWidth,
+                height: baseHeight
+            };
+
+            this.baseCanvasSize = { ...this.initialCanvasSize };
         }
 
-        this.baseCanvasSize = {
-            width: baseWidth,
-            height: baseHeight
-        };
-
-        const scaledWidth = this.baseCanvasSize.width * this.zoom;
-        const scaledHeight = this.baseCanvasSize.height * this.zoom;
+        // Apply zoom to base size
+        const scaledWidth = this.initialCanvasSize.width * this.zoom;
+        const scaledHeight = this.initialCanvasSize.height * this.zoom;
 
         this.canvasWrapper.style.width = `${scaledWidth}px`;
         this.canvasWrapper.style.height = `${scaledHeight}px`;
