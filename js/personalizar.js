@@ -1115,7 +1115,6 @@ class DesignEditor {
                     const currentX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
                     const currentY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
                     newX = currentX + deltaX;
-            stroke: 'none',
                     const r = parseFloat(this.selectedElement.element.getAttribute('r'));
                     newX = Math.max(canvasBounds.x + r, Math.min(newX, canvasBounds.x + canvasBounds.width - r));
                     newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
