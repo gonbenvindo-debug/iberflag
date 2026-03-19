@@ -12,6 +12,9 @@ class DesignEditor {
         this.historyIndex = -1;
         this.isRestoringHistory = false;
         this.maxHistoryEntries = 200;
+        this.historyCommitTimer = null;
+        this.historyCommitDelay = 180;
+        this.activeHistoryGestureSnapshot = null;
         this.zoom = 1;
         this.isDragging = false;
         this.isResizing = false;
@@ -1391,6 +1394,7 @@ class DesignEditor {
     
     // ===== DRAG & DROP =====
     startDrag(e, elementData) {
+        this.beginHistoryGesture();
         this.isDragging = true;
 
         // Store the mouse position at drag start
@@ -1441,9 +1445,10 @@ class DesignEditor {
     handleMouseUp() {
         const wasRotating = this.isRotating;
         const wasDragging = this.isDragging;
+        const wasResizing = this.isResizing;
         
         if (this.isDragging || this.isResizing || this.isRotating) {
-            this.saveHistory();
+            this.commitHistoryGesture();
         }
         this.isDragging = false;
         this.isResizing = false;
@@ -1458,7 +1463,7 @@ class DesignEditor {
 
         if (this.selectedElement) {
             // After rotation or drag, ensure element stays within bounds
-            if (wasRotating || wasDragging) {
+            if (wasRotating || wasDragging || wasResizing) {
                 this.bringElementInBounds(this.selectedElement);
             }
             this.showResizeHandles(this.selectedElement);
@@ -1497,6 +1502,7 @@ class DesignEditor {
     startResize(e, position) {
         if (!this.selectedElement) return;
 
+        this.beginHistoryGesture();
         this.isResizing = true;
         this.resizeHandle = position;
         this.dragStart = {
@@ -1727,6 +1733,7 @@ class DesignEditor {
     // ===== ROTATION =====
     startRotate(e, elementData) {
         e.preventDefault();
+        this.beginHistoryGesture();
         this.isDragging = false;
         this.isResizing = false;
         this.isRotating = true;
@@ -1861,7 +1868,7 @@ class DesignEditor {
             // Rotation is valid, apply it
             this.selectedElement.rotation = rotation;
             this.showResizeHandles(this.selectedElement);
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -1877,7 +1884,7 @@ class DesignEditor {
             this.selectedElement.height = bbox.height;
             
             this.showResizeHandles(this.selectedElement);
-            this.saveHistory();
+            this.queueHistorySave(250);
         }
     }
     
@@ -1892,7 +1899,7 @@ class DesignEditor {
             this.selectedElement.height = bbox.height;
             
             this.showResizeHandles(this.selectedElement);
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -1907,7 +1914,7 @@ class DesignEditor {
             this.selectedElement.height = bbox.height;
             
             this.showResizeHandles(this.selectedElement);
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -1915,7 +1922,7 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('fill', value);
             this.selectedElement.color = value;
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -1943,7 +1950,7 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'image') {
             this.selectedElement.element.setAttribute('opacity', value);
             this.selectedElement.opacity = value;
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
 
@@ -1964,7 +1971,7 @@ class DesignEditor {
             const nextSrc = this.generateQRCodeDataUrl(content, this.selectedElement.qrColor || '#111827');
             this.selectedElement.src = nextSrc;
             this.selectedElement.element.setAttribute('href', nextSrc);
-            this.saveHistory();
+            this.queueHistorySave(250);
         } catch (error) {
             console.error('Erro ao atualizar QR code:', error);
         }
@@ -1987,7 +1994,7 @@ class DesignEditor {
             const nextSrc = this.generateQRCodeDataUrl(this.selectedElement.qrContent, color);
             this.selectedElement.src = nextSrc;
             this.selectedElement.element.setAttribute('href', nextSrc);
-            this.saveHistory();
+            this.queueHistorySave();
         } catch (error) {
             console.error('Erro ao atualizar cor do QR code:', error);
         }
@@ -1998,7 +2005,7 @@ class DesignEditor {
             const nextFill = this.sanitizeColorValue(value, '#3b82f6');
             this.selectedElement.element.setAttribute('fill', nextFill);
             this.selectedElement.fill = nextFill;
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -2007,7 +2014,7 @@ class DesignEditor {
             const nextStroke = this.sanitizeColorValue(value, '#000000');
             this.selectedElement.element.setAttribute('stroke', nextStroke);
             this.selectedElement.stroke = nextStroke;
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -2015,7 +2022,7 @@ class DesignEditor {
         if (this.selectedElement && this.selectedElement.type === 'shape') {
             this.selectedElement.element.setAttribute('stroke-width', value);
             this.selectedElement.strokeWidth = value;
-            this.saveHistory();
+            this.queueHistorySave();
         }
     }
     
@@ -2250,6 +2257,86 @@ class DesignEditor {
         this.syncCanvasViewport();
         document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
     }
+
+    getHistorySnapshot() {
+        this.elements.forEach((elementData) => this.syncElementMetadata(elementData));
+
+        return JSON.stringify({
+            selectedElementId: this.selectedElement ? String(this.selectedElement.id) : null,
+            elements: this.elements.map((elementData) => ({
+                id: String(elementData.id),
+                markup: elementData.element.outerHTML
+            }))
+        });
+    }
+
+    queueHistorySave(delay = this.historyCommitDelay) {
+        if (this.isRestoringHistory) {
+            return;
+        }
+
+        if (this.historyCommitTimer !== null) {
+            clearTimeout(this.historyCommitTimer);
+        }
+
+        this.historyCommitTimer = setTimeout(() => {
+            this.historyCommitTimer = null;
+            this.saveHistory();
+        }, delay);
+    }
+
+    flushPendingHistorySave() {
+        if (this.historyCommitTimer === null) {
+            return;
+        }
+
+        clearTimeout(this.historyCommitTimer);
+        this.historyCommitTimer = null;
+        this.saveHistory();
+    }
+
+    beginHistoryGesture() {
+        if (this.activeHistoryGestureSnapshot !== null) {
+            return;
+        }
+
+        this.flushPendingHistorySave();
+        this.activeHistoryGestureSnapshot = this.getHistorySnapshot();
+    }
+
+    commitHistoryGesture() {
+        if (this.activeHistoryGestureSnapshot === null) {
+            return;
+        }
+
+        const gestureStartSnapshot = this.activeHistoryGestureSnapshot;
+        this.activeHistoryGestureSnapshot = null;
+
+        if (gestureStartSnapshot !== this.getHistorySnapshot()) {
+            this.saveHistory();
+        } else {
+            this.updateHistoryButtons();
+        }
+    }
+
+    updateHistoryButtons() {
+        const undoBtn = document.getElementById('undo-btn');
+        const redoBtn = document.getElementById('redo-btn');
+        const canUndo = this.historyIndex > 0;
+        const canRedo = this.historyIndex < this.history.length - 1;
+
+        const applyButtonState = (button, isEnabled, label) => {
+            if (!button) return;
+            button.disabled = !isEnabled;
+            button.style.opacity = isEnabled ? '1' : '0.38';
+            button.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
+            button.style.pointerEvents = isEnabled ? 'auto' : 'none';
+            button.title = isEnabled ? label : `${label} indisponivel`;
+        };
+
+        applyButtonState(undoBtn, canUndo, 'Desfazer');
+        applyButtonState(redoBtn, canRedo, 'Refazer');
+    }
     
     // ===== HISTORY =====
     saveHistory() {
@@ -2257,17 +2344,15 @@ class DesignEditor {
             return;
         }
 
-        this.elements.forEach((elementData) => this.syncElementMetadata(elementData));
+        if (this.historyCommitTimer !== null) {
+            clearTimeout(this.historyCommitTimer);
+            this.historyCommitTimer = null;
+        }
 
-        const state = JSON.stringify({
-            selectedElementId: this.selectedElement ? String(this.selectedElement.id) : null,
-            elements: this.elements.map((elementData) => ({
-                id: String(elementData.id),
-                markup: elementData.element.outerHTML
-            }))
-        });
+        const state = this.getHistorySnapshot();
 
         if (this.history[this.historyIndex] === state) {
+            this.updateHistoryButtons();
             return;
         }
 
@@ -2283,19 +2368,27 @@ class DesignEditor {
         if (this.history.length > 0) {
             this.historyIndex = this.history.length - 1;
         }
+
+        this.updateHistoryButtons();
     }
     
     undo() {
+        this.flushPendingHistorySave();
         if (this.historyIndex > 0) {
             this.historyIndex--;
             this.restoreState(this.history[this.historyIndex]);
+        } else {
+            this.updateHistoryButtons();
         }
     }
     
     redo() {
+        this.flushPendingHistorySave();
         if (this.historyIndex < this.history.length - 1) {
             this.historyIndex++;
             this.restoreState(this.history[this.historyIndex]);
+        } else {
+            this.updateHistoryButtons();
         }
     }
     
@@ -2310,14 +2403,18 @@ class DesignEditor {
             this.selectedElement = null;
 
             (state.elements || []).forEach((saved) => {
-                const wrapper = document.createElement('div');
-                wrapper.innerHTML = saved.markup;
-                const restored = wrapper.firstElementChild;
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(
+                    `<svg xmlns="http://www.w3.org/2000/svg">${saved.markup}</svg>`,
+                    'image/svg+xml'
+                );
+                const restored = svgDoc.documentElement.firstElementChild;
                 if (!restored) return;
 
-                this.canvas.appendChild(restored);
+                const imported = document.importNode(restored, true);
+                this.canvas.appendChild(imported);
 
-                const elementData = this.buildElementDataFromNode(restored, saved.id);
+                const elementData = this.buildElementDataFromNode(imported, saved.id);
 
                 this.elements.push(elementData);
                 this.makeElementInteractive(elementData);
@@ -2340,6 +2437,7 @@ class DesignEditor {
             console.error('Erro ao restaurar histórico:', error);
         } finally {
             this.isRestoringHistory = false;
+            this.updateHistoryButtons();
         }
     }
     
