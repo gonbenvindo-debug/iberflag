@@ -670,35 +670,51 @@ class DesignEditor {
         const handlesContainer = document.getElementById('resize-handles');
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
-        
-        // Get element's actual screen position (includes all transforms)
+
         const canvasRect = this.canvas.getBoundingClientRect();
-        const elementRect = elementData.element.getBoundingClientRect();
-        
-        // Calculate position relative to canvas
-        const left = elementRect.left - canvasRect.left;
-        const top = elementRect.top - canvasRect.top;
-        const width = elementRect.width;
-        const height = elementRect.height;
-        const rotation = elementData.rotation || 0;
-        
-        // Get unrotated bbox for calculating handle positions in local space
         const bbox = elementData.element.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
+        const ctm = elementData.element.getScreenCTM();
+
+        if (!ctm) return;
+
+        const toCanvasPoint = (x, y) => {
+            const p = new DOMPoint(x, y).matrixTransform(ctm);
+            return {
+                x: p.x - canvasRect.left,
+                y: p.y - canvasRect.top
+            };
+        };
+
+        const mid = (a, b) => ({
+            x: (a.x + b.x) / 2,
+            y: (a.y + b.y) / 2
+        });
+
+        const tl = toCanvasPoint(bbox.x, bbox.y);
+        const tr = toCanvasPoint(bbox.x + bbox.width, bbox.y);
+        const br = toCanvasPoint(bbox.x + bbox.width, bbox.y + bbox.height);
+        const bl = toCanvasPoint(bbox.x, bbox.y + bbox.height);
+
+        const tc = mid(tl, tr);
+        const rc = mid(tr, br);
+        const bc = mid(bl, br);
+        const lc = mid(tl, bl);
+        const center = {
+            x: (tl.x + tr.x + br.x + bl.x) / 4,
+            y: (tl.y + tr.y + br.y + bl.y) / 4
+        };
         
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
-            // Use screen coordinates directly from getBoundingClientRect
             const handlePositions = {
-                'nw': { x: left, y: top },
-                'ne': { x: left + width, y: top },
-                'sw': { x: left, y: top + height },
-                'se': { x: left + width, y: top + height },
-                'n': { x: left + width/2, y: top },
-                's': { x: left + width/2, y: top + height },
-                'e': { x: left + width, y: top + height/2 },
-                'w': { x: left, y: top + height/2 }
+                'nw': tl,
+                'ne': tr,
+                'sw': bl,
+                'se': br,
+                'n': tc,
+                's': bc,
+                'e': rc,
+                'w': lc
             };
             
             Object.entries(handlePositions).forEach(([pos, point]) => {
@@ -717,25 +733,28 @@ class DesignEditor {
                 handlesContainer.appendChild(handle);
             });
         }
-        
-        // Add rotation handle
-        const rotRad = rotation * Math.PI / 180;
-        const centerScreenX = left + width / 2;
-        const centerScreenY = top + height / 2;
-        
-        // Position 35px above center in local space
-        const localRotateX = centerX;
-        const localRotateY = bbox.y - 18;
-        const dx = localRotateX - centerX;
-        const dy = localRotateY - centerY;
-        const rotX = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
-        const rotY = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+
+        // Add rotation handle aligned with transformed top edge
+        const topDirection = {
+            x: tc.x - center.x,
+            y: tc.y - center.y
+        };
+        const magnitude = Math.hypot(topDirection.x, topDirection.y) || 1;
+        const normal = {
+            x: topDirection.x / magnitude,
+            y: topDirection.y / magnitude
+        };
+        const rotateOffset = 24;
+        const rotatePoint = {
+            x: tc.x + normal.x * rotateOffset,
+            y: tc.y + normal.y * rotateOffset
+        };
         
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (centerScreenX + rotX - 16) + 'px';
-        rotateHandle.style.top = (centerScreenY + rotY - 16) + 'px';
+        rotateHandle.style.left = (rotatePoint.x - 16) + 'px';
+        rotateHandle.style.top = (rotatePoint.y - 16) + 'px';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
         rotateHandle.addEventListener('mousedown', (e) => {
