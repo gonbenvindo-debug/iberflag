@@ -539,6 +539,10 @@ body {
     animation: fadeInUp 0.3s ease-out;
 }
 
+.modal-overlay.hidden {
+    display: none !important;
+}
+
 .modal-content {
     background: white;
     border-radius: 1rem;
@@ -546,6 +550,10 @@ body {
     max-height: 90vh;
     overflow-y: auto;
     animation: scaleIn 0.3s ease-out;
+}
+
+.modal-content.hidden {
+    display: none !important;
 }
 
 /* ===== TABLE ===== */

@@ -29,7 +29,7 @@ class DesignEditor {
         this.cartStorageKey = 'iberflag_cart';
         this.legacyCartStorageKeys = ['latinflag_cart', 'cart'];
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
-        this.keepAspectRatio = true;
+        this.keepAspectRatio = false;
         this.baseCanvasSize = { width: 800, height: 600 };
         this.initialCanvasSize = null; // Will store computed base size at 100% zoom
         this.handlesFrameRequest = null;
