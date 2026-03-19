@@ -176,14 +176,15 @@
 
                     <div class="pt-4 border-t border-gray-100">
                         <p class="text-sm font-semibold text-gray-700 mb-2">QR Code</p>
-                        <div class="space-y-2">
-                            <input id="qr-content-input" type="text" placeholder="https://site.pt ou texto" class="w-full border rounded-lg px-3 py-2 text-sm">
-                            <button id="add-qr-btn" class="w-full bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-900 transition font-semibold flex items-center justify-center gap-2">
-                                <i data-lucide="qr-code" class="w-5 h-5"></i>
-                                Adicionar QR Code
-                            </button>
-                            <p class="text-xs text-gray-500 leading-relaxed">Gera um QR code editável no canvas a partir de um link ou texto.</p>
-                        </div>
+                        <button id="add-qr-btn" class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition">
+                            <span class="flex items-center gap-3 font-semibold">
+                                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-900 text-white">
+                                    <i data-lucide="qr-code" class="w-4 h-4"></i>
+                                </span>
+                                <span>Adicionar QR Code</span>
+                            </span>
+                            <i data-lucide="plus" class="w-4 h-4 text-gray-400"></i>
+                        </button>
                     </div>
                     
                     <div class="pt-4">
@@ -287,6 +288,15 @@
                 
                 <div id="image-properties" class="space-y-4 hidden">
                     <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
+                    <div id="qr-properties" class="hidden">
+                        <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
+                        <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2" placeholder="https://site.pt ou texto livre">
+                        <div class="mt-3">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
+                            <input type="color" id="prop-qr-color" value="#111827" class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera atualizado no canvas.</p>
+                    </div>
                     <div>
                         <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span id="prop-image-opacity-val">100</span>%</label>
                         <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
@@ -367,7 +377,7 @@
     </div>
 
     <script src="/js/logic.js"></script>
-    <script src="/js/personalizar.js?v=20260319d"></script>
+    <script src="/js/personalizar.js?v=20260319f"></script>
     <script>
         lucide.createIcons();
     </script>

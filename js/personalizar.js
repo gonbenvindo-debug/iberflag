@@ -539,6 +539,11 @@ class DesignEditor {
 
         if (type === 'image') {
             data.opacity = parseFloat(node.getAttribute('opacity') || '1');
+            data.src = node.getAttribute('href') || '';
+            data.name = node.dataset.name || 'Imagem';
+            data.imageKind = node.dataset.imageKind || 'image';
+            data.qrContent = node.dataset.qrContent || '';
+            data.qrColor = node.dataset.qrColor || '#111827';
         }
 
         if (type === 'shape') {
@@ -625,17 +630,8 @@ class DesignEditor {
         });
         document.getElementById('image-upload').addEventListener('change', (e) => this.handleImageUpload(e));
         const addQrBtn = document.getElementById('add-qr-btn');
-        const qrContentInput = document.getElementById('qr-content-input');
         if (addQrBtn) {
             addQrBtn.addEventListener('click', () => this.handleAddQRCode());
-        }
-        if (qrContentInput) {
-            qrContentInput.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    e.preventDefault();
-                    this.handleAddQRCode();
-                }
-            });
         }
         
         // Shapes
@@ -718,6 +714,12 @@ class DesignEditor {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
         });
+
+        const qrContent = document.getElementById('prop-qr-content');
+        if (qrContent) qrContent.addEventListener('input', (e) => this.updateQRCodeContent(e.target.value));
+
+        const qrColor = document.getElementById('prop-qr-color');
+        if (qrColor) qrColor.addEventListener('input', (e) => this.updateQRCodeColor(e.target.value));
         
         const imageRotation = document.getElementById('prop-image-rotation');
         if (imageRotation) imageRotation.addEventListener('input', (e) => {
@@ -768,6 +770,7 @@ class DesignEditor {
         document.getElementById('no-selection').classList.remove('hidden');
         document.getElementById('text-properties').classList.add('hidden');
         document.getElementById('image-properties').classList.add('hidden');
+        document.getElementById('qr-properties').classList.add('hidden');
         document.getElementById('shape-properties').classList.add('hidden');
     }
 
@@ -880,20 +883,16 @@ class DesignEditor {
     }
 
     handleAddQRCode() {
-        const input = document.getElementById('qr-content-input');
-        if (!input) return;
-
-        const content = input.value.trim();
-        if (!content) {
-            showToast('Insira um link ou texto para gerar o QR code', 'warning');
-            input.focus();
-            return;
-        }
+        const content = 'https://site.pt';
+        const color = '#111827';
 
         try {
-            const dataUrl = this.generateQRCodeDataUrl(content);
-            this.addImageFromSource(dataUrl, 180, 180, 'QR Code');
-            input.value = '';
+            const dataUrl = this.generateQRCodeDataUrl(content, color);
+            this.addImageFromSource(dataUrl, 180, 180, 'QR Code', {
+                imageKind: 'qr',
+                qrContent: content,
+                qrColor: color
+            });
             showToast('QR code adicionado ao design', 'success');
         } catch (error) {
             console.error('Erro ao gerar QR code:', error);
@@ -901,7 +900,7 @@ class DesignEditor {
         }
     }
 
-    generateQRCodeDataUrl(content) {
+    generateQRCodeDataUrl(content, color = '#111827') {
         if (typeof qrcode !== 'function') {
             throw new Error('Biblioteca de QR code indisponivel');
         }
@@ -910,17 +909,34 @@ class DesignEditor {
         qr.addData(content);
         qr.make();
 
-        const svgMarkup = qr.createSvgTag({
-            scalable: true,
-            margin: 0,
-            cellSize: 6
-        });
+        const moduleCount = qr.getModuleCount();
+        const margin = 2;
+        const size = moduleCount + margin * 2;
+        const fill = this.sanitizeColorValue(color, '#111827');
+        const pathSegments = [];
+
+        for (let row = 0; row < moduleCount; row += 1) {
+            for (let col = 0; col < moduleCount; col += 1) {
+                if (!qr.isDark(row, col)) {
+                    continue;
+                }
+
+                const x = col + margin;
+                const y = row + margin;
+                pathSegments.push(`M${x} ${y}h1v1H${x}z`);
+            }
+        }
+
+        const svgMarkup = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${size} ${size}" shape-rendering="crispEdges"><path fill="${fill}" d="${pathSegments.join('')}"/></svg>`;
 
         return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svgMarkup)}`;
     }
 
-    addImageFromSource(src, width, height, name = 'Imagem') {
+    addImageFromSource(src, width, height, name = 'Imagem', options = {}) {
         const center = this.getEditableCenter();
+        const imageKind = options.imageKind || 'image';
+        const qrContent = options.qrContent || '';
+        const qrColor = options.qrColor || '#111827';
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttribute('x', String(center.x - (width / 2)));
@@ -930,6 +946,14 @@ class DesignEditor {
         img.setAttribute('href', src);
         img.setAttribute('preserveAspectRatio', 'none');
         img.setAttribute('data-editable', 'true');
+        img.dataset.name = name;
+        img.dataset.imageKind = imageKind;
+        if (qrContent) {
+            img.dataset.qrContent = qrContent;
+        }
+        if (imageKind === 'qr') {
+            img.dataset.qrColor = qrColor;
+        }
         img.style.cursor = 'move';
 
         this.canvas.appendChild(img);
@@ -941,6 +965,9 @@ class DesignEditor {
             type: 'image',
             src,
             name,
+            imageKind,
+            qrContent,
+            qrColor,
             opacity: 1,
             rotation: 0
         };
@@ -1308,6 +1335,16 @@ class DesignEditor {
             const imageRot = this.normalizeRotation(elementData.rotation || 0);
             document.getElementById('prop-image-rotation').value = imageRot;
             document.getElementById('prop-image-rotation-val').textContent = imageRot;
+            const qrProperties = document.getElementById('qr-properties');
+            if (elementData.imageKind === 'qr') {
+                qrProperties.classList.remove('hidden');
+                document.getElementById('prop-qr-content').value = elementData.qrContent || '';
+                document.getElementById('prop-qr-color').value = this.sanitizeColorValue(elementData.qrColor || '#111827', '#111827');
+            } else {
+                qrProperties.classList.add('hidden');
+                document.getElementById('prop-qr-content').value = '';
+                document.getElementById('prop-qr-color').value = '#111827';
+            }
         } else if (elementData.type === 'shape') {
             document.getElementById('shape-properties').classList.remove('hidden');
             document.getElementById('shape-properties').classList.add('active');
@@ -1878,6 +1915,52 @@ class DesignEditor {
             this.saveHistory();
         }
     }
+
+    updateQRCodeContent(value) {
+        if (!this.selectedElement || this.selectedElement.type !== 'image' || this.selectedElement.imageKind !== 'qr') {
+            return;
+        }
+
+        const content = value.trim();
+        this.selectedElement.qrContent = content;
+        this.selectedElement.element.dataset.qrContent = content;
+
+        if (!content) {
+            return;
+        }
+
+        try {
+            const nextSrc = this.generateQRCodeDataUrl(content, this.selectedElement.qrColor || '#111827');
+            this.selectedElement.src = nextSrc;
+            this.selectedElement.element.setAttribute('href', nextSrc);
+            this.saveHistory();
+        } catch (error) {
+            console.error('Erro ao atualizar QR code:', error);
+        }
+    }
+
+    updateQRCodeColor(value) {
+        if (!this.selectedElement || this.selectedElement.type !== 'image' || this.selectedElement.imageKind !== 'qr') {
+            return;
+        }
+
+        const color = this.sanitizeColorValue(value, '#111827');
+        this.selectedElement.qrColor = color;
+        this.selectedElement.element.dataset.qrColor = color;
+
+        if (!this.selectedElement.qrContent) {
+            return;
+        }
+
+        try {
+            const nextSrc = this.generateQRCodeDataUrl(this.selectedElement.qrContent, color);
+            this.selectedElement.src = nextSrc;
+            this.selectedElement.element.setAttribute('href', nextSrc);
+            this.saveHistory();
+        } catch (error) {
+            console.error('Erro ao atualizar cor do QR code:', error);
+        }
+    }
     
     updateShapeFill(value) {
         if (this.selectedElement && this.selectedElement.type === 'shape') {
@@ -2051,8 +2134,8 @@ class DesignEditor {
                  onclick="editor.selectElementByIndex(${index})">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? 'image' : 'square'}" class="w-4 h-4"></i>
-                        <span class="text-sm font-semibold">${el.type === 'text' ? el.content.substring(0, 20) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
+                        <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
+                        <span class="text-sm font-semibold">${el.type === 'text' ? el.content.substring(0, 20) : el.type === 'image' ? (el.name || (el.imageKind === 'qr' ? 'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
                     </div>
                     <div class="flex gap-1">
                         <button onclick="event.stopPropagation(); editor.moveLayer(${index}, -1)" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
