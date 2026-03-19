@@ -233,6 +233,11 @@ class DesignEditor {
     }
 
     setDefaultPrintArea() {
+        const existingVisualArea = this.canvas.querySelector('#print-area-shape-outline');
+        if (existingVisualArea) {
+            existingVisualArea.remove();
+        }
+
         if (!this.printArea || this.printArea.tagName.toLowerCase() !== 'rect' || this.printArea.ownerSVGElement !== this.canvas) {
             const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             rect.setAttribute('id', 'print-area-outline');
@@ -260,6 +265,30 @@ class DesignEditor {
 
     updatePrintAreaFromElement(areaElement, sourceBounds) {
         this.setDefaultPrintArea();
+
+        if (!areaElement || !sourceBounds || !sourceBounds.width || !sourceBounds.height) {
+            return;
+        }
+
+        const scaleX = 800 / sourceBounds.width;
+        const scaleY = 600 / sourceBounds.height;
+        const offsetX = -sourceBounds.x * scaleX;
+        const offsetY = -sourceBounds.y * scaleY;
+
+        const visualArea = document.importNode(areaElement, true);
+        visualArea.setAttribute('id', 'print-area-shape-outline');
+        visualArea.setAttribute('fill', 'none');
+        visualArea.setAttribute('stroke', '#3b82f6');
+        visualArea.setAttribute('stroke-width', '2');
+        visualArea.setAttribute('stroke-dasharray', '8,4');
+        visualArea.setAttribute('opacity', '0.75');
+        visualArea.setAttribute('pointer-events', 'none');
+        visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scaleX} ${scaleY})`);
+
+        this.canvas.appendChild(visualArea);
+
+        // Editable bounds remain exactly the same as the design-canvas.
+        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
     }
     
     loadSVGTemplate(svgContent) {
