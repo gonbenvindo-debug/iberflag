@@ -10,6 +10,8 @@ class DesignEditor {
         this.selectedElement = null;
         this.history = [];
         this.historyIndex = -1;
+        this.isRestoringHistory = false;
+        this.maxHistoryEntries = 200;
         this.zoom = 1;
         this.isDragging = false;
         this.isResizing = false;
@@ -516,7 +518,7 @@ class DesignEditor {
         if (tagName === 'polygon') shapeType = 'triangle';
 
         const data = {
-            id: customId ?? (Date.now() + Math.random()),
+            id: String(customId ?? node.dataset.elementId ?? (Date.now() + Math.random())),
             element: node,
             type,
             shapeType,
@@ -562,6 +564,29 @@ class DesignEditor {
         }
 
         return data;
+    }
+
+    syncElementMetadata(elementData) {
+        if (!elementData?.element) return;
+
+        elementData.element.dataset.elementId = String(elementData.id);
+
+        if (elementData.type === 'image') {
+            elementData.element.dataset.name = elementData.name || 'Imagem';
+            elementData.element.dataset.imageKind = elementData.imageKind || 'image';
+
+            if (elementData.qrContent) {
+                elementData.element.dataset.qrContent = elementData.qrContent;
+            } else {
+                delete elementData.element.dataset.qrContent;
+            }
+
+            if (elementData.qrColor) {
+                elementData.element.dataset.qrColor = elementData.qrColor;
+            } else {
+                delete elementData.element.dataset.qrColor;
+            }
+        }
     }
     
     loadExistingDesign(index) {
@@ -1031,6 +1056,8 @@ class DesignEditor {
     
     // ===== ELEMENT INTERACTION =====
     makeElementInteractive(elementData) {
+        this.syncElementMetadata(elementData);
+
         // Prevent text selection on element
         elementData.element.style.userSelect = 'none';
         elementData.element.style.webkitUserSelect = 'none';
@@ -1043,7 +1070,9 @@ class DesignEditor {
         });
     }
     
-    selectElement(elementData) {
+    selectElement(elementData, options = {}) {
+        const { skipReposition = false } = options;
+
         // Blur any active input to prevent focus blocking drag
         if (document.activeElement && document.activeElement.tagName === 'INPUT') {
             document.activeElement.blur();
@@ -1058,7 +1087,9 @@ class DesignEditor {
         elementData.element.classList.add('element-selected');
         
         // Ensure element is within bounds before showing handles
-        this.bringElementInBounds(elementData);
+        if (!skipReposition) {
+            this.bringElementInBounds(elementData);
+        }
         
         // Show resize handles
         this.showResizeHandles(elementData);
@@ -2222,16 +2253,36 @@ class DesignEditor {
     
     // ===== HISTORY =====
     saveHistory() {
-        const state = {
-            elements: this.elements.map(el => ({
-                ...el,
-                element: el.element.outerHTML
+        if (this.isRestoringHistory) {
+            return;
+        }
+
+        this.elements.forEach((elementData) => this.syncElementMetadata(elementData));
+
+        const state = JSON.stringify({
+            selectedElementId: this.selectedElement ? String(this.selectedElement.id) : null,
+            elements: this.elements.map((elementData) => ({
+                id: String(elementData.id),
+                markup: elementData.element.outerHTML
             }))
-        };
-        
+        });
+
+        if (this.history[this.historyIndex] === state) {
+            return;
+        }
+
         this.history = this.history.slice(0, this.historyIndex + 1);
-        this.history.push(JSON.stringify(state));
-        this.historyIndex++;
+        this.history.push(state);
+
+        if (this.history.length > this.maxHistoryEntries) {
+            this.history.shift();
+        } else {
+            this.historyIndex++;
+        }
+
+        if (this.history.length > 0) {
+            this.historyIndex = this.history.length - 1;
+        }
     }
     
     undo() {
@@ -2250,7 +2301,9 @@ class DesignEditor {
     
     restoreState(stateStr) {
         try {
+            this.isRestoringHistory = true;
             const state = JSON.parse(stateStr);
+            const selectedElementId = state.selectedElementId ? String(state.selectedElementId) : null;
 
             this.elements.forEach((el) => el.element.remove());
             this.elements = [];
@@ -2258,18 +2311,13 @@ class DesignEditor {
 
             (state.elements || []).forEach((saved) => {
                 const wrapper = document.createElement('div');
-                wrapper.innerHTML = saved.element;
+                wrapper.innerHTML = saved.markup;
                 const restored = wrapper.firstElementChild;
                 if (!restored) return;
 
                 this.canvas.appendChild(restored);
 
-                const rebuilt = this.buildElementDataFromNode(restored, saved.id);
-                const elementData = {
-                    ...rebuilt,
-                    ...saved,
-                    element: restored
-                };
+                const elementData = this.buildElementDataFromNode(restored, saved.id);
 
                 this.elements.push(elementData);
                 this.makeElementInteractive(elementData);
@@ -2281,8 +2329,17 @@ class DesignEditor {
             this.updateLayers();
             this.clearPropertiesSections();
             this.updateSidebarMode();
+
+            if (selectedElementId) {
+                const restoredSelection = this.elements.find((elementData) => String(elementData.id) === selectedElementId);
+                if (restoredSelection) {
+                    this.selectElement(restoredSelection, { skipReposition: true });
+                }
+            }
         } catch (error) {
             console.error('Erro ao restaurar histórico:', error);
+        } finally {
+            this.isRestoringHistory = false;
         }
     }
     

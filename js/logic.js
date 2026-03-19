@@ -25,7 +25,7 @@ function getStoredCart() {
     return [];
 }
 
-let cart = getStoredCart();
+let cart = [];
 
 // ===== DOM ELEMENTS =====
 const productsContainer = document.getElementById('products-container');
@@ -95,6 +95,43 @@ const initialProducts = [
     }
 ];
 
+function normalizeCartItem(item) {
+    if (!item || typeof item !== 'object') {
+        return null;
+    }
+
+    const fallbackProduct = initialProducts.find((product) => product.id === Number(item.id));
+    const preco = Number(item.preco ?? fallbackProduct?.preco);
+    const quantity = Math.max(1, Number.parseInt(item.quantity ?? 1, 10) || 1);
+
+    if (!Number.isFinite(preco)) {
+        return null;
+    }
+
+    return {
+        ...item,
+        id: Number(item.id ?? fallbackProduct?.id ?? Date.now()),
+        nome: item.nome || fallbackProduct?.nome || 'Produto sem nome',
+        imagem: item.imagem || fallbackProduct?.imagem || '',
+        preco,
+        quantity,
+        customized: Boolean(item.customized),
+        design: item.design || null
+    };
+}
+
+function normalizeCartItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map(normalizeCartItem)
+        .filter(Boolean);
+}
+
+cart = normalizeCartItems(getStoredCart());
+
 // ===== RENDER PRODUCTS =====
 function renderProducts(products) {
     if (!productsContainer) return; // Safety check for pages without products container
@@ -157,6 +194,7 @@ async function fetchProducts() {
 
 // ===== CART FUNCTIONS =====
 function updateCart() {
+    cart = normalizeCartItems(cart);
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     LEGACY_CART_STORAGE_KEYS.forEach((key) => {
         localStorage.setItem(key, JSON.stringify(cart));
