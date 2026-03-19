@@ -693,19 +693,45 @@ function resolveItemPreviewAndDesign(item, snapshot) {
 
     const designSvg = svgCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
 
-    // Explicit raster preview (actual design render, not product image)
-    const explicitPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
-        .find((value) => typeof value === 'string' && value.trim()) || '';
+    // Only data: URIs are genuine design previews. Regular https/relative URLs are product images.
+    const isDataUri = (v) => typeof v === 'string' && v.startsWith('data:');
+    const designPreviewUrl = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+        .find(isDataUri) || '';
+
+    // Also accept any https preview that isn't the same as the product image (e.g. server-rendered raster)
+    const productImageUrls = new Set(
+        [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
+            .filter((v) => typeof v === 'string' && v.trim())
+    );
+    const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+        .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
     // Product store image — last resort fallback only
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
-    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
+    const designDataUrl = designSvg
+        ? (typeof buildSvgDataUrl === 'function' ? (buildSvgDataUrl(designSvg) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`) : '')
+        : '';
 
-    // Priority: SVG design → explicit preview → product image fallback
-    const previewUrl = designDataUrl || explicitPreview || fallbackImage;
-    const hasDesign = Boolean(designDataUrl || explicitPreview);
+    // hasDesign: true if ANY real design content was found (raw SVG, data URI preview, or distinct http preview)
+    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);
+    const previewUrl = designDataUrl || designPreviewUrl || httpPreview || fallbackImage;
+
+    if (console.debug) {
+        console.debug('[IberFlag] resolveItemPreviewAndDesign', {
+            productName: item?.produtos?.nome || item?.nome_produto,
+            hasDesignSvg: Boolean(designSvg),
+            hasDesignPreviewUrl: Boolean(designPreviewUrl),
+            hasHttpPreview: Boolean(httpPreview),
+            hasFallback: Boolean(fallbackImage),
+            hasDesign,
+            item_design_svg: item?.design_svg ? 'present' : 'missing',
+            item_design_preview: item?.design_preview ? item?.design_preview.slice(0, 40) : 'missing',
+            snapshot_design: snapshot?.design ? 'present' : 'missing',
+            snapshot_designPreview: snapshot?.designPreview ? snapshot?.designPreview.slice(0, 40) : 'missing',
+        });
+    }
 
     return {
         previewUrl,
