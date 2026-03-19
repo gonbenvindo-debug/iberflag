@@ -216,6 +216,50 @@ class DesignEditor {
         };
     }
 
+    moveElementBy(elementData, deltaX, deltaY) {
+        if (!elementData || (!deltaX && !deltaY)) {
+            return;
+        }
+
+        if (elementData.rotation && elementData.rotation !== 0) {
+            const proposedTranslateX = (elementData.translateX || 0) + deltaX;
+            const proposedTranslateY = (elementData.translateY || 0) + deltaY;
+            const clampedTranslate = this.clampRotatedTranslate(
+                elementData,
+                proposedTranslateX,
+                proposedTranslateY
+            );
+
+            elementData.translateX = clampedTranslate.translateX;
+            elementData.translateY = clampedTranslate.translateY;
+            return;
+        }
+
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            const currentX = parseFloat(elementData.element.getAttribute('x') || '0');
+            const currentY = parseFloat(elementData.element.getAttribute('y') || '0');
+            elementData.element.setAttribute('x', currentX + deltaX);
+            elementData.element.setAttribute('y', currentY + deltaY);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const currentCx = parseFloat(elementData.element.getAttribute('cx') || '0');
+            const currentCy = parseFloat(elementData.element.getAttribute('cy') || '0');
+            elementData.element.setAttribute('cx', currentCx + deltaX);
+            elementData.element.setAttribute('cy', currentCy + deltaY);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            const currentPoints = (elementData.element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+
+            if (currentPoints.length >= 3) {
+                const translatedPoints = currentPoints.map(([x, y]) => `${x + deltaX},${y + deltaY}`);
+                elementData.element.setAttribute('points', translatedPoints.join(' '));
+            }
+        }
+
+        this.bringElementInBounds(elementData);
+    }
+
     normalizeRotation(rotation) {
         // Clean up floating point errors
         const deadzone = 0.1;
@@ -306,18 +350,116 @@ class DesignEditor {
         // Editable bounds remain exactly the same as the design-canvas.
         this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
     }
+
+    getTemplateElementArea(element) {
+        const tagName = element.tagName.toLowerCase();
+
+        if (tagName === 'rect') {
+            const width = parseFloat(element.getAttribute('width') || '0');
+            const height = parseFloat(element.getAttribute('height') || '0');
+            return Math.max(0, width * height);
+        }
+
+        if (tagName === 'circle') {
+            const radius = parseFloat(element.getAttribute('r') || '0');
+            return Math.max(0, Math.PI * radius * radius);
+        }
+
+        if (tagName === 'ellipse') {
+            const rx = parseFloat(element.getAttribute('rx') || '0');
+            const ry = parseFloat(element.getAttribute('ry') || '0');
+            return Math.max(0, Math.PI * rx * ry);
+        }
+
+        if (tagName === 'polygon') {
+            const points = (element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map(point => point.split(',').map(Number))
+                .filter(point => point.length === 2 && point.every(Number.isFinite));
+
+            if (points.length === 0) {
+                return 0;
+            }
+
+            const xs = points.map(point => point[0]);
+            const ys = points.map(point => point[1]);
+            return Math.max(0, (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys)));
+        }
+
+        return 0;
+    }
+
+    isTemplateBackgroundElement(element, sourceBounds) {
+        if (!element || element.tagName.toLowerCase() !== 'rect') {
+            return false;
+        }
+
+        const x = parseFloat(element.getAttribute('x') || '0');
+        const y = parseFloat(element.getAttribute('y') || '0');
+        const width = parseFloat(element.getAttribute('width') || '0');
+        const height = parseFloat(element.getAttribute('height') || '0');
+        const fill = (element.getAttribute('fill') || '').trim();
+        const stroke = (element.getAttribute('stroke') || '').trim();
+        const coversFullViewbox = (
+            Math.abs(x - sourceBounds.x) < 0.01 &&
+            Math.abs(y - sourceBounds.y) < 0.01 &&
+            Math.abs(width - sourceBounds.width) < 0.01 &&
+            Math.abs(height - sourceBounds.height) < 0.01
+        );
+
+        return coversFullViewbox && (!stroke || stroke === 'none') && (fill.startsWith('url(') || fill === '#ffffff' || fill === 'white');
+    }
+
+    findTemplateOutlineElement(root, sourceBounds) {
+        const candidates = Array.from(root.querySelectorAll('path, polygon, rect, circle, ellipse'));
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+        const scored = candidates
+            .filter(element => !this.isTemplateBackgroundElement(element, sourceBounds))
+            .map(element => {
+                const id = `${element.getAttribute('id') || ''} ${element.getAttribute('class') || ''}`.toLowerCase();
+                const stroke = (element.getAttribute('stroke') || '').trim().toLowerCase();
+                const fill = (element.getAttribute('fill') || '').trim().toLowerCase();
+                const strokeDasharray = (element.getAttribute('stroke-dasharray') || '').trim();
+                const area = this.getTemplateElementArea(element);
+                let score = area;
+
+                if (id.includes('print') || id.includes('safe') || id.includes('area') || id.includes('outline')) {
+                    score += 1000000;
+                }
+
+                if (strokeDasharray) {
+                    score += 500000;
+                }
+
+                if (stroke && stroke !== 'none') {
+                    score += 200000;
+                }
+
+                if (fill === 'none') {
+                    score += 50000;
+                }
+
+                if (fill.startsWith('url(')) {
+                    score -= 1000000;
+                }
+
+                return { element, score };
+            })
+            .sort((left, right) => right.score - left.score);
+
+        return scored.length > 0 ? scored[0].element : candidates[0];
+    }
     
     loadSVGTemplate(svgContent) {
         try {
             const parser = new DOMParser();
             const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
             const root = svgDoc.documentElement;
-            const areaElement = root.querySelector('path, polygon, rect, circle, ellipse');
-
-            if (!areaElement) {
-                this.setDefaultPrintArea();
-                return;
-            }
 
             const viewBoxAttr = root.getAttribute('viewBox');
             let sourceBounds = { x: 0, y: 0, width: 800, height: 600 };
@@ -333,6 +475,13 @@ class DesignEditor {
                 if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
                     sourceBounds = { x: 0, y: 0, width, height };
                 }
+            }
+
+            const areaElement = this.findTemplateOutlineElement(root, sourceBounds);
+
+            if (!areaElement) {
+                this.setDefaultPrintArea();
+                return;
             }
 
             this.updatePrintAreaFromElement(areaElement, sourceBounds);
@@ -871,20 +1020,21 @@ class DesignEditor {
         
         // Apply offset if needed
         if (offsetX !== 0 || offsetY !== 0) {
-            const translateX = (elementData.translateX || 0) + offsetX;
-            const translateY = (elementData.translateY || 0) + offsetY;
-            
-            elementData.translateX = translateX;
-            elementData.translateY = translateY;
-            
             // Reapply transform with new translation
             if (elementData.rotation && elementData.rotation !== 0) {
+                const translateX = (elementData.translateX || 0) + offsetX;
+                const translateY = (elementData.translateY || 0) + offsetY;
+                
+                elementData.translateX = translateX;
+                elementData.translateY = translateY;
                 const bbox = elementData.element.getBBox();
                 const centerX = bbox.x + bbox.width / 2;
                 const centerY = bbox.y + bbox.height / 2;
                 elementData.element.setAttribute('transform',
                     `translate(${translateX} ${translateY}) rotate(${elementData.rotation} ${centerX} ${centerY})`);
             } else {
+                elementData.translateX = 0;
+                elementData.translateY = 0;
                 // For non-rotated elements, adjust x/y attributes
                 if (elementData.type === 'text' || elementData.type === 'image' || 
                     (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
@@ -1104,82 +1254,7 @@ class DesignEditor {
             const deltaX = svgDelta.dx;
             const deltaY = svgDelta.dy;
             
-            // For rotated elements, use translate transform
-            if (this.selectedElement.rotation && this.selectedElement.rotation !== 0) {
-                const proposedTranslateX = (this.selectedElement.translateX || 0) + deltaX;
-                const proposedTranslateY = (this.selectedElement.translateY || 0) + deltaY;
-                const clampedTranslate = this.clampRotatedTranslate(
-                    this.selectedElement,
-                    proposedTranslateX,
-                    proposedTranslateY
-                );
-
-                this.selectedElement.translateX = clampedTranslate.translateX;
-                this.selectedElement.translateY = clampedTranslate.translateY;
-            } else {
-                // For non-rotated elements, use x/y attributes as before
-                let newX;
-                let newY;
-                
-                const canvasBounds = this.getCanvasBounds();
-                
-                if (this.selectedElement.type === 'text') {
-                    const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
-                    const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
-                    newX = currentX + deltaX;
-                    newY = currentY + deltaY;
-                    newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
-                    newY = Math.max(canvasBounds.y + 20, Math.min(newY, canvasBounds.y + canvasBounds.height));
-                    this.selectedElement.element.setAttribute('x', newX);
-                    this.selectedElement.element.setAttribute('y', newY);
-                } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-                    const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
-                    const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
-                    newX = currentX + deltaX;
-                    newY = currentY + deltaY;
-                    const width = parseFloat(this.selectedElement.element.getAttribute('width'));
-                    const height = parseFloat(this.selectedElement.element.getAttribute('height'));
-                    newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - width));
-                    newY = Math.max(canvasBounds.y, Math.min(newY, canvasBounds.y + canvasBounds.height - height));
-                    this.selectedElement.element.setAttribute('x', newX);
-                    this.selectedElement.element.setAttribute('y', newY);
-                } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-                    const currentX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
-                    const currentY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
-                    newX = currentX + deltaX;
-                    const r = parseFloat(this.selectedElement.element.getAttribute('r'));
-                    newX = Math.max(canvasBounds.x + r, Math.min(newX, canvasBounds.x + canvasBounds.width - r));
-                    newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
-                    this.selectedElement.element.setAttribute('cx', newX);
-                    this.selectedElement.element.setAttribute('cy', newY);
-                } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
-                    const currentPoints = (this.selectedElement.element.getAttribute('points') || '')
-                        .trim()
-                        .split(/\s+/)
-                        .map((pair) => pair.split(',').map(Number));
-                    const bbox = this.selectedElement.element.getBBox();
-                    let clampedDeltaX = deltaX;
-                    let clampedDeltaY = deltaY;
-
-                    if (bbox.x + clampedDeltaX < canvasBounds.x) {
-                        clampedDeltaX = canvasBounds.x - bbox.x;
-                    }
-                    if (bbox.x + bbox.width + clampedDeltaX > canvasBounds.x + canvasBounds.width) {
-                        clampedDeltaX = (canvasBounds.x + canvasBounds.width) - (bbox.x + bbox.width);
-                    }
-                    if (bbox.y + clampedDeltaY < canvasBounds.y) {
-                        clampedDeltaY = canvasBounds.y - bbox.y;
-                    }
-                    if (bbox.y + bbox.height + clampedDeltaY > canvasBounds.y + canvasBounds.height) {
-                        clampedDeltaY = (canvasBounds.y + canvasBounds.height) - (bbox.y + bbox.height);
-                    }
-
-                    if (currentPoints.length >= 3) {
-                        const translatedPoints = currentPoints.map(([x, y]) => `${x + clampedDeltaX},${y + clampedDeltaY}`);
-                        this.selectedElement.element.setAttribute('points', translatedPoints.join(' '));
-                    }
-                }
-            }
+            this.moveElementBy(this.selectedElement, deltaX, deltaY);
 
             this.dragStart.mouseX = e.clientX;
             this.dragStart.mouseY = e.clientY;
@@ -1741,79 +1816,17 @@ class DesignEditor {
     centerSelected(axis) {
         if (!this.selectedElement) return;
 
-        const bounds = this.getCanvasBounds();
-        const canvasCenterX = bounds.x + (bounds.width / 2);
-        const canvasCenterY = bounds.y + (bounds.height / 2);
+        const bounds = this.getEditableBounds();
+        const transformed = this.getTransformedBounds(this.selectedElement);
+        const currentCenterX = (transformed.left + transformed.right) / 2;
+        const currentCenterY = (transformed.top + transformed.bottom) / 2;
+        const targetCenterX = bounds.x + (bounds.width / 2);
+        const targetCenterY = bounds.y + (bounds.height / 2);
 
-        const bbox = this.selectedElement.element.getBBox();
-        const svgCenterX = bbox.x + bbox.width / 2;
-        const svgCenterY = bbox.y + bbox.height / 2;
+        const deltaX = axis === 'horizontal' ? (targetCenterX - currentCenterX) : 0;
+        const deltaY = axis === 'vertical' ? (targetCenterY - currentCenterY) : 0;
 
-        // Get transformed visual center using CTM
-        const ctm = this.selectedElement.element.getScreenCTM();
-        const visualCenter = ctm ? new DOMPoint(svgCenterX, svgCenterY).matrixTransform(ctm) : null;
-
-        if (this.selectedElement.type === 'text') {
-            if (axis === 'horizontal' && visualCenter) {
-                const screenDeltaX = canvasCenterX - visualCenter.x;
-                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
-                const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
-                this.selectedElement.element.setAttribute('x', currentX + svgDeltaX);
-            }
-            if (axis === 'vertical' && visualCenter) {
-                const screenDeltaY = canvasCenterY - visualCenter.y;
-                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
-                const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
-                this.selectedElement.element.setAttribute('y', currentY + svgDeltaY);
-            }
-        } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            if (axis === 'horizontal' && visualCenter) {
-                const screenDeltaX = canvasCenterX - visualCenter.x;
-                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
-                const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
-                this.selectedElement.element.setAttribute('x', currentX + svgDeltaX);
-            }
-            if (axis === 'vertical' && visualCenter) {
-                const screenDeltaY = canvasCenterY - visualCenter.y;
-                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
-                const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
-                this.selectedElement.element.setAttribute('y', currentY + svgDeltaY);
-            }
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-            if (axis === 'horizontal' && visualCenter) {
-                const screenDeltaX = canvasCenterX - visualCenter.x;
-                const svgDeltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
-                const currentCx = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
-                this.selectedElement.element.setAttribute('cx', currentCx + svgDeltaX);
-            }
-            if (axis === 'vertical' && visualCenter) {
-                const screenDeltaY = canvasCenterY - visualCenter.y;
-                const svgDeltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
-                const currentCy = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
-                this.selectedElement.element.setAttribute('cy', currentCy + svgDeltaY);
-            }
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
-            const points = (this.selectedElement.element.getAttribute('points') || '')
-                .trim()
-                .split(/\s+/)
-                .map((pair) => pair.split(',').map(Number));
-            if (points.length >= 3 && visualCenter) {
-                let deltaX = 0;
-                let deltaY = 0;
-                
-                if (axis === 'horizontal') {
-                    const screenDeltaX = canvasCenterX - visualCenter.x;
-                    deltaX = (screenDeltaX / this.baseCanvasSize.width) * 800;
-                }
-                if (axis === 'vertical') {
-                    const screenDeltaY = canvasCenterY - visualCenter.y;
-                    deltaY = (screenDeltaY / this.baseCanvasSize.height) * 600;
-                }
-                
-                const moved = points.map(([x, y]) => `${x + deltaX},${y + deltaY}`).join(' ');
-                this.selectedElement.element.setAttribute('points', moved);
-            }
-        }
+        this.moveElementBy(this.selectedElement, deltaX, deltaY);
 
         this.showResizeHandles(this.selectedElement);
         this.updateLayers();
@@ -1823,31 +1836,7 @@ class DesignEditor {
     nudgeSelected(dx, dy) {
         if (!this.selectedElement) return;
 
-        if (this.selectedElement.type === 'text') {
-            const x = parseFloat(this.selectedElement.element.getAttribute('x') || '0') + dx;
-            const y = parseFloat(this.selectedElement.element.getAttribute('y') || '0') + dy;
-            this.selectedElement.element.setAttribute('x', x);
-            this.selectedElement.element.setAttribute('y', y);
-        } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            const x = parseFloat(this.selectedElement.element.getAttribute('x') || '0') + dx;
-            const y = parseFloat(this.selectedElement.element.getAttribute('y') || '0') + dy;
-            this.selectedElement.element.setAttribute('x', x);
-            this.selectedElement.element.setAttribute('y', y);
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-            const cx = parseFloat(this.selectedElement.element.getAttribute('cx') || '0') + dx;
-            const cy = parseFloat(this.selectedElement.element.getAttribute('cy') || '0') + dy;
-            this.selectedElement.element.setAttribute('cx', cx);
-            this.selectedElement.element.setAttribute('cy', cy);
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
-            const points = (this.selectedElement.element.getAttribute('points') || '')
-                .trim()
-                .split(/\s+/)
-                .map((pair) => pair.split(',').map(Number));
-            if (points.length >= 3) {
-                const moved = points.map(([x, y]) => `${x + dx},${y + dy}`).join(' ');
-                this.selectedElement.element.setAttribute('points', moved);
-            }
-        }
+        this.moveElementBy(this.selectedElement, dx, dy);
 
         this.showResizeHandles(this.selectedElement);
         this.saveHistory();
