@@ -141,6 +141,21 @@ class DesignEditor {
         };
     }
 
+    clientDeltaToSvgDelta(deltaClientX, deltaClientY) {
+        const rect = this.canvas.getBoundingClientRect();
+        const svgWidth = 800;
+        const svgHeight = 600;
+
+        if (!rect.width || !rect.height) {
+            return { dx: 0, dy: 0 };
+        }
+
+        return {
+            dx: (deltaClientX / rect.width) * svgWidth,
+            dy: (deltaClientY / rect.height) * svgHeight
+        };
+    }
+
     setDefaultPrintArea() {
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
@@ -830,9 +845,13 @@ class DesignEditor {
     
     handleMouseMove(e) {
         if (this.isDragging && this.selectedElement) {
-            // Calculate mouse delta in screen space
-            const deltaX = (e.clientX - this.dragStart.mouseX) / this.zoom;
-            const deltaY = (e.clientY - this.dragStart.mouseY) / this.zoom;
+            // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
+            const svgDelta = this.clientDeltaToSvgDelta(
+                e.clientX - this.dragStart.mouseX,
+                e.clientY - this.dragStart.mouseY
+            );
+            const deltaX = svgDelta.dx;
+            const deltaY = svgDelta.dy;
             
             // For rotated elements, use translate transform
             if (this.selectedElement.rotation && this.selectedElement.rotation !== 0) {
@@ -968,9 +987,13 @@ class DesignEditor {
     
     doResize(e) {
         if (!this.selectedElement) return;
-        
-        let dx = (e.clientX - this.dragStart.x) / this.zoom;
-        let dy = (e.clientY - this.dragStart.y) / this.zoom;
+
+        const svgDelta = this.clientDeltaToSvgDelta(
+            e.clientX - this.dragStart.x,
+            e.clientY - this.dragStart.y
+        );
+        let dx = svgDelta.dx;
+        let dy = svgDelta.dy;
         
         // If element is rotated, convert mouse delta to element's local coordinate space
         const rotation = this.selectedElement.rotation || 0;
