@@ -1,7 +1,7 @@
 {
-  "name": "latinflag",
+  "name": "iberflag",
   "version": "1.0.0",
-  "description": "E-commerce de produtos publicitários",
+  "description": "E-commerce iberico de produtos publicitarios com foco em flybanners",
   "main": "index.html",
   "scripts": {
     "populate": "node populate-products.js",
@@ -23,6 +23,6 @@
     "flybanners",
     "rollups"
   ],
-  "author": "LatinFlag",
+  "author": "IberFlag",
   "license": "ISC"
 }

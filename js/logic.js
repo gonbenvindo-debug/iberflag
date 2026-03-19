@@ -5,7 +5,27 @@ const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBh
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ===== CART MANAGEMENT =====
-let cart = JSON.parse(localStorage.getItem('latinflag_cart')) || [];
+const CART_STORAGE_KEY = 'iberflag_cart';
+const LEGACY_CART_STORAGE_KEYS = ['latinflag_cart', 'cart'];
+
+function getStoredCart() {
+    const storageKeys = [CART_STORAGE_KEY, ...LEGACY_CART_STORAGE_KEYS];
+
+    for (const key of storageKeys) {
+        try {
+            const stored = JSON.parse(localStorage.getItem(key) || '[]');
+            if (Array.isArray(stored) && stored.length > 0) {
+                return stored;
+            }
+        } catch (error) {
+            console.warn('Falha ao recuperar carrinho:', key, error);
+        }
+    }
+
+    return [];
+}
+
+let cart = getStoredCart();
 
 // ===== DOM ELEMENTS =====
 const productsContainer = document.getElementById('products-container');
@@ -137,7 +157,10 @@ async function fetchProducts() {
 
 // ===== CART FUNCTIONS =====
 function updateCart() {
-    localStorage.setItem('latinflag_cart', JSON.stringify(cart));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    LEGACY_CART_STORAGE_KEYS.forEach((key) => {
+        localStorage.setItem(key, JSON.stringify(cart));
+    });
     
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);

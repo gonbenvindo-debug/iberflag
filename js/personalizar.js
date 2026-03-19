@@ -21,7 +21,8 @@ class DesignEditor {
         this.currentProduct = null;
         this.editIndex = null;
         this.productId = null;
-        this.cartStorageKey = 'latinflag_cart';
+        this.cartStorageKey = 'iberflag_cart';
+        this.legacyCartStorageKeys = ['latinflag_cart', 'cart'];
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.keepAspectRatio = true;
         this.baseCanvasSize = { width: 800, height: 600 };
@@ -98,23 +99,35 @@ class DesignEditor {
     }
 
     getAutosaveKey() {
-        return `latinflag_autosave_${this.productId || 'default'}`;
+        return `iberflag_autosave_${this.productId || 'default'}`;
+    }
+
+    getLegacyAutosaveKeys() {
+        return [`latinflag_autosave_${this.productId || 'default'}`];
     }
 
     getCartData() {
-        const primary = JSON.parse(localStorage.getItem(this.cartStorageKey) || '[]');
-        if (primary.length > 0) return primary;
+        const storageKeys = [this.cartStorageKey, ...this.legacyCartStorageKeys];
 
-        const legacy = JSON.parse(localStorage.getItem('cart') || '[]');
-        if (legacy.length > 0) return legacy;
+        for (const key of storageKeys) {
+            try {
+                const stored = JSON.parse(localStorage.getItem(key) || '[]');
+                if (Array.isArray(stored) && stored.length > 0) {
+                    return stored;
+                }
+            } catch (error) {
+                console.warn('Falha ao recuperar carrinho:', key, error);
+            }
+        }
 
         return [];
     }
 
     saveCartData(cart) {
         localStorage.setItem(this.cartStorageKey, JSON.stringify(cart));
-        // Keep legacy key for backward compatibility during migration.
-        localStorage.setItem('cart', JSON.stringify(cart));
+        this.legacyCartStorageKeys.forEach((key) => {
+            localStorage.setItem(key, JSON.stringify(cart));
+        });
     }
 
     getEditableBounds() {
@@ -573,7 +586,9 @@ class DesignEditor {
     }
 
     loadAutosaveDesign() {
-        const autosave = localStorage.getItem(this.getAutosaveKey());
+        const autosave = localStorage.getItem(this.getAutosaveKey()) || this.getLegacyAutosaveKeys()
+            .map((key) => localStorage.getItem(key))
+            .find(Boolean);
         if (!autosave) return;
 
         try {
@@ -609,6 +624,19 @@ class DesignEditor {
             document.getElementById('image-upload').click();
         });
         document.getElementById('image-upload').addEventListener('change', (e) => this.handleImageUpload(e));
+        const addQrBtn = document.getElementById('add-qr-btn');
+        const qrContentInput = document.getElementById('qr-content-input');
+        if (addQrBtn) {
+            addQrBtn.addEventListener('click', () => this.handleAddQRCode());
+        }
+        if (qrContentInput) {
+            qrContentInput.addEventListener('keydown', (e) => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    this.handleAddQRCode();
+                }
+            });
+        }
         
         // Shapes
         document.querySelectorAll('.shape-btn').forEach(btn => {
@@ -850,6 +878,79 @@ class DesignEditor {
         reader.readAsDataURL(file);
         e.target.value = '';
     }
+
+    handleAddQRCode() {
+        const input = document.getElementById('qr-content-input');
+        if (!input) return;
+
+        const content = input.value.trim();
+        if (!content) {
+            showToast('Insira um link ou texto para gerar o QR code', 'warning');
+            input.focus();
+            return;
+        }
+
+        try {
+            const dataUrl = this.generateQRCodeDataUrl(content);
+            this.addImageFromSource(dataUrl, 180, 180, 'QR Code');
+            input.value = '';
+            showToast('QR code adicionado ao design', 'success');
+        } catch (error) {
+            console.error('Erro ao gerar QR code:', error);
+            showToast('Nao foi possivel gerar o QR code', 'error');
+        }
+    }
+
+    generateQRCodeDataUrl(content) {
+        if (typeof qrcode !== 'function') {
+            throw new Error('Biblioteca de QR code indisponivel');
+        }
+
+        const qr = qrcode(0, 'M');
+        qr.addData(content);
+        qr.make();
+
+        const svgMarkup = qr.createSvgTag({
+            scalable: true,
+            margin: 0,
+            cellSize: 6
+        });
+
+        return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svgMarkup)}`;
+    }
+
+    addImageFromSource(src, width, height, name = 'Imagem') {
+        const center = this.getEditableCenter();
+
+        const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        img.setAttribute('x', String(center.x - (width / 2)));
+        img.setAttribute('y', String(center.y - (height / 2)));
+        img.setAttribute('width', width);
+        img.setAttribute('height', height);
+        img.setAttribute('href', src);
+        img.setAttribute('preserveAspectRatio', 'none');
+        img.setAttribute('data-editable', 'true');
+        img.style.cursor = 'move';
+
+        this.canvas.appendChild(img);
+        this.bringPrintAreaOverlaysToFront();
+
+        const elementData = {
+            id: Date.now(),
+            element: img,
+            type: 'image',
+            src,
+            name,
+            opacity: 1,
+            rotation: 0
+        };
+
+        this.elements.push(elementData);
+        this.makeElementInteractive(elementData);
+        this.selectElement(elementData);
+        this.updateLayers();
+        this.saveHistory();
+    }
     
     addShape(shapeType) {
         const center = this.getEditableCenter();
@@ -991,17 +1092,6 @@ class DesignEditor {
             top: minY,
             bottom: maxY
         };
-    }
-
-    isBoundsInsideEditableArea(transformedBounds, editableBounds = this.getEditableBounds()) {
-        const epsilon = 0.01;
-
-        return (
-            transformedBounds.left >= editableBounds.x - epsilon &&
-            transformedBounds.right <= editableBounds.x + editableBounds.width + epsilon &&
-            transformedBounds.top >= editableBounds.y - epsilon &&
-            transformedBounds.bottom <= editableBounds.y + editableBounds.height + epsilon
-        );
     }
     
     bringElementInBounds(elementData) {
@@ -1623,8 +1713,14 @@ class DesignEditor {
         
         const transformed = this.getTransformedBounds(this.selectedElement);
         const bounds = this.getEditableBounds();
-
-        if (!this.isBoundsInsideEditableArea(transformed, bounds)) {
+        
+        // Check if element is completely outside bounds (all corners out on same side)
+        const isCompletelyOutLeft = transformed.right < bounds.x;
+        const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
+        const isCompletelyOutTop = transformed.bottom < bounds.y;
+        const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+        
+        if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
             // Revert to previous rotation - not allowed to escape completely
             const prevRotation = this.selectedElement.rotation || 0;
             this.selectedElement.element.setAttribute('transform', 
@@ -1673,8 +1769,14 @@ class DesignEditor {
             
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
-
-            if (!this.isBoundsInsideEditableArea(transformed, bounds)) {
+            
+            // Check if element would be completely outside bounds
+            const isCompletelyOutLeft = transformed.right < bounds.x;
+            const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
+            const isCompletelyOutTop = transformed.bottom < bounds.y;
+            const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+            
+            if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
                 // Reject this rotation - revert to previous
                 const prevRotation = this.selectedElement.rotation || 0;
                 this.selectedElement.element.setAttribute('transform', 
@@ -2113,6 +2215,9 @@ class DesignEditor {
     autoSave() {
         const design = this.getDesignSVG();
         localStorage.setItem(this.getAutosaveKey(), design);
+        this.getLegacyAutosaveKeys().forEach((key) => {
+            localStorage.setItem(key, design);
+        });
     }
     
     getDesignSVG() {
@@ -2150,6 +2255,7 @@ class DesignEditor {
         
         this.saveCartData(cart);
         localStorage.removeItem(this.getAutosaveKey());
+        this.getLegacyAutosaveKeys().forEach((key) => localStorage.removeItem(key));
         
         setTimeout(() => {
             window.location.href = '/produtos.html';

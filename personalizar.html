@@ -3,10 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Personalizar Produto - LatinFlag</title>
+    <title>Personalizar Produto - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/css/tailwind.output.css">
     <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="/css/style.css">
     <style>
@@ -131,7 +132,7 @@
     <nav class="panel-clean border-0 border-b h-16 flex items-center px-4 justify-between">
         <div class="flex items-center gap-4">
             <a href="/" class="text-xl font-bold bg-gradient-to-r from-blue-600 to-blue-800 bg-clip-text text-transparent">
-                LatinFlag
+                IberFlag
             </a>
             <span class="text-gray-400">|</span>
             <span id="product-name" class="font-semibold text-gray-700"></span>
@@ -172,6 +173,18 @@
                         Adicionar Imagem
                     </button>
                     <input type="file" id="image-upload" accept="image/*" class="hidden">
+
+                    <div class="pt-4 border-t border-gray-100">
+                        <p class="text-sm font-semibold text-gray-700 mb-2">QR Code</p>
+                        <div class="space-y-2">
+                            <input id="qr-content-input" type="text" placeholder="https://site.pt ou texto" class="w-full border rounded-lg px-3 py-2 text-sm">
+                            <button id="add-qr-btn" class="w-full bg-slate-800 text-white py-3 rounded-lg hover:bg-slate-900 transition font-semibold flex items-center justify-center gap-2">
+                                <i data-lucide="qr-code" class="w-5 h-5"></i>
+                                Adicionar QR Code
+                            </button>
+                            <p class="text-xs text-gray-500 leading-relaxed">Gera um QR code editável no canvas a partir de um link ou texto.</p>
+                        </div>
+                    </div>
                     
                     <div class="pt-4">
                         <p class="text-sm font-semibold text-gray-700 mb-2">Formas</p>
@@ -354,7 +367,7 @@
     </div>
 
     <script src="/js/logic.js"></script>
-    <script src="/js/personalizar.js?v=20260319c"></script>
+    <script src="/js/personalizar.js?v=20260319d"></script>
     <script>
         lucide.createIcons();
     </script>

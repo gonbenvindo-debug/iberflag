@@ -148,7 +148,7 @@ if (placeOrderBtn) {
             }
 
             // 2. Create order
-            const orderNumber = `LF${Date.now()}`;
+            const orderNumber = `IBF${Date.now()}`;
             const orderData = {
                 cliente_id: customerId,
                 numero_encomenda: orderNumber,
@@ -189,7 +189,9 @@ if (placeOrderBtn) {
             
             // Clear cart
             cart = [];
+            localStorage.removeItem('iberflag_cart');
             localStorage.removeItem('latinflag_cart');
+            localStorage.removeItem('cart');
 
             // Show success message
             setTimeout(() => {

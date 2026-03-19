@@ -1,6 +1,6 @@
-# LatinFlag - E-commerce de Publicidade Outdoor Premium
+# IberFlag - E-commerce Iberico de Publicidade Visual
 
-Plataforma completa de e-commerce especializada em flybanners, roll-ups e produtos de publicidade outdoor com **personalizador estilo Canva**.
+Plataforma completa de e-commerce especializada em flybanners e produtos publicitarios para o mercado de Portugal e Espanha, com **personalizador estilo Canva**.
 
 ## 🚀 Características
 
@@ -44,7 +44,7 @@ Plataforma completa de e-commerce especializada em flybanners, roll-ups e produt
 ## 📁 Estrutura do Projeto
 
 ```
-latinflag/
+iberflag/
 ├── index.html              # Homepage
 ├── produtos.html           # Catálogo de produtos
 ├── contacto.html           # Formulário de contacto
@@ -245,11 +245,11 @@ Para dúvidas ou problemas:
 
 ## 📄 Licença
 
-Projeto proprietário - LatinFlag © 2024
+Projeto proprietario - IberFlag © 2024
 
 ---
 
-**Desenvolvido com ❤️ para LatinFlag** - WebApp de Publicidade Outdoor
+**Desenvolvido para IberFlag** - WebApp de Publicidade Visual para a Peninsula Iberica
 
 Esta é uma aplicação web simples e moderna para venda de produtos de publicidade exterior, preparada para ser alojada na **Vercel** e utilizar o **Supabase** como base de dados.
 
