@@ -683,13 +683,11 @@ function resolveItemSnapshot(orderMeta, item, index) {
 }
 
 function resolveItemPreviewAndDesign(item, snapshot) {
-    const previewCandidates = [
-        item?.design_preview,
-        item?.preview_design,
-        item?.imagem_produto,
-        snapshot?.designPreview,
-        snapshot?.imagem,
-        item?.produtos?.imagem
+    const svgCandidates = [
+        item?.design_svg,
+        item?.design,
+        item?.personalizacao_svg,
+        snapshot?.design
     ];
 
     const svgCandidates = [
@@ -700,8 +698,19 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     ];
 
     const designSvg = svgCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
-    const preview = previewCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
-    const previewUrl = preview || (typeof buildSvgDataUrl === 'function' ? buildSvgDataUrl(designSvg) : '');
+
+    // Explicit raster preview (actual design render, not product image)
+    const explicitPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+        .find((value) => typeof value === 'string' && value.trim()) || '';
+
+    // Product store image — last resort fallback only
+    const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
+        .find((value) => typeof value === 'string' && value.trim()) || '';
+
+    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
+
+    // Priority: SVG design → explicit preview → product image fallback
+    const previewUrl = designDataUrl || explicitPreview || fallbackImage;
 
     return {
         previewUrl,

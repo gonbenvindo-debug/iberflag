@@ -251,15 +251,6 @@ function buildOptionsSummary(options) {
 }
 
 function resolveOrderItemVisual(item, snapshot) {
-    const previewCandidates = [
-        item?.design_preview,
-        item?.preview_design,
-        item?.imagem_produto,
-        snapshot?.designPreview,
-        snapshot?.imagem,
-        item?.produtos?.imagem
-    ];
-
     const designCandidates = [
         item?.design_svg,
         item?.design,
@@ -268,11 +259,21 @@ function resolveOrderItemVisual(item, snapshot) {
     ];
 
     const designSvg = designCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
-    const preview = previewCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
 
+    // Explicit raster preview (actual design render, not product image)
+    const explicitPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+        .find((value) => typeof value === 'string' && value.trim()) || '';
+
+    // Product store image — last resort fallback only
+    const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
+        .find((value) => typeof value === 'string' && value.trim()) || '';
+
+    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
+
+    // Priority: SVG design → explicit preview → product image fallback
     return {
         designSvg,
-        previewUrl: preview || (typeof buildSvgDataUrl === 'function' ? buildSvgDataUrl(designSvg) : '')
+        previewUrl: designDataUrl || explicitPreview || fallbackImage
     };
 }
 
