@@ -398,23 +398,23 @@ function renderOrderItems(order, items, splitMeta) {
         return `
             <tr>
                 <td class="align-top">
-                    <div class="flex items-center gap-2 min-w-[220px]">
+                    <div class="flex items-center gap-2 min-w-[160px]">
                         <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="w-12 h-12 object-cover rounded-md border border-gray-200 bg-gray-50">
                         <div class="min-w-0">
-                            <p class="text-sm font-semibold text-gray-900 truncate">${escapeHtml(productName)}</p>
+                            <p class="text-xs font-semibold text-gray-900 truncate">${escapeHtml(productName)}</p>
                             <p class="text-xs text-gray-500">${formatCurrency(unitPrice)} / unidade</p>
                         </div>
                     </div>
                 </td>
-                <td class="text-sm text-gray-700">${quantity}</td>
-                <td class="text-sm font-semibold text-gray-800">${formatCurrency(lineSubtotal)}</td>
+                <td class="text-xs text-gray-700">${quantity}</td>
+                <td class="text-xs font-semibold text-gray-800">${formatCurrency(lineSubtotal)}</td>
                 <td>
                     <button type="button" data-preview-index="${index}" class="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100">
                         <i data-lucide="eye" class="w-3 h-3"></i>
                         Ver
                     </button>
                 </td>
-                <td class="text-xs text-gray-600 max-w-[280px]">${escapeHtml(optionsSummary)}</td>
+                <td class="text-xs text-gray-600 max-w-[220px]">${escapeHtml(optionsSummary)}</td>
             </tr>
         `;
     }).join('');
