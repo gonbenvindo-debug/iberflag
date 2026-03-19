@@ -31,6 +31,7 @@ class DesignEditor {
         this.setupEventListeners();
         this.setupAutoSave();
         this.saveHistory();
+        this.updateSidebarMode();
     }
     
     // ===== PRODUCT LOADING =====
@@ -446,6 +447,35 @@ class DesignEditor {
         if (!panel) return;
         panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
+
+    updateSidebarMode() {
+        const elementsPanel = document.getElementById('elements-panel');
+        const propertiesPanel = document.getElementById('properties-panel');
+        const hasSelection = !!this.selectedElement;
+
+        if (elementsPanel) {
+            elementsPanel.classList.toggle('hidden', hasSelection);
+        }
+
+        if (propertiesPanel) {
+            propertiesPanel.classList.toggle('hidden', !hasSelection);
+        }
+    }
+
+    clearPropertiesSections() {
+        document.getElementById('no-selection').classList.remove('hidden');
+        document.getElementById('text-properties').classList.add('hidden');
+        document.getElementById('image-properties').classList.add('hidden');
+        document.getElementById('shape-properties').classList.add('hidden');
+    }
+
+    clearSelection() {
+        this.selectedElement = null;
+        this.hideResizeHandles();
+        this.elements.forEach(el => el.element.classList.remove('element-selected'));
+        this.clearPropertiesSections();
+        this.updateSidebarMode();
+    }
     
     // ===== ADD ELEMENTS =====
     addText() {
@@ -626,6 +656,7 @@ class DesignEditor {
         
         // Update properties panel
         this.updatePropertiesPanel(elementData);
+        this.updateSidebarMode();
 
         // Bring attention to properties automatically.
         this.focusPropertiesPanel();
@@ -882,14 +913,7 @@ class DesignEditor {
     
     handleCanvasMouseDown(e) {
         if (e.target === this.canvas || e.target === this.printArea) {
-            this.selectedElement = null;
-            this.hideResizeHandles();
-            this.elements.forEach(el => el.element.classList.remove('element-selected'));
-            
-            document.getElementById('no-selection').classList.remove('hidden');
-            document.getElementById('text-properties').classList.add('hidden');
-            document.getElementById('image-properties').classList.add('hidden');
-            document.getElementById('shape-properties').classList.add('hidden');
+            this.clearSelection();
         }
     }
     
@@ -1270,15 +1294,9 @@ class DesignEditor {
         if (this.selectedElement) {
             this.selectedElement.element.remove();
             this.elements = this.elements.filter(el => el.id !== this.selectedElement.id);
-            this.selectedElement = null;
-            this.hideResizeHandles();
+            this.clearSelection();
             this.updateLayers();
             this.saveHistory();
-            
-            document.getElementById('no-selection').classList.remove('hidden');
-            document.getElementById('text-properties').classList.add('hidden');
-            document.getElementById('image-properties').classList.add('hidden');
-            document.getElementById('shape-properties').classList.add('hidden');
         }
     }
 
@@ -1572,10 +1590,8 @@ class DesignEditor {
 
             this.hideResizeHandles();
             this.updateLayers();
-            document.getElementById('no-selection').classList.remove('hidden');
-            document.getElementById('text-properties').classList.add('hidden');
-            document.getElementById('image-properties').classList.add('hidden');
-            document.getElementById('shape-properties').classList.add('hidden');
+            this.clearPropertiesSections();
+            this.updateSidebarMode();
         } catch (error) {
             console.error('Erro ao restaurar histórico:', error);
         }

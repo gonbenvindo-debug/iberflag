@@ -56,7 +56,24 @@
         .panel-clean {
             background: var(--panel-bg);
             border: 1px solid var(--panel-border);
-            box-shadow: var(--panel-shadow);
+            box-shadow: none;
+        }
+
+        .sidebar-shell {
+            background: var(--panel-bg);
+            border: 1px solid var(--panel-border);
+            border-radius: 0;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .sidebar-section {
+            padding: 1rem;
+        }
+
+        .sidebar-section + .sidebar-section {
+            border-top: 1px solid #e2e8f0;
         }
 
         .section-title {
@@ -119,7 +136,8 @@
         
         <!-- Left Sidebar - Tools -->
         <aside class="w-80 p-4 pr-2 overflow-y-auto">
-            <div class="panel-clean rounded-2xl p-4 mb-4">
+            <div class="sidebar-shell">
+            <div id="elements-panel" class="sidebar-section overflow-y-auto">
                 <p class="section-title">Elementos</p>
                 <div class="space-y-3 mb-4">
                     <button id="add-text-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2">
@@ -148,7 +166,10 @@
                         </div>
                     </div>
                 </div>
+            </div>
 
+            <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
+                <p class="section-title">Propriedades</p>
                 <p class="section-title">Acoes Rapidas</p>
                 <div class="grid grid-cols-2 gap-2">
                     <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
@@ -168,10 +189,7 @@
                         Centrar V
                     </button>
                 </div>
-            </div>
-            
-            <div id="properties-panel" class="panel-clean rounded-2xl p-4">
-                <p class="section-title">Propriedades</p>
+
                 <div id="no-selection" class="text-center text-gray-400 py-12">
                     <i data-lucide="mouse-pointer" class="w-12 h-12 mx-auto mb-2"></i>
                     <p>Selecione um elemento para editar</p>
@@ -245,6 +263,7 @@
                     </div>
                 </div>
             </div>
+            </div>
         </aside>
 
         <!-- Canvas Area -->
@@ -265,7 +284,7 @@
             </div>
             
             <!-- Bottom Toolbar -->
-            <div class="panel-clean rounded-2xl mt-3 px-4 py-3 flex items-center justify-between">
+            <div class="panel-clean mt-3 px-4 py-3 flex items-center justify-between">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded">
@@ -292,7 +311,7 @@
 
         <!-- Right Sidebar - Layers -->
         <aside class="w-64 p-4 pl-2">
-            <div class="panel-clean rounded-2xl h-full flex flex-col">
+            <div class="sidebar-shell">
             <div class="p-4 border-b border-gray-100">
                 <h3 class="font-bold text-lg">Camadas</h3>
             </div>
