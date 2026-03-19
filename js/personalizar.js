@@ -25,6 +25,7 @@ class DesignEditor {
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.keepAspectRatio = true;
         this.baseCanvasSize = { width: 800, height: 600 };
+        this.handlesFrameRequest = null;
         
         this.init();
     }
@@ -780,6 +781,18 @@ class DesignEditor {
         
         handlesContainer.appendChild(rotateHandle);
     }
+
+    requestHandlesRefresh() {
+        if (!this.selectedElement) return;
+        if (this.handlesFrameRequest !== null) return;
+
+        this.handlesFrameRequest = requestAnimationFrame(() => {
+            this.handlesFrameRequest = null;
+            if (this.selectedElement) {
+                this.showResizeHandles(this.selectedElement);
+            }
+        });
+    }
     
     hideResizeHandles() {
         document.getElementById('resize-handles').classList.add('hidden');
@@ -972,6 +985,11 @@ class DesignEditor {
         this.isRotating = false;
         this.resizeHandle = null;
         this.rotationCenterClient = null;
+
+        if (this.handlesFrameRequest !== null) {
+            cancelAnimationFrame(this.handlesFrameRequest);
+            this.handlesFrameRequest = null;
+        }
 
         if (this.selectedElement) {
             this.showResizeHandles(this.selectedElement);
@@ -1246,6 +1264,8 @@ class DesignEditor {
         const translateY = this.selectedElement.translateY || 0;
         this.selectedElement.element.setAttribute('transform', 
             `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
+
+        this.requestHandlesRefresh();
     }
     
     updateRotation(value) {
