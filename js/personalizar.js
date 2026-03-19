@@ -317,10 +317,10 @@ class DesignEditor {
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
         this.printArea.setAttribute('fill', 'none');
-        this.printArea.setAttribute('stroke', '#3b82f6');
-        this.printArea.setAttribute('stroke-width', '2');
-        this.printArea.setAttribute('stroke-dasharray', '8,4');
-        this.printArea.setAttribute('opacity', '0.5');
+        this.printArea.setAttribute('stroke', 'none');
+        this.printArea.setAttribute('stroke-width', '0');
+        this.printArea.removeAttribute('stroke-dasharray');
+        this.printArea.setAttribute('opacity', '0');
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
 
@@ -347,10 +347,15 @@ class DesignEditor {
             return;
         }
 
-        const scaleX = 800 / sourceBounds.width;
-        const scaleY = 600 / sourceBounds.height;
-        const offsetX = -sourceBounds.x * scaleX;
-        const offsetY = -sourceBounds.y * scaleY;
+        const contentBounds = { x: 50, y: 50, width: 700, height: 500 };
+        const uniformScale = Math.min(
+            contentBounds.width / sourceBounds.width,
+            contentBounds.height / sourceBounds.height
+        );
+        const renderedWidth = sourceBounds.width * uniformScale;
+        const renderedHeight = sourceBounds.height * uniformScale;
+        const offsetX = contentBounds.x + ((contentBounds.width - renderedWidth) / 2) - (sourceBounds.x * uniformScale);
+        const offsetY = contentBounds.y + ((contentBounds.height - renderedHeight) / 2) - (sourceBounds.y * uniformScale);
 
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
@@ -360,13 +365,16 @@ class DesignEditor {
         visualArea.setAttribute('stroke-dasharray', '8,4');
         visualArea.setAttribute('opacity', '0.75');
         visualArea.setAttribute('pointer-events', 'none');
-        visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scaleX} ${scaleY})`);
+        visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
+
+        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
+        this.printArea.setAttribute('x', '0');
+        this.printArea.setAttribute('y', '0');
+        this.printArea.setAttribute('width', '800');
+        this.printArea.setAttribute('height', '600');
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
-
-        // Editable bounds remain exactly the same as the design-canvas.
-        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
     }
 
     getTemplateElementArea(element) {

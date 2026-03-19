@@ -15,16 +15,24 @@ const closeModalBtn = document.getElementById('close-modal');
 const cancelModalBtn = document.getElementById('cancel-modal');
 const closeContactModalBtns = document.querySelectorAll('.close-contact-modal');
 const markRespondedBtn = document.getElementById('mark-responded');
-const adminModals = [productModal, contactModal].filter(Boolean);
+const svgPreviewModal = document.getElementById('svg-preview-modal');
+const openSvgPreviewBtn = document.getElementById('open-svg-preview');
+const closeSvgPreviewBtns = document.querySelectorAll('.close-svg-preview');
+const svgPreviewCanvas = document.getElementById('svg-preview-canvas');
+const svgPreviewStatus = document.getElementById('svg-preview-status');
+const adminModals = [productModal, contactModal, svgPreviewModal].filter(Boolean);
 
 function updateModalBodyLock() {
     const hasOpenModal = adminModals.some((modal) => !modal.classList.contains('hidden'));
     document.body.style.overflow = hasOpenModal ? 'hidden' : '';
 }
 
-function openModal(modal) {
+function openModal(modal, options = {}) {
     if (!modal) return;
-    closeAllModals();
+    const { closeOthers = true } = options;
+    if (closeOthers) {
+        closeAllModals();
+    }
     modal.classList.remove('hidden');
     updateModalBodyLock();
 }
@@ -219,6 +227,7 @@ if (addProductBtn) {
         document.getElementById('modal-title').textContent = 'Adicionar Produto';
         productForm.reset();
         document.getElementById('product-ativo').checked = true;
+        resetSvgTemplateState();
         openModal(productModal);
     });
 }
@@ -226,57 +235,206 @@ if (addProductBtn) {
 if (closeModalBtn) {
     closeModalBtn.addEventListener('click', () => {
         closeModal(productModal);
+        resetSvgTemplateState();
     });
 }
 
 if (cancelModalBtn) {
     cancelModalBtn.addEventListener('click', () => {
         closeModal(productModal);
+        resetSvgTemplateState();
     });
 }
 
 // ===== SVG FILE UPLOAD HANDLER =====
 let svgTemplateContent = null;
+let svgTemplateFileName = '';
+let isReadingSvgTemplate = false;
 
 const svgUpload = document.getElementById('product-svg-upload');
 const svgPreview = document.getElementById('svg-preview');
-const svgPreviewContent = document.getElementById('svg-preview-content');
+const productSubmitBtn = productForm ? productForm.querySelector('button[type="submit"]') : null;
+
+function setProductSubmitLoadingState(isLoading) {
+    isReadingSvgTemplate = isLoading;
+    if (!productSubmitBtn) return;
+
+    productSubmitBtn.disabled = isLoading;
+    productSubmitBtn.classList.toggle('opacity-60', isLoading);
+    productSubmitBtn.classList.toggle('cursor-not-allowed', isLoading);
+}
+
+function parseSvgTemplate(svgText) {
+    const parser = new DOMParser();
+    const svgDoc = parser.parseFromString(svgText, 'image/svg+xml');
+    const parserError = svgDoc.querySelector('parsererror');
+    const root = svgDoc.documentElement;
+
+    if (parserError || !root || root.tagName.toLowerCase() !== 'svg') {
+        throw new Error('Ficheiro SVG invalido');
+    }
+
+    svgDoc.querySelectorAll('script, foreignObject').forEach((node) => node.remove());
+    return root;
+}
+
+function getSvgSourceBounds(root) {
+    const viewBoxAttr = root.getAttribute('viewBox');
+
+    if (viewBoxAttr) {
+        const parts = viewBoxAttr.trim().split(/\s+/).map(Number);
+        if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+            return {
+                x: parts[0],
+                y: parts[1],
+                width: parts[2],
+                height: parts[3]
+            };
+        }
+    }
+
+    const width = parseFloat(root.getAttribute('width') || '800');
+    const height = parseFloat(root.getAttribute('height') || '600');
+
+    return {
+        x: 0,
+        y: 0,
+        width: Number.isFinite(width) && width > 0 ? width : 800,
+        height: Number.isFinite(height) && height > 0 ? height : 600
+    };
+}
+
+function updateSvgTemplateUI() {
+    const hasTemplate = Boolean(svgTemplateContent);
+
+    if (!svgPreview) return;
+
+    svgPreview.classList.toggle('hidden', !hasTemplate);
+
+    if (svgPreviewStatus) {
+        svgPreviewStatus.textContent = hasTemplate
+            ? (svgTemplateFileName || 'Template SVG pronto para gravar')
+            : 'Nenhum template carregado';
+    }
+
+    if (openSvgPreviewBtn) {
+        openSvgPreviewBtn.disabled = !hasTemplate;
+        openSvgPreviewBtn.classList.toggle('opacity-50', !hasTemplate);
+        openSvgPreviewBtn.classList.toggle('cursor-not-allowed', !hasTemplate);
+    }
+}
+
+function resetSvgTemplateState() {
+    svgTemplateContent = null;
+    svgTemplateFileName = '';
+    if (svgUpload) {
+        svgUpload.value = '';
+    }
+    if (svgPreviewCanvas) {
+        svgPreviewCanvas.innerHTML = '';
+    }
+    updateSvgTemplateUI();
+}
+
+function setSvgTemplateContent(content, fileName = '') {
+    svgTemplateContent = content;
+    svgTemplateFileName = fileName;
+    updateSvgTemplateUI();
+}
+
+function renderSvgTemplatePreview() {
+    if (!svgTemplateContent || !svgPreviewCanvas) {
+        showToast('Nenhum template SVG carregado', 'warning');
+        return;
+    }
+
+    try {
+        const root = parseSvgTemplate(svgTemplateContent);
+        const sourceBounds = getSvgSourceBounds(root);
+        const svgNs = 'http://www.w3.org/2000/svg';
+        const previewSvg = document.createElementNS(svgNs, 'svg');
+        previewSvg.setAttribute('viewBox', '0 0 800 600');
+        previewSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        previewSvg.setAttribute('width', '100%');
+        previewSvg.setAttribute('height', '100%');
+
+        const printAreaOutline = document.createElementNS(svgNs, 'rect');
+        printAreaOutline.setAttribute('x', '50');
+        printAreaOutline.setAttribute('y', '50');
+        printAreaOutline.setAttribute('width', '700');
+        printAreaOutline.setAttribute('height', '500');
+        printAreaOutline.setAttribute('fill', 'none');
+        printAreaOutline.setAttribute('stroke', '#2563eb');
+        printAreaOutline.setAttribute('stroke-width', '2');
+        printAreaOutline.setAttribute('stroke-dasharray', '8 4');
+        printAreaOutline.setAttribute('opacity', '0.55');
+
+        const imported = document.importNode(root, true);
+        imported.setAttribute('x', '50');
+        imported.setAttribute('y', '50');
+        imported.setAttribute('width', '700');
+        imported.setAttribute('height', '500');
+        imported.setAttribute('viewBox', `${sourceBounds.x} ${sourceBounds.y} ${sourceBounds.width} ${sourceBounds.height}`);
+        imported.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+        previewSvg.appendChild(imported);
+        previewSvg.appendChild(printAreaOutline);
+
+        svgPreviewCanvas.innerHTML = '';
+        svgPreviewCanvas.appendChild(previewSvg);
+        openModal(svgPreviewModal, { closeOthers: false });
+    } catch (error) {
+        console.error('Erro ao renderizar preview SVG:', error);
+        showToast('Nao foi possivel gerar o preview do SVG', 'error');
+    }
+}
 
 if (svgUpload) {
     svgUpload.addEventListener('change', async (e) => {
         const file = e.target.files[0];
         if (!file) {
-            svgTemplateContent = null;
-            svgPreview.classList.add('hidden');
             return;
         }
         
-        if (!file.name.endsWith('.svg')) {
+        if (!file.name.toLowerCase().endsWith('.svg')) {
             showToast('Por favor selecione um ficheiro SVG', 'error');
             svgUpload.value = '';
             return;
         }
         
         try {
+            setProductSubmitLoadingState(true);
             const text = await file.text();
-            svgTemplateContent = text;
-            
-            // Show preview
-            svgPreview.classList.remove('hidden');
-            svgPreviewContent.innerHTML = text.substring(0, 200) + '...';
+            parseSvgTemplate(text);
+            setSvgTemplateContent(text, file.name);
             
             showToast('SVG carregado com sucesso', 'success');
         } catch (error) {
             console.error('Erro ao ler ficheiro SVG:', error);
             showToast('Erro ao ler ficheiro SVG', 'error');
+        } finally {
+            setProductSubmitLoadingState(false);
         }
     });
 }
+
+if (openSvgPreviewBtn) {
+    openSvgPreviewBtn.addEventListener('click', () => renderSvgTemplatePreview());
+}
+
+closeSvgPreviewBtns.forEach((button) => {
+    button.addEventListener('click', () => closeModal(svgPreviewModal));
+});
 
 // ===== PRODUCT FORM SUBMIT =====
 if (productForm) {
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
+
+        if (isReadingSvgTemplate) {
+            showToast('Aguarde o carregamento do SVG terminar', 'warning');
+            return;
+        }
         
         const productData = {
             nome: document.getElementById('product-nome').value,
@@ -310,9 +468,7 @@ if (productForm) {
             
             showToast(currentProductId ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
             closeModal(productModal);
-            svgTemplateContent = null;
-            svgUpload.value = '';
-            svgPreview.classList.add('hidden');
+            resetSvgTemplateState();
             loadProducts();
             
         } catch (error) {
@@ -346,12 +502,9 @@ async function editProduct(id) {
         
         // Load existing SVG template
         if (data.svg_template) {
-            svgTemplateContent = data.svg_template;
-            svgPreview.classList.remove('hidden');
-            svgPreviewContent.innerHTML = data.svg_template.substring(0, 200) + '...';
+            setSvgTemplateContent(data.svg_template, 'Template SVG atual');
         } else {
-            svgTemplateContent = null;
-            svgPreview.classList.add('hidden');
+            resetSvgTemplateState();
         }
         
         openModal(productModal);
