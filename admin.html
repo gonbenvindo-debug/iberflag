@@ -5,10 +5,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Admin Panel - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/css/tailwind.output.css">
+    <link rel="stylesheet" href="/css/tailwind.output.css?v=20260319a">
     <script src="https://unpkg.com/lucide@latest"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="/css/style.css">
+    <link rel="stylesheet" href="/css/style.css?v=20260319a">
 </head>
 <body class="bg-gray-50">
     
@@ -390,44 +390,41 @@
     </div>
 
     <div id="order-modal" class="modal-overlay hidden">
-        <div class="modal-content w-full max-w-6xl p-8">
-            <div class="flex justify-between items-center mb-6">
+        <div class="modal-content w-full max-w-5xl p-6 md:p-7">
+            <div class="flex justify-between items-start gap-4 mb-5">
                 <div>
-                    <h2 class="text-2xl font-bold">Detalhe da Encomenda</h2>
-                    <p class="text-sm text-gray-500 mt-1">Visualizacao completa, designs, tracking e estado de producao.</p>
+                    <h2 class="text-xl md:text-2xl font-bold">Detalhe da Encomenda</h2>
+                    <p class="text-sm text-gray-500 mt-1">Vista simples para acompanhar design dos itens e atualizar estado rapidamente.</p>
                 </div>
                 <button type="button" class="close-order-modal text-gray-500 hover:text-gray-700">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 xl:grid-cols-3 gap-6">
-                <section class="xl:col-span-2 space-y-6">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
+                <section class="lg:col-span-2 space-y-4">
                     <div class="rounded-xl border border-gray-200 p-4 bg-gray-50" id="order-summary-block"></div>
 
-                    <div>
-                        <h3 class="text-lg font-bold mb-3">Produtos e Designs</h3>
-                        <div id="order-items-list" class="space-y-3 max-h-[430px] overflow-y-auto pr-1"></div>
+                    <div class="rounded-xl border border-gray-200 p-4 bg-white">
+                        <h3 class="text-base font-bold mb-3">Itens e Design do Cliente</h3>
+                        <div id="order-items-list" class="space-y-3 max-h-[460px] overflow-y-auto pr-1"></div>
                     </div>
 
-                    <div>
-                        <h3 class="text-lg font-bold mb-3">Historico de Estado</h3>
-                        <div id="order-history-list" class="space-y-2 max-h-[220px] overflow-y-auto pr-1"></div>
+                    <div class="rounded-xl border border-gray-200 p-4 bg-white">
+                        <h3 class="text-base font-bold mb-3">Historico de Estado</h3>
+                        <div id="order-history-list" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
                     </div>
                 </section>
 
                 <aside class="space-y-4">
                     <div class="rounded-xl border border-gray-200 p-4 bg-white" id="order-customer-block"></div>
 
-                    <div class="rounded-xl border border-gray-200 p-4 bg-white space-y-4">
-                        <div>
-                            <label class="form-label">Estado da Producao</label>
-                            <select id="order-status-select" class="form-input"></select>
-                        </div>
+                    <div class="rounded-xl border border-gray-200 p-4 bg-white space-y-3">
+                        <p class="text-xs text-gray-500">Atualizacao rapida: apenas estado, tracking e notas internas.</p>
 
                         <div>
-                            <label class="form-label">Nota de Atualizacao (opcional)</label>
-                            <textarea id="order-status-note" rows="2" class="form-input" placeholder="Ex: ficheiros aprovados, enviado para corte, etc."></textarea>
+                            <label class="form-label">Estado da Encomenda</label>
+                            <select id="order-status-select" class="form-input"></select>
                         </div>
 
                         <div>
@@ -436,20 +433,15 @@
                         </div>
 
                         <div>
-                            <label class="form-label">URL de Tracking</label>
-                            <input id="order-tracking-url" type="url" class="form-input" placeholder="https://...">
+                            <label class="form-label">Notas Internas (opcional)</label>
+                            <textarea id="order-public-notes" rows="3" class="form-input" placeholder="Notas para equipa comercial/producao"></textarea>
                         </div>
 
-                        <div>
-                            <label class="form-label">Notas da Encomenda</label>
-                            <textarea id="order-public-notes" rows="4" class="form-input" placeholder="Notas visiveis para operacao/comercial"></textarea>
-                        </div>
-
-                        <div class="flex gap-2 pt-2">
-                            <button type="button" id="save-order-btn" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                                Guardar Atualizacao
+                        <div class="flex gap-2 pt-1">
+                            <button type="button" id="save-order-btn" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition">
+                                Guardar
                             </button>
-                            <button type="button" class="close-order-modal px-5 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                            <button type="button" class="close-order-modal px-4 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold hover:bg-gray-300 transition">
                                 Fechar
                             </button>
                         </div>
@@ -485,9 +477,9 @@
         </div>
     </div>
 
-    <script src="/js/logic.js"></script>
-    <script src="/js/order-workflow.js"></script>
-    <script src="/js/admin.js"></script>
+    <script src="/js/logic.js?v=20260319b"></script>
+    <script src="/js/order-workflow.js?v=20260319b"></script>
+    <script src="/js/admin.js?v=20260319b"></script>
     <script>lucide.createIcons();</script>
 </body>
 </html>

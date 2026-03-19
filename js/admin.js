@@ -568,6 +568,109 @@ function formatDateTime(value) {
     return new Date(value).toLocaleString('pt-PT');
 }
 
+function sanitizeFilenameToken(value) {
+    return String(value || 'encomenda')
+        .replace(/[^a-zA-Z0-9-_]/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'encomenda';
+}
+
+function tryParseJson(value) {
+    if (typeof value !== 'string' || !value.trim()) {
+        return null;
+    }
+
+    try {
+        return JSON.parse(value);
+    } catch (error) {
+        return null;
+    }
+}
+
+function normalizeOptionLabel(value) {
+    return String(value || '')
+        .replace(/_/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function collectOptionEntries(entries, value, labelPrefix = '') {
+    if (value === null || value === undefined || value === '') {
+        return;
+    }
+
+    if (Array.isArray(value)) {
+        if (value.length === 0) {
+            return;
+        }
+
+        const primitive = value.every((entry) => ['string', 'number', 'boolean'].includes(typeof entry));
+        if (primitive) {
+            entries.push({
+                label: normalizeOptionLabel(labelPrefix || 'Opcao'),
+                value: value.map((entry) => String(entry)).join(', ')
+            });
+            return;
+        }
+
+        value.forEach((entry, index) => collectOptionEntries(entries, entry, `${labelPrefix || 'Opcao'} ${index + 1}`));
+        return;
+    }
+
+    if (typeof value === 'object') {
+        Object.entries(value).forEach(([key, nestedValue]) => {
+            const nestedLabel = labelPrefix
+                ? `${labelPrefix} ${normalizeOptionLabel(key)}`
+                : normalizeOptionLabel(key);
+            collectOptionEntries(entries, nestedValue, nestedLabel);
+        });
+        return;
+    }
+
+    entries.push({
+        label: normalizeOptionLabel(labelPrefix || 'Opcao'),
+        value: String(value)
+    });
+}
+
+function resolveItemOptions(item, snapshot) {
+    const entries = [];
+    const sources = [item, snapshot].filter(Boolean);
+
+    sources.forEach((source) => {
+        ['opcoes_compradas', 'opcoes', 'options', 'variacoes', 'variacao'].forEach((key) => {
+            const rawValue = source?.[key];
+            if (rawValue === null || rawValue === undefined || rawValue === '') {
+                return;
+            }
+
+            const parsed = typeof rawValue === 'string' ? tryParseJson(rawValue) : null;
+            collectOptionEntries(entries, parsed !== null ? parsed : rawValue, normalizeOptionLabel(key));
+        });
+    });
+
+    const deduplicated = [];
+    const seen = new Set();
+    entries.forEach((entry) => {
+        const label = String(entry?.label || '').trim();
+        const value = String(entry?.value || '').trim();
+        if (!label || !value) {
+            return;
+        }
+
+        const key = `${label}::${value}`;
+        if (seen.has(key)) {
+            return;
+        }
+
+        seen.add(key);
+        deduplicated.push({ label, value });
+    });
+
+    return deduplicated;
+}
+
 function resolveItemSnapshot(orderMeta, item, index) {
     const snapshots = Array.isArray(orderMeta?.itemSnapshots) ? orderMeta.itemSnapshots : [];
     const byIndex = snapshots[index];
@@ -651,12 +754,25 @@ async function loadOrders() {
                         </span>
                     </td>
                     <td>
-                        <button onclick="viewOrder('${o.id}')" class="text-blue-600 hover:text-blue-800" title="Ver detalhe da encomenda">
+                        <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </td>
                 </tr>
             `).join('');
+
+            const viewButtons = tbody.querySelectorAll('.order-view-btn');
+            viewButtons.forEach((button) => {
+                button.addEventListener('click', () => {
+                    const orderId = button.getAttribute('data-order-id');
+                    if (!orderId) {
+                        showToast('ID da encomenda invalido', 'warning');
+                        return;
+                    }
+
+                    viewOrder(orderId);
+                });
+            });
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
         }
@@ -795,15 +911,37 @@ async function viewOrder(id) {
                     const unitPrice = Number(item.preco_unitario || snapshot?.precoUnitario || 0);
                     const lineSubtotal = Number(item.subtotal || (unitPrice * quantity));
 
+                    const itemOptions = resolveItemOptions(item, snapshot);
+
                     return `
                         <article class="rounded-xl border border-gray-200 p-3 bg-white">
-                            <div class="flex gap-3">
-                                <img src="${escapeHtml(preview)}" alt="${escapeHtml(productName)}" class="w-20 h-20 object-cover rounded-lg border border-gray-100 bg-gray-50">
-                                <div class="flex-1 min-w-0">
-                                    <h4 class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(productName)}</h4>
-                                    <p class="text-xs text-gray-500 mt-1">Qtd: ${quantity} • Unit.: ${formatCurrency(unitPrice)} • Subtotal: ${formatCurrency(lineSubtotal)}</p>
-                                    <div class="flex gap-2 mt-3">
-                                        ${designDownload ? `<a href="${escapeHtml(designDownload)}" download="design-${escapeHtml(order.numero_encomenda || order.id || 'encomenda')}-${index + 1}.svg" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><i data-lucide="download" class="w-3 h-3"></i>Download SVG</a>` : '<span class="text-xs text-gray-400">Sem ficheiro SVG associado</span>'}
+                            <div class="flex items-start justify-between gap-3 mb-2">
+                                <h4 class="font-semibold text-sm text-gray-900">${escapeHtml(productName)}</h4>
+                                <span class="text-xs text-gray-500">Qtd ${quantity}</span>
+                            </div>
+
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-2">
+                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Design do cliente</p>
+                                    <img src="${escapeHtml(preview)}" alt="Design de ${escapeHtml(productName)}" class="w-full h-40 object-contain rounded-md bg-white border border-gray-100">
+                                    <div class="flex flex-wrap gap-2 mt-2">
+                                        <a href="${escapeHtml(preview)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
+                                            <i data-lucide="expand" class="w-3 h-3"></i>
+                                            Ver Design
+                                        </a>
+                                        ${designDownload ? `<a href="${escapeHtml(designDownload)}" download="design-${sanitizeFilenameToken(order.numero_encomenda || order.id || 'encomenda')}-${index + 1}.svg" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><i data-lucide="download" class="w-3 h-3"></i>Download SVG</a>` : ''}
+                                    </div>
+                                </div>
+
+                                <div class="rounded-lg border border-gray-200 bg-white p-2.5">
+                                    <p class="text-xs text-gray-500">Preco unitario: <span class="font-semibold text-gray-800">${formatCurrency(unitPrice)}</span></p>
+                                    <p class="text-xs text-gray-500 mt-1">Subtotal: <span class="font-semibold text-blue-700">${formatCurrency(lineSubtotal)}</span></p>
+
+                                    <div class="mt-2.5 pt-2 border-t border-gray-100">
+                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Opcoes compradas</p>
+                                        ${itemOptions.length > 0
+                                            ? `<ul class="space-y-1">${itemOptions.map((option) => `<li class="text-xs text-gray-700"><span class="font-semibold">${escapeHtml(option.label)}:</span> ${escapeHtml(option.value)}</li>`).join('')}</ul>`
+                                            : '<p class="text-xs text-gray-400">Sem opcoes registadas neste item.</p>'}
                                     </div>
                                 </div>
                             </div>
@@ -1034,8 +1172,19 @@ if (saveOrderBtn) {
         const nextWorkflowStatus = statusSelect?.value || (typeof deriveWorkflowStatus === 'function'
             ? deriveWorkflowStatus(currentOrderData)
             : currentOrderData.status);
-        const trackingCode = trackingCodeInput?.value?.trim() || '';
-        const trackingUrl = trackingUrlInput?.value?.trim() || '';
+
+        const currentTracking = typeof getTrackingDetails === 'function'
+            ? getTrackingDetails(currentOrderData)
+            : { trackingCode: '', trackingUrl: '' };
+
+        const trackingCode = trackingCodeInput
+            ? (trackingCodeInput.value?.trim() || '')
+            : String(currentOrderMeta?.trackingCode || currentTracking.trackingCode || '');
+
+        const trackingUrl = trackingUrlInput
+            ? (trackingUrlInput.value?.trim() || '')
+            : String(currentOrderMeta?.trackingUrl || currentTracking.trackingUrl || '');
+
         const publicNotes = notesInput?.value?.trim() || '';
         const statusNote = statusNoteInput?.value?.trim() || '';
 
@@ -1046,9 +1195,15 @@ if (saveOrderBtn) {
         let meta = typeof normalizeOrderMeta === 'function'
             ? normalizeOrderMeta(currentOrderMeta)
             : (currentOrderMeta || {});
+
+        const autoStatusNote = nextWorkflowStatus !== previousWorkflowStatus
+            ? 'Estado atualizado no painel admin'
+            : '';
+        const historyNote = statusNote || autoStatusNote;
+
         if (typeof appendWorkflowHistory === 'function') {
-            if (nextWorkflowStatus !== previousWorkflowStatus || statusNote) {
-                meta = appendWorkflowHistory(meta, nextWorkflowStatus, statusNote);
+            if (nextWorkflowStatus !== previousWorkflowStatus || historyNote) {
+                meta = appendWorkflowHistory(meta, nextWorkflowStatus, historyNote);
             }
         }
 
@@ -1071,7 +1226,9 @@ if (saveOrderBtn) {
         if (trackableColumns.trackingCodeColumn) {
             payload[trackableColumns.trackingCodeColumn] = trackingCode || null;
         }
-        if (trackableColumns.trackingUrlColumn) {
+
+        // Only write URL column when the input exists in UI to avoid clearing values accidentally.
+        if (trackableColumns.trackingUrlColumn && trackingUrlInput) {
             payload[trackableColumns.trackingUrlColumn] = trackingUrl || null;
         }
 
