@@ -158,6 +158,22 @@ class DesignEditor {
         };
     }
 
+    normalizeRotation(rotation) {
+        // Clean up floating point errors
+        const deadzone = 0.1;
+        if (Math.abs(rotation) < deadzone) {
+            return 0;
+        }
+
+        // Round to 2 decimal places
+        rotation = Math.round(rotation * 100) / 100;
+
+        // Normalize to 0-360 range
+        rotation = ((rotation % 360) + 360) % 360;
+
+        return rotation;
+    }
+
     setDefaultPrintArea() {
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
@@ -812,22 +828,25 @@ class DesignEditor {
             document.getElementById('prop-text-size').value = elementData.size;
             document.getElementById('prop-text-size-val').textContent = elementData.size;
             document.getElementById('prop-text-color').value = elementData.color;
-            document.getElementById('prop-text-rotation').value = elementData.rotation || 0;
-            document.getElementById('prop-text-rotation-val').textContent = elementData.rotation || 0;
+            const textRot = this.normalizeRotation(elementData.rotation || 0);
+            document.getElementById('prop-text-rotation').value = textRot;
+            document.getElementById('prop-text-rotation-val').textContent = textRot;
         } else if (elementData.type === 'image') {
             document.getElementById('image-properties').classList.remove('hidden');
             document.getElementById('prop-image-opacity').value = (elementData.opacity || 1) * 100;
             document.getElementById('prop-image-opacity-val').textContent = Math.round((elementData.opacity || 1) * 100);
-            document.getElementById('prop-image-rotation').value = elementData.rotation || 0;
-            document.getElementById('prop-image-rotation-val').textContent = elementData.rotation || 0;
+            const imageRot = this.normalizeRotation(elementData.rotation || 0);
+            document.getElementById('prop-image-rotation').value = imageRot;
+            document.getElementById('prop-image-rotation-val').textContent = imageRot;
         } else if (elementData.type === 'shape') {
             document.getElementById('shape-properties').classList.remove('hidden');
             document.getElementById('prop-shape-fill').value = elementData.fill;
             document.getElementById('prop-shape-stroke').value = elementData.stroke;
             document.getElementById('prop-shape-stroke-width').value = elementData.strokeWidth;
             document.getElementById('prop-shape-stroke-val').textContent = elementData.strokeWidth;
-            document.getElementById('prop-shape-rotation').value = elementData.rotation || 0;
-            document.getElementById('prop-shape-rotation-val').textContent = elementData.rotation || 0;
+            const shapeRot = this.normalizeRotation(elementData.rotation || 0);
+            document.getElementById('prop-shape-rotation').value = shapeRot;
+            document.getElementById('prop-shape-rotation-val').textContent = shapeRot;
         }
     }
     
@@ -1256,28 +1275,27 @@ class DesignEditor {
         if (e.shiftKey) {
             rotation = Math.round(rotation / 15) * 15;
         }
-        
+
+        // Normalize rotation to remove floating point artifacts
+        rotation = this.normalizeRotation(rotation);
         this.selectedElement.rotation = rotation;
         
         // Sync rotation input/display based on element type
         if (this.selectedElement.type === 'text') {
-            const rotationRounded = Math.round(rotation * 100) / 100;
             const rotationInput = document.getElementById('prop-text-rotation');
-            if (rotationInput) rotationInput.value = rotationRounded;
+            if (rotationInput) rotationInput.value = rotation;
             const rotationVal = document.getElementById('prop-text-rotation-val');
-            if (rotationVal) rotationVal.textContent = rotationRounded;
+            if (rotationVal) rotationVal.textContent = rotation;
         } else if (this.selectedElement.type === 'image') {
-            const rotationRounded = Math.round(rotation * 100) / 100;
             const rotationInput = document.getElementById('prop-image-rotation');
-            if (rotationInput) rotationInput.value = rotationRounded;
+            if (rotationInput) rotationInput.value = rotation;
             const rotationVal = document.getElementById('prop-image-rotation-val');
-            if (rotationVal) rotationVal.textContent = rotationRounded;
+            if (rotationVal) rotationVal.textContent = rotation;
         } else if (this.selectedElement.type === 'shape') {
-            const rotationRounded = Math.round(rotation * 100) / 100;
             const rotationInput = document.getElementById('prop-shape-rotation');
-            if (rotationInput) rotationInput.value = rotationRounded;
+            if (rotationInput) rotationInput.value = rotation;
             const rotationVal = document.getElementById('prop-shape-rotation-val');
-            if (rotationVal) rotationVal.textContent = rotationRounded;
+            if (rotationVal) rotationVal.textContent = rotation;
         }
         
         // Use translate to keep rotation center at element center
@@ -1295,12 +1313,13 @@ class DesignEditor {
             const centerX = bbox.x + bbox.width / 2;
             const centerY = bbox.y + bbox.height / 2;
             
-            this.selectedElement.rotation = parseFloat(value);
+            let rotation = this.normalizeRotation(parseFloat(value));
+            this.selectedElement.rotation = rotation;
             
             const translateX = this.selectedElement.translateX || 0;
             const translateY = this.selectedElement.translateY || 0;
             this.selectedElement.element.setAttribute('transform', 
-                `translate(${translateX} ${translateY}) rotate(${value} ${centerX} ${centerY})`);
+                `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
