@@ -357,6 +357,23 @@ function closeCart() {
     }
 }
 
+function injectOrdersTrackingLink() {
+    if (!cartSidebar) return;
+
+    const checkoutLink = cartSidebar.querySelector('a[href="/checkout.html"]');
+    if (!checkoutLink) return;
+
+    const existingLink = cartSidebar.querySelector('.orders-tracking-link');
+    if (existingLink) return;
+
+    const trackLink = document.createElement('a');
+    trackLink.href = '/encomendas.html';
+    trackLink.className = 'orders-tracking-link block w-full mt-2 border border-blue-200 text-blue-700 text-center py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition';
+    trackLink.innerHTML = '<i data-lucide="package-search" class="w-4 h-4 inline-block mr-1"></i> Acompanhar Encomendas';
+
+    checkoutLink.insertAdjacentElement('afterend', trackLink);
+}
+
 // ===== TOAST NOTIFICATIONS =====
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
@@ -428,6 +445,7 @@ if (cartBtnMobile) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
     updateCart();
+    injectOrdersTrackingLink();
     
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

@@ -3,24 +3,32 @@
 let currentTab = 'dashboard';
 let currentProductId = null;
 let currentContactId = null;
+let currentOrderId = null;
+let currentOrderData = null;
+let currentOrderMeta = null;
+let currentOrderPublicNotes = '';
+let ordersCache = new Map();
 
 // ===== DOM ELEMENTS =====
 const navTabs = document.querySelectorAll('.nav-tab');
 const tabPanels = document.querySelectorAll('.tab-panel');
 const productModal = document.getElementById('product-modal');
 const contactModal = document.getElementById('contact-modal');
+const orderModal = document.getElementById('order-modal');
 const productForm = document.getElementById('product-form');
 const addProductBtn = document.getElementById('add-product-btn');
 const closeModalBtn = document.getElementById('close-modal');
 const cancelModalBtn = document.getElementById('cancel-modal');
 const closeContactModalBtns = document.querySelectorAll('.close-contact-modal');
+const closeOrderModalBtns = document.querySelectorAll('.close-order-modal');
 const markRespondedBtn = document.getElementById('mark-responded');
+const saveOrderBtn = document.getElementById('save-order-btn');
 const svgPreviewModal = document.getElementById('svg-preview-modal');
 const openSvgPreviewBtn = document.getElementById('open-svg-preview');
 const closeSvgPreviewBtns = document.querySelectorAll('.close-svg-preview');
 const svgPreviewCanvas = document.getElementById('svg-preview-canvas');
 const svgPreviewStatus = document.getElementById('svg-preview-status');
-const adminModals = [productModal, contactModal, svgPreviewModal].filter(Boolean);
+const adminModals = [productModal, contactModal, orderModal, svgPreviewModal].filter(Boolean);
 
 function updateModalBodyLock() {
     const hasOpenModal = adminModals.some((modal) => !modal.classList.contains('hidden'));
@@ -536,6 +544,87 @@ async function deleteProduct(id) {
     }
 }
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
+function formatCurrency(value) {
+    const amount = Number(value || 0);
+    return `${amount.toFixed(2)}€`;
+}
+
+function formatDate(value) {
+    if (!value) return '-';
+    return new Date(value).toLocaleDateString('pt-PT');
+}
+
+function formatDateTime(value) {
+    if (!value) return '-';
+    return new Date(value).toLocaleString('pt-PT');
+}
+
+function resolveItemSnapshot(orderMeta, item, index) {
+    const snapshots = Array.isArray(orderMeta?.itemSnapshots) ? orderMeta.itemSnapshots : [];
+    const byIndex = snapshots[index];
+
+    if (byIndex) {
+        return byIndex;
+    }
+
+    return snapshots.find((entry) => Number(entry.produtoId) === Number(item?.produto_id)) || null;
+}
+
+function resolveItemPreviewAndDesign(item, snapshot) {
+    const previewCandidates = [
+        item?.design_preview,
+        item?.preview_design,
+        item?.imagem_produto,
+        snapshot?.designPreview,
+        snapshot?.imagem,
+        item?.produtos?.imagem
+    ];
+
+    const svgCandidates = [
+        item?.design_svg,
+        item?.design,
+        item?.personalizacao_svg,
+        snapshot?.design
+    ];
+
+    const designSvg = svgCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
+    const preview = previewCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
+    const previewUrl = preview || (typeof buildSvgDataUrl === 'function' ? buildSvgDataUrl(designSvg) : '');
+
+    return {
+        previewUrl,
+        designSvg
+    };
+}
+
+function buildStatusOptionsHtml(activeStatus) {
+    const steps = Array.isArray(window.ORDER_WORKFLOW_STEPS) ? window.ORDER_WORKFLOW_STEPS : [];
+    return steps.map((step) => {
+        const selected = step.value === activeStatus ? 'selected' : '';
+        return `<option value="${escapeHtml(step.value)}" ${selected}>${escapeHtml(step.label)}</option>`;
+    }).join('');
+}
+
+function collectTrackableColumns(orderData) {
+    const columns = new Set(Object.keys(orderData || {}));
+
+    return {
+        trackingCodeColumn: ['tracking_codigo', 'codigo_tracking', 'tracking_code', 'tracking']
+            .find((column) => columns.has(column)) || null,
+        trackingUrlColumn: ['tracking_url', 'url_tracking', 'tracking_link']
+            .find((column) => columns.has(column)) || null
+    };
+}
+
 // ===== ORDERS =====
 async function loadOrders() {
     try {
@@ -547,6 +636,7 @@ async function loadOrders() {
         if (error) throw error;
         
         const tbody = document.getElementById('orders-tbody');
+        ordersCache = new Map((data || []).map((order) => [String(order.id), order]));
         
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(o => `
@@ -554,10 +644,14 @@ async function loadOrders() {
                     <td class="font-semibold">${o.numero_encomenda}</td>
                     <td>${o.clientes?.nome || 'N/A'}</td>
                     <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
-                    <td class="font-bold text-blue-600">${o.total.toFixed(2)}€</td>
-                    <td><span class="badge badge-${getStatusColor(o.status)}">${o.status}</span></td>
+                    <td class="font-bold text-blue-600">${formatCurrency(o.total)}</td>
                     <td>
-                        <button onclick="viewOrder('${o.id}')" class="text-blue-600 hover:text-blue-800">
+                        <span class="badge badge-${getStatusColor(deriveWorkflowStatus(o))}">
+                            ${escapeHtml(getWorkflowStatusLabel(deriveWorkflowStatus(o)))}
+                        </span>
+                    </td>
+                    <td>
+                        <button onclick="viewOrder('${o.id}')" class="text-blue-600 hover:text-blue-800" title="Ver detalhe da encomenda">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -573,6 +667,182 @@ async function loadOrders() {
         
     } catch (error) {
         console.error('Erro ao carregar encomendas:', error);
+    }
+}
+
+async function viewOrder(id) {
+    try {
+        const orderId = String(id);
+        const cached = ordersCache.get(orderId);
+
+        const { data: orderData, error: orderError } = await supabaseClient
+            .from('encomendas')
+            .select('*, clientes(*)')
+            .eq('id', orderId)
+            .maybeSingle();
+
+        if (orderError) throw orderError;
+
+        const order = orderData || cached;
+        if (!order) {
+            showToast('Encomenda nao encontrada', 'warning');
+            return;
+        }
+
+        const { data: itemsData, error: itemsError } = await supabaseClient
+            .from('itens_encomenda')
+            .select('*, produtos(*)')
+            .eq('encomenda_id', orderId)
+            .order('id', { ascending: true });
+
+        if (itemsError) throw itemsError;
+
+        const split = typeof splitOrderNotesAndMeta === 'function'
+            ? splitOrderNotesAndMeta(order.notas)
+            : { publicNotes: order.notas || '', meta: null };
+
+        const workflowStatus = typeof deriveWorkflowStatus === 'function'
+            ? deriveWorkflowStatus(order)
+            : order.status;
+        const tracking = typeof getTrackingDetails === 'function'
+            ? getTrackingDetails(order)
+            : { trackingCode: '', trackingUrl: '' };
+
+        currentOrderId = orderId;
+        currentOrderData = order;
+        currentOrderMeta = split.meta;
+        currentOrderPublicNotes = split.publicNotes || '';
+
+        const summaryBlock = document.getElementById('order-summary-block');
+        const customerBlock = document.getElementById('order-customer-block');
+        const itemsList = document.getElementById('order-items-list');
+        const historyList = document.getElementById('order-history-list');
+        const statusSelect = document.getElementById('order-status-select');
+        const trackingCodeInput = document.getElementById('order-tracking-code');
+        const trackingUrlInput = document.getElementById('order-tracking-url');
+        const notesInput = document.getElementById('order-public-notes');
+        const statusNoteInput = document.getElementById('order-status-note');
+
+        if (summaryBlock) {
+            summaryBlock.innerHTML = `
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                    <div>
+                        <p class="text-xs text-gray-500">Nº Encomenda</p>
+                        <p class="font-bold text-gray-900">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Data</p>
+                        <p class="font-semibold text-gray-900">${formatDateTime(order.created_at)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Total</p>
+                        <p class="font-bold text-blue-700">${formatCurrency(order.total)}</p>
+                    </div>
+                    <div>
+                        <p class="text-xs text-gray-500">Estado Atual</p>
+                        <span class="badge badge-${getStatusColor(workflowStatus)}">${escapeHtml(getWorkflowStatusLabel(workflowStatus))}</span>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (customerBlock) {
+            customerBlock.innerHTML = `
+                <h3 class="text-lg font-bold mb-3">Cliente</h3>
+                <div class="space-y-2 text-sm">
+                    <p><span class="text-gray-500">Nome:</span> <span class="font-semibold">${escapeHtml(order.clientes?.nome || 'N/A')}</span></p>
+                    <p><span class="text-gray-500">Email:</span> ${escapeHtml(order.clientes?.email || 'N/A')}</p>
+                    <p><span class="text-gray-500">Telefone:</span> ${escapeHtml(order.clientes?.telefone || 'N/A')}</p>
+                    <p><span class="text-gray-500">Morada:</span> ${escapeHtml(order.morada_envio || 'N/A')}</p>
+                </div>
+            `;
+        }
+
+        if (statusSelect) {
+            statusSelect.innerHTML = buildStatusOptionsHtml(workflowStatus);
+        }
+
+        if (trackingCodeInput) trackingCodeInput.value = tracking.trackingCode || '';
+        if (trackingUrlInput) trackingUrlInput.value = tracking.trackingUrl || '';
+        if (notesInput) notesInput.value = currentOrderPublicNotes || '';
+        if (statusNoteInput) statusNoteInput.value = '';
+
+        const items = Array.isArray(itemsData) ? itemsData : [];
+        const snapshots = Array.isArray(split.meta?.itemSnapshots) ? split.meta.itemSnapshots : [];
+
+        if (itemsList) {
+            if (items.length > 0 || snapshots.length > 0) {
+                const listSource = items.length > 0 ? items : snapshots.map((snapshot) => ({
+                    produto_id: snapshot.produtoId,
+                    quantidade: snapshot.quantidade,
+                    preco_unitario: snapshot.precoUnitario,
+                    subtotal: snapshot.precoUnitario * snapshot.quantidade,
+                    produtos: {
+                        nome: snapshot.nome,
+                        imagem: snapshot.imagem
+                    }
+                }));
+
+                itemsList.innerHTML = listSource.map((item, index) => {
+                    const snapshot = resolveItemSnapshot(split.meta, item, index);
+                    const visuals = resolveItemPreviewAndDesign(item, snapshot);
+                    const preview = visuals.previewUrl || '/favicon.svg';
+                    const designDownload = visuals.designSvg
+                        ? (typeof buildSvgDataUrl === 'function' ? buildSvgDataUrl(visuals.designSvg) : '')
+                        : '';
+                    const productName = item?.produtos?.nome || snapshot?.nome || `Produto #${item.produto_id || index + 1}`;
+                    const quantity = Number(item.quantidade || snapshot?.quantidade || 1);
+                    const unitPrice = Number(item.preco_unitario || snapshot?.precoUnitario || 0);
+                    const lineSubtotal = Number(item.subtotal || (unitPrice * quantity));
+
+                    return `
+                        <article class="rounded-xl border border-gray-200 p-3 bg-white">
+                            <div class="flex gap-3">
+                                <img src="${escapeHtml(preview)}" alt="${escapeHtml(productName)}" class="w-20 h-20 object-cover rounded-lg border border-gray-100 bg-gray-50">
+                                <div class="flex-1 min-w-0">
+                                    <h4 class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(productName)}</h4>
+                                    <p class="text-xs text-gray-500 mt-1">Qtd: ${quantity} • Unit.: ${formatCurrency(unitPrice)} • Subtotal: ${formatCurrency(lineSubtotal)}</p>
+                                    <div class="flex gap-2 mt-3">
+                                        ${designDownload ? `<a href="${escapeHtml(designDownload)}" download="design-${escapeHtml(order.numero_encomenda || order.id || 'encomenda')}-${index + 1}.svg" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><i data-lucide="download" class="w-3 h-3"></i>Download SVG</a>` : '<span class="text-xs text-gray-400">Sem ficheiro SVG associado</span>'}
+                                    </div>
+                                </div>
+                            </div>
+                        </article>
+                    `;
+                }).join('');
+            } else {
+                itemsList.innerHTML = '<p class="text-sm text-gray-400">Sem itens associados a esta encomenda.</p>';
+            }
+        }
+
+        if (historyList) {
+            const history = Array.isArray(split.meta?.statusHistory) ? split.meta.statusHistory : [];
+            if (history.length > 0) {
+                historyList.innerHTML = history
+                    .slice()
+                    .sort((a, b) => new Date(b.at) - new Date(a.at))
+                    .map((entry) => `
+                        <div class="rounded-lg border border-gray-200 px-3 py-2 bg-white">
+                            <div class="flex justify-between gap-2">
+                                <span class="text-sm font-semibold text-gray-800">${escapeHtml(getWorkflowStatusLabel(entry.status))}</span>
+                                <span class="text-xs text-gray-500">${formatDateTime(entry.at)}</span>
+                            </div>
+                            ${entry.note ? `<p class="text-xs text-gray-600 mt-1">${escapeHtml(entry.note)}</p>` : ''}
+                        </div>
+                    `).join('');
+            } else {
+                historyList.innerHTML = '<p class="text-sm text-gray-400">Sem historico de atualizacoes.</p>';
+            }
+        }
+
+        openModal(orderModal);
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar detalhe da encomenda:', error);
+        showToast('Erro ao carregar detalhe da encomenda', 'error');
     }
 }
 
@@ -742,6 +1012,93 @@ closeContactModalBtns.forEach(btn => {
     });
 });
 
+closeOrderModalBtns.forEach((btn) => {
+    btn.addEventListener('click', () => {
+        closeModal(orderModal);
+    });
+});
+
+if (saveOrderBtn) {
+    saveOrderBtn.addEventListener('click', async () => {
+        if (!currentOrderId || !currentOrderData) {
+            showToast('Nenhuma encomenda selecionada', 'warning');
+            return;
+        }
+
+        const statusSelect = document.getElementById('order-status-select');
+        const trackingCodeInput = document.getElementById('order-tracking-code');
+        const trackingUrlInput = document.getElementById('order-tracking-url');
+        const notesInput = document.getElementById('order-public-notes');
+        const statusNoteInput = document.getElementById('order-status-note');
+
+        const nextWorkflowStatus = statusSelect?.value || (typeof deriveWorkflowStatus === 'function'
+            ? deriveWorkflowStatus(currentOrderData)
+            : currentOrderData.status);
+        const trackingCode = trackingCodeInput?.value?.trim() || '';
+        const trackingUrl = trackingUrlInput?.value?.trim() || '';
+        const publicNotes = notesInput?.value?.trim() || '';
+        const statusNote = statusNoteInput?.value?.trim() || '';
+
+        const previousWorkflowStatus = typeof deriveWorkflowStatus === 'function'
+            ? deriveWorkflowStatus(currentOrderData)
+            : currentOrderData.status;
+
+        let meta = typeof normalizeOrderMeta === 'function'
+            ? normalizeOrderMeta(currentOrderMeta)
+            : (currentOrderMeta || {});
+        if (typeof appendWorkflowHistory === 'function') {
+            if (nextWorkflowStatus !== previousWorkflowStatus || statusNote) {
+                meta = appendWorkflowHistory(meta, nextWorkflowStatus, statusNote);
+            }
+        }
+
+        if (meta && typeof meta === 'object') {
+            meta.workflowStatus = nextWorkflowStatus;
+            meta.trackingCode = trackingCode;
+            meta.trackingUrl = trackingUrl;
+        }
+
+        const payload = {
+            status: typeof getLegacyStatusFromWorkflow === 'function'
+                ? getLegacyStatusFromWorkflow(nextWorkflowStatus)
+                : nextWorkflowStatus,
+            notas: typeof buildOrderNotesWithMeta === 'function'
+                ? buildOrderNotesWithMeta(publicNotes, meta)
+                : publicNotes
+        };
+
+        const trackableColumns = collectTrackableColumns(currentOrderData);
+        if (trackableColumns.trackingCodeColumn) {
+            payload[trackableColumns.trackingCodeColumn] = trackingCode || null;
+        }
+        if (trackableColumns.trackingUrlColumn) {
+            payload[trackableColumns.trackingUrlColumn] = trackingUrl || null;
+        }
+
+        try {
+            saveOrderBtn.disabled = true;
+            saveOrderBtn.classList.add('opacity-60', 'cursor-not-allowed');
+
+            const { error } = await supabaseClient
+                .from('encomendas')
+                .update(payload)
+                .eq('id', currentOrderId);
+
+            if (error) throw error;
+
+            showToast('Encomenda atualizada com sucesso!', 'success');
+            await loadOrders();
+            await viewOrder(currentOrderId);
+        } catch (error) {
+            console.error('Erro ao atualizar encomenda:', error);
+            showToast('Erro ao atualizar encomenda', 'error');
+        } finally {
+            saveOrderBtn.disabled = false;
+            saveOrderBtn.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+    });
+}
+
 adminModals.forEach((modal) => {
     modal.addEventListener('mousedown', (event) => {
         if (event.target === modal) {
@@ -758,17 +1115,18 @@ document.addEventListener('keydown', (event) => {
 
 // ===== HELPER FUNCTIONS =====
 function getStatusColor(status) {
-    const colors = {
-        'pendente': 'warning',
-        'processando': 'info',
-        'concluido': 'success',
-        'cancelado': 'danger'
-    };
-    return colors[status] || 'info';
-}
+    if (typeof getWorkflowStatusColor === 'function') {
+        return getWorkflowStatusColor(status);
+    }
 
-function viewOrder(id) {
-    showToast('Funcionalidade de visualização de encomenda em desenvolvimento', 'info');
+    const fallback = {
+        pendente: 'warning',
+        processando: 'info',
+        concluido: 'success',
+        cancelado: 'danger'
+    };
+
+    return fallback[status] || 'info';
 }
 
 function viewClient(id) {

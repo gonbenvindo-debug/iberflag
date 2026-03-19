@@ -14,6 +14,87 @@ const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
 const termsCheckbox = document.getElementById('terms-checkbox');
 
+function buildOrderItemSnapshots(items) {
+    return items.map((item) => ({
+        produtoId: Number(item.id) || null,
+        nome: item.nome || 'Produto',
+        quantidade: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
+        precoUnitario: Number(item.preco || 0),
+        imagem: item.imagem || '',
+        designPreview: item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || ''),
+        design: item.design || ''
+    }));
+}
+
+async function insertOrderItemsWithFallback(orderId, items) {
+    const baseItems = items.map((item) => ({
+        encomenda_id: orderId,
+        produto_id: item.id,
+        quantidade: item.quantity,
+        preco_unitario: item.preco,
+        subtotal: item.preco * item.quantity
+    }));
+
+    // These columns are optional because schemas can differ between environments.
+    const optionalColumns = ['design_svg', 'design_preview', 'nome_produto', 'imagem_produto'];
+    const optionalValueByColumn = {
+        design_svg: (item) => item.design || null,
+        design_preview: (item) => item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || null),
+        nome_produto: (item) => item.nome || null,
+        imagem_produto: (item) => item.imagem || null
+    };
+
+    const activeOptionalColumns = [...optionalColumns];
+
+    while (true) {
+        const payload = baseItems.map((baseItem, index) => {
+            const sourceItem = items[index];
+            const enriched = { ...baseItem };
+
+            activeOptionalColumns.forEach((columnName) => {
+                enriched[columnName] = optionalValueByColumn[columnName](sourceItem);
+            });
+
+            return enriched;
+        });
+
+        const { error } = await supabaseClient
+            .from('itens_encomenda')
+            .insert(payload);
+
+        if (!error) {
+            return;
+        }
+
+        const errorMessage = String(error.message || '').toLowerCase();
+        const match = errorMessage.match(/column\s+"([a-z0-9_]+)"\s+of\s+relation\s+"itens_encomenda"\s+does\s+not\s+exist/);
+
+        if (!match) {
+            throw error;
+        }
+
+        const missingColumn = match[1];
+        const columnIndex = activeOptionalColumns.indexOf(missingColumn);
+
+        if (columnIndex === -1) {
+            throw error;
+        }
+
+        activeOptionalColumns.splice(columnIndex, 1);
+
+        if (activeOptionalColumns.length === 0) {
+            const retry = await supabaseClient
+                .from('itens_encomenda')
+                .insert(baseItems);
+
+            if (retry.error) {
+                throw retry.error;
+            }
+            return;
+        }
+    }
+}
+
 // ===== LOAD CART =====
 function loadCart() {
     if (!cart || cart.length === 0) {
@@ -126,7 +207,7 @@ if (placeOrderBtn) {
                 .from('clientes')
                 .select('id')
                 .eq('email', customerData.email)
-                .single();
+                .maybeSingle();
 
             if (existingCustomer) {
                 customerId = existingCustomer.id;
@@ -149,14 +230,33 @@ if (placeOrderBtn) {
 
             // 2. Create order
             const orderNumber = `IBF${Date.now()}`;
+            const initialWorkflowStatus = 'pendente_confirmacao';
+            const orderMeta = {
+                workflowStatus: initialWorkflowStatus,
+                trackingCode: '',
+                trackingUrl: '',
+                statusHistory: [
+                    {
+                        status: initialWorkflowStatus,
+                        at: new Date().toISOString(),
+                        note: 'Encomenda criada no checkout'
+                    }
+                ],
+                itemSnapshots: buildOrderItemSnapshots(cart)
+            };
+
             const orderData = {
                 cliente_id: customerId,
                 numero_encomenda: orderNumber,
-                status: 'pendente',
+                status: typeof getLegacyStatusFromWorkflow === 'function'
+                    ? getLegacyStatusFromWorkflow(initialWorkflowStatus)
+                    : 'pendente',
                 subtotal: subtotal,
                 envio: shipping,
                 total: total,
-                notas: orderNotes,
+                notas: typeof buildOrderNotesWithMeta === 'function'
+                    ? buildOrderNotesWithMeta(orderNotes, orderMeta)
+                    : orderNotes,
                 morada_envio: `${customerData.morada}, ${customerData.codigo_postal} ${customerData.cidade}`,
                 metodo_pagamento: 'stripe_placeholder'
             };
@@ -169,20 +269,8 @@ if (placeOrderBtn) {
 
             if (orderError) throw orderError;
 
-            // 3. Create order items
-            const orderItems = cart.map(item => ({
-                encomenda_id: order.id,
-                produto_id: item.id,
-                quantidade: item.quantity,
-                preco_unitario: item.preco,
-                subtotal: item.preco * item.quantity
-            }));
-
-            const { error: itemsError } = await supabaseClient
-                .from('itens_encomenda')
-                .insert(orderItems);
-
-            if (itemsError) throw itemsError;
+            // 3. Create order items (with graceful fallback for optional design columns)
+            await insertOrderItemsWithFallback(order.id, cart);
 
             // Success!
             showToast('Encomenda criada com sucesso!', 'success');
@@ -199,6 +287,7 @@ if (placeOrderBtn) {
                       `📧 Receberá um email de confirmação em breve.\n\n` +
                       `💳 NOTA: A integração com Stripe será implementada em breve.\n` +
                       `Por enquanto, a encomenda foi registada no sistema.\n\n` +
+                        `🔎 Pode acompanhar o estado em /encomendas.html com o seu email e nº da encomenda.\n\n` +
                       `📦 Produção: 12-24h\n` +
                       `🚚 Entrega: 2-4 dias úteis\n\n` +
                       `Total: ${total.toFixed(2)}€`);

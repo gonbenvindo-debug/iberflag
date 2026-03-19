@@ -67,7 +67,7 @@ class DesignEditor {
                     .from('produtos')
                     .select('*')
                     .eq('id', numericProductId)
-                    .single();
+                    .maybeSingle();
 
                 if (!error && data) {
                     dbProduct = data;
