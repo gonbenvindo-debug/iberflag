@@ -261,6 +261,21 @@ class DesignEditor {
         this.printArea.setAttribute('opacity', '0.5');
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
+
+        this.bringPrintAreaOverlaysToFront();
+    }
+
+    bringPrintAreaOverlaysToFront() {
+        if (!this.canvas) return;
+
+        if (this.printArea && this.printArea.parentNode === this.canvas) {
+            this.canvas.appendChild(this.printArea);
+        }
+
+        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
+        if (shapeOutline) {
+            this.canvas.appendChild(shapeOutline);
+        }
     }
 
     updatePrintAreaFromElement(areaElement, sourceBounds) {
@@ -286,6 +301,7 @@ class DesignEditor {
         visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scaleX} ${scaleY})`);
 
         this.canvas.appendChild(visualArea);
+        this.bringPrintAreaOverlaysToFront();
 
         // Editable bounds remain exactly the same as the design-canvas.
         this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
@@ -397,6 +413,7 @@ class DesignEditor {
                     this.elements.push(elementData);
                     this.makeElementInteractive(elementData);
                 });
+                this.bringPrintAreaOverlaysToFront();
                 
                 this.updateLayers();
                 this.saveHistory();
@@ -423,6 +440,7 @@ class DesignEditor {
                 this.elements.push(elementData);
                 this.makeElementInteractive(elementData);
             });
+            this.bringPrintAreaOverlaysToFront();
 
             if (this.elements.length > 0) {
                 this.updateLayers();
@@ -597,6 +615,7 @@ class DesignEditor {
         text.style.cursor = 'move';
         
         this.canvas.appendChild(text);
+        this.bringPrintAreaOverlaysToFront();
         
         // Get actual bounding box after adding to DOM
         const bbox = text.getBBox();
@@ -658,6 +677,7 @@ class DesignEditor {
                 img.style.cursor = 'move';
                 
                 this.canvas.appendChild(img);
+                this.bringPrintAreaOverlaysToFront();
                 
                 const elementData = {
                     id: Date.now(),
@@ -710,6 +730,7 @@ class DesignEditor {
         shape.style.cursor = 'move';
         
         this.canvas.appendChild(shape);
+        this.bringPrintAreaOverlaysToFront();
         
         const elementData = {
             id: Date.now(),
@@ -1708,6 +1729,7 @@ class DesignEditor {
         }
 
         this.canvas.appendChild(clone);
+        this.bringPrintAreaOverlaysToFront();
         clonedData.element = clone;
         this.makeElementInteractive(clonedData);
         this.elements.push(clonedData);
@@ -2035,6 +2057,8 @@ class DesignEditor {
                 this.elements.push(elementData);
                 this.makeElementInteractive(elementData);
             });
+
+            this.bringPrintAreaOverlaysToFront();
 
             this.hideResizeHandles();
             this.updateLayers();
