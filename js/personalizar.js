@@ -3,6 +3,7 @@
 class DesignEditor {
     constructor() {
         this.canvas = document.getElementById('design-canvas');
+        this.canvasStage = document.getElementById('canvas-stage');
         this.printArea = document.getElementById('print-area-outline');
         this.canvasWrapper = document.getElementById('canvas-wrapper');
         this.elements = [];
@@ -22,6 +23,7 @@ class DesignEditor {
         this.cartStorageKey = 'latinflag_cart';
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.keepAspectRatio = true;
+        this.baseCanvasSize = { width: 800, height: 600 };
         
         this.init();
     }
@@ -29,6 +31,7 @@ class DesignEditor {
     async init() {
         await this.loadProduct();
         this.setupEventListeners();
+        this.syncCanvasViewport();
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
@@ -380,6 +383,7 @@ class DesignEditor {
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
+        window.addEventListener('resize', () => this.syncCanvasViewport());
         
         // Property controls
         this.setupPropertyControls();
@@ -1527,9 +1531,43 @@ class DesignEditor {
     }
     
     // ===== ZOOM =====
+    syncCanvasViewport() {
+        if (!this.canvasStage || !this.canvasWrapper) return;
+
+        const stageWidth = this.canvasStage.clientWidth;
+        const stageHeight = this.canvasStage.clientHeight;
+        if (!stageWidth || !stageHeight) return;
+
+        const targetWidth = stageWidth * 0.9;
+        const targetHeight = stageHeight * 0.9;
+        const ratio = 800 / 600;
+
+        let baseWidth = targetWidth;
+        let baseHeight = baseWidth / ratio;
+
+        if (baseHeight > targetHeight) {
+            baseHeight = targetHeight;
+            baseWidth = baseHeight * ratio;
+        }
+
+        this.baseCanvasSize = {
+            width: baseWidth,
+            height: baseHeight
+        };
+
+        const scaledWidth = this.baseCanvasSize.width * this.zoom;
+        const scaledHeight = this.baseCanvasSize.height * this.zoom;
+
+        this.canvasWrapper.style.width = `${scaledWidth}px`;
+        this.canvasWrapper.style.height = `${scaledHeight}px`;
+        this.canvasWrapper.style.transform = 'none';
+
+        this.canvasStage.style.overflow = this.zoom <= 1 ? 'hidden' : 'auto';
+    }
+
     setZoom(newZoom) {
         this.zoom = Math.max(0.5, Math.min(2, newZoom));
-        this.canvasWrapper.style.transform = `scale(${this.zoom})`;
+        this.syncCanvasViewport();
         document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
     }
     
