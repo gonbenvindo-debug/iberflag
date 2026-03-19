@@ -159,6 +159,63 @@ class DesignEditor {
         };
     }
 
+    sanitizeColorValue(value, fallback = '#000000') {
+        if (typeof value !== 'string') {
+            return fallback;
+        }
+
+        const normalized = value.trim();
+        if (/^#[0-9a-fA-F]{6}$/.test(normalized)) {
+            return normalized;
+        }
+
+        if (/^#[0-9a-fA-F]{3}$/.test(normalized)) {
+            const [r, g, b] = normalized.slice(1).split('');
+            return `#${r}${r}${g}${g}${b}${b}`;
+        }
+
+        return fallback;
+    }
+
+    clampRotatedTranslate(elementData, proposedTranslateX, proposedTranslateY) {
+        const bounds = this.getEditableBounds();
+        const bbox = elementData.element.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        const rotation = elementData.rotation || 0;
+
+        elementData.element.setAttribute(
+            'transform',
+            `translate(${proposedTranslateX} ${proposedTranslateY}) rotate(${rotation} ${centerX} ${centerY})`
+        );
+
+        const transformed = this.getTransformedBounds(elementData);
+        let clampedTranslateX = proposedTranslateX;
+        let clampedTranslateY = proposedTranslateY;
+
+        if (transformed.left < bounds.x) {
+            clampedTranslateX += bounds.x - transformed.left;
+        } else if (transformed.right > bounds.x + bounds.width) {
+            clampedTranslateX -= transformed.right - (bounds.x + bounds.width);
+        }
+
+        if (transformed.top < bounds.y) {
+            clampedTranslateY += bounds.y - transformed.top;
+        } else if (transformed.bottom > bounds.y + bounds.height) {
+            clampedTranslateY -= transformed.bottom - (bounds.y + bounds.height);
+        }
+
+        elementData.element.setAttribute(
+            'transform',
+            `translate(${clampedTranslateX} ${clampedTranslateY}) rotate(${rotation} ${centerX} ${centerY})`
+        );
+
+        return {
+            translateX: clampedTranslateX,
+            translateY: clampedTranslateY
+        };
+    }
+
     normalizeRotation(rotation) {
         // Clean up floating point errors
         const deadzone = 0.1;
@@ -166,13 +223,13 @@ class DesignEditor {
             return 0;
         }
 
-        // Round to 2 decimal places
-        rotation = Math.round(rotation * 100) / 100;
+        // Only allow 0.5 degree increments.
+        rotation = Math.round(rotation * 2) / 2;
 
         // Normalize to 0-360 range
         rotation = ((rotation % 360) + 360) % 360;
 
-        return rotation;
+        return Number(rotation.toFixed(1));
     }
 
     setDefaultPrintArea() {
@@ -969,8 +1026,8 @@ class DesignEditor {
         } else if (elementData.type === 'shape') {
             document.getElementById('shape-properties').classList.remove('hidden');
             document.getElementById('shape-properties').classList.add('active');
-            document.getElementById('prop-shape-fill').value = elementData.fill;
-            document.getElementById('prop-shape-stroke').value = elementData.stroke;
+            document.getElementById('prop-shape-fill').value = this.sanitizeColorValue(elementData.fill, '#3b82f6');
+            document.getElementById('prop-shape-stroke').value = this.sanitizeColorValue(elementData.stroke, '#000000');
             document.getElementById('prop-shape-stroke-width').value = elementData.strokeWidth;
             document.getElementById('prop-shape-stroke-val').textContent = elementData.strokeWidth;
             const shapeRot = this.normalizeRotation(elementData.rotation || 0);
@@ -1017,36 +1074,16 @@ class DesignEditor {
             
             // For rotated elements, use translate transform
             if (this.selectedElement.rotation && this.selectedElement.rotation !== 0) {
-                // Calculate new translate values
-                let translateX = (this.selectedElement.translateX || 0) + deltaX;
-                let translateY = (this.selectedElement.translateY || 0) + deltaY;
-                
-                // Apply translate temporarily to check boundaries
-                const bbox = this.selectedElement.element.getBBox();
-                const centerX = bbox.x + bbox.width / 2;
-                const centerY = bbox.y + bbox.height / 2;
-                this.selectedElement.element.setAttribute('transform', 
-                    `translate(${translateX} ${translateY}) rotate(${this.selectedElement.rotation} ${centerX} ${centerY})`);
-                
-                // Check if element exceeds canvas boundaries
-                const elementRect = this.selectedElement.element.getBoundingClientRect();
-                const canvasRect = this.canvas.getBoundingClientRect();
-                
-                // If exceeds boundaries, revert to previous translate
-                if (elementRect.left < canvasRect.left ||
-                    elementRect.right > canvasRect.right ||
-                    elementRect.top < canvasRect.top ||
-                    elementRect.bottom > canvasRect.bottom) {
-                    // Revert to previous position
-                    translateX = this.selectedElement.translateX || 0;
-                    translateY = this.selectedElement.translateY || 0;
-                    this.selectedElement.element.setAttribute('transform', 
-                        `translate(${translateX} ${translateY}) rotate(${this.selectedElement.rotation} ${centerX} ${centerY})`);
-                } else {
-                    // Accept new position
-                    this.selectedElement.translateX = translateX;
-                    this.selectedElement.translateY = translateY;
-                }
+                const proposedTranslateX = (this.selectedElement.translateX || 0) + deltaX;
+                const proposedTranslateY = (this.selectedElement.translateY || 0) + deltaY;
+                const clampedTranslate = this.clampRotatedTranslate(
+                    this.selectedElement,
+                    proposedTranslateX,
+                    proposedTranslateY
+                );
+
+                this.selectedElement.translateX = clampedTranslate.translateX;
+                this.selectedElement.translateY = clampedTranslate.translateY;
             } else {
                 // For non-rotated elements, use x/y attributes as before
                 let newX;
@@ -1078,7 +1115,7 @@ class DesignEditor {
                     const currentX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
                     const currentY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
                     newX = currentX + deltaX;
-                    newY = currentY + deltaY;
+            stroke: 'none',
                     const r = parseFloat(this.selectedElement.element.getAttribute('r'));
                     newX = Math.max(canvasBounds.x + r, Math.min(newX, canvasBounds.x + canvasBounds.width - r));
                     newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
@@ -1593,16 +1630,18 @@ class DesignEditor {
     
     updateShapeFill(value) {
         if (this.selectedElement && this.selectedElement.type === 'shape') {
-            this.selectedElement.element.setAttribute('fill', value);
-            this.selectedElement.fill = value;
+            const nextFill = this.sanitizeColorValue(value, '#3b82f6');
+            this.selectedElement.element.setAttribute('fill', nextFill);
+            this.selectedElement.fill = nextFill;
             this.saveHistory();
         }
     }
     
     updateShapeStroke(value) {
         if (this.selectedElement && this.selectedElement.type === 'shape') {
-            this.selectedElement.element.setAttribute('stroke', value);
-            this.selectedElement.stroke = value;
+            const nextStroke = this.sanitizeColorValue(value, '#000000');
+            this.selectedElement.element.setAttribute('stroke', nextStroke);
+            this.selectedElement.stroke = nextStroke;
             this.saveHistory();
         }
     }

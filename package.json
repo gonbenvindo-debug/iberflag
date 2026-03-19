@@ -4,14 +4,25 @@
   "description": "E-commerce de produtos publicitários",
   "main": "index.html",
   "scripts": {
-    "populate": "node populate-products.js"
+    "populate": "node populate-products.js",
+    "build:css": "tailwindcss -i ./css/tailwind.css -o ./css/tailwind.output.css --minify",
+    "build": "npm run build:css"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.39.0",
     "dotenv": "^16.3.1"
   },
-  "devDependencies": {},
-  "keywords": ["ecommerce", "publicidade", "flybanners", "rollups"],
+  "devDependencies": {
+    "autoprefixer": "^10.4.20",
+    "postcss": "^8.4.49",
+    "tailwindcss": "^3.4.17"
+  },
+  "keywords": [
+    "ecommerce",
+    "publicidade",
+    "flybanners",
+    "rollups"
+  ],
   "author": "LatinFlag",
   "license": "ISC"
 }
