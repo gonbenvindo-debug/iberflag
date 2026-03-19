@@ -689,6 +689,9 @@ class DesignEditor {
         this.selectedElement = elementData;
         elementData.element.classList.add('element-selected');
         
+        // Ensure element is within bounds before showing handles
+        this.bringElementInBounds(elementData);
+        
         // Show resize handles
         this.showResizeHandles(elementData);
         
@@ -698,6 +701,123 @@ class DesignEditor {
 
         // Bring attention to properties automatically.
         this.focusPropertiesPanel();
+    }
+    
+    getTransformedBounds(elementData) {
+        // Calculate the actual bounding box of an element after transformation
+        const bbox = elementData.element.getBBox();
+        const ctm = elementData.element.getScreenCTM();
+        
+        if (!ctm) {
+            // If no CTM, return element's local bounds
+            return {
+                left: bbox.x,
+                right: bbox.x + bbox.width,
+                top: bbox.y,
+                bottom: bbox.y + bbox.height
+            };
+        }
+        
+        // Transform all 4 corners of the bounding box
+        const corners = [
+            new DOMPoint(bbox.x, bbox.y),
+            new DOMPoint(bbox.x + bbox.width, bbox.y),
+            new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height),
+            new DOMPoint(bbox.x, bbox.y + bbox.height)
+        ];
+        
+        const transformedCorners = corners.map(corner => corner.matrixTransform(ctm));
+        
+        // Find min/max of transformed corners (in SVG coordinates)
+        const svgRect = this.canvas.getBoundingClientRect();
+        const svgLeft = 0; // SVG coordinate system
+        const svgTop = 0;
+        
+        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+        
+        transformedCorners.forEach(corner => {
+            // Convert from client coords to SVG coords
+            const svgX = (corner.x - svgRect.left) / svgRect.width * 800;
+            const svgY = (corner.y - svgRect.top) / svgRect.height * 600;
+            minX = Math.min(minX, svgX);
+            maxX = Math.max(maxX, svgX);
+            minY = Math.min(minY, svgY);
+            maxY = Math.max(maxY, svgY);
+        });
+        
+        return {
+            left: minX,
+            right: maxX,
+            top: minY,
+            bottom: maxY
+        };
+    }
+    
+    bringElementInBounds(elementData) {
+        // Check if element is out of bounds and move it back in
+        const bounds = this.getEditableBounds();
+        const transformed = this.getTransformedBounds(elementData);
+        
+        // Calculate how much the element exceeds bounds on each side
+        let offsetX = 0;
+        let offsetY = 0;
+        
+        // Check left edge
+        if (transformed.left < bounds.x) {
+            offsetX = bounds.x - transformed.left;
+        }
+        // Check right edge
+        else if (transformed.right > bounds.x + bounds.width) {
+            offsetX = (bounds.x + bounds.width) - transformed.right;
+        }
+        
+        // Check top edge
+        if (transformed.top < bounds.y) {
+            offsetY = bounds.y - transformed.top;
+        }
+        // Check bottom edge
+        else if (transformed.bottom > bounds.y + bounds.height) {
+            offsetY = (bounds.y + bounds.height) - transformed.bottom;
+        }
+        
+        // Apply offset if needed
+        if (offsetX !== 0 || offsetY !== 0) {
+            const translateX = (elementData.translateX || 0) + offsetX;
+            const translateY = (elementData.translateY || 0) + offsetY;
+            
+            elementData.translateX = translateX;
+            elementData.translateY = translateY;
+            
+            // Reapply transform with new translation
+            if (elementData.rotation && elementData.rotation !== 0) {
+                const bbox = elementData.element.getBBox();
+                const centerX = bbox.x + bbox.width / 2;
+                const centerY = bbox.y + bbox.height / 2;
+                elementData.element.setAttribute('transform',
+                    `translate(${translateX} ${translateY}) rotate(${elementData.rotation} ${centerX} ${centerY})`);
+            } else {
+                // For non-rotated elements, adjust x/y attributes
+                if (elementData.type === 'text' || elementData.type === 'image' || 
+                    (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+                    const x = parseFloat(elementData.element.getAttribute('x') || 0) + offsetX;
+                    const y = parseFloat(elementData.element.getAttribute('y') || 0) + offsetY;
+                    elementData.element.setAttribute('x', x);
+                    elementData.element.setAttribute('y', y);
+                } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+                    const cx = parseFloat(elementData.element.getAttribute('cx') || 0) + offsetX;
+                    const cy = parseFloat(elementData.element.getAttribute('cy') || 0) + offsetY;
+                    elementData.element.setAttribute('cx', cx);
+                    elementData.element.setAttribute('cy', cy);
+                } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+                    const currentPoints = (elementData.element.getAttribute('points') || '')
+                        .trim()
+                        .split(/\s+/)
+                        .map((pair) => pair.split(',').map(Number));
+                    const translatedPoints = currentPoints.map(([x, y]) => `${x + offsetX},${y + offsetY}`);
+                    elementData.element.setAttribute('points', translatedPoints.join(' '));
+                }
+            }
+        }
     }
     
     showResizeHandles(elementData) {
@@ -1005,6 +1125,9 @@ class DesignEditor {
     }
     
     handleMouseUp() {
+        const wasRotating = this.isRotating;
+        const wasDragging = this.isDragging;
+        
         if (this.isDragging || this.isResizing || this.isRotating) {
             this.saveHistory();
         }
@@ -1020,6 +1143,10 @@ class DesignEditor {
         }
 
         if (this.selectedElement) {
+            // After rotation or drag, ensure element stays within bounds
+            if (wasRotating || wasDragging) {
+                this.bringElementInBounds(this.selectedElement);
+            }
             this.showResizeHandles(this.selectedElement);
         }
     }
