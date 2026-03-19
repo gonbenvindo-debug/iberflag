@@ -1414,6 +1414,33 @@ class DesignEditor {
 
         // Normalize rotation to remove floating point artifacts
         rotation = this.normalizeRotation(rotation);
+        
+        // Test if rotation would push element too far out of bounds
+        const translateX = this.selectedElement.translateX || 0;
+        const translateY = this.selectedElement.translateY || 0;
+        
+        // Temporarily apply the new rotation to test bounds
+        this.selectedElement.element.setAttribute('transform', 
+            `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
+        
+        const transformed = this.getTransformedBounds(this.selectedElement);
+        const bounds = this.getEditableBounds();
+        
+        // Check if element is completely outside bounds (all corners out on same side)
+        const isCompletelyOutLeft = transformed.right < bounds.x;
+        const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
+        const isCompletelyOutTop = transformed.bottom < bounds.y;
+        const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+        
+        if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
+            // Revert to previous rotation - not allowed to escape completely
+            const prevRotation = this.selectedElement.rotation || 0;
+            this.selectedElement.element.setAttribute('transform', 
+                `translate(${translateX} ${translateY}) rotate(${prevRotation} ${centerX} ${centerY})`);
+            return; // Don't update the display
+        }
+        
+        // Rotation is valid, apply it
         this.selectedElement.rotation = rotation;
         
         // Sync rotation input/display based on element type
@@ -1433,12 +1460,6 @@ class DesignEditor {
             const rotationVal = document.getElementById('prop-shape-rotation-val');
             if (rotationVal) rotationVal.textContent = rotation;
         }
-        
-        // Use translate to keep rotation center at element center
-        const translateX = this.selectedElement.translateX || 0;
-        const translateY = this.selectedElement.translateY || 0;
-        this.selectedElement.element.setAttribute('transform', 
-            `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
 
         this.requestHandlesRefresh();
     }
@@ -1450,12 +1471,39 @@ class DesignEditor {
             const centerY = bbox.y + bbox.height / 2;
             
             let rotation = this.normalizeRotation(parseFloat(value));
-            this.selectedElement.rotation = rotation;
             
             const translateX = this.selectedElement.translateX || 0;
             const translateY = this.selectedElement.translateY || 0;
+            
+            // Test the new rotation
             this.selectedElement.element.setAttribute('transform', 
                 `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
+            
+            const transformed = this.getTransformedBounds(this.selectedElement);
+            const bounds = this.getEditableBounds();
+            
+            // Check if element would be completely outside bounds
+            const isCompletelyOutLeft = transformed.right < bounds.x;
+            const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
+            const isCompletelyOutTop = transformed.bottom < bounds.y;
+            const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+            
+            if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
+                // Reject this rotation - revert to previous
+                const prevRotation = this.selectedElement.rotation || 0;
+                this.selectedElement.element.setAttribute('transform', 
+                    `translate(${translateX} ${translateY}) rotate(${prevRotation} ${centerX} ${centerY})`);
+                // Reset input to previous value
+                const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
+                               this.selectedElement.type === 'image' ? 'prop-image-rotation' :
+                               'prop-shape-rotation';
+                const input = document.getElementById(inputId);
+                if (input) input.value = prevRotation;
+                return;
+            }
+            
+            // Rotation is valid, apply it
+            this.selectedElement.rotation = rotation;
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
         }
