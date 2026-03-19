@@ -122,7 +122,7 @@ class DesignEditor {
     }
 
     getCanvasBounds() {
-        return { x: 0, y: 0, width: 800, height: 600 };
+        return this.getEditableBounds();
     }
 
     getEditableCenter() {
@@ -1331,15 +1331,15 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('x', newX);
             this.selectedElement.element.setAttribute('y', newY);
             
-            // For rotated elements, check boundaries
+            // For rotated elements, check against the editable print area bounds
             if (rotation !== 0) {
-                const elementRect = this.selectedElement.element.getBoundingClientRect();
-                const canvasRect = this.canvas.getBoundingClientRect();
-                
-                if (elementRect.left < canvasRect.left ||
-                    elementRect.right > canvasRect.right ||
-                    elementRect.top < canvasRect.top ||
-                    elementRect.bottom > canvasRect.bottom) {
+                const transformed = this.getTransformedBounds(this.selectedElement);
+                const editableBounds = this.getEditableBounds();
+
+                if (transformed.left < editableBounds.x ||
+                    transformed.right > editableBounds.x + editableBounds.width ||
+                    transformed.top < editableBounds.y ||
+                    transformed.bottom > editableBounds.y + editableBounds.height) {
                     // Revert to old values
                     this.selectedElement.element.setAttribute('width', oldWidth);
                     this.selectedElement.element.setAttribute('height', oldHeight);
