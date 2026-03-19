@@ -18,28 +18,52 @@ class DesignEditor {
         this.rotationStart = 0;
         this.currentProduct = null;
         this.editIndex = null;
+        this.productId = null;
+        this.cartStorageKey = 'latinflag_cart';
+        this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         
         this.init();
     }
     
-    init() {
-        this.loadProduct();
+    async init() {
+        await this.loadProduct();
         this.setupEventListeners();
         this.setupAutoSave();
+        this.saveHistory();
     }
     
     // ===== PRODUCT LOADING =====
-    loadProduct() {
+    async loadProduct() {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('produto');
         this.editIndex = urlParams.get('edit');
+        this.productId = productId;
         
         if (!productId) {
             window.location.href = '/produtos.html';
             return;
         }
-        
-        this.currentProduct = initialProducts.find(p => p.id == productId);
+
+        const numericProductId = Number(productId);
+        let dbProduct = null;
+
+        if (typeof supabaseClient !== 'undefined' && Number.isFinite(numericProductId)) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .eq('id', numericProductId)
+                    .single();
+
+                if (!error && data) {
+                    dbProduct = data;
+                }
+            } catch (error) {
+                console.warn('Falha ao carregar produto da base de dados:', error);
+            }
+        }
+
+        this.currentProduct = dbProduct || initialProducts.find(p => p.id == productId);
         
         if (!this.currentProduct) {
             showToast('Produto não encontrado', 'error');
@@ -53,37 +77,201 @@ class DesignEditor {
         // Load SVG template if exists
         if (this.currentProduct.svg_template) {
             this.loadSVGTemplate(this.currentProduct.svg_template);
+        } else {
+            this.setDefaultPrintArea();
         }
         
         // Load existing design if editing
         if (this.editIndex !== null) {
             this.loadExistingDesign(parseInt(this.editIndex));
+        } else {
+            this.loadAutosaveDesign();
         }
+    }
+
+    getAutosaveKey() {
+        return `latinflag_autosave_${this.productId || 'default'}`;
+    }
+
+    getCartData() {
+        const primary = JSON.parse(localStorage.getItem(this.cartStorageKey) || '[]');
+        if (primary.length > 0) return primary;
+
+        const legacy = JSON.parse(localStorage.getItem('cart') || '[]');
+        if (legacy.length > 0) return legacy;
+
+        return [];
+    }
+
+    saveCartData(cart) {
+        localStorage.setItem(this.cartStorageKey, JSON.stringify(cart));
+        // Keep legacy key for backward compatibility during migration.
+        localStorage.setItem('cart', JSON.stringify(cart));
+    }
+
+    getEditableBounds() {
+        return this.printAreaBounds || { x: 0, y: 0, width: 800, height: 600 };
+    }
+
+    getEditableCenter() {
+        const bounds = this.getEditableBounds();
+        return {
+            x: bounds.x + (bounds.width / 2),
+            y: bounds.y + (bounds.height / 2)
+        };
+    }
+
+    clientToSvgPoint(clientX, clientY) {
+        const rect = this.canvas.getBoundingClientRect();
+        const svgWidth = 800;
+        const svgHeight = 600;
+
+        return {
+            x: ((clientX - rect.left) / rect.width) * svgWidth,
+            y: ((clientY - rect.top) / rect.height) * svgHeight
+        };
+    }
+
+    setDefaultPrintArea() {
+        this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
+        this.printArea.setAttribute('x', String(this.printAreaBounds.x));
+        this.printArea.setAttribute('y', String(this.printAreaBounds.y));
+        this.printArea.setAttribute('width', String(this.printAreaBounds.width));
+        this.printArea.setAttribute('height', String(this.printAreaBounds.height));
+    }
+
+    updatePrintAreaFromElement(areaElement, sourceBounds) {
+        const scaleX = 800 / sourceBounds.width;
+        const scaleY = 600 / sourceBounds.height;
+        const offsetX = -sourceBounds.x * scaleX;
+        const offsetY = -sourceBounds.y * scaleY;
+
+        const areaClone = document.importNode(areaElement, true);
+        areaClone.setAttribute('id', 'print-area-outline');
+        areaClone.setAttribute('fill', 'none');
+        areaClone.setAttribute('stroke', '#3b82f6');
+        areaClone.setAttribute('stroke-width', '2');
+        areaClone.setAttribute('stroke-dasharray', '8,4');
+        areaClone.setAttribute('opacity', '0.5');
+        areaClone.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scaleX} ${scaleY})`);
+
+        this.printArea.replaceWith(areaClone);
+        this.printArea = areaClone;
+
+        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        tempSvg.setAttribute('viewBox', '0 0 800 600');
+        tempSvg.setAttribute('width', '800');
+        tempSvg.setAttribute('height', '600');
+        tempSvg.style.position = 'absolute';
+        tempSvg.style.left = '-9999px';
+        tempSvg.style.top = '-9999px';
+        tempSvg.style.visibility = 'hidden';
+        const measureElement = document.importNode(areaClone, true);
+        tempSvg.appendChild(measureElement);
+        document.body.appendChild(tempSvg);
+        const bbox = measureElement.getBBox();
+        document.body.removeChild(tempSvg);
+
+        this.printAreaBounds = {
+            x: Math.max(0, bbox.x),
+            y: Math.max(0, bbox.y),
+            width: Math.min(800, bbox.width),
+            height: Math.min(600, bbox.height)
+        };
     }
     
     loadSVGTemplate(svgContent) {
         try {
             const parser = new DOMParser();
             const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
-            const templateElements = svgDoc.documentElement.children;
-            
-            // Clear current canvas except print area
-            while (this.canvas.firstChild && this.canvas.firstChild !== this.printArea) {
-                this.canvas.removeChild(this.canvas.firstChild);
+            const root = svgDoc.documentElement;
+            const areaElement = root.querySelector('path, polygon, rect, circle, ellipse');
+
+            if (!areaElement) {
+                this.setDefaultPrintArea();
+                return;
             }
-            
-            // Insert template before print area
-            Array.from(templateElements).forEach(el => {
-                const imported = document.importNode(el, true);
-                this.canvas.insertBefore(imported, this.printArea);
-            });
+
+            const viewBoxAttr = root.getAttribute('viewBox');
+            let sourceBounds = { x: 0, y: 0, width: 800, height: 600 };
+
+            if (viewBoxAttr) {
+                const parts = viewBoxAttr.split(/\s+/).map(Number);
+                if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+                    sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
+                }
+            } else {
+                const width = parseFloat(root.getAttribute('width') || '800');
+                const height = parseFloat(root.getAttribute('height') || '600');
+                if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+                    sourceBounds = { x: 0, y: 0, width, height };
+                }
+            }
+
+            this.updatePrintAreaFromElement(areaElement, sourceBounds);
         } catch (error) {
             console.error('Error loading SVG template:', error);
+            this.setDefaultPrintArea();
         }
+    }
+
+    buildElementDataFromNode(node, customId = null) {
+        const tagName = node.tagName.toLowerCase();
+        let type = 'shape';
+        if (tagName === 'text') type = 'text';
+        if (tagName === 'image') type = 'image';
+
+        let shapeType = null;
+        if (tagName === 'rect') shapeType = 'rectangle';
+        if (tagName === 'circle') shapeType = 'circle';
+        if (tagName === 'polygon') shapeType = 'triangle';
+
+        const data = {
+            id: customId ?? (Date.now() + Math.random()),
+            element: node,
+            type,
+            shapeType,
+            rotation: 0,
+            translateX: 0,
+            translateY: 0
+        };
+
+        if (type === 'text') {
+            const bbox = node.getBBox();
+            data.content = node.textContent || '';
+            data.font = node.getAttribute('font-family') || 'Arial';
+            data.size = parseFloat(node.getAttribute('font-size') || '24');
+            data.color = node.getAttribute('fill') || '#000000';
+            data.bold = (node.getAttribute('font-weight') || 'normal') === 'bold';
+            data.italic = (node.getAttribute('font-style') || 'normal') === 'italic';
+            data.width = bbox.width;
+            data.height = bbox.height;
+        }
+
+        if (type === 'image') {
+            data.opacity = parseFloat(node.getAttribute('opacity') || '1');
+        }
+
+        if (type === 'shape') {
+            data.fill = node.getAttribute('fill') || '#3b82f6';
+            data.stroke = node.getAttribute('stroke') || '#000000';
+            data.strokeWidth = parseFloat(node.getAttribute('stroke-width') || '0');
+        }
+
+        const transform = node.getAttribute('transform') || '';
+        const rotateMatch = transform.match(/rotate\(([-\d.]+)/);
+        if (rotateMatch) data.rotation = parseFloat(rotateMatch[1]) || 0;
+        const translateMatch = transform.match(/translate\(([-\d.]+)\s+([-\d.]+)\)/);
+        if (translateMatch) {
+            data.translateX = parseFloat(translateMatch[1]) || 0;
+            data.translateY = parseFloat(translateMatch[2]) || 0;
+        }
+
+        return data;
     }
     
     loadExistingDesign(index) {
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const cart = this.getCartData();
         if (cart[index] && cart[index].design) {
             try {
                 const parser = new DOMParser();
@@ -93,21 +281,45 @@ class DesignEditor {
                 designElements.forEach(el => {
                     const imported = document.importNode(el, true);
                     this.canvas.appendChild(imported);
-                    
-                    const elementData = {
-                        id: Date.now() + Math.random(),
-                        element: imported,
-                        type: imported.tagName.toLowerCase()
-                    };
+                    const elementData = this.buildElementDataFromNode(imported);
                     
                     this.elements.push(elementData);
                     this.makeElementInteractive(elementData);
                 });
                 
                 this.updateLayers();
+                this.saveHistory();
             } catch (error) {
                 console.error('Error loading existing design:', error);
             }
+        }
+    }
+
+    loadAutosaveDesign() {
+        const autosave = localStorage.getItem(this.getAutosaveKey());
+        if (!autosave) return;
+
+        try {
+            const parser = new DOMParser();
+            const svgDoc = parser.parseFromString(autosave, 'image/svg+xml');
+            const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
+
+            designElements.forEach(el => {
+                const imported = document.importNode(el, true);
+                this.canvas.appendChild(imported);
+                const elementData = this.buildElementDataFromNode(imported);
+
+                this.elements.push(elementData);
+                this.makeElementInteractive(elementData);
+            });
+
+            if (this.elements.length > 0) {
+                this.updateLayers();
+                showToast('Design recuperado automaticamente', 'info');
+                this.saveHistory();
+            }
+        } catch (error) {
+            console.warn('Falha ao recuperar autosave:', error);
         }
     }
     
@@ -227,9 +439,10 @@ class DesignEditor {
     
     // ===== ADD ELEMENTS =====
     addText() {
+        const center = this.getEditableCenter();
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', '200');
-        text.setAttribute('y', '224'); // y is baseline, so y = top + fontSize
+        text.setAttribute('x', String(center.x - 80));
+        text.setAttribute('y', String(center.y));
         text.setAttribute('font-family', 'Arial');
         text.setAttribute('font-size', '24');
         text.setAttribute('fill', '#000000');
@@ -285,10 +498,12 @@ class DesignEditor {
                     width = width * ratio;
                     height = height * ratio;
                 }
+
+                const center = this.getEditableCenter();
                 
                 const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-                img.setAttribute('x', '200');
-                img.setAttribute('y', '200');
+                img.setAttribute('x', String(center.x - (width / 2)));
+                img.setAttribute('y', String(center.y - (height / 2)));
                 img.setAttribute('width', width);
                 img.setAttribute('height', height);
                 img.setAttribute('href', event.target.result);
@@ -320,22 +535,26 @@ class DesignEditor {
     }
     
     addShape(shapeType) {
+        const center = this.getEditableCenter();
         let shape;
         
         if (shapeType === 'rectangle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shape.setAttribute('x', '200');
-            shape.setAttribute('y', '200');
+            shape.setAttribute('x', String(center.x - 75));
+            shape.setAttribute('y', String(center.y - 50));
             shape.setAttribute('width', '150');
             shape.setAttribute('height', '100');
         } else if (shapeType === 'circle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            shape.setAttribute('cx', '275');
-            shape.setAttribute('cy', '250');
+            shape.setAttribute('cx', String(center.x));
+            shape.setAttribute('cy', String(center.y));
             shape.setAttribute('r', '75');
         } else if (shapeType === 'triangle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            shape.setAttribute('points', '275,175 350,300 200,300');
+            const p1 = `${center.x},${center.y - 75}`;
+            const p2 = `${center.x + 75},${center.y + 50}`;
+            const p3 = `${center.x - 75},${center.y + 50}`;
+            shape.setAttribute('points', `${p1} ${p2} ${p3}`);
         }
         
         shape.setAttribute('fill', '#3b82f6');
@@ -522,8 +741,7 @@ class DesignEditor {
     // ===== DRAG & DROP =====
     startDrag(e, elementData) {
         this.isDragging = true;
-        const canvasRect = this.canvas.getBoundingClientRect();
-        
+
         // Store the mouse position at drag start
         this.dragStart = {
             mouseX: e.clientX,
@@ -537,16 +755,20 @@ class DesignEditor {
         } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
             this.dragStart.elementX = parseFloat(elementData.element.getAttribute('cx') || 0);
             this.dragStart.elementY = parseFloat(elementData.element.getAttribute('cy') || 0);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            this.dragStart.points = (elementData.element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+            this.dragStart.bbox = elementData.element.getBBox();
         }
     }
     
     handleMouseMove(e) {
         if (this.isDragging && this.selectedElement) {
-            const canvasRect = this.canvas.getBoundingClientRect();
-            
             // Calculate mouse delta in screen space
-            const deltaX = e.clientX - this.dragStart.mouseX;
-            const deltaY = e.clientY - this.dragStart.mouseY;
+            const deltaX = (e.clientX - this.dragStart.mouseX) / this.zoom;
+            const deltaY = (e.clientY - this.dragStart.mouseY) / this.zoom;
             
             // For rotated elements, use translate transform
             if (this.selectedElement.rotation && this.selectedElement.rotation !== 0) {
@@ -587,8 +809,7 @@ class DesignEditor {
                 let newX = this.dragStart.elementX + deltaX;
                 let newY = this.dragStart.elementY + deltaY;
                 
-                // Get canvas boundaries (SVG viewBox)
-                const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
+                const canvasBounds = this.getEditableBounds();
                 
                 if (this.selectedElement.type === 'text') {
                     newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
@@ -608,6 +829,26 @@ class DesignEditor {
                     newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
                     this.selectedElement.element.setAttribute('cx', newX);
                     this.selectedElement.element.setAttribute('cy', newY);
+                } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle' && this.dragStart.points) {
+                    const bbox = this.dragStart.bbox;
+                    let clampedDeltaX = deltaX;
+                    let clampedDeltaY = deltaY;
+
+                    if (bbox.x + clampedDeltaX < canvasBounds.x) {
+                        clampedDeltaX = canvasBounds.x - bbox.x;
+                    }
+                    if (bbox.x + bbox.width + clampedDeltaX > canvasBounds.x + canvasBounds.width) {
+                        clampedDeltaX = (canvasBounds.x + canvasBounds.width) - (bbox.x + bbox.width);
+                    }
+                    if (bbox.y + clampedDeltaY < canvasBounds.y) {
+                        clampedDeltaY = canvasBounds.y - bbox.y;
+                    }
+                    if (bbox.y + bbox.height + clampedDeltaY > canvasBounds.y + canvasBounds.height) {
+                        clampedDeltaY = (canvasBounds.y + canvasBounds.height) - (bbox.y + bbox.height);
+                    }
+
+                    const translatedPoints = this.dragStart.points.map(([x, y]) => `${x + clampedDeltaX},${y + clampedDeltaY}`);
+                    this.selectedElement.element.setAttribute('points', translatedPoints.join(' '));
                 }
             }
             
@@ -652,8 +893,8 @@ class DesignEditor {
     doResize(e) {
         if (!this.selectedElement) return;
         
-        let dx = e.clientX - this.dragStart.x;
-        let dy = e.clientY - this.dragStart.y;
+        let dx = (e.clientX - this.dragStart.x) / this.zoom;
+        let dy = (e.clientY - this.dragStart.y) / this.zoom;
         
         // If element is rotated, convert mouse delta to element's local coordinate space
         const rotation = this.selectedElement.rotation || 0;
@@ -666,7 +907,7 @@ class DesignEditor {
         }
         
         const bbox = this.selectedElement.element.getBBox();
-        const canvasBounds = { x: 0, y: 0, width: 800, height: 600 };
+        const canvasBounds = this.getEditableBounds();
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -762,6 +1003,22 @@ class DesignEditor {
             this.selectedElement.element.setAttribute('r', constrainedRadius);
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
+            const currentPoints = (this.selectedElement.element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+
+            if (currentPoints.length >= 3) {
+                const scaleX = bbox.width > 0 ? (newWidth / bbox.width) : 1;
+                const scaleY = bbox.height > 0 ? (newHeight / bbox.height) : 1;
+                const resized = currentPoints.map(([x, y]) => {
+                    const nextX = newX + (x - bbox.x) * scaleX;
+                    const nextY = newY + (y - bbox.y) * scaleY;
+                    return `${nextX},${nextY}`;
+                });
+                this.selectedElement.element.setAttribute('points', resized.join(' '));
+            }
         } else if (this.selectedElement.type === 'text') {
             // Calculate scale based on stored dimensions
             const scaleX = newWidth / this.selectedElement.width;
@@ -798,9 +1055,9 @@ class DesignEditor {
         const bbox = elementData.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - canvasRect.left;
-        const mouseY = e.clientY - canvasRect.top;
+        const mouse = this.clientToSvgPoint(e.clientX, e.clientY);
+        const mouseX = mouse.x;
+        const mouseY = mouse.y;
         
         this.rotationStart = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
         this.rotationStart -= (elementData.rotation || 0);
@@ -812,9 +1069,9 @@ class DesignEditor {
         const bbox = this.selectedElement.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const mouseX = e.clientX - canvasRect.left;
-        const mouseY = e.clientY - canvasRect.top;
+        const mouse = this.clientToSvgPoint(e.clientX, e.clientY);
+        const mouseX = mouse.x;
+        const mouseY = mouse.y;
         
         const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
         let rotation = angle - this.rotationStart;
@@ -1065,8 +1322,41 @@ class DesignEditor {
     }
     
     restoreState(stateStr) {
-        // Implementation for restoring state
-        console.log('Restore state:', stateStr);
+        try {
+            const state = JSON.parse(stateStr);
+
+            this.elements.forEach((el) => el.element.remove());
+            this.elements = [];
+            this.selectedElement = null;
+
+            (state.elements || []).forEach((saved) => {
+                const wrapper = document.createElement('div');
+                wrapper.innerHTML = saved.element;
+                const restored = wrapper.firstElementChild;
+                if (!restored) return;
+
+                this.canvas.appendChild(restored);
+
+                const rebuilt = this.buildElementDataFromNode(restored, saved.id);
+                const elementData = {
+                    ...rebuilt,
+                    ...saved,
+                    element: restored
+                };
+
+                this.elements.push(elementData);
+                this.makeElementInteractive(elementData);
+            });
+
+            this.hideResizeHandles();
+            this.updateLayers();
+            document.getElementById('no-selection').classList.remove('hidden');
+            document.getElementById('text-properties').classList.add('hidden');
+            document.getElementById('image-properties').classList.add('hidden');
+            document.getElementById('shape-properties').classList.add('hidden');
+        } catch (error) {
+            console.error('Erro ao restaurar histórico:', error);
+        }
     }
     
     // ===== AUTO SAVE =====
@@ -1080,7 +1370,7 @@ class DesignEditor {
     
     autoSave() {
         const design = this.getDesignSVG();
-        localStorage.setItem('autosave_design', design);
+        localStorage.setItem(this.getAutosaveKey(), design);
     }
     
     getDesignSVG() {
@@ -1095,7 +1385,7 @@ class DesignEditor {
             return;
         }
         
-        const cart = JSON.parse(localStorage.getItem('cart') || '[]');
+        const cart = this.getCartData();
         const design = this.getDesignSVG();
         
         const cartItem = {
@@ -1116,7 +1406,8 @@ class DesignEditor {
             showToast('Produto adicionado ao carrinho!', 'success');
         }
         
-        localStorage.setItem('cart', JSON.stringify(cart));
+        this.saveCartData(cart);
+        localStorage.removeItem(this.getAutosaveKey());
         
         setTimeout(() => {
             window.location.href = '/produtos.html';
