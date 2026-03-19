@@ -706,6 +706,7 @@ class DesignEditor {
         handlesContainer.classList.remove('hidden');
 
         const canvasRect = this.canvas.getBoundingClientRect();
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
         const bbox = elementData.element.getBBox();
         const ctm = elementData.element.getScreenCTM();
 
@@ -714,8 +715,9 @@ class DesignEditor {
         const toCanvasPoint = (x, y) => {
             const p = new DOMPoint(x, y).matrixTransform(ctm);
             return {
-                x: p.x - canvasRect.left,
-                y: p.y - canvasRect.top
+                // Position relative to canvas-wrapper, accounting for scroll
+                x: p.x - wrapperRect.left,
+                y: p.y - wrapperRect.top
             };
         };
 
