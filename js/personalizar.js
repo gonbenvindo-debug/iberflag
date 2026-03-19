@@ -113,6 +113,10 @@ class DesignEditor {
         return this.printAreaBounds || { x: 0, y: 0, width: 800, height: 600 };
     }
 
+    getCanvasBounds() {
+        return { x: 0, y: 0, width: 800, height: 600 };
+    }
+
     getEditableCenter() {
         const bounds = this.getEditableBounds();
         return {
@@ -809,7 +813,7 @@ class DesignEditor {
                 let newX = this.dragStart.elementX + deltaX;
                 let newY = this.dragStart.elementY + deltaY;
                 
-                const canvasBounds = this.getEditableBounds();
+                const canvasBounds = this.getCanvasBounds();
                 
                 if (this.selectedElement.type === 'text') {
                     newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
@@ -907,7 +911,7 @@ class DesignEditor {
         }
         
         const bbox = this.selectedElement.element.getBBox();
-        const canvasBounds = this.getEditableBounds();
+        const canvasBounds = this.getCanvasBounds();
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
