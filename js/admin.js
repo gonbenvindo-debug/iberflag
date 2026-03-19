@@ -8,6 +8,7 @@ let currentOrderData = null;
 let currentOrderMeta = null;
 let currentOrderPublicNotes = '';
 let ordersCache = new Map();
+const adminDesignCache = new Map();
 
 // ===== DOM ELEMENTS =====
 const navTabs = document.querySelectorAll('.nav-tab');
@@ -704,10 +705,12 @@ function resolveItemPreviewAndDesign(item, snapshot) {
 
     // Priority: SVG design → explicit preview → product image fallback
     const previewUrl = designDataUrl || explicitPreview || fallbackImage;
+    const hasDesign = Boolean(designDataUrl || explicitPreview);
 
     return {
         previewUrl,
-        designSvg
+        designSvg,
+        hasDesign
     };
 }
 
@@ -841,37 +844,60 @@ async function viewOrder(id) {
         const notesInput = document.getElementById('order-public-notes');
         const statusNoteInput = document.getElementById('order-status-note');
 
+        const metaEl = document.getElementById('order-modal-meta');
+        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} · ${formatDateTime(order.created_at)}`;
+
         if (summaryBlock) {
             summaryBlock.innerHTML = `
-                <div class="grid grid-cols-2 md:grid-cols-4 gap-3">
+                <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem;">
                     <div>
-                        <p class="text-xs text-gray-500">Nº Encomenda</p>
-                        <p class="font-bold text-gray-900">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Nº Encomenda</p>
+                        <p style="font-size:0.875rem;font-weight:700;color:#111827;margin:0;">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Data</p>
-                        <p class="font-semibold text-gray-900">${formatDateTime(order.created_at)}</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Data</p>
+                        <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${formatDateTime(order.created_at)}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Total</p>
-                        <p class="font-bold text-blue-700">${formatCurrency(order.total)}</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Total</p>
+                        <p style="font-size:1rem;font-weight:700;color:#1d4ed8;margin:0;">${formatCurrency(order.total)}</p>
                     </div>
                     <div>
-                        <p class="text-xs text-gray-500">Estado Atual</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Estado</p>
                         <span class="badge badge-${getStatusColor(workflowStatus)}">${escapeHtml(getWorkflowStatusLabel(workflowStatus))}</span>
                     </div>
+                    ${tracking.trackingCode ? `<div>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Tracking</p>
+                        <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;font-family:monospace;">${escapeHtml(tracking.trackingCode)}</p>
+                    </div>` : ''}
                 </div>
             `;
         }
 
         if (customerBlock) {
+            const nome = escapeHtml(order.clientes?.nome || 'N/A');
+            const email = escapeHtml(order.clientes?.email || '—');
+            const tel = escapeHtml(order.clientes?.telefone || '—');
+            const morada = escapeHtml(order.morada_envio || '');
             customerBlock.innerHTML = `
-                <h3 class="text-lg font-bold mb-3">Cliente</h3>
-                <div class="space-y-2 text-sm">
-                    <p><span class="text-gray-500">Nome:</span> <span class="font-semibold">${escapeHtml(order.clientes?.nome || 'N/A')}</span></p>
-                    <p><span class="text-gray-500">Email:</span> ${escapeHtml(order.clientes?.email || 'N/A')}</p>
-                    <p><span class="text-gray-500">Telefone:</span> ${escapeHtml(order.clientes?.telefone || 'N/A')}</p>
-                    <p><span class="text-gray-500">Morada:</span> ${escapeHtml(order.morada_envio || 'N/A')}</p>
+                <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.75rem;">Cliente</p>
+                <div style="display:flex;flex-direction:column;gap:0.4rem;font-size:0.8125rem;">
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Nome</span>
+                        <span style="font-weight:600;color:#111827;text-align:right;">${nome}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Email</span>
+                        <span style="color:#374151;text-align:right;font-size:0.75rem;word-break:break-all;">${email}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Tel.</span>
+                        <span style="color:#374151;text-align:right;">${tel}</span>
+                    </div>
+                    ${morada ? `<div style="padding-top:0.5rem;border-top:1px solid #f3f4f6;margin-top:0.125rem;">
+                        <p style="font-size:0.6875rem;color:#9ca3af;margin:0 0 0.2rem;">Morada de envio</p>
+                        <p style="font-size:0.75rem;color:#374151;margin:0;">${morada}</p>
+                    </div>` : ''}
                 </div>
             `;
         }
@@ -901,77 +927,94 @@ async function viewOrder(id) {
                     }
                 }));
 
-                itemsList.innerHTML = listSource.map((item, index) => {
+                // Clear cached designs for this order
+                adminDesignCache.forEach((_, k) => { if (k.startsWith(String(orderId) + '-')) adminDesignCache.delete(k); });
+
+                const rows = listSource.map((item, index) => {
                     const snapshot = resolveItemSnapshot(split.meta, item, index);
                     const visuals = resolveItemPreviewAndDesign(item, snapshot);
-                    const preview = visuals.previewUrl || '/favicon.svg';
-                    const designDownload = visuals.designSvg
-                        ? (typeof buildSvgDataUrl === 'function' ? buildSvgDataUrl(visuals.designSvg) : '')
-                        : '';
                     const productName = item?.produtos?.nome || snapshot?.nome || `Produto #${item.produto_id || index + 1}`;
                     const quantity = Number(item.quantidade || snapshot?.quantidade || 1);
                     const unitPrice = Number(item.preco_unitario || snapshot?.precoUnitario || 0);
                     const lineSubtotal = Number(item.subtotal || (unitPrice * quantity));
-
                     const itemOptions = resolveItemOptions(item, snapshot);
+                    const svgDataUrl = visuals.designSvg && typeof buildSvgDataUrl === 'function'
+                        ? buildSvgDataUrl(visuals.designSvg) : '';
+                    const designKey = `${String(orderId)}-${index}`;
+                    adminDesignCache.set(designKey, { previewUrl: visuals.previewUrl, svgDataUrl, name: productName });
 
-                    return `
-                        <article class="rounded-xl border border-gray-200 p-3 bg-white">
-                            <div class="flex items-start justify-between gap-3 mb-2">
-                                <h4 class="font-semibold text-sm text-gray-900">${escapeHtml(productName)}</h4>
-                                <span class="text-xs text-gray-500">Qtd ${quantity}</span>
-                            </div>
+                    const designCell = visuals.hasDesign
+                        ? `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1px solid #e5e7eb;background:#f9fafb;overflow:hidden;margin-bottom:0.35rem;cursor:pointer;" class="order-design-view-btn" data-design-key="${escapeHtml(designKey)}">
+                               <img src="${escapeHtml(visuals.previewUrl)}" alt="Design" style="width:100%;height:100%;object-fit:contain;">
+                           </div>
+                           <button type="button" class="order-design-view-btn" data-design-key="${escapeHtml(designKey)}" style="font-size:0.6875rem;color:#2563eb;background:none;border:none;cursor:pointer;padding:0;display:block;text-align:left;">Ver design</button>`
+                        : `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1.5px dashed #d1d5db;background:#f9fafb;display:flex;align-items:center;justify-content:center;margin-bottom:0.2rem;">
+                               <i data-lucide="image-off" style="width:1.125rem;height:1.125rem;color:#d1d5db;"></i>
+                           </div>
+                           <p style="font-size:0.625rem;color:#9ca3af;width:3.5rem;text-align:center;margin:0;">Sem design</p>`;
 
-                            <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                <div class="rounded-lg border border-gray-200 bg-gray-50 p-2">
-                                    <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Design do cliente</p>
-                                    <img src="${escapeHtml(preview)}" alt="Design de ${escapeHtml(productName)}" class="w-full h-40 object-contain rounded-md bg-white border border-gray-100">
-                                    <div class="flex flex-wrap gap-2 mt-2">
-                                        <a href="${escapeHtml(preview)}" target="_blank" rel="noopener noreferrer" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-gray-300 bg-white text-gray-700 hover:bg-gray-100">
-                                            <i data-lucide="expand" class="w-3 h-3"></i>
-                                            Ver Design
-                                        </a>
-                                        ${designDownload ? `<a href="${escapeHtml(designDownload)}" download="design-${sanitizeFilenameToken(order.numero_encomenda || order.id || 'encomenda')}-${index + 1}.svg" class="inline-flex items-center gap-1 text-xs px-2.5 py-1.5 rounded-md border border-blue-200 bg-blue-50 text-blue-700 hover:bg-blue-100"><i data-lucide="download" class="w-3 h-3"></i>Download SVG</a>` : ''}
-                                    </div>
-                                </div>
+                    const optionsHtml = itemOptions.length > 0
+                        ? `<ul style="margin:0.25rem 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.2rem;">${itemOptions.map((o) => `<li style="font-size:0.75rem;color:#6b7280;"><span style="font-weight:500;color:#374151;">${escapeHtml(o.label)}:</span> ${escapeHtml(o.value)}</li>`).join('')}</ul>`
+                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opções</p>`;
 
-                                <div class="rounded-lg border border-gray-200 bg-white p-2.5">
-                                    <p class="text-xs text-gray-500">Preco unitario: <span class="font-semibold text-gray-800">${formatCurrency(unitPrice)}</span></p>
-                                    <p class="text-xs text-gray-500 mt-1">Subtotal: <span class="font-semibold text-blue-700">${formatCurrency(lineSubtotal)}</span></p>
-
-                                    <div class="mt-2.5 pt-2 border-t border-gray-100">
-                                        <p class="text-[11px] font-semibold uppercase tracking-wide text-gray-500 mb-1.5">Opcoes compradas</p>
-                                        ${itemOptions.length > 0
-                                            ? `<ul class="space-y-1">${itemOptions.map((option) => `<li class="text-xs text-gray-700"><span class="font-semibold">${escapeHtml(option.label)}:</span> ${escapeHtml(option.value)}</li>`).join('')}</ul>`
-                                            : '<p class="text-xs text-gray-400">Sem opcoes registadas neste item.</p>'}
-                                    </div>
-                                </div>
-                            </div>
-                        </article>
-                    `;
+                    return `<tr style="border-bottom:1px solid #f9fafb;">
+                        <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;width:5rem;">${designCell}</td>
+                        <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;">
+                            <p style="font-size:0.8125rem;font-weight:600;color:#111827;margin:0;">${escapeHtml(productName)}</p>
+                            ${optionsHtml}
+                        </td>
+                        <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;text-align:right;font-size:0.8125rem;color:#374151;">${quantity}</td>
+                        <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;text-align:right;font-size:0.8125rem;color:#6b7280;">${formatCurrency(unitPrice)}</td>
+                        <td style="padding:0.75rem 0 0.75rem 0;vertical-align:top;text-align:right;font-size:0.8125rem;font-weight:600;color:#1d4ed8;">${formatCurrency(lineSubtotal)}</td>
+                    </tr>`;
                 }).join('');
+
+                itemsList.innerHTML = `<div style="overflow-x:auto;">
+                    <table style="width:100%;border-collapse:collapse;min-width:440px;">
+                        <thead>
+                            <tr style="border-bottom:1px solid #e5e7eb;">
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;width:5rem;">Design</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / Opções</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:2.5rem;">Qtd</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">P. Unit.</th>
+                                <th style="padding:0 0 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">Subtotal</th>
+                            </tr>
+                        </thead>
+                        <tbody>${rows}</tbody>
+                        <tfoot>
+                            <tr style="border-top:2px solid #e5e7eb;">
+                                <td colspan="4" style="padding-top:0.625rem;text-align:right;padding-right:0.75rem;font-size:0.75rem;font-weight:600;color:#6b7280;">Total da encomenda</td>
+                                <td style="padding-top:0.625rem;text-align:right;font-weight:700;color:#1d4ed8;font-size:0.875rem;">${formatCurrency(order.total)}</td>
+                            </tr>
+                        </tfoot>
+                    </table>
+                </div>`;
             } else {
-                itemsList.innerHTML = '<p class="text-sm text-gray-400">Sem itens associados a esta encomenda.</p>';
+                itemsList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem itens associados a esta encomenda.</p>';
             }
         }
 
         if (historyList) {
             const history = Array.isArray(split.meta?.statusHistory) ? split.meta.statusHistory : [];
             if (history.length > 0) {
-                historyList.innerHTML = history
+                const historyRows = history
                     .slice()
                     .sort((a, b) => new Date(b.at) - new Date(a.at))
-                    .map((entry) => `
-                        <div class="rounded-lg border border-gray-200 px-3 py-2 bg-white">
-                            <div class="flex justify-between gap-2">
-                                <span class="text-sm font-semibold text-gray-800">${escapeHtml(getWorkflowStatusLabel(entry.status))}</span>
-                                <span class="text-xs text-gray-500">${formatDateTime(entry.at)}</span>
-                            </div>
-                            ${entry.note ? `<p class="text-xs text-gray-600 mt-1">${escapeHtml(entry.note)}</p>` : ''}
-                        </div>
-                    `).join('');
+                    .map((entry) => {
+                        const noteHtml = entry.note ? `<p style="font-size:0.75rem;color:#6b7280;margin:0.2rem 0 0 1rem;">${escapeHtml(entry.note)}</p>` : '';
+                        return `<tr style="border-bottom:1px solid #f3f4f6;">
+                            <td style="padding:0.5rem 0.75rem 0.5rem 0;vertical-align:top;">
+                                <div style="display:flex;align-items:center;gap:0.5rem;">
+                                    <span class="badge badge-${getStatusColor(entry.status)}" style="font-size:0.75rem;">${escapeHtml(getWorkflowStatusLabel(entry.status))}</span>
+                                </div>
+                                ${noteHtml}
+                            </td>
+                            <td style="padding:0.5rem 0;text-align:right;font-size:0.75rem;color:#9ca3af;white-space:nowrap;vertical-align:top;">${formatDateTime(entry.at)}</td>
+                        </tr>`;
+                    }).join('');
+                historyList.innerHTML = `<table style="width:100%;border-collapse:collapse;"><tbody>${historyRows}</tbody></table>`;
             } else {
-                historyList.innerHTML = '<p class="text-sm text-gray-400">Sem historico de atualizacoes.</p>';
+                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histórico de atualizações.</p>';
             }
         }
 
@@ -1156,6 +1199,44 @@ closeOrderModalBtns.forEach((btn) => {
     btn.addEventListener('click', () => {
         closeModal(orderModal);
     });
+});
+
+// Design viewer modal
+function openAdminDesignViewer(designKey) {
+    const entry = adminDesignCache.get(designKey);
+    if (!entry) return;
+    const modal = document.getElementById('design-viewer-modal');
+    const img = document.getElementById('design-viewer-img');
+    const title = document.getElementById('design-viewer-title');
+    const downloadBtn = document.getElementById('design-viewer-download');
+    if (!modal || !img) return;
+    img.src = entry.previewUrl || '';
+    if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
+    if (downloadBtn) {
+        if (entry.svgDataUrl) {
+            downloadBtn.href = entry.svgDataUrl;
+            downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
+            downloadBtn.style.display = 'inline-flex';
+        } else {
+            downloadBtn.style.display = 'none';
+        }
+    }
+    modal.classList.remove('hidden');
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('.order-design-view-btn');
+    if (btn && btn.dataset.designKey) {
+        openAdminDesignViewer(btn.dataset.designKey);
+    }
+});
+
+document.getElementById('close-design-viewer')?.addEventListener('click', () => {
+    document.getElementById('design-viewer-modal')?.classList.add('hidden');
+});
+document.getElementById('close-design-viewer-2')?.addEventListener('click', () => {
+    document.getElementById('design-viewer-modal')?.classList.add('hidden');
 });
 
 if (saveOrderBtn) {

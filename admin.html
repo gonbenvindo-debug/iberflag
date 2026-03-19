@@ -390,63 +390,88 @@
     </div>
 
     <div id="order-modal" class="modal-overlay hidden">
-        <div class="modal-content w-full max-w-5xl p-6 md:p-7">
-            <div class="flex justify-between items-start gap-4 mb-5">
-                <div>
-                    <h2 class="text-xl md:text-2xl font-bold">Detalhe da Encomenda</h2>
-                    <p class="text-sm text-gray-500 mt-1">Vista simples para acompanhar design dos itens e atualizar estado rapidamente.</p>
+        <div class="modal-content w-full max-w-5xl" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 92vh;">
+
+            <!-- Header -->
+            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;">
+                <div style="display: flex; align-items: center; gap: 0.75rem;">
+                    <div style="width: 2.25rem; height: 2.25rem; background: #eff6ff; border-radius: 0.625rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                        <i data-lucide="package" style="width: 1.125rem; height: 1.125rem; color: #2563eb;"></i>
+                    </div>
+                    <div>
+                        <h2 style="font-size: 0.9375rem; font-weight: 700; color: #111827; margin: 0;">Detalhe da Encomenda</h2>
+                        <p style="font-size: 0.6875rem; color: #9ca3af; margin: 0.1rem 0 0;" id="order-modal-meta"></p>
+                    </div>
                 </div>
-                <button type="button" class="close-order-modal text-gray-500 hover:text-gray-700">
-                    <i data-lucide="x" class="w-6 h-6"></i>
+                <button type="button" class="close-order-modal" style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                    <i data-lucide="x" style="width: 1.125rem; height: 1.125rem;"></i>
                 </button>
             </div>
 
-            <div class="grid grid-cols-1 lg:grid-cols-3 gap-5">
-                <section class="lg:col-span-2 space-y-4">
-                    <div class="rounded-xl border border-gray-200 p-4 bg-gray-50" id="order-summary-block"></div>
+            <!-- Summary strip -->
+            <div id="order-summary-block" style="padding: 0.75rem 1.5rem; background: #f9fafb; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;"></div>
 
-                    <div class="rounded-xl border border-gray-200 p-4 bg-white">
-                        <h3 class="text-base font-bold mb-3">Itens e Design do Cliente</h3>
-                        <div id="order-items-list" class="space-y-3 max-h-[460px] overflow-y-auto pr-1"></div>
-                    </div>
+            <!-- Body: main + sidebar -->
+            <div style="display: flex; flex: 1; overflow: hidden; min-height: 0;">
 
-                    <div class="rounded-xl border border-gray-200 p-4 bg-white">
-                        <h3 class="text-base font-bold mb-3">Historico de Estado</h3>
-                        <div id="order-history-list" class="space-y-2 max-h-[180px] overflow-y-auto pr-1"></div>
-                    </div>
-                </section>
+                <!-- Main content -->
+                <div style="flex: 1; overflow-y: auto; min-width: 0; border-right: 1px solid #f3f4f6;">
+                    <section style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6;">
+                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.875rem;">Itens &amp; Design</p>
+                        <div id="order-items-list"></div>
+                    </section>
+                    <section style="padding: 1.25rem 1.5rem;">
+                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.75rem;">Histórico de Estado</p>
+                        <div id="order-history-list"></div>
+                    </section>
+                </div>
 
-                <aside class="space-y-4">
-                    <div class="rounded-xl border border-gray-200 p-4 bg-white" id="order-customer-block"></div>
-
-                    <div class="rounded-xl border border-gray-200 p-4 bg-white space-y-3">
-                        <p class="text-xs text-gray-500">Atualizacao rapida: apenas estado, tracking e notas internas.</p>
-
+                <!-- Sidebar -->
+                <div style="width: 17rem; flex-shrink: 0; overflow-y: auto; display: flex; flex-direction: column;">
+                    <div id="order-customer-block" style="padding: 1.25rem; border-bottom: 1px solid #f3f4f6;"></div>
+                    <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0;">Atualizar</p>
                         <div>
-                            <label class="form-label">Estado da Encomenda</label>
-                            <select id="order-status-select" class="form-input"></select>
+                            <label class="form-label">Estado</label>
+                            <select id="order-status-select" class="form-input" style="font-size: 0.8125rem;"></select>
                         </div>
-
                         <div>
-                            <label class="form-label">Codigo de Tracking</label>
-                            <input id="order-tracking-code" type="text" class="form-input" placeholder="Ex: CTT123456789PT">
+                            <label class="form-label">Código de Tracking</label>
+                            <input id="order-tracking-code" type="text" class="form-input" style="font-size: 0.8125rem;" placeholder="Ex: CTT123456789PT">
                         </div>
-
                         <div>
-                            <label class="form-label">Notas Internas (opcional)</label>
-                            <textarea id="order-public-notes" rows="3" class="form-input" placeholder="Notas para equipa comercial/producao"></textarea>
+                            <label class="form-label">Notas Internas</label>
+                            <textarea id="order-public-notes" rows="3" class="form-input" style="font-size: 0.8125rem;" placeholder="Notas para equipa"></textarea>
                         </div>
-
-                        <div class="flex gap-2 pt-1">
-                            <button type="button" id="save-order-btn" class="flex-1 bg-blue-600 text-white py-2.5 rounded-lg font-bold hover:bg-blue-700 transition">
-                                Guardar
-                            </button>
-                            <button type="button" class="close-order-modal px-4 bg-gray-200 text-gray-700 py-2.5 rounded-lg font-bold hover:bg-gray-300 transition">
-                                Fechar
-                            </button>
+                        <div style="display: flex; gap: 0.5rem; padding-top: 0.25rem;">
+                            <button type="button" id="save-order-btn" style="flex: 1; background: #2563eb; color: white; padding: 0.5rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.8125rem; border: none; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Guardar</button>
+                            <button type="button" class="close-order-modal" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: none; cursor: pointer;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">Fechar</button>
                         </div>
                     </div>
-                </aside>
+                </div>
+
+            </div>
+        </div>
+    </div>
+
+    <!-- Design viewer (opens over order modal) -->
+    <div id="design-viewer-modal" class="modal-overlay hidden" style="z-index: 200;">
+        <div class="modal-content w-full max-w-lg" style="padding: 1.5rem;">
+            <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0;" id="design-viewer-title">Design do Cliente</h3>
+                <button type="button" id="close-design-viewer" style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                    <i data-lucide="x" style="width: 1.125rem; height: 1.125rem;"></i>
+                </button>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%) 0 0 / 16px 16px; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; min-height: 200px;">
+                <img id="design-viewer-img" src="" alt="Design do cliente" style="max-height: 320px; max-width: 100%; object-fit: contain;">
+            </div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
+                <a id="design-viewer-download" href="#" download="design.svg" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.8125rem; padding: 0.5rem 1rem; background: #2563eb; color: white; border-radius: 0.5rem; font-weight: 500; text-decoration: none;">
+                    <i data-lucide="download" style="width: 0.875rem; height: 0.875rem;"></i>
+                    Download SVG
+                </a>
+                <button type="button" id="close-design-viewer-2" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; border: none; cursor: pointer;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">Fechar</button>
             </div>
         </div>
     </div>
@@ -479,7 +504,7 @@
 
     <script src="/js/logic.js?v=20260319b"></script>
     <script src="/js/order-workflow.js?v=20260319b"></script>
-    <script src="/js/admin.js?v=20260319d"></script>
+    <script src="/js/admin.js?v=20260319e"></script>
     <script>lucide.createIcons();</script>
 </body>
 </html>
