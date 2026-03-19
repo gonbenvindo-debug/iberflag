@@ -143,6 +143,64 @@ class DesignEditor {
         return this.getEditableBounds();
     }
 
+    constrainResizeRect(startBox, proposedBox, handle, bounds) {
+        const minWidth = 20;
+        const minHeight = 20;
+        const startLeft = startBox.x;
+        const startTop = startBox.y;
+        const startRight = startBox.x + startBox.width;
+        const startBottom = startBox.y + startBox.height;
+        const maxRight = bounds.x + bounds.width;
+        const maxBottom = bounds.y + bounds.height;
+
+        let left = proposedBox.x;
+        let top = proposedBox.y;
+        let right = proposedBox.x + proposedBox.width;
+        let bottom = proposedBox.y + proposedBox.height;
+
+        const movesWest = handle.includes('w');
+        const movesEast = handle.includes('e');
+        const movesNorth = handle.includes('n');
+        const movesSouth = handle.includes('s');
+
+        if (movesWest && !movesEast) {
+            left = Math.max(bounds.x, Math.min(left, startRight - minWidth));
+            right = startRight;
+        } else if (movesEast && !movesWest) {
+            left = startLeft;
+            right = Math.min(maxRight, Math.max(right, startLeft + minWidth));
+        } else {
+            left = Math.max(bounds.x, left);
+            right = Math.min(maxRight, right);
+            if ((right - left) < minWidth) {
+                right = Math.min(maxRight, left + minWidth);
+                left = Math.max(bounds.x, right - minWidth);
+            }
+        }
+
+        if (movesNorth && !movesSouth) {
+            top = Math.max(bounds.y, Math.min(top, startBottom - minHeight));
+            bottom = startBottom;
+        } else if (movesSouth && !movesNorth) {
+            top = startTop;
+            bottom = Math.min(maxBottom, Math.max(bottom, startTop + minHeight));
+        } else {
+            top = Math.max(bounds.y, top);
+            bottom = Math.min(maxBottom, bottom);
+            if ((bottom - top) < minHeight) {
+                bottom = Math.min(maxBottom, top + minHeight);
+                top = Math.max(bounds.y, bottom - minHeight);
+            }
+        }
+
+        return {
+            x: left,
+            y: top,
+            width: Math.max(minWidth, right - left),
+            height: Math.max(minHeight, bottom - top)
+        };
+    }
+
     getEditableCenter() {
         const bounds = this.getEditableBounds();
         return {
@@ -1639,17 +1697,27 @@ class DesignEditor {
             }
         }
         
-        // For non-rotated elements, constrain to canvas boundaries
-        if (!rotation || rotation === 0) {
-            newX = Math.max(canvasBounds.x, newX);
-            newY = Math.max(canvasBounds.y, newY);
-            newWidth = Math.min(newWidth, canvasBounds.x + canvasBounds.width - newX);
-            newHeight = Math.min(newHeight, canvasBounds.y + canvasBounds.height - newY);
-        }
-        
-        // Ensure minimum size
-        newWidth = Math.max(20, newWidth);
-        newHeight = Math.max(20, newHeight);
+        const constrainedRect = this.constrainResizeRect(
+            {
+                x: bbox.x,
+                y: bbox.y,
+                width: bbox.width,
+                height: bbox.height
+            },
+            {
+                x: newX,
+                y: newY,
+                width: newWidth,
+                height: newHeight
+            },
+            this.resizeHandle,
+            canvasBounds
+        );
+
+        newX = constrainedRect.x;
+        newY = constrainedRect.y;
+        newWidth = constrainedRect.width;
+        newHeight = constrainedRect.height;
         
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
             // Store old values
