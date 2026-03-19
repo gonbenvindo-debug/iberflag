@@ -17,6 +17,7 @@ class DesignEditor {
         this.dragStart = { x: 0, y: 0 };
         this.resizeHandle = null;
         this.rotationStart = 0;
+        this.rotationCenterClient = null;
         this.currentProduct = null;
         this.editIndex = null;
         this.productId = null;
@@ -970,6 +971,11 @@ class DesignEditor {
         this.isResizing = false;
         this.isRotating = false;
         this.resizeHandle = null;
+        this.rotationCenterClient = null;
+
+        if (this.selectedElement) {
+            this.showResizeHandles(this.selectedElement);
+        }
     }
     
     handleCanvasMouseDown(e) {
@@ -1191,29 +1197,41 @@ class DesignEditor {
     
     // ===== ROTATION =====
     startRotate(e, elementData) {
+        e.preventDefault();
+        this.isDragging = false;
+        this.isResizing = false;
         this.isRotating = true;
+
         const bbox = elementData.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        const mouse = this.clientToSvgPoint(e.clientX, e.clientY);
-        const mouseX = mouse.x;
-        const mouseY = mouse.y;
+
+        const ctm = elementData.element.getScreenCTM();
+        if (!ctm) return;
+        const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
+        this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
+
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
         
-        this.rotationStart = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+        this.rotationStart = Math.atan2(mouseY - centerClient.y, mouseX - centerClient.x) * (180 / Math.PI);
         this.rotationStart -= (elementData.rotation || 0);
     }
     
     doRotate(e) {
         if (!this.selectedElement) return;
-        
+
         const bbox = this.selectedElement.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        const mouse = this.clientToSvgPoint(e.clientX, e.clientY);
-        const mouseX = mouse.x;
-        const mouseY = mouse.y;
+
+        const center = this.rotationCenterClient;
+        if (!center) return;
+
+        const mouseX = e.clientX;
+        const mouseY = e.clientY;
         
-        const angle = Math.atan2(mouseY - centerY, mouseX - centerX) * (180 / Math.PI);
+        const angle = Math.atan2(mouseY - center.y, mouseX - center.x) * (180 / Math.PI);
         let rotation = angle - this.rotationStart;
         
         // Snap to 15 degree increments if shift is held
@@ -1228,7 +1246,6 @@ class DesignEditor {
         const translateY = this.selectedElement.translateY || 0;
         this.selectedElement.element.setAttribute('transform', 
             `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
-        this.showResizeHandles(this.selectedElement);
     }
     
     updateRotation(value) {
