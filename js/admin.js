@@ -690,13 +690,6 @@ function resolveItemPreviewAndDesign(item, snapshot) {
         snapshot?.design
     ];
 
-    const svgCandidates = [
-        item?.design_svg,
-        item?.design,
-        item?.personalizacao_svg,
-        snapshot?.design
-    ];
-
     const designSvg = svgCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
 
     // Explicit raster preview (actual design render, not product image)
