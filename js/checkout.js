@@ -287,7 +287,7 @@ if (placeOrderBtn) {
                       `📧 Receberá um email de confirmação em breve.\n\n` +
                       `💳 NOTA: A integração com Stripe será implementada em breve.\n` +
                       `Por enquanto, a encomenda foi registada no sistema.\n\n` +
-                        `🔎 Pode acompanhar o estado em /encomendas.html com o seu email e nº da encomenda.\n\n` +
+                        `🔎 Pode acompanhar o estado em /encomenda.html?codigo=${orderNumber} ou pesquisar em /encomendas.html.\n\n` +
                       `📦 Produção: 12-24h\n` +
                       `🚚 Entrega: 2-4 dias úteis\n\n` +
                       `Total: ${total.toFixed(2)}€`);

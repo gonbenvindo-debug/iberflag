@@ -23,40 +23,36 @@
         </div>
     </nav>
 
-    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
-        <section class="admin-card mb-6">
-            <div class="p-6 border-b border-gray-100">
-                <h1 class="text-3xl font-bold text-gray-900">Minhas Encomendas</h1>
-                <p class="text-sm text-gray-600 mt-2">Consulte o estado atual da producao, expedicao e entrega da sua encomenda.</p>
-            </div>
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10 min-h-[calc(100vh-64px)] flex items-center">
+        <section class="w-full">
+            <div class="relative overflow-hidden rounded-3xl border border-blue-100 bg-white shadow-xl">
+                <div class="absolute -top-20 -right-20 w-72 h-72 rounded-full bg-blue-100 opacity-70 pointer-events-none"></div>
+                <div class="absolute -bottom-24 -left-24 w-80 h-80 rounded-full bg-cyan-100 opacity-60 pointer-events-none"></div>
 
-            <form id="orders-search-form" class="p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
-                <div>
-                    <label for="orders-email" class="form-label">Email da Encomenda *</label>
-                    <input id="orders-email" name="email" type="email" required class="form-input" placeholder="cliente@empresa.pt">
-                </div>
-                <div>
-                    <label for="orders-number" class="form-label">Nº Encomenda (opcional)</label>
-                    <input id="orders-number" name="orderNumber" type="text" class="form-input" placeholder="IBF1234567890">
-                </div>
-                <div class="flex items-end">
-                    <button id="orders-search-btn" type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                        Procurar Encomendas
-                    </button>
-                </div>
-            </form>
-        </section>
+                <div class="relative p-8 md:p-12 max-w-3xl mx-auto text-center">
+                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 border border-blue-100 text-blue-700 text-xs font-semibold">
+                        <i data-lucide="package-search" class="w-3 h-3"></i>
+                        Tracking de encomendas
+                    </div>
 
-        <section class="space-y-4" id="customer-orders-results">
-            <div class="admin-card p-8 text-center text-gray-500">
-                <i data-lucide="package-search" class="w-10 h-10 mx-auto mb-3 text-gray-300"></i>
-                Introduza o seu email para consultar encomendas.
+                    <h1 class="text-4xl md:text-5xl font-black text-gray-900 mt-5 leading-tight">Acompanhe a sua encomenda</h1>
+                    <p class="text-gray-600 text-base md:text-lg mt-4">Insira o codigo identificador da encomenda para ver o estado completo, tracking e produtos com design.</p>
+
+                    <form id="orders-search-form" class="mt-8 flex flex-col md:flex-row items-stretch gap-3">
+                        <input id="orders-identifier" name="identifier" type="text" required class="form-input h-14 text-lg font-semibold tracking-wide md:flex-1" placeholder="IBF1234567890" autocomplete="off">
+                        <button id="orders-search-btn" type="submit" class="h-14 px-7 rounded-lg bg-blue-600 text-white font-bold hover:bg-blue-700 transition inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                            <i data-lucide="search" class="w-4 h-4"></i>
+                            Ver encomenda
+                        </button>
+                    </form>
+
+                    <p class="text-xs text-gray-500 mt-4">Este acesso e feito apenas por codigo identificador.</p>
+                </div>
             </div>
         </section>
     </main>
 
     <script src="/js/logic.js"></script>
-    <script src="/js/order-workflow.js"></script>
     <script src="/js/encomendas.js"></script>
     <script>lucide.createIcons();</script>
 </body>
