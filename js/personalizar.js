@@ -725,7 +725,7 @@ class DesignEditor {
         
         // Position 35px above center in local space
         const localRotateX = centerX;
-        const localRotateY = bbox.y - 35;
+        const localRotateY = bbox.y - 18;
         const dx = localRotateX - centerX;
         const dy = localRotateY - centerY;
         const rotX = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
@@ -846,22 +846,28 @@ class DesignEditor {
                     // Accept new position
                     this.selectedElement.translateX = translateX;
                     this.selectedElement.translateY = translateY;
-                    this.dragStart.mouseX = e.clientX;
-                    this.dragStart.mouseY = e.clientY;
                 }
             } else {
                 // For non-rotated elements, use x/y attributes as before
-                let newX = this.dragStart.elementX + deltaX;
-                let newY = this.dragStart.elementY + deltaY;
+                let newX;
+                let newY;
                 
                 const canvasBounds = this.getCanvasBounds();
                 
                 if (this.selectedElement.type === 'text') {
+                    const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
+                    const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
+                    newX = currentX + deltaX;
+                    newY = currentY + deltaY;
                     newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - 50));
                     newY = Math.max(canvasBounds.y + 20, Math.min(newY, canvasBounds.y + canvasBounds.height));
                     this.selectedElement.element.setAttribute('x', newX);
                     this.selectedElement.element.setAttribute('y', newY);
                 } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+                    const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || 0);
+                    const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || 0);
+                    newX = currentX + deltaX;
+                    newY = currentY + deltaY;
                     const width = parseFloat(this.selectedElement.element.getAttribute('width'));
                     const height = parseFloat(this.selectedElement.element.getAttribute('height'));
                     newX = Math.max(canvasBounds.x, Math.min(newX, canvasBounds.x + canvasBounds.width - width));
@@ -869,13 +875,21 @@ class DesignEditor {
                     this.selectedElement.element.setAttribute('x', newX);
                     this.selectedElement.element.setAttribute('y', newY);
                 } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
+                    const currentX = parseFloat(this.selectedElement.element.getAttribute('cx') || 0);
+                    const currentY = parseFloat(this.selectedElement.element.getAttribute('cy') || 0);
+                    newX = currentX + deltaX;
+                    newY = currentY + deltaY;
                     const r = parseFloat(this.selectedElement.element.getAttribute('r'));
                     newX = Math.max(canvasBounds.x + r, Math.min(newX, canvasBounds.x + canvasBounds.width - r));
                     newY = Math.max(canvasBounds.y + r, Math.min(newY, canvasBounds.y + canvasBounds.height - r));
                     this.selectedElement.element.setAttribute('cx', newX);
                     this.selectedElement.element.setAttribute('cy', newY);
-                } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle' && this.dragStart.points) {
-                    const bbox = this.dragStart.bbox;
+                } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
+                    const currentPoints = (this.selectedElement.element.getAttribute('points') || '')
+                        .trim()
+                        .split(/\s+/)
+                        .map((pair) => pair.split(',').map(Number));
+                    const bbox = this.selectedElement.element.getBBox();
                     let clampedDeltaX = deltaX;
                     let clampedDeltaY = deltaY;
 
@@ -892,10 +906,15 @@ class DesignEditor {
                         clampedDeltaY = (canvasBounds.y + canvasBounds.height) - (bbox.y + bbox.height);
                     }
 
-                    const translatedPoints = this.dragStart.points.map(([x, y]) => `${x + clampedDeltaX},${y + clampedDeltaY}`);
-                    this.selectedElement.element.setAttribute('points', translatedPoints.join(' '));
+                    if (currentPoints.length >= 3) {
+                        const translatedPoints = currentPoints.map(([x, y]) => `${x + clampedDeltaX},${y + clampedDeltaY}`);
+                        this.selectedElement.element.setAttribute('points', translatedPoints.join(' '));
+                    }
                 }
             }
+
+            this.dragStart.mouseX = e.clientX;
+            this.dragStart.mouseY = e.clientY;
             
             this.showResizeHandles(this.selectedElement);
         } else if (this.isResizing && this.selectedElement) {

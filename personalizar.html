@@ -170,6 +170,14 @@
 
             <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
                 <p class="section-title">Propriedades</p>
+
+                <div class="mb-4">
+                    <label class="flex items-center gap-2 text-sm text-gray-700 select-none cursor-pointer">
+                        <input id="keep-aspect-ratio" type="checkbox" class="custom-checkbox" checked>
+                        Manter proporcoes
+                    </label>
+                </div>
+
                 <p class="section-title">Acoes Rapidas</p>
                 <div class="grid grid-cols-2 gap-2">
                     <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
@@ -295,11 +303,6 @@
                             <i data-lucide="zoom-in" class="w-4 h-4"></i>
                         </button>
                     </div>
-
-                    <label class="flex items-center gap-2 text-sm text-gray-600 select-none cursor-pointer">
-                        <input id="keep-aspect-ratio" type="checkbox" class="custom-checkbox" checked>
-                        Manter proporcao
-                    </label>
                 </div>
                 
                 <div class="flex items-center gap-2">
