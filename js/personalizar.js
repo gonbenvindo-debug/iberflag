@@ -1259,6 +1259,27 @@ class DesignEditor {
         
         this.selectedElement.rotation = rotation;
         
+        // Sync rotation input/display based on element type
+        if (this.selectedElement.type === 'text') {
+            const rotationRounded = Math.round(rotation * 100) / 100;
+            const rotationInput = document.getElementById('prop-text-rotation');
+            if (rotationInput) rotationInput.value = rotationRounded;
+            const rotationVal = document.getElementById('prop-text-rotation-val');
+            if (rotationVal) rotationVal.textContent = rotationRounded;
+        } else if (this.selectedElement.type === 'image') {
+            const rotationRounded = Math.round(rotation * 100) / 100;
+            const rotationInput = document.getElementById('prop-image-rotation');
+            if (rotationInput) rotationInput.value = rotationRounded;
+            const rotationVal = document.getElementById('prop-image-rotation-val');
+            if (rotationVal) rotationVal.textContent = rotationRounded;
+        } else if (this.selectedElement.type === 'shape') {
+            const rotationRounded = Math.round(rotation * 100) / 100;
+            const rotationInput = document.getElementById('prop-shape-rotation');
+            if (rotationInput) rotationInput.value = rotationRounded;
+            const rotationVal = document.getElementById('prop-shape-rotation-val');
+            if (rotationVal) rotationVal.textContent = rotationRounded;
+        }
+        
         // Use translate to keep rotation center at element center
         const translateX = this.selectedElement.translateX || 0;
         const translateY = this.selectedElement.translateY || 0;
