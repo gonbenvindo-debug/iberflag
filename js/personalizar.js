@@ -2548,15 +2548,17 @@ class DesignEditor {
         
         const cart = this.getCartData();
         const design = this.getDesignSVG();
+        const existingCartItem = this.editIndex !== null ? cart[this.editIndex] : null;
         
         const cartItem = {
             id: this.currentProduct.id,
             nome: this.currentProduct.nome,
             preco: this.currentProduct.preco,
             imagem: this.currentProduct.imagem,
-            quantity: 1,
+            quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity ?? 1, 10) || 1),
             customized: true,
-            design: design
+            design: design,
+            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`
         };
         
         if (this.editIndex !== null) {

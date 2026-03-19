@@ -116,8 +116,37 @@ function normalizeCartItem(item) {
         preco,
         quantity,
         customized: Boolean(item.customized),
-        design: item.design || null
+        design: item.design || null,
+        designPreview: item.designPreview || null
     };
+}
+
+function buildSvgDataUrl(svgMarkup) {
+    if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
+        return null;
+    }
+
+    return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
+}
+
+function getCartItemImage(item) {
+    if (!item || typeof item !== 'object') {
+        return '';
+    }
+
+    if (item.designPreview) {
+        return item.designPreview;
+    }
+
+    if (item.customized && item.design) {
+        return buildSvgDataUrl(item.design) || item.imagem || '';
+    }
+
+    return item.imagem || '';
+}
+
+function getCartItemEditorLink(item, index) {
+    return `/personalizar.html?produto=${item.id}&edit=${index}`;
 }
 
 function normalizeCartItems(items) {
@@ -235,16 +264,16 @@ function updateCart() {
         } else {
             cartItemsContainer.innerHTML = cart.map((item, index) => `
                 <div class="flex gap-4 mb-4 pb-4 border-b">
-                    <img src="${item.imagem}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg">
+                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100">
                     <div class="flex-1">
                         <h4 class="font-bold text-sm">${item.nome}</h4>
                         ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
                         <p class="text-blue-600 font-bold">${item.preco.toFixed(2)}€</p>
                         <div class="flex items-center gap-2 mt-2">
-                            ${item.customized ? `<a href="/personalizar.html?produto=${item.id}&edit=${index}" class="text-xs text-blue-600 hover:underline flex items-center gap-1">
-                                <i data-lucide="edit" class="w-3 h-3"></i>
-                                Editar
-                            </a>` : ''}
+                            <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors">
+                                <i data-lucide="${item.customized ? 'edit' : 'palette'}" class="w-3 h-3"></i>
+                                ${item.customized ? 'Editar' : 'Personalizar'}
+                            </a>
                             <button onclick="removeFromCart(${index})" class="ml-auto text-red-500 hover:text-red-700">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                             </button>
@@ -409,4 +438,5 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addToCart = addToCart;
 window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
+window.getCartItemImage = getCartItemImage;
 window.quickView = quickView;

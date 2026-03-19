@@ -24,7 +24,7 @@ function loadCart() {
     // Render cart items
     orderItems.innerHTML = cart.map(item => `
         <div class="flex gap-3 pb-4 border-b">
-            <img src="${item.imagem}" alt="${item.nome}" class="w-16 h-16 object-cover rounded">
+            <img src="${typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem}" alt="${item.nome}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
             <div class="flex-1">
                 <h4 class="font-semibold text-sm">${item.nome}</h4>
                 ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
