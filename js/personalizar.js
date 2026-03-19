@@ -21,6 +21,7 @@ class DesignEditor {
         this.productId = null;
         this.cartStorageKey = 'latinflag_cart';
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
+        this.keepAspectRatio = true;
         
         this.init();
     }
@@ -329,11 +330,6 @@ class DesignEditor {
     
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
-        // Tool tabs
-        document.querySelectorAll('.tool-tab-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.switchTab(btn.dataset.tab));
-        });
-        
         // Add elements
         document.getElementById('add-text-btn').addEventListener('click', () => this.addText());
         document.getElementById('add-image-btn').addEventListener('click', () => {
@@ -359,11 +355,30 @@ class DesignEditor {
         
         // Delete element
         document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
+
+        // Quick actions
+        const duplicateBtn = document.getElementById('duplicate-element-btn');
+        if (duplicateBtn) duplicateBtn.addEventListener('click', () => this.duplicateSelected());
+
+        const centerHBtn = document.getElementById('center-h-btn');
+        if (centerHBtn) centerHBtn.addEventListener('click', () => this.centerSelected('horizontal'));
+
+        const centerVBtn = document.getElementById('center-v-btn');
+        if (centerVBtn) centerVBtn.addEventListener('click', () => this.centerSelected('vertical'));
+
+        const keepAspectCheckbox = document.getElementById('keep-aspect-ratio');
+        if (keepAspectCheckbox) {
+            this.keepAspectRatio = keepAspectCheckbox.checked;
+            keepAspectCheckbox.addEventListener('change', (e) => {
+                this.keepAspectRatio = e.target.checked;
+            });
+        }
         
         // Canvas interactions
         this.canvas.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
+        document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         
         // Property controls
         this.setupPropertyControls();
@@ -426,19 +441,10 @@ class DesignEditor {
         });
     }
     
-    // ===== TAB SWITCHING =====
-    switchTab(tabName) {
-        document.querySelectorAll('.tool-tab-btn').forEach(btn => {
-            btn.classList.remove('border-blue-600', 'text-blue-600');
-            btn.classList.add('border-transparent', 'text-gray-600');
-        });
-        
-        const activeBtn = document.querySelector(`[data-tab="${tabName}"]`);
-        activeBtn.classList.add('border-blue-600', 'text-blue-600');
-        activeBtn.classList.remove('border-transparent', 'text-gray-600');
-        
-        document.getElementById('elements-tab').classList.toggle('hidden', tabName !== 'elements');
-        document.getElementById('properties-tab').classList.toggle('hidden', tabName !== 'properties');
+    focusPropertiesPanel() {
+        const panel = document.getElementById('properties-panel');
+        if (!panel) return;
+        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
     
     // ===== ADD ELEMENTS =====
@@ -620,9 +626,9 @@ class DesignEditor {
         
         // Update properties panel
         this.updatePropertiesPanel(elementData);
-        
-        // Switch to properties tab
-        this.switchTab('properties');
+
+        // Bring attention to properties automatically.
+        this.focusPropertiesPanel();
     }
     
     showResizeHandles(elementData) {
@@ -954,6 +960,47 @@ class DesignEditor {
                 newY = bbox.y + dy;
                 break;
         }
+
+        const shouldKeepRatio = (this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text';
+        if (shouldKeepRatio && bbox.height > 0) {
+            const ratio = bbox.width / bbox.height;
+
+            if (['e', 'w'].includes(this.resizeHandle)) {
+                newHeight = Math.max(20, newWidth / ratio);
+                newY = bbox.y + ((bbox.height - newHeight) / 2);
+                if (this.resizeHandle === 'w') {
+                    newX = bbox.x + (bbox.width - newWidth);
+                }
+            } else if (['n', 's'].includes(this.resizeHandle)) {
+                newWidth = Math.max(20, newHeight * ratio);
+                newX = bbox.x + ((bbox.width - newWidth) / 2);
+                if (this.resizeHandle === 'n') {
+                    newY = bbox.y + (bbox.height - newHeight);
+                }
+            } else {
+                const widthFromHeight = Math.max(20, newHeight * ratio);
+                const heightFromWidth = Math.max(20, newWidth / ratio);
+                const widthDelta = Math.abs(newWidth - bbox.width);
+                const heightDelta = Math.abs(newHeight - bbox.height);
+
+                if (widthDelta >= heightDelta * ratio) {
+                    newHeight = heightFromWidth;
+                } else {
+                    newWidth = widthFromHeight;
+                }
+
+                if (this.resizeHandle === 'nw') {
+                    newX = bbox.x + (bbox.width - newWidth);
+                    newY = bbox.y + (bbox.height - newHeight);
+                }
+                if (this.resizeHandle === 'ne') {
+                    newY = bbox.y + (bbox.height - newHeight);
+                }
+                if (this.resizeHandle === 'sw') {
+                    newX = bbox.x + (bbox.width - newWidth);
+                }
+            }
+        }
         
         // For non-rotated elements, constrain to canvas boundaries
         if (!rotation || rotation === 0) {
@@ -1232,6 +1279,177 @@ class DesignEditor {
             document.getElementById('text-properties').classList.add('hidden');
             document.getElementById('image-properties').classList.add('hidden');
             document.getElementById('shape-properties').classList.add('hidden');
+        }
+    }
+
+    duplicateSelected() {
+        if (!this.selectedElement) return;
+
+        const clone = this.selectedElement.element.cloneNode(true);
+        const clonedData = this.buildElementDataFromNode(clone);
+        const offset = 20;
+
+        if (clonedData.type === 'text') {
+            const x = parseFloat(clone.getAttribute('x') || '0') + offset;
+            const y = parseFloat(clone.getAttribute('y') || '0') + offset;
+            clone.setAttribute('x', x);
+            clone.setAttribute('y', y);
+        } else if (clonedData.type === 'image' || (clonedData.type === 'shape' && clonedData.shapeType === 'rectangle')) {
+            const x = parseFloat(clone.getAttribute('x') || '0') + offset;
+            const y = parseFloat(clone.getAttribute('y') || '0') + offset;
+            clone.setAttribute('x', x);
+            clone.setAttribute('y', y);
+        } else if (clonedData.type === 'shape' && clonedData.shapeType === 'circle') {
+            const cx = parseFloat(clone.getAttribute('cx') || '0') + offset;
+            const cy = parseFloat(clone.getAttribute('cy') || '0') + offset;
+            clone.setAttribute('cx', cx);
+            clone.setAttribute('cy', cy);
+        } else if (clonedData.type === 'shape' && clonedData.shapeType === 'triangle') {
+            const points = (clone.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number))
+                .map(([x, y]) => `${x + offset},${y + offset}`)
+                .join(' ');
+            clone.setAttribute('points', points);
+        }
+
+        this.canvas.appendChild(clone);
+        clonedData.element = clone;
+        this.makeElementInteractive(clonedData);
+        this.elements.push(clonedData);
+        this.selectElement(clonedData);
+        this.updateLayers();
+        this.saveHistory();
+    }
+
+    centerSelected(axis) {
+        if (!this.selectedElement) return;
+
+        const bounds = this.getCanvasBounds();
+        const bbox = this.selectedElement.element.getBBox();
+        const centerX = bounds.x + (bounds.width / 2);
+        const centerY = bounds.y + (bounds.height / 2);
+
+        if (this.selectedElement.type === 'text') {
+            if (axis === 'horizontal') {
+                this.selectedElement.element.setAttribute('x', centerX - (bbox.width / 2));
+            }
+            if (axis === 'vertical') {
+                this.selectedElement.element.setAttribute('y', centerY + (bbox.height / 2));
+            }
+        } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+            if (axis === 'horizontal') {
+                this.selectedElement.element.setAttribute('x', centerX - (bbox.width / 2));
+            }
+            if (axis === 'vertical') {
+                this.selectedElement.element.setAttribute('y', centerY - (bbox.height / 2));
+            }
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
+            if (axis === 'horizontal') {
+                this.selectedElement.element.setAttribute('cx', centerX);
+            }
+            if (axis === 'vertical') {
+                this.selectedElement.element.setAttribute('cy', centerY);
+            }
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
+            const points = (this.selectedElement.element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+            if (points.length >= 3) {
+                const deltaX = axis === 'horizontal' ? centerX - (bbox.x + bbox.width / 2) : 0;
+                const deltaY = axis === 'vertical' ? centerY - (bbox.y + bbox.height / 2) : 0;
+                const moved = points.map(([x, y]) => `${x + deltaX},${y + deltaY}`).join(' ');
+                this.selectedElement.element.setAttribute('points', moved);
+            }
+        }
+
+        this.showResizeHandles(this.selectedElement);
+        this.updateLayers();
+        this.saveHistory();
+    }
+
+    nudgeSelected(dx, dy) {
+        if (!this.selectedElement) return;
+
+        if (this.selectedElement.type === 'text') {
+            const x = parseFloat(this.selectedElement.element.getAttribute('x') || '0') + dx;
+            const y = parseFloat(this.selectedElement.element.getAttribute('y') || '0') + dy;
+            this.selectedElement.element.setAttribute('x', x);
+            this.selectedElement.element.setAttribute('y', y);
+        } else if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
+            const x = parseFloat(this.selectedElement.element.getAttribute('x') || '0') + dx;
+            const y = parseFloat(this.selectedElement.element.getAttribute('y') || '0') + dy;
+            this.selectedElement.element.setAttribute('x', x);
+            this.selectedElement.element.setAttribute('y', y);
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
+            const cx = parseFloat(this.selectedElement.element.getAttribute('cx') || '0') + dx;
+            const cy = parseFloat(this.selectedElement.element.getAttribute('cy') || '0') + dy;
+            this.selectedElement.element.setAttribute('cx', cx);
+            this.selectedElement.element.setAttribute('cy', cy);
+        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
+            const points = (this.selectedElement.element.getAttribute('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+            if (points.length >= 3) {
+                const moved = points.map(([x, y]) => `${x + dx},${y + dy}`).join(' ');
+                this.selectedElement.element.setAttribute('points', moved);
+            }
+        }
+
+        this.showResizeHandles(this.selectedElement);
+        this.saveHistory();
+    }
+
+    handleKeyDown(e) {
+        const targetTag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+        const isTypingContext = ['input', 'textarea', 'select'].includes(targetTag);
+
+        if ((e.ctrlKey || e.metaKey) && !isTypingContext) {
+            const key = e.key.toLowerCase();
+            if (key === 'z' && !e.shiftKey) {
+                e.preventDefault();
+                this.undo();
+                return;
+            }
+            if ((key === 'z' && e.shiftKey) || key === 'y') {
+                e.preventDefault();
+                this.redo();
+                return;
+            }
+            if (key === 'd') {
+                e.preventDefault();
+                this.duplicateSelected();
+                return;
+            }
+        }
+
+        if (!this.selectedElement || isTypingContext) return;
+
+        if (e.key === 'Delete' || e.key === 'Backspace') {
+            e.preventDefault();
+            this.deleteSelected();
+            return;
+        }
+
+        const nudge = e.shiftKey ? 10 : 2;
+        if (e.key === 'ArrowLeft') {
+            e.preventDefault();
+            this.nudgeSelected(-nudge, 0);
+        }
+        if (e.key === 'ArrowRight') {
+            e.preventDefault();
+            this.nudgeSelected(nudge, 0);
+        }
+        if (e.key === 'ArrowUp') {
+            e.preventDefault();
+            this.nudgeSelected(0, -nudge);
+        }
+        if (e.key === 'ArrowDown') {
+            e.preventDefault();
+            this.nudgeSelected(0, nudge);
         }
     }
     
