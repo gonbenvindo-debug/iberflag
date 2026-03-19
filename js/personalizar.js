@@ -233,51 +233,33 @@ class DesignEditor {
     }
 
     setDefaultPrintArea() {
-        this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
+        if (!this.printArea || this.printArea.tagName.toLowerCase() !== 'rect' || this.printArea.ownerSVGElement !== this.canvas) {
+            const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            rect.setAttribute('id', 'print-area-outline');
+            if (this.printArea && this.printArea.parentNode) {
+                this.printArea.replaceWith(rect);
+            } else {
+                this.canvas.prepend(rect);
+            }
+            this.printArea = rect;
+        }
+
+        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
+        this.printArea.setAttribute('fill', 'none');
+        this.printArea.setAttribute('stroke', '#3b82f6');
+        this.printArea.setAttribute('stroke-width', '2');
+        this.printArea.setAttribute('stroke-dasharray', '8,4');
+        this.printArea.setAttribute('opacity', '0.5');
+        this.printArea.setAttribute('pointer-events', 'none');
+        this.printArea.removeAttribute('transform');
     }
 
     updatePrintAreaFromElement(areaElement, sourceBounds) {
-        const scaleX = 800 / sourceBounds.width;
-        const scaleY = 600 / sourceBounds.height;
-        const offsetX = -sourceBounds.x * scaleX;
-        const offsetY = -sourceBounds.y * scaleY;
-
-        const areaClone = document.importNode(areaElement, true);
-        areaClone.setAttribute('id', 'print-area-outline');
-        areaClone.setAttribute('fill', 'none');
-        areaClone.setAttribute('stroke', '#3b82f6');
-        areaClone.setAttribute('stroke-width', '2');
-        areaClone.setAttribute('stroke-dasharray', '8,4');
-        areaClone.setAttribute('opacity', '0.5');
-        areaClone.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scaleX} ${scaleY})`);
-
-        this.printArea.replaceWith(areaClone);
-        this.printArea = areaClone;
-
-        const tempSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        tempSvg.setAttribute('viewBox', '0 0 800 600');
-        tempSvg.setAttribute('width', '800');
-        tempSvg.setAttribute('height', '600');
-        tempSvg.style.position = 'absolute';
-        tempSvg.style.left = '-9999px';
-        tempSvg.style.top = '-9999px';
-        tempSvg.style.visibility = 'hidden';
-        const measureElement = document.importNode(areaClone, true);
-        tempSvg.appendChild(measureElement);
-        document.body.appendChild(tempSvg);
-        const bbox = measureElement.getBBox();
-        document.body.removeChild(tempSvg);
-
-        this.printAreaBounds = {
-            x: Math.max(0, bbox.x),
-            y: Math.max(0, bbox.y),
-            width: Math.min(800, bbox.width),
-            height: Math.min(600, bbox.height)
-        };
+        this.setDefaultPrintArea();
     }
     
     loadSVGTemplate(svgContent) {

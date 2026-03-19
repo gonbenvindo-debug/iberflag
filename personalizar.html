@@ -312,15 +312,10 @@
             <div id="canvas-stage" class="flex-1 canvas-container flex items-center justify-center p-8 overflow-auto min-h-0">
                 <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
                     <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
+                        <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8,4" opacity="0.5" pointer-events="none"/>
                         <!-- Template will be loaded here -->
                     </svg>
                     <div id="resize-handles" class="hidden"></div>
-                    <!-- Print Area Outline Overlay -->
-                    <div class="absolute inset-0" style="pointer-events: none; z-index: 1000;">
-                        <svg viewBox="0 0 800 600" preserveAspectRatio="none" class="w-full h-full">
-                            <rect id="print-area-outline" x="50" y="50" width="700" height="500" fill="none" stroke="#3b82f6" stroke-width="2" stroke-dasharray="8,4" opacity="0.5"/>
-                        </svg>
-                    </div>
                 </div>
             </div>
             
