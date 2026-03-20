@@ -151,7 +151,13 @@ class DesignEditor {
     }
 
     getCanvasBounds() {
-        return this.getEditableBounds();
+        const vb = this.getCanvasViewBoxSize();
+        return {
+            x: 0,
+            y: 0,
+            width: vb.width,
+            height: vb.height
+        };
     }
 
     constrainResizeRect(startBox, proposedBox, handle, bounds) {
@@ -1386,8 +1392,9 @@ class DesignEditor {
         
         transformedCorners.forEach(corner => {
             // Convert from client coords to SVG coords
-            const svgX = (corner.x - svgRect.left) / svgRect.width * 800;
-            const svgY = (corner.y - svgRect.top) / svgRect.height * 600;
+            const vb = this.getCanvasViewBoxSize();
+            const svgX = (corner.x - svgRect.left) / svgRect.width * vb.width;
+            const svgY = (corner.y - svgRect.top) / svgRect.height * vb.height;
             minX = Math.min(minX, svgX);
             maxX = Math.max(maxX, svgX);
             minY = Math.min(minY, svgY);
@@ -1404,7 +1411,7 @@ class DesignEditor {
     
     bringElementInBounds(elementData) {
         // Check if element is out of bounds and move it back in
-        const bounds = this.getEditableBounds();
+        const bounds = this.getCanvasBounds();
         const transformed = this.getTransformedBounds(elementData);
         
         // Calculate how much the element exceeds bounds on each side
@@ -1916,7 +1923,7 @@ class DesignEditor {
             // For rotated elements, check against the editable print area bounds
             if (rotation !== 0) {
                 const transformed = this.getTransformedBounds(this.selectedElement);
-                const editableBounds = this.getEditableBounds();
+                const editableBounds = this.getCanvasBounds();
 
                 if (transformed.left < editableBounds.x ||
                     transformed.right > editableBounds.x + editableBounds.width ||
@@ -2044,7 +2051,7 @@ class DesignEditor {
             `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
         
         const transformed = this.getTransformedBounds(this.selectedElement);
-        const bounds = this.getEditableBounds();
+        const bounds = this.getCanvasBounds();
         
         // Check if element is completely outside bounds (all corners out on same side)
         const isCompletelyOutLeft = transformed.right < bounds.x;
