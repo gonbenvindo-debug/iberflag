@@ -937,6 +937,72 @@ body {
     box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2);
 }
 
+.homepage-lead-form-wrap {
+    overflow: hidden;
+}
+
+.homepage-inline-form {
+    position: relative;
+    z-index: 1;
+    padding: 1.4rem;
+    border-radius: 1.6rem;
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    backdrop-filter: blur(14px);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+}
+
+.homepage-form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1rem;
+}
+
+.homepage-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.45rem;
+}
+
+.homepage-field > span {
+    font-size: 0.8rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: rgba(255, 255, 255, 0.72);
+}
+
+.homepage-field input,
+.homepage-field textarea {
+    width: 100%;
+    border: 1px solid rgba(255, 255, 255, 0.12);
+    border-radius: 1rem;
+    background: rgba(255, 255, 255, 0.94);
+    color: #0f172a;
+    padding: 0.95rem 1rem;
+    font-size: 0.95rem;
+    line-height: 1.5;
+    transition: border-color 0.2s ease, box-shadow 0.2s ease, transform 0.2s ease;
+}
+
+.homepage-field textarea {
+    min-height: 7.5rem;
+    resize: vertical;
+}
+
+.homepage-field input::placeholder,
+.homepage-field textarea::placeholder {
+    color: #94a3b8;
+}
+
+.homepage-field input:focus,
+.homepage-field textarea:focus {
+    outline: none;
+    border-color: rgba(125, 211, 252, 0.8);
+    box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.16);
+    transform: translateY(-1px);
+}
+
 .homepage-footer {
     background: #fafafa;
 }
@@ -972,6 +1038,17 @@ body {
     background: rgba(255, 255, 255, 0.08);
     border-color: rgba(255, 255, 255, 0.12);
     color: rgba(255, 255, 255, 0.7);
+}
+
+@media (max-width: 767px) {
+    .homepage-form-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .homepage-inline-form {
+        padding: 1rem;
+        border-radius: 1.2rem;
+    }
 }
 
 /* ===== SKELETON LOADING ===== */
