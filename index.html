@@ -68,13 +68,6 @@
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-24 md:pt-24 md:pb-28">
             <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
                 <div class="text-left fade-in-up">
-                    <div class="homepage-intro-line mb-6">
-                        <span>Portugal + Espanha</span>
-                        <span class="homepage-intro-dot"></span>
-                        <span>Produção 12-24h</span>
-                        <span class="homepage-intro-dot"></span>
-                        <span>Design orientado à marca</span>
-                    </div>
                     <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-[0.95] tracking-tight max-w-4xl">
                         Publicidade física,
                         <span class="homepage-display block mt-2">tratada como marca.</span>
@@ -108,15 +101,9 @@
                 </div>
                 <div class="relative hidden md:block fade-in-up">
                     <div class="hero-image-container homepage-hero-panel">
-                        <div class="homepage-hero-frame"></div>
-                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=800" alt="Flybanners" class="hero-image homepage-hero-image">
-                        <div class="homepage-hero-floating homepage-floating-top">
+                        <div class="homepage-hero-panel-content">
                             <span class="homepage-floating-label">Acabamento premium</span>
-                            <p>Têxteis, estrutura e impressão com leitura limpa.</p>
-                        </div>
-                        <div class="homepage-hero-floating homepage-floating-bottom">
-                            <span class="homepage-floating-label">Operação sem ruído</span>
-                            <p>Processo rápido, apoio direto e entrega preparada para retail, eventos e franchising.</p>
+                            <p>Imagem de marca forte no ponto de contacto certo, com execução rápida e consistência visual.</p>
                         </div>
                         <div class="homepage-hero-insights grid grid-cols-3">
                             <div class="homepage-stat-card p-5">
@@ -331,21 +318,49 @@
 
     <!-- CTA Section -->
     <section class="py-24 bg-white homepage-section">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="homepage-cta p-12 md:p-16 text-white cta-card">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="homepage-cta homepage-lead-form-wrap p-8 md:p-12 text-white cta-card">
                 <div class="homepage-cta-glow" aria-hidden="true"></div>
-                <span class="homepage-section-label homepage-section-label-invert">Próximo passo</span>
-                <h2 class="text-4xl md:text-5xl font-bold mb-4 mt-4">Vamos desenhar a presença certa para a sua marca.</h2>
-                <p class="text-lg md:text-xl text-white/70 mb-8 max-w-2xl mx-auto">Conte-nos o formato, o contexto e o prazo. Nós tratamos do resto com rapidez, critério e acompanhamento próximo.</p>
-                <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/contacto.html" class="btn-primary homepage-primary-action px-8 py-4 font-bold inline-flex items-center justify-center gap-2">
-                        <i data-lucide="mail" class="w-5 h-5"></i>
-                        Pedir Orçamento
-                    </a>
-                    <a href="tel:+351900000000" class="btn-secondary homepage-secondary-action px-8 py-4 font-bold inline-flex items-center justify-center gap-2 text-white border-white/30">
-                        <i data-lucide="phone" class="w-5 h-5"></i>
-                        Ligar Agora
-                    </a>
+                <div class="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start relative z-10">
+                    <div>
+                        <span class="homepage-section-label homepage-section-label-invert">Pedido rápido</span>
+                        <h2 class="text-3xl md:text-4xl font-bold mt-4 mb-4">Não encontra o que procura?</h2>
+                        <p class="text-white/70 text-base md:text-lg leading-relaxed">Envie-nos o que precisa e a equipa responde com proposta personalizada, prazo e melhor solução para o seu caso.</p>
+                        <div class="mt-6 flex items-center gap-3 text-sm text-white/70">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span>Resposta comercial rápida</span>
+                        </div>
+                    </div>
+                    <form class="homepage-inline-form" action="/contacto.html" method="get">
+                        <div class="homepage-form-grid">
+                            <label class="homepage-field">
+                                <span>Nome</span>
+                                <input type="text" name="nome" placeholder="O seu nome" required>
+                            </label>
+                            <label class="homepage-field">
+                                <span>Email</span>
+                                <input type="email" name="email" placeholder="nome@empresa.com" required>
+                            </label>
+                        </div>
+                        <label class="homepage-field mt-4">
+                            <span>Produto</span>
+                            <input type="text" name="assunto" placeholder="Ex.: Flybanner para feira" required>
+                        </label>
+                        <label class="homepage-field mt-4">
+                            <span>Mensagem</span>
+                            <textarea name="mensagem" rows="4" placeholder="Descreva o formato, quantidades e prazo pretendido" required></textarea>
+                        </label>
+                        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+                            <button type="submit" class="btn-primary homepage-primary-action px-6 py-3 font-bold inline-flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Enviar Pedido
+                            </button>
+                            <a href="mailto:geral@latinflag.pt" class="btn-secondary homepage-secondary-action px-6 py-3 font-bold inline-flex items-center justify-center gap-2 text-white border-white/30">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                Enviar Email
+                            </a>
+                        </div>
+                    </form>
                 </div>
             </div>
         </div>
@@ -400,9 +415,6 @@
                     <div class="flex items-center gap-2 text-sm">
                         <i data-lucide="mail" class="w-4 h-4"></i>
                         <a href="mailto:geral@latinflag.pt" class="hover:text-gray-900 transition">geral@latinflag.pt</a>
-                        <span class="mx-2">|</span>
-                        <i data-lucide="phone" class="w-4 h-4"></i>
-                        <a href="tel:+351900000000" class="hover:text-gray-900 transition">+351 900 000 000</a>
                     </div>
                 </div>
             </div>
