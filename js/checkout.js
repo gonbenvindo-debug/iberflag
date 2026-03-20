@@ -27,9 +27,61 @@ function buildOrderItemSnapshots(items) {
 }
 
 async function insertOrderItemsWithFallback(orderId, items) {
-    const baseItems = items.map((item) => ({
+    const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
+
+    const { data: dbProducts, error: dbProductsError } = await supabaseClient
+        .from('produtos')
+        .select('id, nome');
+
+    if (dbProductsError) {
+        throw dbProductsError;
+    }
+
+    const productIdSet = new Set((dbProducts || []).map((product) => Number(product.id)).filter(Number.isFinite));
+    const productIdByName = new Map();
+
+    (dbProducts || []).forEach((product) => {
+        const normalized = normalizeName(product.nome);
+        if (normalized && !productIdByName.has(normalized)) {
+            productIdByName.set(normalized, Number(product.id));
+        }
+    });
+
+    const unresolvedItems = [];
+
+    const normalizedItems = items.map((item) => {
+        const candidateId = Number(item.id);
+        const normalizedName = normalizeName(item.nome);
+
+        let resolvedProductId = null;
+
+        if (Number.isFinite(candidateId) && productIdSet.has(candidateId)) {
+            resolvedProductId = candidateId;
+        } else if (normalizedName && productIdByName.has(normalizedName)) {
+            resolvedProductId = productIdByName.get(normalizedName);
+        }
+
+        if (!resolvedProductId) {
+            unresolvedItems.push(item.nome || `ID ${item.id}`);
+        }
+
+        return {
+            ...item,
+            resolvedProductId
+        };
+    });
+
+    if (unresolvedItems.length > 0) {
+        throw {
+            code: 'MISSING_PRODUCT_MAPPING',
+            message: `Produtos nao encontrados na base de dados: ${unresolvedItems.join(', ')}`,
+            details: unresolvedItems
+        };
+    }
+
+    const baseItems = normalizedItems.map((item) => ({
         encomenda_id: orderId,
-        produto_id: item.id,
+        produto_id: item.resolvedProductId,
         quantidade: item.quantity,
         preco_unitario: item.preco,
         subtotal: item.preco * item.quantity
@@ -69,7 +121,7 @@ async function insertOrderItemsWithFallback(orderId, items) {
 
     while (true) {
         const payload = baseItems.map((baseItem, index) => {
-            const sourceItem = items[index];
+            const sourceItem = normalizedItems[index];
             const enriched = { ...baseItem };
 
             activeOptionalColumns.forEach((columnName) => {
@@ -315,7 +367,14 @@ if (placeOrderBtn) {
 
         } catch (error) {
             console.error('Erro ao criar encomenda:', error);
-            showToast('Erro ao processar encomenda. Por favor, tente novamente.', 'error');
+
+            if (error?.code === 'MISSING_PRODUCT_MAPPING') {
+                showToast('Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.', 'error');
+            } else if (error?.code === '23503') {
+                showToast('Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.', 'error');
+            } else {
+                showToast('Erro ao processar encomenda. Por favor, tente novamente.', 'error');
+            }
             
             // Re-enable button
             placeOrderBtn.disabled = false;
