@@ -491,6 +491,11 @@ class DesignEditor {
             this.canvas.appendChild(outsideOverlay);
         }
 
+        const outsideGridOverlay = this.canvas.querySelector('#print-area-outside-grid');
+        if (outsideGridOverlay) {
+            this.canvas.appendChild(outsideGridOverlay);
+        }
+
         if (this.printArea && this.printArea.parentNode === this.canvas) {
             this.canvas.appendChild(this.printArea);
         }
@@ -553,6 +558,31 @@ class DesignEditor {
         }
         mask.appendChild(cutout);
 
+        let gridPattern = this.canvas.querySelector('#print-area-outside-grid-pattern');
+        if (!gridPattern) {
+            gridPattern = document.createElementNS('http://www.w3.org/2000/svg', 'pattern');
+            gridPattern.setAttribute('id', 'print-area-outside-grid-pattern');
+            gridPattern.setAttribute('patternUnits', 'userSpaceOnUse');
+            defs.appendChild(gridPattern);
+        }
+
+        gridPattern.setAttribute('x', '0');
+        gridPattern.setAttribute('y', '0');
+        gridPattern.setAttribute('width', '28');
+        gridPattern.setAttribute('height', '28');
+
+        while (gridPattern.firstChild) {
+            gridPattern.removeChild(gridPattern.firstChild);
+        }
+
+        const gridV = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        gridV.setAttribute('d', 'M 28 0 L 0 0 0 28');
+        gridV.setAttribute('fill', 'none');
+        gridV.setAttribute('stroke', '#2563eb');
+        gridV.setAttribute('stroke-opacity', '0.28');
+        gridV.setAttribute('stroke-width', '0.8');
+        gridPattern.appendChild(gridV);
+
         let outsideOverlay = this.canvas.querySelector('#print-area-outside-overlay');
         if (!outsideOverlay) {
             outsideOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -568,6 +598,22 @@ class DesignEditor {
         outsideOverlay.setAttribute('width', String(canvasWidth));
         outsideOverlay.setAttribute('height', String(canvasHeight));
         outsideOverlay.setAttribute('mask', 'url(#print-area-outside-mask)');
+
+        let outsideGrid = this.canvas.querySelector('#print-area-outside-grid');
+        if (!outsideGrid) {
+            outsideGrid = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            outsideGrid.setAttribute('id', 'print-area-outside-grid');
+            outsideGrid.setAttribute('pointer-events', 'none');
+            outsideGrid.setAttribute('fill', 'url(#print-area-outside-grid-pattern)');
+            outsideGrid.setAttribute('opacity', '0.38');
+            this.canvas.appendChild(outsideGrid);
+        }
+
+        outsideGrid.setAttribute('x', '0');
+        outsideGrid.setAttribute('y', '0');
+        outsideGrid.setAttribute('width', String(canvasWidth));
+        outsideGrid.setAttribute('height', String(canvasHeight));
+        outsideGrid.setAttribute('mask', 'url(#print-area-outside-mask)');
     }
 
     updatePrintAreaFromElement(areaElement, sourceBounds) {
@@ -2774,7 +2820,7 @@ class DesignEditor {
         Array.from(this.canvas.children)
             .filter((node) => {
                 const id = node.getAttribute('id');
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay';
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
             })
             .forEach((node) => {
                 clippedGroup.appendChild(node.cloneNode(true));
