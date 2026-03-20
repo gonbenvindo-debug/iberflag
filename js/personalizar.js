@@ -220,10 +220,45 @@ class DesignEditor {
         };
     }
 
+    getCanvasViewBoxSize() {
+        const viewBoxAttr = this.canvas?.getAttribute('viewBox') || '';
+        const parts = viewBoxAttr.trim().split(/\s+/).map(Number);
+        if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+            return { width: parts[2], height: parts[3] };
+        }
+
+        const fallbackWidth = Number(this.baseCanvasSize?.width) || 800;
+        const fallbackHeight = Number(this.baseCanvasSize?.height) || 600;
+        return { width: fallbackWidth, height: fallbackHeight };
+    }
+
+    getInsertionScale() {
+        const bounds = this.getEditableBounds();
+        const shortSide = Math.max(120, Math.min(bounds.width, bounds.height));
+        const longSide = Math.max(bounds.width, bounds.height);
+        return { bounds, shortSide, longSide };
+    }
+
+    fitSizeIntoEditableBounds(width, height, maxRatio = 0.42) {
+        const bounds = this.getEditableBounds();
+        const maxWidth = Math.max(32, bounds.width * maxRatio);
+        const maxHeight = Math.max(32, bounds.height * maxRatio);
+
+        const baseWidth = Math.max(1, Number(width) || maxWidth);
+        const baseHeight = Math.max(1, Number(height) || maxHeight);
+        const ratio = Math.min(maxWidth / baseWidth, maxHeight / baseHeight, 1);
+
+        return {
+            width: baseWidth * ratio,
+            height: baseHeight * ratio
+        };
+    }
+
     clientToSvgPoint(clientX, clientY) {
         const rect = this.canvas.getBoundingClientRect();
-        const svgWidth = 800;
-        const svgHeight = 600;
+        const vb = this.getCanvasViewBoxSize();
+        const svgWidth = vb.width;
+        const svgHeight = vb.height;
 
         return {
             x: ((clientX - rect.left) / rect.width) * svgWidth,
@@ -233,8 +268,9 @@ class DesignEditor {
 
     clientDeltaToSvgDelta(deltaClientX, deltaClientY) {
         const rect = this.canvas.getBoundingClientRect();
-        const svgWidth = 800;
-        const svgHeight = 600;
+        const vb = this.getCanvasViewBoxSize();
+        const svgWidth = vb.width;
+        const svgHeight = vb.height;
 
         if (!rect.width || !rect.height) {
             return { dx: 0, dy: 0 };
@@ -1016,12 +1052,15 @@ class DesignEditor {
     
     // ===== ADD ELEMENTS =====
     addText() {
+        const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
+        const baseFontSize = Math.round(Math.max(14, Math.min(40, scale.shortSide * 0.09)));
+        const estimatedTextWidth = Math.max(80, baseFontSize * 5.2);
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        text.setAttribute('x', String(center.x - 80));
+        text.setAttribute('x', String(center.x - (estimatedTextWidth / 2)));
         text.setAttribute('y', String(center.y));
         text.setAttribute('font-family', 'Arial');
-        text.setAttribute('font-size', '24');
+        text.setAttribute('font-size', String(baseFontSize));
         text.setAttribute('fill', '#000000');
         text.setAttribute('data-editable', 'true');
         text.textContent = 'Clique para editar';
@@ -1039,7 +1078,7 @@ class DesignEditor {
             type: 'text',
             content: 'Clique para editar',
             font: 'Arial',
-            size: 24,
+            size: baseFontSize,
             color: '#000000',
             bold: false,
             italic: false,
@@ -1067,15 +1106,12 @@ class DesignEditor {
             const tempImg = new Image();
             tempImg.onload = () => {
                 // Calculate dimensions maintaining aspect ratio
-                const maxSize = 200;
                 let width = tempImg.naturalWidth;
                 let height = tempImg.naturalHeight;
-                
-                if (width > maxSize || height > maxSize) {
-                    const ratio = Math.min(maxSize / width, maxSize / height);
-                    width = width * ratio;
-                    height = height * ratio;
-                }
+
+                const fitted = this.fitSizeIntoEditableBounds(width, height, 0.45);
+                width = fitted.width;
+                height = fitted.height;
 
                 const center = this.getEditableCenter();
                 
@@ -1116,10 +1152,12 @@ class DesignEditor {
     handleAddQRCode() {
         const content = 'https://site.pt';
         const color = '#111827';
+        const scale = this.getInsertionScale();
+        const qrSize = Math.round(Math.max(56, Math.min(180, scale.shortSide * 0.28)));
 
         try {
             const dataUrl = this.generateQRCodeDataUrl(content, color);
-            this.addImageFromSource(dataUrl, 180, 180, 'QR Code', {
+            this.addImageFromSource(dataUrl, qrSize, qrSize, 'QR Code', {
                 imageKind: 'qr',
                 qrContent: content,
                 qrColor: color
@@ -1164,16 +1202,17 @@ class DesignEditor {
     }
 
     addImageFromSource(src, width, height, name = 'Imagem', options = {}) {
+        const fitted = this.fitSizeIntoEditableBounds(width, height, 0.45);
         const center = this.getEditableCenter();
         const imageKind = options.imageKind || 'image';
         const qrContent = options.qrContent || '';
         const qrColor = options.qrColor || '#111827';
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        img.setAttribute('x', String(center.x - (width / 2)));
-        img.setAttribute('y', String(center.y - (height / 2)));
-        img.setAttribute('width', width);
-        img.setAttribute('height', height);
+        img.setAttribute('x', String(center.x - (fitted.width / 2)));
+        img.setAttribute('y', String(center.y - (fitted.height / 2)));
+        img.setAttribute('width', String(fitted.width));
+        img.setAttribute('height', String(fitted.height));
         img.setAttribute('href', src);
         img.setAttribute('preserveAspectRatio', 'none');
         img.setAttribute('data-editable', 'true');
@@ -1211,25 +1250,30 @@ class DesignEditor {
     }
     
     addShape(shapeType) {
+        const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
+        const baseSize = Math.max(48, Math.min(180, scale.shortSide * 0.28));
         let shape;
         
         if (shapeType === 'rectangle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shape.setAttribute('x', String(center.x - 75));
-            shape.setAttribute('y', String(center.y - 50));
-            shape.setAttribute('width', '150');
-            shape.setAttribute('height', '100');
+            const rectWidth = baseSize * 1.25;
+            const rectHeight = baseSize * 0.84;
+            shape.setAttribute('x', String(center.x - (rectWidth / 2)));
+            shape.setAttribute('y', String(center.y - (rectHeight / 2)));
+            shape.setAttribute('width', String(rectWidth));
+            shape.setAttribute('height', String(rectHeight));
         } else if (shapeType === 'circle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             shape.setAttribute('cx', String(center.x));
             shape.setAttribute('cy', String(center.y));
-            shape.setAttribute('r', '75');
+            shape.setAttribute('r', String(baseSize / 2));
         } else if (shapeType === 'triangle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            const p1 = `${center.x},${center.y - 75}`;
-            const p2 = `${center.x + 75},${center.y + 50}`;
-            const p3 = `${center.x - 75},${center.y + 50}`;
+            const half = baseSize / 2;
+            const p1 = `${center.x},${center.y - half}`;
+            const p2 = `${center.x + half},${center.y + (half * 0.75)}`;
+            const p3 = `${center.x - half},${center.y + (half * 0.75)}`;
             shape.setAttribute('points', `${p1} ${p2} ${p3}`);
         }
         
