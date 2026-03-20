@@ -2533,10 +2533,60 @@ class DesignEditor {
             localStorage.setItem(key, design);
         });
     }
+
+    createExportMaskShape() {
+        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
+        const maskShape = shapeOutline
+            ? shapeOutline.cloneNode(true)
+            : document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+
+        if (!shapeOutline) {
+            maskShape.setAttribute('x', '0');
+            maskShape.setAttribute('y', '0');
+            maskShape.setAttribute('width', '800');
+            maskShape.setAttribute('height', '600');
+        }
+
+        maskShape.removeAttribute('id');
+        maskShape.removeAttribute('pointer-events');
+        maskShape.removeAttribute('opacity');
+        maskShape.removeAttribute('stroke');
+        maskShape.removeAttribute('stroke-width');
+        maskShape.removeAttribute('stroke-dasharray');
+        maskShape.setAttribute('fill', '#ffffff');
+
+        return maskShape;
+    }
     
     getDesignSVG() {
-        const svgClone = this.canvas.cloneNode(true);
-        return new XMLSerializer().serializeToString(svgClone);
+        const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        exportSvg.setAttribute('viewBox', '0 0 800 600');
+        exportSvg.setAttribute('width', '800');
+        exportSvg.setAttribute('height', '600');
+        exportSvg.setAttribute('preserveAspectRatio', 'none');
+
+        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipPath.setAttribute('id', 'design-export-clip');
+        clipPath.appendChild(this.createExportMaskShape());
+        defs.appendChild(clipPath);
+        exportSvg.appendChild(defs);
+
+        const clippedGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        clippedGroup.setAttribute('clip-path', 'url(#design-export-clip)');
+
+        Array.from(this.canvas.children)
+            .filter((node) => {
+                const id = node.getAttribute('id');
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline';
+            })
+            .forEach((node) => {
+                clippedGroup.appendChild(node.cloneNode(true));
+            });
+
+        exportSvg.appendChild(clippedGroup);
+        return new XMLSerializer().serializeToString(exportSvg);
     }
     
     // ===== ADD TO CART =====
