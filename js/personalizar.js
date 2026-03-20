@@ -136,7 +136,18 @@ class DesignEditor {
     }
 
     getEditableBounds() {
-        return this.printAreaBounds || { x: 0, y: 0, width: 800, height: 600 };
+        if (this.printAreaBounds) {
+            return this.printAreaBounds;
+        }
+
+        const canvasWidth = Number(this.baseCanvasSize?.width) || 800;
+        const canvasHeight = Number(this.baseCanvasSize?.height) || 600;
+        return {
+            x: 50,
+            y: 50,
+            width: Math.max(100, canvasWidth - 100),
+            height: Math.max(100, canvasHeight - 100)
+        };
     }
 
     getCanvasBounds() {
@@ -369,7 +380,7 @@ class DesignEditor {
             this.printArea = rect;
         }
 
-        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
+        this.configureCanvasFromSourceBounds({ x: 0, y: 0, width: 800, height: 600 });
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
@@ -382,11 +393,61 @@ class DesignEditor {
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
 
+        const defaultMaskShape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        defaultMaskShape.setAttribute('x', String(this.printAreaBounds.x));
+        defaultMaskShape.setAttribute('y', String(this.printAreaBounds.y));
+        defaultMaskShape.setAttribute('width', String(this.printAreaBounds.width));
+        defaultMaskShape.setAttribute('height', String(this.printAreaBounds.height));
+        this.upsertOutsideAreaOverlay(defaultMaskShape);
+
         this.bringPrintAreaOverlaysToFront();
+    }
+
+    configureCanvasFromSourceBounds(sourceBounds) {
+        const safeWidth = Math.max(1, Number(sourceBounds?.width) || 800);
+        const safeHeight = Math.max(1, Number(sourceBounds?.height) || 600);
+        const ratio = safeWidth / safeHeight;
+
+        const margin = 50;
+        const contentLongestSide = 700;
+
+        let contentWidth = contentLongestSide;
+        let contentHeight = contentLongestSide;
+
+        if (ratio >= 1) {
+            contentWidth = contentLongestSide;
+            contentHeight = contentLongestSide / ratio;
+        } else {
+            contentHeight = contentLongestSide;
+            contentWidth = contentLongestSide * ratio;
+        }
+
+        const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
+        const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
+
+        this.baseCanvasSize = { width: canvasWidth, height: canvasHeight };
+        this.printAreaBounds = {
+            x: margin,
+            y: margin,
+            width: contentWidth,
+            height: contentHeight
+        };
+
+        if (this.canvas) {
+            this.canvas.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
+        }
+
+        // Force viewport recalculation because ratio changed with template.
+        this.initialCanvasSize = null;
     }
 
     bringPrintAreaOverlaysToFront() {
         if (!this.canvas) return;
+
+        const outsideOverlay = this.canvas.querySelector('#print-area-outside-overlay');
+        if (outsideOverlay) {
+            this.canvas.appendChild(outsideOverlay);
+        }
 
         if (this.printArea && this.printArea.parentNode === this.canvas) {
             this.canvas.appendChild(this.printArea);
@@ -398,6 +459,75 @@ class DesignEditor {
         }
     }
 
+    upsertOutsideAreaOverlay(maskShapeNode, transform = '') {
+        if (!this.canvas || !maskShapeNode) return;
+
+        const viewBoxParts = (this.canvas.getAttribute('viewBox') || '')
+            .trim()
+            .split(/\s+/)
+            .map(Number);
+        const canvasWidth = Number.isFinite(viewBoxParts[2]) ? viewBoxParts[2] : (Number(this.baseCanvasSize?.width) || 800);
+        const canvasHeight = Number.isFinite(viewBoxParts[3]) ? viewBoxParts[3] : (Number(this.baseCanvasSize?.height) || 600);
+
+        let defs = this.canvas.querySelector('defs[data-print-overlay-defs="1"]');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            defs.setAttribute('data-print-overlay-defs', '1');
+            this.canvas.prepend(defs);
+        }
+
+        let mask = this.canvas.querySelector('#print-area-outside-mask');
+        if (!mask) {
+            mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+            mask.setAttribute('id', 'print-area-outside-mask');
+            mask.setAttribute('maskUnits', 'userSpaceOnUse');
+            defs.appendChild(mask);
+        }
+
+        while (mask.firstChild) {
+            mask.removeChild(mask.firstChild);
+        }
+
+        const fullMaskRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        fullMaskRect.setAttribute('x', '0');
+        fullMaskRect.setAttribute('y', '0');
+        fullMaskRect.setAttribute('width', String(canvasWidth));
+        fullMaskRect.setAttribute('height', String(canvasHeight));
+        fullMaskRect.setAttribute('fill', '#ffffff');
+        mask.appendChild(fullMaskRect);
+
+        const cutout = document.importNode(maskShapeNode, true);
+        cutout.removeAttribute('id');
+        cutout.removeAttribute('stroke');
+        cutout.removeAttribute('stroke-width');
+        cutout.removeAttribute('stroke-dasharray');
+        cutout.removeAttribute('opacity');
+        cutout.setAttribute('fill', '#000000');
+        cutout.setAttribute('pointer-events', 'none');
+        if (transform) {
+            cutout.setAttribute('transform', transform);
+        } else {
+            cutout.removeAttribute('transform');
+        }
+        mask.appendChild(cutout);
+
+        let outsideOverlay = this.canvas.querySelector('#print-area-outside-overlay');
+        if (!outsideOverlay) {
+            outsideOverlay = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            outsideOverlay.setAttribute('id', 'print-area-outside-overlay');
+            outsideOverlay.setAttribute('pointer-events', 'none');
+            outsideOverlay.setAttribute('fill', '#ffffff');
+            outsideOverlay.setAttribute('opacity', '0.22');
+            this.canvas.appendChild(outsideOverlay);
+        }
+
+        outsideOverlay.setAttribute('x', '0');
+        outsideOverlay.setAttribute('y', '0');
+        outsideOverlay.setAttribute('width', String(canvasWidth));
+        outsideOverlay.setAttribute('height', String(canvasHeight));
+        outsideOverlay.setAttribute('mask', 'url(#print-area-outside-mask)');
+    }
+
     updatePrintAreaFromElement(areaElement, sourceBounds) {
         this.setDefaultPrintArea();
 
@@ -405,7 +535,13 @@ class DesignEditor {
             return;
         }
 
-        const contentBounds = { x: 50, y: 50, width: 700, height: 500 };
+        this.configureCanvasFromSourceBounds(sourceBounds);
+        const contentBounds = {
+            x: this.printAreaBounds.x,
+            y: this.printAreaBounds.y,
+            width: this.printAreaBounds.width,
+            height: this.printAreaBounds.height
+        };
         const uniformScale = Math.min(
             contentBounds.width / sourceBounds.width,
             contentBounds.height / sourceBounds.height
@@ -420,16 +556,17 @@ class DesignEditor {
         visualArea.setAttribute('fill', 'none');
         visualArea.setAttribute('stroke', '#3b82f6');
         visualArea.setAttribute('stroke-width', '2');
-        visualArea.setAttribute('stroke-dasharray', '8,4');
+        visualArea.setAttribute('vector-effect', 'non-scaling-stroke');
         visualArea.setAttribute('opacity', '0.75');
         visualArea.setAttribute('pointer-events', 'none');
         visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
-        this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
-        this.printArea.setAttribute('x', '0');
-        this.printArea.setAttribute('y', '0');
-        this.printArea.setAttribute('width', '800');
-        this.printArea.setAttribute('height', '600');
+        this.printArea.setAttribute('x', String(this.printAreaBounds.x));
+        this.printArea.setAttribute('y', String(this.printAreaBounds.y));
+        this.printArea.setAttribute('width', String(this.printAreaBounds.width));
+        this.printArea.setAttribute('height', String(this.printAreaBounds.height));
+
+        this.upsertOutsideAreaOverlay(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
@@ -2293,15 +2430,22 @@ class DesignEditor {
     syncCanvasViewport() {
         if (!this.canvasStage || !this.canvasWrapper) return;
 
-        // Compute base canvas size only once (at zoom 100%)
-        if (!this.initialCanvasSize) {
-            const stageWidth = this.canvasStage.clientWidth;
-            const stageHeight = this.canvasStage.clientHeight;
-            if (!stageWidth || !stageHeight) return;
+        const stageWidth = this.canvasStage.clientWidth;
+        const stageHeight = this.canvasStage.clientHeight;
+        if (!stageWidth || !stageHeight) return;
 
+        const needsResizeRecalc = (
+            !this.initialCanvasSize ||
+            this._lastViewportStageWidth !== stageWidth ||
+            this._lastViewportStageHeight !== stageHeight
+        );
+
+        if (needsResizeRecalc) {
             const targetWidth = stageWidth * 0.9;
             const targetHeight = stageHeight * 0.9;
-            const ratio = 800 / 600;
+            const sourceWidth = Number(this.baseCanvasSize?.width) || 800;
+            const sourceHeight = Number(this.baseCanvasSize?.height) || 600;
+            const ratio = sourceWidth / sourceHeight;
 
             let baseWidth = targetWidth;
             let baseHeight = baseWidth / ratio;
@@ -2315,8 +2459,8 @@ class DesignEditor {
                 width: baseWidth,
                 height: baseHeight
             };
-
-            this.baseCanvasSize = { ...this.initialCanvasSize };
+            this._lastViewportStageWidth = stageWidth;
+            this._lastViewportStageHeight = stageHeight;
         }
 
         // Apply zoom to base size
@@ -2579,7 +2723,7 @@ class DesignEditor {
         Array.from(this.canvas.children)
             .filter((node) => {
                 const id = node.getAttribute('id');
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline';
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay';
             })
             .forEach((node) => {
                 clippedGroup.appendChild(node.cloneNode(true));

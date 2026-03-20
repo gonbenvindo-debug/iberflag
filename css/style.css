@@ -476,7 +476,7 @@ body {
 .homepage-grid-lines {
     position: absolute;
     inset: 0;
-    background-image: linear-gradient(rgba(148, 163, 184, 0.08) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-image: linear-gradient(rgba(148, 163, 184, 0.12) 1px, transparent 1px), linear-gradient(90deg, rgba(148, 163, 184, 0.12) 1px, transparent 1px);
     background-size: 72px 72px;
     mask-image: linear-gradient(180deg, rgba(0, 0, 0, 0.4), transparent 80%);
 }
