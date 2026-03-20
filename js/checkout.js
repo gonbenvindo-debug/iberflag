@@ -96,7 +96,27 @@ async function insertOrderItemsWithFallback(orderId, items) {
         imagem_produto: (item) => item.imagem || null
     };
 
-    const activeOptionalColumns = [...optionalColumns];
+    const getSupportedOptionalColumns = async () => {
+        // Prefer a schema-safe approach: inspect existing row keys when possible.
+        // If there are no rows yet (or read restrictions), skip optional columns to avoid noisy 400 retries.
+        try {
+            const { data, error } = await supabaseClient
+                .from('itens_encomenda')
+                .select('*')
+                .limit(1);
+
+            if (error || !Array.isArray(data) || data.length === 0) {
+                return [];
+            }
+
+            const available = new Set(Object.keys(data[0] || {}));
+            return optionalColumns.filter((columnName) => available.has(columnName));
+        } catch (error) {
+            return [];
+        }
+    };
+
+    let activeOptionalColumns = await getSupportedOptionalColumns();
 
     const getMissingColumnFromError = (error) => {
         const raw = [error?.message, error?.details, error?.hint]
