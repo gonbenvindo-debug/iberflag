@@ -46,6 +46,27 @@ async function insertOrderItemsWithFallback(orderId, items) {
 
     const activeOptionalColumns = [...optionalColumns];
 
+    const getMissingColumnFromError = (error) => {
+        const raw = [error?.message, error?.details, error?.hint]
+            .filter(Boolean)
+            .join(' | ')
+            .toLowerCase();
+
+        // PostgreSQL style: column "x" of relation "itens_encomenda" does not exist
+        let match = raw.match(/column\s+"([a-z0-9_]+)"\s+of\s+relation\s+"itens_encomenda"\s+does\s+not\s+exist/);
+        if (match) return match[1];
+
+        // PostgREST schema cache style: Could not find the 'x' column of 'itens_encomenda' in the schema cache
+        match = raw.match(/could\s+not\s+find\s+the\s+'([a-z0-9_]+)'\s+column\s+of\s+'itens_encomenda'/);
+        if (match) return match[1];
+
+        // Alternative quoting styles
+        match = raw.match(/could\s+not\s+find\s+the\s+"([a-z0-9_]+)"\s+column\s+of\s+"itens_encomenda"/);
+        if (match) return match[1];
+
+        return null;
+    };
+
     while (true) {
         const payload = baseItems.map((baseItem, index) => {
             const sourceItem = items[index];
@@ -66,14 +87,11 @@ async function insertOrderItemsWithFallback(orderId, items) {
             return;
         }
 
-        const errorMessage = String(error.message || '').toLowerCase();
-        const match = errorMessage.match(/column\s+"([a-z0-9_]+)"\s+of\s+relation\s+"itens_encomenda"\s+does\s+not\s+exist/);
-
-        if (!match) {
+        const missingColumn = getMissingColumnFromError(error);
+        if (!missingColumn) {
             throw error;
         }
 
-        const missingColumn = match[1];
         const columnIndex = activeOptionalColumns.indexOf(missingColumn);
 
         if (columnIndex === -1) {
