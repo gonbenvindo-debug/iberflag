@@ -58,55 +58,78 @@
     </div>
 
     <!-- Hero Section -->
-    <header class="homepage-hero py-24 overflow-hidden">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-            <div class="grid md:grid-cols-2 gap-12 items-center">
+    <header class="homepage-hero overflow-hidden">
+        <div class="homepage-ambient" aria-hidden="true">
+            <div class="homepage-orb homepage-orb-1"></div>
+            <div class="homepage-orb homepage-orb-2"></div>
+            <div class="homepage-orb homepage-orb-3"></div>
+            <div class="homepage-grid-lines"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-24 md:pt-24 md:pb-28">
+            <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
                 <div class="text-left fade-in-up">
-                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-tight">
-                        Soluções visuais para marcas que precisam de impacto sem ruído.
+                    <div class="homepage-intro-line mb-6">
+                        <span>Portugal + Espanha</span>
+                        <span class="homepage-intro-dot"></span>
+                        <span>Produção 12-24h</span>
+                        <span class="homepage-intro-dot"></span>
+                        <span>Design orientado à marca</span>
+                    </div>
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-[0.95] tracking-tight max-w-4xl">
+                        Publicidade física,
+                        <span class="homepage-display block mt-2">tratada como marca.</span>
                     </h1>
-                    <p class="text-xl mb-8 text-gray-600 leading-relaxed max-w-2xl">
-                        Flybanners, roll-ups, lonas e suportes promocionais com execução rápida, estética cuidada e produção para Portugal e Espanha.
+                    <p class="homepage-lead text-lg md:text-2xl mb-8 leading-relaxed max-w-2xl">
+                        Flybanners, roll-ups e formatos promocionais com direção visual premium, operação rápida e presença forte no momento em que o cliente entra no espaço.
                     </p>
-                    <div class="flex flex-col sm:flex-row gap-4 mb-8">
-                        <a href="/produtos.html" class="btn-primary group">
+                    <div class="flex flex-col sm:flex-row gap-4 mb-10">
+                        <a href="/produtos.html" class="btn-primary group homepage-primary-action">
                             Ver Catálogo
                             <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                         </a>
-                        <a href="/contacto.html" class="btn-secondary">
+                        <a href="/contacto.html" class="btn-secondary homepage-secondary-action">
                             Falar com Consultor
                         </a>
                     </div>
-                    <div class="flex flex-wrap items-center gap-x-8 gap-y-3 text-sm homepage-hero-meta">
-                        <div class="flex items-center gap-2 homepage-hero-meta-item">
-                            <i data-lucide="check-circle" class="w-5 h-5 text-blue-600"></i>
-                            <span>Envio Grátis +150€</span>
+                    <div class="grid sm:grid-cols-3 gap-4 max-w-3xl">
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">500+</span>
+                            <span class="homepage-metric-label">marcas atendidas</span>
                         </div>
-                        <div class="flex items-center gap-2 homepage-hero-meta-item">
-                            <i data-lucide="zap" class="w-5 h-5 text-blue-600"></i>
-                            <span>Produção 12-24h</span>
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">12-24h</span>
+                            <span class="homepage-metric-label">produção standard</span>
                         </div>
-                        <div class="flex items-center gap-2 homepage-hero-meta-item">
-                            <i data-lucide="shield-check" class="w-5 h-5 text-blue-600"></i>
-                            <span>Acompanhamento comercial direto</span>
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">PT + ES</span>
+                            <span class="homepage-metric-label">cobertura ibérica</span>
                         </div>
                     </div>
                 </div>
-                <div class="relative hidden md:block">
+                <div class="relative hidden md:block fade-in-up">
                     <div class="hero-image-container homepage-hero-panel">
+                        <div class="homepage-hero-frame"></div>
                         <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80&w=800" alt="Flybanners" class="hero-image homepage-hero-image">
-                        <div class="homepage-hero-insights grid grid-cols-3 border-t border-gray-200">
+                        <div class="homepage-hero-floating homepage-floating-top">
+                            <span class="homepage-floating-label">Acabamento premium</span>
+                            <p>Têxteis, estrutura e impressão com leitura limpa.</p>
+                        </div>
+                        <div class="homepage-hero-floating homepage-floating-bottom">
+                            <span class="homepage-floating-label">Operação sem ruído</span>
+                            <p>Processo rápido, apoio direto e entrega preparada para retail, eventos e franchising.</p>
+                        </div>
+                        <div class="homepage-hero-insights grid grid-cols-3">
                             <div class="homepage-stat-card p-5">
-                                <div class="text-3xl font-bold text-gray-900">500+</div>
-                                <div class="text-sm text-gray-500">Clientes ativos</div>
+                                <div class="text-3xl font-bold text-white">Visual</div>
+                                <div class="text-sm text-white/70">Direção estética</div>
                             </div>
                             <div class="homepage-stat-card p-5">
-                                <div class="text-3xl font-bold text-gray-900">12-24h</div>
-                                <div class="text-sm text-gray-500">Produção standard</div>
+                                <div class="text-3xl font-bold text-white">Velocidade</div>
+                                <div class="text-sm text-white/70">Execução rápida</div>
                             </div>
                             <div class="homepage-stat-card p-5">
-                                <div class="text-3xl font-bold text-gray-900">PT + ES</div>
-                                <div class="text-sm text-gray-500">Cobertura ibérica</div>
+                                <div class="text-3xl font-bold text-white">Escala</div>
+                                <div class="text-sm text-white/70">Cobertura ibérica</div>
                             </div>
                         </div>
                     </div>
@@ -116,84 +139,106 @@
     </header>
 
     <!-- Trust Badges -->
-    <section class="bg-white py-8 border-b border-gray-200">
+    <section class="homepage-trust-strip py-8">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-8 text-center">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
                 <div class="trust-badge">
-                    <i data-lucide="truck" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
-                    <h3 class="font-bold text-sm">Envio Rápido</h3>
-                    <p class="text-xs text-gray-600">12-24h produção + envio</p>
+                    <i data-lucide="truck" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Entrega Preparada</h3>
+                    <p class="text-xs text-slate-300">produção e envio coordenados</p>
                 </div>
                 <div class="trust-badge">
-                    <i data-lucide="shield-check" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
-                    <h3 class="font-bold text-sm">Garantia Total</h3>
-                    <p class="text-xs text-gray-600">Qualidade Garantida</p>
+                    <i data-lucide="shield-check" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Qualidade Controlada</h3>
+                    <p class="text-xs text-slate-300">acabamento profissional</p>
                 </div>
                 <div class="trust-badge">
-                    <i data-lucide="palette" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
-                    <h3 class="font-bold text-sm">Design Grátis</h3>
-                    <p class="text-xs text-gray-600">Apoio Gráfico Incluído</p>
+                    <i data-lucide="palette" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Direção Visual</h3>
+                    <p class="text-xs text-slate-300">apoio gráfico orientado à marca</p>
                 </div>
                 <div class="trust-badge">
-                    <i data-lucide="award" class="w-8 h-8 text-blue-600 mx-auto mb-2"></i>
-                    <h3 class="font-bold text-sm">Premium Quality</h3>
-                    <p class="text-xs text-gray-600">Materiais de Topo</p>
+                    <i data-lucide="sparkles" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Presença Premium</h3>
+                    <p class="text-xs text-slate-300">concebido para impressionar</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- Featured Categories -->
-    <section class="py-20 bg-white border-b border-gray-200 homepage-section">
+    <section class="py-24 bg-white border-b border-stone-200 homepage-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 fade-in-up">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Categorias em Destaque</h2>
-                <p class="text-gray-600 text-lg">Solucoes completas de publicidade visual para eventos, retalho e marcas na Peninsula Iberica</p>
+                <span class="homepage-section-label">Formatos principais</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-4">Escolha o formato certo para o espaço.</h2>
+                <p class="text-gray-600 text-lg max-w-3xl mx-auto">Cada solução foi pensada para criar presença com leitura clara, montagem simples e impacto imediato.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <a href="/produtos.html?categoria=flybanners" class="category-card group">
-                    <div class="relative h-64 overflow-hidden border border-b-0 border-gray-200">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80" alt="Flybanners" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-x-0 bottom-0 bg-white/96 border-t border-gray-200 p-4 text-gray-900">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Outdoor</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
                             <h3 class="text-2xl font-bold mb-1">Flybanners</h3>
-                            <p class="text-sm text-gray-500">A partir de 45€</p>
+                            <p class="text-sm text-white/70">Leitura imediata para montra, rua e evento.</p>
                         </div>
                     </div>
-                    <div class="bg-white p-6 border border-gray-200">
-                        <p class="text-gray-600 text-sm mb-4">Bandeiras publicitárias de alta visibilidade para eventos e lojas</p>
-                        <div class="flex items-center text-blue-600 font-semibold">
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 45€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
                             Ver Modelos
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
                         </div>
                     </div>
                 </a>
                 <a href="/produtos.html?categoria=rollups" class="category-card group">
-                    <div class="relative h-64 overflow-hidden border border-b-0 border-gray-200">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80" alt="Roll-ups" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-x-0 bottom-0 bg-white/96 border-t border-gray-200 p-4 text-gray-900">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Eventos</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
                             <h3 class="text-2xl font-bold mb-1">Roll-ups</h3>
-                            <p class="text-sm text-gray-500">A partir de 65€</p>
+                            <p class="text-sm text-white/70">Mensagem vertical, elegante e portátil.</p>
                         </div>
                     </div>
-                    <div class="bg-white p-6 border border-gray-200">
-                        <p class="text-gray-600 text-sm mb-4">Expositores verticais premium para feiras e eventos</p>
-                        <div class="flex items-center text-blue-600 font-semibold">
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 65€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
                             Ver Modelos
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
                         </div>
                     </div>
                 </a>
                 <a href="/produtos.html?categoria=lonas" class="category-card group">
-                    <div class="relative h-64 overflow-hidden border border-b-0 border-gray-200">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80" alt="Lonas" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
-                        <div class="absolute inset-x-0 bottom-0 bg-white/96 border-t border-gray-200 p-4 text-gray-900">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Grande formato</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
                             <h3 class="text-2xl font-bold mb-1">Lonas & Banners</h3>
-                            <p class="text-sm text-gray-500">A partir de 25€</p>
+                            <p class="text-sm text-white/70">Escala, resistência e visibilidade exterior.</p>
                         </div>
                     </div>
-                    <div class="bg-white p-6 border border-gray-200">
-                        <p class="text-gray-600 text-sm mb-4">Lonas PVC de alta resistência para exterior</p>
-                        <div class="flex items-center text-blue-600 font-semibold">
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 25€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
                             Ver Modelos
                             <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
                         </div>
@@ -204,11 +249,12 @@
     </section>
 
     <!-- Best Sellers -->
-    <section id="produtos" class="py-20 bg-gray-50 border-b border-gray-200 homepage-section">
+    <section id="produtos" class="py-24 bg-stone-50/80 border-b border-stone-200 homepage-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16 fade-in-up">
-                <h2 class="text-4xl font-bold text-gray-900 mb-4">Produtos Mais Vendidos</h2>
-                <p class="text-gray-600 text-lg">Os favoritos dos nossos clientes</p>
+                <span class="homepage-section-label">Seleção</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-4">Os formatos mais pedidos.</h2>
+                <p class="text-gray-600 text-lg">Peças escolhidas por marcas que precisam de rapidez sem abdicar da apresentação.</p>
             </div>
             <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Loading Skeleton -->
@@ -247,50 +293,56 @@
     </section>
 
     <!-- Why Choose Us -->
-    <section class="py-20 bg-white border-b border-gray-200 homepage-section">
+    <section class="py-24 bg-white border-b border-stone-200 homepage-section">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="text-center mb-16">
-                <h2 class="text-4xl font-bold mb-4 text-gray-900">Porque Escolher a IberFlag?</h2>
-                <p class="text-gray-600 text-lg">Uma experiencia comercial mais simples, mais clara e mais rápida</p>
+                <span class="homepage-section-label">Método</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 mt-4">Um processo mais elegante do briefing à entrega.</h2>
+                <p class="text-gray-600 text-lg max-w-3xl mx-auto">Menos ruído operacional, mais controlo visual e maior confiança em cada encomenda.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div class="feature-card">
-                    <div class="w-16 h-16 border border-gray-200 flex items-center justify-center mb-6 bg-gray-50">
-                        <i data-lucide="zap" class="w-8 h-8 text-blue-600"></i>
+                    <div class="homepage-feature-index">01</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="zap" class="w-8 h-8 text-slate-900"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900">Produção Ultra-Rápida</h3>
-                    <p class="text-gray-600">Produção rápida em 12-24h. Receba o seu produto personalizado em tempo recorde.</p>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Velocidade bem controlada</h3>
+                    <p class="text-gray-600">Produção rápida com prazos claros e execução preparada para equipas comerciais exigentes.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="w-16 h-16 border border-gray-200 flex items-center justify-center mb-6 bg-gray-50">
-                        <i data-lucide="award" class="w-8 h-8 text-blue-600"></i>
+                    <div class="homepage-feature-index">02</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="award" class="w-8 h-8 text-slate-900"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900">Qualidade Premium</h3>
-                    <p class="text-gray-600">Materiais de topo, impressão de alta resolução e acabamentos profissionais. Garantia de satisfação.</p>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Qualidade que se sente</h3>
+                    <p class="text-gray-600">Materiais, impressão e acabamento selecionados para reforçar a percepção de marca no espaço físico.</p>
                 </div>
                 <div class="feature-card">
-                    <div class="w-16 h-16 border border-gray-200 flex items-center justify-center mb-6 bg-gray-50">
-                        <i data-lucide="headphones" class="w-8 h-8 text-blue-600"></i>
+                    <div class="homepage-feature-index">03</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="headphones" class="w-8 h-8 text-slate-900"></i>
                     </div>
-                    <h3 class="text-xl font-bold mb-3 text-gray-900">Apoio Dedicado</h3>
-                    <p class="text-gray-600">Equipa especializada para ajudar em cada passo. Design gráfico gratuito incluído em todas as encomendas.</p>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Acompanhamento direto</h3>
+                    <p class="text-gray-600">Contacto comercial próximo e apoio criativo para acelerar decisões sem perder coerência visual.</p>
                 </div>
             </div>
         </div>
     </section>
 
     <!-- CTA Section -->
-    <section class="py-20 bg-white homepage-section">
+    <section class="py-24 bg-white homepage-section">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <div class="homepage-cta p-12 text-gray-900 cta-card border border-gray-200 bg-gray-50">
-                <h2 class="text-4xl font-bold mb-4">Pronto para Destacar a Sua Marca?</h2>
-                <p class="text-xl text-gray-600 mb-8">Peça já o seu orçamento gratuito e sem compromisso</p>
+            <div class="homepage-cta p-12 md:p-16 text-white cta-card">
+                <div class="homepage-cta-glow" aria-hidden="true"></div>
+                <span class="homepage-section-label homepage-section-label-invert">Próximo passo</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 mt-4">Vamos desenhar a presença certa para a sua marca.</h2>
+                <p class="text-lg md:text-xl text-white/70 mb-8 max-w-2xl mx-auto">Conte-nos o formato, o contexto e o prazo. Nós tratamos do resto com rapidez, critério e acompanhamento próximo.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
-                    <a href="/contacto.html" class="btn-primary px-8 py-4 font-bold inline-flex items-center justify-center gap-2">
+                    <a href="/contacto.html" class="btn-primary homepage-primary-action px-8 py-4 font-bold inline-flex items-center justify-center gap-2">
                         <i data-lucide="mail" class="w-5 h-5"></i>
                         Pedir Orçamento
                     </a>
-                    <a href="tel:+351900000000" class="btn-secondary px-8 py-4 font-bold inline-flex items-center justify-center gap-2">
+                    <a href="tel:+351900000000" class="btn-secondary homepage-secondary-action px-8 py-4 font-bold inline-flex items-center justify-center gap-2 text-white border-white/30">
                         <i data-lucide="phone" class="w-5 h-5"></i>
                         Ligar Agora
                     </a>
