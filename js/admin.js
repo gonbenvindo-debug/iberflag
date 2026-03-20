@@ -680,6 +680,14 @@ function resolveItemSnapshot(orderMeta, item, index) {
         return byIndex;
     }
 
+    const itemDesignId = String(item?.design_id || item?.designId || '').trim();
+    if (itemDesignId) {
+        const byDesignId = snapshots.find((entry) => String(entry?.designId || '').trim() === itemDesignId);
+        if (byDesignId) {
+            return byDesignId;
+        }
+    }
+
     return snapshots.find((entry) => Number(entry.produtoId) === Number(item?.produto_id)) || null;
 }
 
@@ -714,24 +722,9 @@ function resolveItemPreviewAndDesign(item, snapshot) {
         ? (typeof buildSvgDataUrl === 'function' ? (buildSvgDataUrl(designSvg) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`) : '')
         : '';
 
-    // hasDesign: true if ANY real design content was found (raw SVG, data URI preview, or distinct http preview)
-    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);
     const previewUrl = designDataUrl || designPreviewUrl || httpPreview || fallbackImage;
-
-    if (console.debug) {
-        console.debug('[IberFlag] resolveItemPreviewAndDesign', {
-            productName: item?.produtos?.nome || item?.nome_produto,
-            hasDesignSvg: Boolean(designSvg),
-            hasDesignPreviewUrl: Boolean(designPreviewUrl),
-            hasHttpPreview: Boolean(httpPreview),
-            hasFallback: Boolean(fallbackImage),
-            hasDesign,
-            item_design_svg: item?.design_svg ? 'present' : 'missing',
-            item_design_preview: item?.design_preview ? item?.design_preview.slice(0, 40) : 'missing',
-            snapshot_design: snapshot?.design ? 'present' : 'missing',
-            snapshot_designPreview: snapshot?.designPreview ? snapshot?.designPreview.slice(0, 40) : 'missing',
-        });
-    }
+    // Treat any non-product preview or raw SVG as valid design signal.
+    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview || previewUrl);
 
     return {
         previewUrl,

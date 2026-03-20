@@ -42,7 +42,20 @@ function sanitizeFilenameToken(value) {
 
 function resolveOrderItemSnapshot(orderMeta, item, index) {
     const snapshots = Array.isArray(orderMeta?.itemSnapshots) ? orderMeta.itemSnapshots : [];
-    return snapshots[index] || snapshots.find((entry) => Number(entry.produtoId) === Number(item?.produto_id)) || null;
+    const byIndex = snapshots[index];
+    if (byIndex) {
+        return byIndex;
+    }
+
+    const itemDesignId = String(item?.design_id || item?.designId || '').trim();
+    if (itemDesignId) {
+        const byDesignId = snapshots.find((entry) => String(entry?.designId || '').trim() === itemDesignId);
+        if (byDesignId) {
+            return byDesignId;
+        }
+    }
+
+    return snapshots.find((entry) => Number(entry.produtoId) === Number(item?.produto_id)) || null;
 }
 
 function parseJsonSafe(value) {
@@ -384,16 +397,10 @@ function renderOrderItems(order, items, splitMeta) {
         const previewUrl = visuals.previewUrl || '/favicon.svg';
         const itemOptions = extractOrderItemOptions(item, snapshot);
         const optionsSummary = buildOptionsSummary(itemOptions);
-        const designDownloadUrl = visuals.designSvg && typeof buildSvgDataUrl === 'function'
-            ? buildSvgDataUrl(visuals.designSvg)
-            : '';
-
         renderedItemPreviews.push({
             productName,
             previewUrl,
-            options: itemOptions,
-            designDownloadUrl,
-            downloadFilename: `design-${sanitizeFilenameToken(order.numero_encomenda || order.id || 'encomenda')}-${index + 1}.svg`
+            options: itemOptions
         });
 
         return `
@@ -458,20 +465,19 @@ function renderItemPreviewOptions(options) {
 
 function openItemPreview(index) {
     const data = renderedItemPreviews[index];
-    if (!data || !itemPreviewModal || !itemPreviewTitle || !itemPreviewImage || !itemPreviewDownload) {
+    if (!data || !itemPreviewModal || !itemPreviewTitle || !itemPreviewImage) {
         return;
     }
 
     itemPreviewTitle.textContent = data.productName || 'Produto';
     itemPreviewImage.src = data.previewUrl || '/favicon.svg';
     itemPreviewImage.alt = data.productName || 'Preview';
-    renderItemPreviewOptions(data.options || []);
+    if (itemPreviewOptions) {
+        itemPreviewOptions.innerHTML = '';
+        itemPreviewOptions.classList.add('hidden');
+    }
 
-    if (data.designDownloadUrl) {
-        itemPreviewDownload.href = data.designDownloadUrl;
-        itemPreviewDownload.download = data.downloadFilename || 'design.svg';
-        itemPreviewDownload.classList.remove('hidden');
-    } else {
+    if (itemPreviewDownload) {
         itemPreviewDownload.classList.add('hidden');
         itemPreviewDownload.removeAttribute('href');
     }

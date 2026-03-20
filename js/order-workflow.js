@@ -115,6 +115,7 @@
             ? source.itemSnapshots
                 .filter((entry) => entry && typeof entry === 'object')
                 .map((entry) => ({
+                    designId: entry.designId ? String(entry.designId) : '',
                     produtoId: Number(entry.produtoId) || null,
                     nome: entry.nome ? String(entry.nome) : 'Produto',
                     quantidade: Math.max(1, Number.parseInt(entry.quantidade || 1, 10) || 1),

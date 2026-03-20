@@ -26,6 +26,7 @@ class DesignEditor {
         this.rotationCenterClient = null;
         this.currentProduct = null;
         this.editIndex = null;
+        this.editDesignId = null;
         this.productId = null;
         this.cartStorageKey = 'iberflag_cart';
         this.legacyCartStorageKeys = ['latinflag_cart', 'cart'];
@@ -52,6 +53,7 @@ class DesignEditor {
         const urlParams = new URLSearchParams(window.location.search);
         const productId = urlParams.get('produto');
         this.editIndex = urlParams.get('edit');
+        this.editDesignId = urlParams.get('design');
         this.productId = productId;
         
         if (!productId) {
@@ -97,8 +99,8 @@ class DesignEditor {
         }
         
         // Load existing design if editing
-        if (this.editIndex !== null) {
-            this.loadExistingDesign(parseInt(this.editIndex));
+        if (this.editIndex !== null || this.editDesignId) {
+            this.loadExistingDesign(parseInt(this.editIndex, 10));
         } else {
             this.loadAutosaveDesign();
         }
@@ -886,10 +888,19 @@ class DesignEditor {
     
     loadExistingDesign(index) {
         const cart = this.getCartData();
-        if (cart[index] && cart[index].design) {
+        let targetIndex = Number.isInteger(index) ? index : -1;
+
+        if (this.editDesignId) {
+            const byDesignId = cart.findIndex((item) => String(item?.designId || item?.design_id || '') === String(this.editDesignId));
+            if (byDesignId >= 0) {
+                targetIndex = byDesignId;
+            }
+        }
+
+        if (targetIndex >= 0 && cart[targetIndex] && cart[targetIndex].design) {
             try {
                 const parser = new DOMParser();
-                const svgDoc = parser.parseFromString(cart[index].design, 'image/svg+xml');
+                const svgDoc = parser.parseFromString(cart[targetIndex].design, 'image/svg+xml');
                 const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
                 
                 designElements.forEach(el => {
@@ -904,6 +915,9 @@ class DesignEditor {
                 
                 this.updateLayers();
                 this.saveHistory();
+
+                this.editIndex = String(targetIndex);
+                this.editDesignId = String(cart[targetIndex].designId || cart[targetIndex].design_id || this.editDesignId || '');
             } catch (error) {
                 console.error('Error loading existing design:', error);
             }
@@ -2872,10 +2886,11 @@ class DesignEditor {
             : document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
         if (!shapeOutline) {
+            const vb = this.getCanvasViewBoxSize();
             maskShape.setAttribute('x', '0');
             maskShape.setAttribute('y', '0');
-            maskShape.setAttribute('width', '800');
-            maskShape.setAttribute('height', '600');
+            maskShape.setAttribute('width', String(vb.width));
+            maskShape.setAttribute('height', String(vb.height));
         }
 
         maskShape.removeAttribute('id');
@@ -2890,11 +2905,15 @@ class DesignEditor {
     }
     
     getDesignSVG() {
+        const vb = this.getCanvasViewBoxSize();
+        const exportWidth = Math.max(1, Math.round(vb.width));
+        const exportHeight = Math.max(1, Math.round(vb.height));
+
         const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        exportSvg.setAttribute('viewBox', '0 0 800 600');
-        exportSvg.setAttribute('width', '800');
-        exportSvg.setAttribute('height', '600');
+        exportSvg.setAttribute('viewBox', `0 0 ${exportWidth} ${exportHeight}`);
+        exportSvg.setAttribute('width', String(exportWidth));
+        exportSvg.setAttribute('height', String(exportHeight));
         exportSvg.setAttribute('preserveAspectRatio', 'none');
 
         const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
@@ -2929,7 +2948,16 @@ class DesignEditor {
         
         const cart = this.getCartData();
         const design = this.getDesignSVG();
-        const existingCartItem = this.editIndex !== null ? cart[this.editIndex] : null;
+        let targetIndex = this.editIndex !== null ? Number.parseInt(this.editIndex, 10) : -1;
+        if (this.editDesignId) {
+            const designMatchIndex = cart.findIndex((item) => String(item?.designId || item?.design_id || '') === String(this.editDesignId));
+            if (designMatchIndex >= 0) {
+                targetIndex = designMatchIndex;
+            }
+        }
+
+        const existingCartItem = targetIndex >= 0 ? cart[targetIndex] : null;
+        const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         
         const cartItem = {
             id: this.currentProduct.id,
@@ -2938,12 +2966,13 @@ class DesignEditor {
             imagem: this.currentProduct.imagem,
             quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity ?? 1, 10) || 1),
             customized: true,
+            designId,
             design: design,
             designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`
         };
         
-        if (this.editIndex !== null) {
-            cart[this.editIndex] = cartItem;
+        if (targetIndex >= 0) {
+            cart[targetIndex] = cartItem;
             showToast('Design atualizado no carrinho!', 'success');
         } else {
             cart.push(cartItem);

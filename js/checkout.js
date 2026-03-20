@@ -16,6 +16,7 @@ const termsCheckbox = document.getElementById('terms-checkbox');
 
 function buildOrderItemSnapshots(items) {
     return items.map((item) => ({
+        designId: item.designId || item.design_id || null,
         produtoId: Number(item.id) || null,
         nome: item.nome || 'Produto',
         quantidade: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
@@ -88,8 +89,9 @@ async function insertOrderItemsWithFallback(orderId, items) {
     }));
 
     // These columns are optional because schemas can differ between environments.
-    const optionalColumns = ['design_svg', 'design_preview', 'nome_produto', 'imagem_produto'];
+    const optionalColumns = ['design_id', 'design_svg', 'design_preview', 'nome_produto', 'imagem_produto'];
     const optionalValueByColumn = {
+        design_id: (item) => item.designId || item.design_id || null,
         design_svg: (item) => item.design || null,
         design_preview: (item) => item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || null),
         nome_produto: (item) => item.nome || null,

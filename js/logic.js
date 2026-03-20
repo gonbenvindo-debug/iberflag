@@ -108,6 +108,12 @@ function normalizeCartItem(item) {
         return null;
     }
 
+    const designId = (typeof item.designId === 'string' && item.designId.trim())
+        ? item.designId.trim()
+        : (typeof item.design_id === 'string' && item.design_id.trim())
+            ? item.design_id.trim()
+            : (Boolean(item.customized) ? `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}` : null);
+
     return {
         ...item,
         id: Number(item.id ?? fallbackProduct?.id ?? Date.now()),
@@ -116,6 +122,7 @@ function normalizeCartItem(item) {
         preco,
         quantity,
         customized: Boolean(item.customized),
+        designId,
         design: item.design || null,
         designPreview: item.designPreview || null
     };
@@ -146,6 +153,10 @@ function getCartItemImage(item) {
 }
 
 function getCartItemEditorLink(item, index) {
+    if (item?.customized && item?.designId) {
+        return `/personalizar.html?produto=${item.id}&edit=${index}&design=${encodeURIComponent(item.designId)}`;
+    }
+
     return `/personalizar.html?produto=${item.id}&edit=${index}`;
 }
 
