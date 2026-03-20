@@ -15,6 +15,7 @@ class DesignEditor {
         this.historyCommitTimer = null;
         this.historyCommitDelay = 180;
         this.activeHistoryGestureSnapshot = null;
+        this.layerDragIndex = null;
         this.zoom = 1;
         this.isDragging = false;
         this.isResizing = false;
@@ -2471,56 +2472,145 @@ class DesignEditor {
     // ===== LAYERS =====
     updateLayers() {
         const layersList = document.getElementById('layers-list');
+        if (!layersList) return;
         
         if (this.elements.length === 0) {
             layersList.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">Nenhuma camada ainda</p>';
             return;
         }
+
+        const selectedId = this.selectedElement ? String(this.selectedElement.id) : null;
         
         layersList.innerHTML = this.elements.map((el, index) => `
-            <div class="p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${this.selectedElement?.id === el.id ? 'bg-blue-50 border-blue-600' : ''}" 
-                 onclick="editor.selectElementByIndex(${index})">
+            <div class="layer-item p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${selectedId === String(el.id) ? 'bg-blue-50 border-blue-600' : ''}"
+                 data-layer-index="${index}"
+                 data-layer-id="${String(el.id)}"
+                 draggable="true">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
-                        <span class="text-sm font-semibold">${el.type === 'text' ? el.content.substring(0, 20) : el.type === 'image' ? (el.name || (el.imageKind === 'qr' ? 'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
+                        <span class="text-sm font-semibold">${el.type === 'text' ? (el.content || 'Texto').substring(0, 20) : el.type === 'image' ? (el.name || (el.imageKind === 'qr' ? 'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
                     </div>
                     <div class="flex gap-1">
-                        <button onclick="event.stopPropagation(); editor.moveLayer(${index}, -1)" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
+                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
                             <i data-lucide="arrow-up" class="w-3 h-3"></i>
                         </button>
-                        <button onclick="event.stopPropagation(); editor.moveLayer(${index}, 1)" class="p-1 hover:bg-gray-200 rounded" ${index === this.elements.length - 1 ? 'disabled' : ''}>
+                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === this.elements.length - 1 ? 'disabled' : ''}>
                             <i data-lucide="arrow-down" class="w-3 h-3"></i>
                         </button>
                     </div>
                 </div>
             </div>
         `).join('');
+
+        layersList.querySelectorAll('.layer-item').forEach((item) => {
+            item.addEventListener('click', (event) => {
+                if (event.target.closest('button')) return;
+                const id = item.dataset.layerId;
+                this.selectElementById(id);
+            });
+
+            item.addEventListener('dragstart', (event) => {
+                const startIndex = Number(item.dataset.layerIndex);
+                if (!Number.isInteger(startIndex)) return;
+                this.layerDragIndex = startIndex;
+                item.classList.add('opacity-60');
+                if (event.dataTransfer) {
+                    event.dataTransfer.effectAllowed = 'move';
+                    event.dataTransfer.setData('text/plain', String(startIndex));
+                }
+            });
+
+            item.addEventListener('dragover', (event) => {
+                event.preventDefault();
+                if (event.dataTransfer) {
+                    event.dataTransfer.dropEffect = 'move';
+                }
+                item.classList.add('border-blue-400', 'bg-blue-50');
+            });
+
+            item.addEventListener('dragleave', () => {
+                item.classList.remove('border-blue-400', 'bg-blue-50');
+            });
+
+            item.addEventListener('drop', (event) => {
+                event.preventDefault();
+                item.classList.remove('border-blue-400', 'bg-blue-50');
+
+                const targetIndex = Number(item.dataset.layerIndex);
+                const fromIndex = Number.isInteger(this.layerDragIndex)
+                    ? this.layerDragIndex
+                    : Number(event.dataTransfer?.getData('text/plain'));
+
+                this.layerDragIndex = null;
+                if (!Number.isInteger(fromIndex) || !Number.isInteger(targetIndex) || fromIndex === targetIndex) {
+                    return;
+                }
+
+                this.moveLayerToIndex(fromIndex, targetIndex);
+            });
+
+            item.addEventListener('dragend', () => {
+                this.layerDragIndex = null;
+                item.classList.remove('opacity-60', 'border-blue-400', 'bg-blue-50');
+            });
+        });
+
+        layersList.querySelectorAll('button[data-layer-action]').forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+
+                const index = Number(button.dataset.layerIndex);
+                if (!Number.isInteger(index)) return;
+
+                const action = button.dataset.layerAction;
+                this.moveLayer(index, action === 'up' ? -1 : 1);
+            });
+        });
         
         lucide.createIcons();
     }
     
     selectElementByIndex(index) {
+        if (!Number.isInteger(index) || index < 0 || index >= this.elements.length) return;
         this.selectElement(this.elements[index]);
+    }
+
+    selectElementById(layerId) {
+        const targetId = String(layerId || '');
+        if (!targetId) return;
+        const elementData = this.elements.find((el) => String(el.id) === targetId);
+        if (!elementData) return;
+        this.selectElement(elementData);
+    }
+
+    syncCanvasOrderFromLayers() {
+        this.elements.forEach((elementData) => {
+            if (elementData?.element && elementData.element.parentNode === this.canvas) {
+                this.canvas.appendChild(elementData.element);
+            }
+        });
+        this.bringPrintAreaOverlaysToFront();
+    }
+
+    moveLayerToIndex(fromIndex, toIndex) {
+        if (!Number.isInteger(fromIndex) || !Number.isInteger(toIndex)) return;
+        if (fromIndex < 0 || fromIndex >= this.elements.length) return;
+        if (toIndex < 0 || toIndex >= this.elements.length) return;
+        if (fromIndex === toIndex) return;
+
+        const [moved] = this.elements.splice(fromIndex, 1);
+        this.elements.splice(toIndex, 0, moved);
+
+        this.syncCanvasOrderFromLayers();
+        this.updateLayers();
+        this.saveHistory();
     }
     
     moveLayer(index, direction) {
         const newIndex = index + direction;
-        if (newIndex < 0 || newIndex >= this.elements.length) return;
-        
-        [this.elements[index], this.elements[newIndex]] = [this.elements[newIndex], this.elements[index]];
-        
-        const el1 = this.elements[index].element;
-        const el2 = this.elements[newIndex].element;
-        
-        if (direction > 0) {
-            this.canvas.insertBefore(el2, el1.nextSibling);
-        } else {
-            this.canvas.insertBefore(el1, el2);
-        }
-        
-        this.updateLayers();
-        this.saveHistory();
+        this.moveLayerToIndex(index, newIndex);
     }
     
     // ===== ZOOM =====
