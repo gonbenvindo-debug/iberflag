@@ -652,7 +652,7 @@ body {
     position: absolute;
     left: -1rem;
     right: -4rem;
-    bottom: 1.6rem;
+    bottom: 2.4rem;
     z-index: 0;
     display: flex;
     gap: 1rem;
@@ -714,7 +714,7 @@ body {
 
 .homepage-showcase-note-right {
     right: 0.6rem;
-    top: 12.5rem;
+    top: 14rem;
 }
 
 .homepage-metric-card {
@@ -749,29 +749,6 @@ body {
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.08em;
-}
-
-.homepage-hero-insights {
-    position: relative;
-    z-index: 1;
-    background: rgba(15, 23, 42, 0.92);
-    margin-top: auto;
-    border-radius: 1.5rem;
-    overflow: hidden;
-    border: 1px solid rgba(148, 163, 184, 0.14);
-}
-
-.homepage-stat-card {
-    box-shadow: none;
-    background: transparent;
-}
-
-.homepage-hero-insights .homepage-stat-card {
-    border-right: 1px solid rgba(255, 255, 255, 0.08);
-}
-
-.homepage-hero-insights .homepage-stat-card:last-child {
-    border-right: 0;
 }
 
 @media (max-width: 767px) {
