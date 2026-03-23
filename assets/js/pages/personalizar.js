@@ -418,95 +418,48 @@ class DesignEditor {
         return fallback;
     }
 
-    clampRotatedTranslate(elementData, proposedTranslateX, proposedTranslateY) {
-        const bounds = this.getEditableBounds();
-        const bbox = elementData.element.getBBox();
-        const centerX = bbox.x + bbox.width / 2;
-        const centerY = bbox.y + bbox.height / 2;
-        const rotation = elementData.rotation || 0;
-
-        elementData.element.setAttribute(
-            'transform',
-            `translate(${proposedTranslateX} ${proposedTranslateY}) rotate(${rotation} ${centerX} ${centerY})`
-        );
-
-        const transformed = this.getTransformedBounds(elementData);
-        let clampedTranslateX = proposedTranslateX;
-        let clampedTranslateY = proposedTranslateY;
-
-        if (transformed.left < bounds.x) {
-            clampedTranslateX += bounds.x - transformed.left;
-        } else if (transformed.right > bounds.x + bounds.width) {
-            clampedTranslateX -= transformed.right - (bounds.x + bounds.width);
-        }
-
-        if (transformed.top < bounds.y) {
-            clampedTranslateY += bounds.y - transformed.top;
-        } else if (transformed.bottom > bounds.y + bounds.height) {
-            clampedTranslateY -= transformed.bottom - (bounds.y + bounds.height);
-        }
-
-        elementData.element.setAttribute(
-            'transform',
-            `translate(${clampedTranslateX} ${clampedTranslateY}) rotate(${rotation} ${centerX} ${centerY})`
-        );
-
-        return {
-            translateX: clampedTranslateX,
-            translateY: clampedTranslateY
-        };
-    }
-
-    moveElementBy(elementData, deltaX, deltaY) {
-        if (!elementData || (!deltaX && !deltaY)) {
-            return;
-        }
-
-        if (elementData.rotation && elementData.rotation !== 0) {
-            const proposedTranslateX = (elementData.translateX || 0) + deltaX;
-            const proposedTranslateY = (elementData.translateY || 0) + deltaY;
-            const clampedTranslate = this.clampRotatedTranslate(
-                elementData,
-                proposedTranslateX,
-                proposedTranslateY
-            );
-
-            elementData.translateX = clampedTranslate.translateX;
-            elementData.translateY = clampedTranslate.translateY;
+    offsetElementGeometry(elementData, deltaX, deltaY, pointSet = null) {
+        if (!elementData || (!deltaX && !deltaY && !pointSet)) {
             return;
         }
 
         if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            const currentX = parseFloat(elementData.element.getAttribute('x') || '0');
-            const currentY = parseFloat(elementData.element.getAttribute('y') || '0');
-            elementData.element.setAttribute('x', currentX + deltaX);
-            elementData.element.setAttribute('y', currentY + deltaY);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            const currentCx = parseFloat(elementData.element.getAttribute('cx') || '0');
-            const currentCy = parseFloat(elementData.element.getAttribute('cy') || '0');
-            elementData.element.setAttribute('cx', currentCx + deltaX);
-            elementData.element.setAttribute('cy', currentCy + deltaY);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
-            const currentPoints = (elementData.element.getAttribute('points') || '')
+            const currentX = pointSet ? pointSet.x : parseFloat(elementData.element.getAttribute('x') || '0') + deltaX;
+            const currentY = pointSet ? pointSet.y : parseFloat(elementData.element.getAttribute('y') || '0') + deltaY;
+            elementData.element.setAttribute('x', currentX);
+            elementData.element.setAttribute('y', currentY);
+            return;
+        }
+
+        if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const currentCx = pointSet ? pointSet.x : parseFloat(elementData.element.getAttribute('cx') || '0') + deltaX;
+            const currentCy = pointSet ? pointSet.y : parseFloat(elementData.element.getAttribute('cy') || '0') + deltaY;
+            elementData.element.setAttribute('cx', currentCx);
+            elementData.element.setAttribute('cy', currentCy);
+            return;
+        }
+
+        if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            const sourcePoints = pointSet || (elementData.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)
                 .map((pair) => pair.split(',').map(Number));
 
-            if (currentPoints.length >= 3) {
-                const translatedPoints = currentPoints.map(([x, y]) => `${x + deltaX},${y + deltaY}`);
-                elementData.element.setAttribute('points', translatedPoints.join(' '));
+            if (sourcePoints.length >= 3) {
+                const translatedPoints = pointSet
+                    ? sourcePoints
+                    : sourcePoints.map(([x, y]) => [x + deltaX, y + deltaY]);
+                elementData.element.setAttribute(
+                    'points',
+                    translatedPoints.map(([x, y]) => `${x},${y}`).join(' ')
+                );
             }
         }
-
-        this.bringElementInBounds(elementData);
     }
 
-    setElementTransform(elementData, translateX, translateY, rotation) {
-        const safeTranslateX = Number(translateX) || 0;
-        const safeTranslateY = Number(translateY) || 0;
+    applyElementRotation(elementData, rotation = elementData.rotation || 0) {
         const safeRotation = Number(rotation) || 0;
-
-        if (safeRotation === 0 && safeTranslateX === 0 && safeTranslateY === 0) {
+        if (!safeRotation) {
             elementData.element.removeAttribute('transform');
             return;
         }
@@ -514,10 +467,21 @@ class DesignEditor {
         const bbox = elementData.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        elementData.element.setAttribute(
-            'transform',
-            `translate(${safeTranslateX} ${safeTranslateY}) rotate(${safeRotation} ${centerX} ${centerY})`
-        );
+        elementData.element.setAttribute('transform', `rotate(${safeRotation} ${centerX} ${centerY})`);
+    }
+
+    moveElementBy(elementData, deltaX, deltaY) {
+        if (!elementData || (!deltaX && !deltaY)) {
+            return;
+        }
+
+        this.offsetElementGeometry(elementData, deltaX, deltaY);
+        this.applyElementRotation(elementData);
+        this.bringElementInBounds(elementData);
+    }
+
+    setElementTransform(elementData, translateX, translateY, rotation) {
+        this.applyElementRotation(elementData, rotation);
     }
 
     getResizeAnchorPoint(box, handle) {
@@ -553,9 +517,7 @@ class DesignEditor {
 
     captureResizeState(elementData) {
         const state = {
-            transform: elementData.element.getAttribute('transform'),
-            translateX: elementData.translateX || 0,
-            translateY: elementData.translateY || 0
+            transform: elementData.element.getAttribute('transform')
         };
 
         if (elementData.type === 'text') {
@@ -598,9 +560,6 @@ class DesignEditor {
             elementData.element.setAttribute('points', state.points);
         }
 
-        elementData.translateX = state.translateX || 0;
-        elementData.translateY = state.translateY || 0;
-
         if (state.transform) {
             elementData.element.setAttribute('transform', state.transform);
         } else {
@@ -614,10 +573,7 @@ class DesignEditor {
             return;
         }
 
-        const baseTranslateX = this.dragStart.translateX || 0;
-        const baseTranslateY = this.dragStart.translateY || 0;
-
-        this.setElementTransform(elementData, baseTranslateX, baseTranslateY, rotation);
+        this.applyElementRotation(elementData, rotation);
 
         const currentBox = elementData.element.getBBox();
         const anchorLocalPoint = this.getResizeAnchorPoint(currentBox, this.resizeHandle);
@@ -627,12 +583,13 @@ class DesignEditor {
             anchorLocalPoint.y
         );
 
-        const correctedTranslateX = baseTranslateX + (this.dragStart.anchorCanvasPoint.x - currentAnchorPoint.x);
-        const correctedTranslateY = baseTranslateY + (this.dragStart.anchorCanvasPoint.y - currentAnchorPoint.y);
+        const offsetX = this.dragStart.anchorCanvasPoint.x - currentAnchorPoint.x;
+        const offsetY = this.dragStart.anchorCanvasPoint.y - currentAnchorPoint.y;
+        if (offsetX || offsetY) {
+            this.offsetElementGeometry(elementData, offsetX, offsetY);
+        }
 
-        elementData.translateX = correctedTranslateX;
-        elementData.translateY = correctedTranslateY;
-        this.setElementTransform(elementData, correctedTranslateX, correctedTranslateY, rotation);
+        this.applyElementRotation(elementData, rotation);
     }
 
     moveElementFromDragStart(elementData, deltaX, deltaY) {
@@ -640,34 +597,29 @@ class DesignEditor {
             return;
         }
 
-        if (elementData.rotation && elementData.rotation !== 0) {
-            const proposedTranslateX = (this.dragStart.translateX ?? elementData.translateX ?? 0) + deltaX;
-            const proposedTranslateY = (this.dragStart.translateY ?? elementData.translateY ?? 0) + deltaY;
-            const clampedTranslate = this.clampRotatedTranslate(
-                elementData,
-                proposedTranslateX,
-                proposedTranslateY
-            );
-
-            elementData.translateX = clampedTranslate.translateX;
-            elementData.translateY = clampedTranslate.translateY;
-            return;
-        }
-
         if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            elementData.element.setAttribute('x', (this.dragStart.elementX || 0) + deltaX);
-            elementData.element.setAttribute('y', (this.dragStart.elementY || 0) + deltaY);
+            this.offsetElementGeometry(elementData, 0, 0, {
+                x: (this.dragStart.elementX || 0) + deltaX,
+                y: (this.dragStart.elementY || 0) + deltaY
+            });
         } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            elementData.element.setAttribute('cx', (this.dragStart.elementX || 0) + deltaX);
-            elementData.element.setAttribute('cy', (this.dragStart.elementY || 0) + deltaY);
+            this.offsetElementGeometry(elementData, 0, 0, {
+                x: (this.dragStart.elementX || 0) + deltaX,
+                y: (this.dragStart.elementY || 0) + deltaY
+            });
         } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
             const startPoints = this.dragStart.points || [];
             if (startPoints.length >= 3) {
-                const translatedPoints = startPoints.map(([x, y]) => `${x + deltaX},${y + deltaY}`);
-                elementData.element.setAttribute('points', translatedPoints.join(' '));
+                this.offsetElementGeometry(
+                    elementData,
+                    0,
+                    0,
+                    startPoints.map(([x, y]) => [x + deltaX, y + deltaY])
+                );
             }
         }
 
+        this.applyElementRotation(elementData);
         this.bringElementInBounds(elementData);
     }
 
@@ -730,7 +682,7 @@ class DesignEditor {
 
         if (!snaps.x && !snaps.y) return;
 
-        const canvasBounds = this.getCanvasBounds();
+        const canvasBounds = this.getEditableBounds();
 
         // Linha vertical
         if (snaps.x) {
@@ -1272,9 +1224,14 @@ class DesignEditor {
         if (rotateMatch) data.rotation = parseFloat(rotateMatch[1]) || 0;
         const translateMatch = transform.match(/translate\(([-\d.]+)\s+([-\d.]+)\)/);
         if (translateMatch) {
-            data.translateX = parseFloat(translateMatch[1]) || 0;
-            data.translateY = parseFloat(translateMatch[2]) || 0;
+            const translateX = parseFloat(translateMatch[1]) || 0;
+            const translateY = parseFloat(translateMatch[2]) || 0;
+            this.offsetElementGeometry(data, translateX, translateY);
         }
+
+        data.translateX = 0;
+        data.translateY = 0;
+        this.applyElementRotation(data, data.rotation);
 
         return data;
     }
@@ -1894,7 +1851,7 @@ class DesignEditor {
     
     bringElementInBounds(elementData) {
         // Check if element is out of bounds and move it back in
-        const bounds = this.getCanvasBounds();
+        const bounds = this.getEditableBounds();
         const transformed = this.getTransformedBounds(elementData);
         
         // Calculate how much the element exceeds bounds on each side
@@ -1921,42 +1878,8 @@ class DesignEditor {
         
         // Apply offset if needed
         if (offsetX !== 0 || offsetY !== 0) {
-            // Reapply transform with new translation
-            if (elementData.rotation && elementData.rotation !== 0) {
-                const translateX = (elementData.translateX || 0) + offsetX;
-                const translateY = (elementData.translateY || 0) + offsetY;
-                
-                elementData.translateX = translateX;
-                elementData.translateY = translateY;
-                const bbox = elementData.element.getBBox();
-                const centerX = bbox.x + bbox.width / 2;
-                const centerY = bbox.y + bbox.height / 2;
-                elementData.element.setAttribute('transform',
-                    `translate(${translateX} ${translateY}) rotate(${elementData.rotation} ${centerX} ${centerY})`);
-            } else {
-                elementData.translateX = 0;
-                elementData.translateY = 0;
-                // For non-rotated elements, adjust x/y attributes
-                if (elementData.type === 'text' || elementData.type === 'image' || 
-                    (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-                    const x = parseFloat(elementData.element.getAttribute('x') || 0) + offsetX;
-                    const y = parseFloat(elementData.element.getAttribute('y') || 0) + offsetY;
-                    elementData.element.setAttribute('x', x);
-                    elementData.element.setAttribute('y', y);
-                } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-                    const cx = parseFloat(elementData.element.getAttribute('cx') || 0) + offsetX;
-                    const cy = parseFloat(elementData.element.getAttribute('cy') || 0) + offsetY;
-                    elementData.element.setAttribute('cx', cx);
-                    elementData.element.setAttribute('cy', cy);
-                } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
-                    const currentPoints = (elementData.element.getAttribute('points') || '')
-                        .trim()
-                        .split(/\s+/)
-                        .map((pair) => pair.split(',').map(Number));
-                    const translatedPoints = currentPoints.map(([x, y]) => `${x + offsetX},${y + offsetY}`);
-                    elementData.element.setAttribute('points', translatedPoints.join(' '));
-                }
-            }
+            this.offsetElementGeometry(elementData, offsetX, offsetY);
+            this.applyElementRotation(elementData);
         }
     }
     
@@ -2141,8 +2064,7 @@ class DesignEditor {
             mouseX: e.clientX,
             mouseY: e.clientY,
             bbox: elementData.element.getBBox(),
-            translateX: elementData.translateX || 0,
-            translateY: elementData.translateY || 0,
+            transformedBounds: this.getTransformedBounds(elementData),
             snapLock: { x: null, y: null }
         };
         
@@ -2175,12 +2097,10 @@ class DesignEditor {
             // ===== GUIDES & SNAP ALIGNMENT (Shift only) =====
             if (e.shiftKey) {
                 const guides = this.calculateGuides(this.selectedElement);
-                const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
-                const proposedY = bbox.y + deltaY;
-                const proposedX = bbox.x + deltaX;
+                const transformedBounds = this.dragStart.transformedBounds || this.getTransformedBounds(this.selectedElement);
                 const proposedCenter = {
-                    x: proposedX + bbox.width / 2,
-                    y: proposedY + bbox.height / 2
+                    x: ((transformedBounds.left + transformedBounds.right) / 2) + deltaX,
+                    y: ((transformedBounds.top + transformedBounds.bottom) / 2) + deltaY
                 };
 
                 const rawSnapPoints = this.findSnapPoints(
@@ -2308,8 +2228,6 @@ class DesignEditor {
             fontSize: this.selectedElement.size,
             textX: parseFloat(this.selectedElement.element.getAttribute('x') || '0'),
             textY: parseFloat(this.selectedElement.element.getAttribute('y') || '0'),
-            translateX: this.selectedElement.translateX || 0,
-            translateY: this.selectedElement.translateY || 0,
             anchorCanvasPoint: this.getElementCanvasPoint(
                 this.selectedElement.element,
                 anchorLocalPoint.x,
@@ -2411,7 +2329,7 @@ class DesignEditor {
         }
         
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
-        const canvasBounds = this.getCanvasBounds();
+        const canvasBounds = this.getEditableBounds();
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         
         let newWidth = bbox.width;
@@ -2594,7 +2512,7 @@ class DesignEditor {
             this.applyRotatedResizeAnchor(this.selectedElement);
 
             const transformed = this.getTransformedBounds(this.selectedElement);
-            const editableBounds = this.getCanvasBounds();
+            const editableBounds = this.getEditableBounds();
             if (transformed.left < editableBounds.x ||
                 transformed.right > editableBounds.x + editableBounds.width ||
                 transformed.top < editableBounds.y ||
@@ -2655,16 +2573,11 @@ class DesignEditor {
         // Normalize rotation to remove floating point artifacts
         rotation = this.normalizeRotation(rotation);
         
-        // Test if rotation would push element too far out of bounds
-        const translateX = this.selectedElement.translateX || 0;
-        const translateY = this.selectedElement.translateY || 0;
-        
         // Temporarily apply the new rotation to test bounds
-        this.selectedElement.element.setAttribute('transform', 
-            `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
+        this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
         
         const transformed = this.getTransformedBounds(this.selectedElement);
-        const bounds = this.getCanvasBounds();
+        const bounds = this.getEditableBounds();
         
         // Check if element is completely outside bounds (all corners out on same side)
         const isCompletelyOutLeft = transformed.right < bounds.x;
@@ -2675,13 +2588,13 @@ class DesignEditor {
         if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
             // Revert to previous rotation - not allowed to escape completely
             const prevRotation = this.selectedElement.rotation || 0;
-            this.selectedElement.element.setAttribute('transform', 
-                `translate(${translateX} ${translateY}) rotate(${prevRotation} ${centerX} ${centerY})`);
+            this.applyElementRotation(this.selectedElement, prevRotation);
             return; // Don't update the display
         }
         
         // Rotation is valid, apply it
         this.selectedElement.rotation = rotation;
+        this.applyElementRotation(this.selectedElement, rotation);
         
         // Sync rotation input/display based on element type
         if (this.selectedElement.type === 'text') {
@@ -2711,13 +2624,9 @@ class DesignEditor {
             const centerY = bbox.y + bbox.height / 2;
             
             let rotation = this.normalizeRotation(parseFloat(value));
-            
-            const translateX = this.selectedElement.translateX || 0;
-            const translateY = this.selectedElement.translateY || 0;
-            
+
             // Test the new rotation
-            this.selectedElement.element.setAttribute('transform', 
-                `translate(${translateX} ${translateY}) rotate(${rotation} ${centerX} ${centerY})`);
+            this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
             
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
@@ -2731,8 +2640,7 @@ class DesignEditor {
             if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
                 // Reject this rotation - revert to previous
                 const prevRotation = this.selectedElement.rotation || 0;
-                this.selectedElement.element.setAttribute('transform', 
-                    `translate(${translateX} ${translateY}) rotate(${prevRotation} ${centerX} ${centerY})`);
+                this.applyElementRotation(this.selectedElement, prevRotation);
                 // Reset input to previous value
                 const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
                                this.selectedElement.type === 'image' ? 'prop-image-rotation' :
@@ -2744,6 +2652,7 @@ class DesignEditor {
             
             // Rotation is valid, apply it
             this.selectedElement.rotation = rotation;
+            this.applyElementRotation(this.selectedElement, rotation);
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
         }
