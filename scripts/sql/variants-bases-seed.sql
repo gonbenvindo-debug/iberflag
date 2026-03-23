@@ -20,7 +20,7 @@ with bases as (
     select id, slug from public.bases_fixacao where ativo = true
 ),
 produtos_alvo as (
-    select id, categoria from public.produtos where categoria in ('flybanners', 'rollups')
+    select id, categoria from public.produtos where categoria in ('flybanners', 'rollups', 'lonas', 'banners')
 ),
 mapa as (
     select
@@ -37,6 +37,7 @@ mapa as (
         case
             when p.categoria = 'flybanners' and b.slug = 'base-espeto' then true
             when p.categoria = 'rollups' and b.slug = 'base-placa-8kg' then true
+            when p.categoria in ('lonas', 'banners') and b.slug = 'base-cruzeta' then true
             else false
         end as is_default
     from produtos_alvo p
@@ -44,6 +45,8 @@ mapa as (
         (p.categoria = 'flybanners' and b.slug in ('base-espeto', 'base-cruzeta', 'base-placa-8kg', 'base-enchivel-agua'))
         or
         (p.categoria = 'rollups' and b.slug in ('base-placa-8kg', 'base-rodas', 'base-cruzeta'))
+        or
+        (p.categoria in ('lonas', 'banners') and b.slug in ('base-cruzeta', 'base-placa-8kg', 'base-rodas'))
     )
 )
 insert into public.produto_bases_fixacao (produto_id, base_id, ativo, ordem, is_default)

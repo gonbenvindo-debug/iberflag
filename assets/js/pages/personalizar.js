@@ -28,6 +28,8 @@ class DesignEditor {
         this.editIndex = null;
         this.editDesignId = null;
         this.productId = null;
+        this.availableBases = [];
+        this.selectedBaseId = null;
         this.cartStorageKey = 'iberflag_cart';
         this.legacyCartStorageKeys = ['iberflag_cart', 'cart'];
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
@@ -104,7 +106,7 @@ class DesignEditor {
         }
         
         document.getElementById('product-name').textContent = this.currentProduct.nome;
-        document.getElementById('product-price').textContent = `${this.currentProduct.preco.toFixed(2)}€`;
+        await this.loadProductBases();
         
         // Load SVG template if exists
         if (this.currentProduct.svg_template) {
@@ -119,6 +121,121 @@ class DesignEditor {
         } else {
             this.loadAutosaveDesign();
         }
+
+        this.restoreSelectedBaseFromCart();
+        this.ensureSelectedBase();
+        this.renderProductBaseOptions();
+        this.updateProductPriceDisplay();
+    }
+
+    async loadProductBases() {
+        if (!this.currentProduct?.id || typeof supabaseClient === 'undefined') {
+            this.availableBases = [];
+            return;
+        }
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('vw_produto_bases')
+                .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default')
+                .eq('produto_id', Number(this.currentProduct.id))
+                .eq('ativo', true)
+                .eq('base_ativa', true)
+                .order('ordem', { ascending: true });
+
+            if (error) throw error;
+            this.availableBases = Array.isArray(data) ? data : [];
+        } catch (error) {
+            this.availableBases = [];
+            console.warn('Falha ao carregar bases do produto:', error?.message || error);
+        }
+    }
+
+    resolveEditingCartIndex(cartItems = []) {
+        let targetIndex = this.editIndex !== null ? Number.parseInt(this.editIndex, 10) : -1;
+
+        if (this.editDesignId) {
+            const designMatchIndex = cartItems.findIndex((item) => String(item?.designId || item?.design_id || '') === String(this.editDesignId));
+            if (designMatchIndex >= 0) {
+                targetIndex = designMatchIndex;
+            }
+        }
+
+        return targetIndex;
+    }
+
+    restoreSelectedBaseFromCart() {
+        const cart = this.getCartData();
+        const targetIndex = this.resolveEditingCartIndex(cart);
+        const item = targetIndex >= 0 ? cart[targetIndex] : null;
+        const baseId = Number(item?.baseId || item?.base_id || 0);
+
+        if (Number.isFinite(baseId) && baseId > 0) {
+            this.selectedBaseId = baseId;
+        }
+    }
+
+    ensureSelectedBase() {
+        if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
+            this.selectedBaseId = null;
+            return;
+        }
+
+        const exists = this.availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
+        if (exists) return;
+
+        const defaultBase = this.availableBases.find((base) => Boolean(base.is_default));
+        this.selectedBaseId = Number(defaultBase?.base_id || this.availableBases[0]?.base_id || null);
+    }
+
+    getSelectedBaseOption() {
+        if (!Array.isArray(this.availableBases) || !this.availableBases.length) {
+            return null;
+        }
+
+        return this.availableBases.find((base) => Number(base.base_id) === Number(this.selectedBaseId)) || null;
+    }
+
+    renderProductBaseOptions() {
+        const wrapper = document.getElementById('base-option-wrapper');
+        const select = document.getElementById('base-select');
+        const extraInfo = document.getElementById('base-price-extra');
+
+        if (!wrapper || !select || !extraInfo) return;
+
+        const hasBases = Array.isArray(this.availableBases) && this.availableBases.length > 0;
+        wrapper.classList.toggle('hidden', !hasBases);
+        wrapper.classList.toggle('flex', hasBases);
+
+        if (!hasBases) {
+            select.innerHTML = '';
+            extraInfo.textContent = '';
+            return;
+        }
+
+        select.innerHTML = this.availableBases.map((base) => {
+            const extra = Number(base.preco_extra_aplicado || 0);
+            const extraLabel = extra > 0 ? ` (+${extra.toFixed(2)}€)` : '';
+            const selected = Number(base.base_id) === Number(this.selectedBaseId) ? 'selected' : '';
+
+            return `<option value="${base.base_id}" ${selected}>${base.base_nome}${extraLabel}</option>`;
+        }).join('');
+
+        const selectedBase = this.getSelectedBaseOption();
+        const selectedExtra = Number(selectedBase?.preco_extra_aplicado || 0);
+        extraInfo.textContent = selectedExtra > 0 ? `Acresce ${selectedExtra.toFixed(2)}€` : 'Sem acrescimo';
+    }
+
+    updateProductPriceDisplay() {
+        const priceEl = document.getElementById('product-price');
+        if (!priceEl) return;
+
+        const basePrice = Number(this.currentProduct?.preco || 0);
+        const selectedBase = this.getSelectedBaseOption();
+        const extra = Number(selectedBase?.preco_extra_aplicado || 0);
+        const total = basePrice + extra;
+
+        priceEl.textContent = `${total.toFixed(2)}€`;
     }
 
     getAutosaveKey() {
@@ -1397,6 +1514,15 @@ class DesignEditor {
         
         // Add to cart
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.addToCart());
+
+        const baseSelect = document.getElementById('base-select');
+        if (baseSelect) {
+            baseSelect.addEventListener('change', (event) => {
+                this.selectedBaseId = Number(event.target.value) || null;
+                this.renderProductBaseOptions();
+                this.updateProductPriceDisplay();
+            });
+        }
         
         // Delete element
         document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
@@ -4041,27 +4167,28 @@ class DesignEditor {
         
         const cart = this.getCartData();
         const design = this.getDesignSVG();
-        let targetIndex = this.editIndex !== null ? Number.parseInt(this.editIndex, 10) : -1;
-        if (this.editDesignId) {
-            const designMatchIndex = cart.findIndex((item) => String(item?.designId || item?.design_id || '') === String(this.editDesignId));
-            if (designMatchIndex >= 0) {
-                targetIndex = designMatchIndex;
-            }
-        }
+        const targetIndex = this.resolveEditingCartIndex(cart);
 
         const existingCartItem = targetIndex >= 0 ? cart[targetIndex] : null;
         const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
+        const selectedBase = this.getSelectedBaseOption();
+        const selectedBaseExtra = Number(selectedBase?.preco_extra_aplicado || 0);
+        const finalPrice = Number(this.currentProduct.preco || 0) + selectedBaseExtra;
         
         const cartItem = {
             id: this.currentProduct.id,
             nome: this.currentProduct.nome,
-            preco: this.currentProduct.preco,
+            preco: Number(finalPrice.toFixed(2)),
             imagem: this.currentProduct.imagem,
             quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity ?? 1, 10) || 1),
             customized: true,
             designId,
             design: design,
-            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`
+            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
+            baseId: selectedBase ? Number(selectedBase.base_id) : null,
+            baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
+            baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
+            basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
         
         if (targetIndex >= 0) {

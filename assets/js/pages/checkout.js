@@ -201,6 +201,7 @@ function loadCart() {
             <div class="flex-1">
                 <h4 class="font-semibold text-sm">${item.nome}</h4>
                 ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
+                ${item.baseNome ? `<p class="text-xs text-gray-500 mt-1">Base: ${item.baseNome}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
                 <p class="text-sm text-gray-600">Qtd: ${item.quantity}</p>
             </div>
             <div class="text-right">
