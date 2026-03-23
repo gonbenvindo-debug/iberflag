@@ -500,33 +500,21 @@ function closeItemPreview() {
 }
 
 async function loadOrderByCode(orderCode) {
-    const { data: order, error: orderError } = await supabaseClient
-        .from('encomendas')
-        .select('*, clientes(*)')
-        .eq('numero_encomenda', orderCode)
-        .maybeSingle();
+    // Uses SECURITY DEFINER RPC – anon cannot query encomendas/itens_encomenda directly (RLS)
+    const { data, error } = await supabaseClient
+        .rpc('get_order_tracking', { p_code: orderCode });
 
-    if (orderError) {
-        throw orderError;
+    if (error) {
+        throw error;
     }
 
-    if (!order) {
+    if (!data) {
         return null;
     }
 
-    const { data: items, error: itemsError } = await supabaseClient
-        .from('itens_encomenda')
-        .select('*, produtos(*)')
-        .eq('encomenda_id', order.id)
-        .order('id', { ascending: true });
-
-    if (itemsError) {
-        throw itemsError;
-    }
-
     return {
-        order,
-        items: items || []
+        order: data,
+        items: Array.isArray(data.items) ? data.items : []
     };
 }
 

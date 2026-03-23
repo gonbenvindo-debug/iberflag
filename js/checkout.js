@@ -293,32 +293,20 @@ if (placeOrderBtn) {
         placeOrderBtn.innerHTML = '<div class="spinner mx-auto"></div>';
 
         try {
-            // 1. Create or get customer
-            let customerId;
-            const { data: existingCustomer } = await supabaseClient
-                .from('clientes')
-                .select('id')
-                .eq('email', customerData.email)
-                .maybeSingle();
+            // 1. Create or update customer via secure RPC (SECURITY DEFINER – bypasses RLS)
+            const { data: customerId, error: customerError } = await supabaseClient
+                .rpc('checkout_upsert_customer', {
+                    p_nome:          customerData.nome,
+                    p_email:         customerData.email,
+                    p_telefone:      customerData.telefone    || null,
+                    p_empresa:       customerData.empresa     || null,
+                    p_nif:           customerData.nif         || null,
+                    p_morada:        customerData.morada      || null,
+                    p_codigo_postal: customerData.codigo_postal || null,
+                    p_cidade:        customerData.cidade      || null
+                });
 
-            if (existingCustomer) {
-                customerId = existingCustomer.id;
-                // Update customer data
-                await supabaseClient
-                    .from('clientes')
-                    .update(customerData)
-                    .eq('id', customerId);
-            } else {
-                // Create new customer
-                const { data: newCustomer, error: customerError } = await supabaseClient
-                    .from('clientes')
-                    .insert([customerData])
-                    .select()
-                    .single();
-
-                if (customerError) throw customerError;
-                customerId = newCustomer.id;
-            }
+            if (customerError) throw customerError;
 
             // 2. Create order
             const orderNumber = `IBF${Date.now()}`;

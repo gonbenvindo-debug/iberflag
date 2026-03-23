@@ -1,5 +1,76 @@
 // ===== ADMIN PANEL LOGIC =====
 
+// ── Authentication ──────────────────────────────────────────────────────────
+
+function showLoginOverlay() {
+    const overlay = document.getElementById('admin-login-overlay');
+    if (overlay) overlay.classList.remove('hidden');
+    document.body.style.overflow = 'hidden';
+}
+
+function hideLoginOverlay() {
+    const overlay = document.getElementById('admin-login-overlay');
+    if (overlay) overlay.classList.add('hidden');
+    document.body.style.overflow = '';
+}
+
+async function checkAdminAuth() {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) {
+            hideLoginOverlay();
+            loadDashboard();
+        } else {
+            showLoginOverlay();
+        }
+    } catch {
+        showLoginOverlay();
+    }
+}
+
+// Login form handler
+document.addEventListener('DOMContentLoaded', () => {
+    const loginForm = document.getElementById('admin-login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const email    = document.getElementById('admin-email').value.trim();
+            const password = document.getElementById('admin-password').value;
+            const btn      = document.getElementById('admin-login-btn');
+            const btnText  = document.getElementById('admin-login-btn-text');
+            const errorEl  = document.getElementById('admin-login-error');
+
+            btn.disabled = true;
+            btnText.textContent = 'A entrar…';
+            errorEl.classList.add('hidden');
+
+            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+
+            if (error) {
+                errorEl.textContent = 'Credenciais inválidas. Verifique o email e password.';
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btnText.textContent = 'Entrar';
+            } else {
+                hideLoginOverlay();
+                loadDashboard();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+            }
+        });
+    }
+
+    // Logout button handler
+    const logoutBtn = document.getElementById('logout-btn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', async () => {
+            await supabaseClient.auth.signOut();
+            showLoginOverlay();
+        });
+    }
+});
+
+// ── End Authentication ──────────────────────────────────────────────────────
+
 let currentTab = 'dashboard';
 let currentProductId = null;
 let currentContactId = null;
@@ -1395,7 +1466,7 @@ function viewClient(id) {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     closeAllModals();
-    loadDashboard();
+    checkAdminAuth();
 });
 
 // Make functions globally available
