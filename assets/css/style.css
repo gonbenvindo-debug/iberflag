@@ -989,6 +989,19 @@ body {
     box-shadow: 0 30px 80px rgba(15, 23, 42, 0.2);
 }
 
+.homepage-cta-band {
+    width: 100%;
+    border-radius: 0 !important;
+    border-left: 0 !important;
+    border-right: 0 !important;
+    box-shadow: none !important;
+    margin: 0;
+}
+
+.homepage-cta-band .homepage-inline-form {
+    border-radius: 0.9rem;
+}
+
 .homepage-lead-form-wrap {
     overflow: hidden;
 }
