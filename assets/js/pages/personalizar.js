@@ -343,38 +343,15 @@ class DesignEditor {
         exportSvg.setAttribute('height', String(exportHeight));
         exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
-        // --- defs: clip path for design + inverted mask for outside area ---
+        // --- defs: clip path that follows the print area shape exactly ---
         const svgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-
         const designClip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
         designClip.setAttribute('id', 'cart-preview-clip');
         designClip.appendChild(this.createExportMaskShape());
         svgDefs.appendChild(designClip);
-
-        // Inverted mask: visible (white) everywhere except inside the print area (black = transparent)
-        const outsideMask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
-        outsideMask.setAttribute('id', 'cart-preview-outside-mask');
-        outsideMask.setAttribute('maskUnits', 'userSpaceOnUse');
-        const maskFill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        maskFill.setAttribute('x', '0'); maskFill.setAttribute('y', '0');
-        maskFill.setAttribute('width', String(exportWidth)); maskFill.setAttribute('height', String(exportHeight));
-        maskFill.setAttribute('fill', '#ffffff');
-        const maskCutout = this.createExportMaskShape();
-        maskCutout.setAttribute('fill', '#000000');
-        outsideMask.appendChild(maskFill);
-        outsideMask.appendChild(maskCutout);
-        svgDefs.appendChild(outsideMask);
-
         exportSvg.appendChild(svgDefs);
 
-        // --- white background ---
-        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        bg.setAttribute('x', '0'); bg.setAttribute('y', '0');
-        bg.setAttribute('width', String(exportWidth)); bg.setAttribute('height', String(exportHeight));
-        bg.setAttribute('fill', '#ffffff');
-        exportSvg.appendChild(bg);
-
-        // --- design elements clipped to print area ---
+        // --- design elements clipped to print area, transparent outside ---
         const clippedGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
         clippedGroup.setAttribute('clip-path', 'url(#cart-preview-clip)');
         Array.from(this.canvas.children)
@@ -385,14 +362,6 @@ class DesignEditor {
             })
             .forEach(node => clippedGroup.appendChild(node.cloneNode(true)));
         exportSvg.appendChild(clippedGroup);
-
-        // --- solid white overlay outside the print area ---
-        const outsideRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        outsideRect.setAttribute('x', '0'); outsideRect.setAttribute('y', '0');
-        outsideRect.setAttribute('width', String(exportWidth)); outsideRect.setAttribute('height', String(exportHeight));
-        outsideRect.setAttribute('fill', '#ffffff');
-        outsideRect.setAttribute('mask', 'url(#cart-preview-outside-mask)');
-        exportSvg.appendChild(outsideRect);
 
         // --- subtle border along the print area shape ---
         const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
