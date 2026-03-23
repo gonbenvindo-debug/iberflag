@@ -8,3 +8,6 @@ supabase/
 .vercel
 .vercel
 .env*.local
+setup-security.js
+audit.js
+audit2.js
