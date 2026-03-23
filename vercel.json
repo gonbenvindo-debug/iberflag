@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "cleanUrls": true,
+  "cleanUrls": false,
   "rewrites": [
     { "source": "/", "destination": "/pages/index.html" },
     { "source": "/index", "destination": "/pages/index.html" },
