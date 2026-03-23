@@ -219,7 +219,7 @@ function openProductCustomizationChoice(productData = {}) {
                 <button type="button" data-action="close" class="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
-                <a href="${buildProductCustomizeUrl(productId)}" class="block w-full text-center bg-black text-white rounded-lg px-4 py-3 font-semibold hover:bg-gray-900 transition">
+                <a href="${buildProductCustomizeUrl(productId)}" class="block w-full text-center bg-gray-900 text-white rounded-lg px-4 py-3 font-semibold hover:bg-gray-900 transition">
                     Adicionar nova personalização
                 </a>
                 <div class="space-y-2">
