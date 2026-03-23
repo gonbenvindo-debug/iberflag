@@ -1885,6 +1885,17 @@ class DesignEditor {
             bottom: maxY
         };
     }
+
+    isElementFullyInsideEditableBounds(elementData) {
+        const bounds = this.getEditableBounds();
+        const transformed = this.getTransformedBounds(elementData);
+        return (
+            transformed.left >= bounds.x &&
+            transformed.right <= bounds.x + bounds.width &&
+            transformed.top >= bounds.y &&
+            transformed.bottom <= bounds.y + bounds.height
+        );
+    }
     
     bringElementInBounds(elementData) {
         // Check if element is out of bounds and move it back in
@@ -1977,7 +1988,7 @@ class DesignEditor {
                 const handle = document.createElement('div');
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
-                handle.style.cursor = this.getResizeCursor(pos, elementData.rotation || 0);
+                handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
                 handle.style.left = (point.x - 5) + 'px';
                 handle.style.top = (point.y - 5) + 'px';
                 
@@ -2352,6 +2363,7 @@ class DesignEditor {
             e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
             e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
         );
+        const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         let dx = svgDelta.dx;
         let dy = svgDelta.dy;
         
@@ -2545,6 +2557,12 @@ class DesignEditor {
         if (rotation !== 0) {
             this.applyRotatedResizeAnchor(this.selectedElement);
             this.bringElementInBounds(this.selectedElement);
+
+            // Never allow rotated elements to grow outside the design canvas.
+            if (!this.isElementFullyInsideEditableBounds(this.selectedElement)) {
+                this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
+                return;
+            }
         }
 
         this.showResizeHandles(this.selectedElement);
