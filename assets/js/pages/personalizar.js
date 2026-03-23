@@ -1970,6 +1970,9 @@ class DesignEditor {
         this.uploadCropState = null;
 
         if (modal) {
+            if (modal.contains(document.activeElement)) {
+                document.activeElement.blur();
+            }
             modal.classList.add('hidden');
             modal.setAttribute('aria-hidden', 'true');
         }
