@@ -1821,10 +1821,10 @@ class DesignEditor {
 
         if (!this.uploadCropState.selectionRect) {
             this.uploadCropState.selectionRect = {
-                x: drawX + drawWidth * 0.1,
-                y: drawY + drawHeight * 0.1,
-                width: drawWidth * 0.8,
-                height: drawHeight * 0.8
+                x: drawX,
+                y: drawY,
+                width: drawWidth,
+                height: drawHeight
             };
         } else {
             const prev = this.uploadCropState.selectionRect;
