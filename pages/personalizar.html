@@ -125,6 +125,81 @@
             padding: 1rem;
             margin-top: 0.75rem;
         }
+
+        .upload-crop-modal {
+            position: fixed;
+            inset: 0;
+            z-index: 1200;
+            background: rgba(15, 23, 42, 0.78);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1.25rem;
+        }
+
+        .upload-crop-panel {
+            width: min(1080px, 100%);
+            max-height: 92vh;
+            background: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 25px 80px rgba(15, 23, 42, 0.4);
+            border: 1px solid #e2e8f0;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .upload-crop-stage {
+            position: relative;
+            height: min(68vh, 720px);
+            background:
+                linear-gradient(45deg, #f1f5f9 25%, transparent 25%),
+                linear-gradient(-45deg, #f1f5f9 25%, transparent 25%),
+                linear-gradient(45deg, transparent 75%, #f1f5f9 75%),
+                linear-gradient(-45deg, transparent 75%, #f1f5f9 75%);
+            background-size: 24px 24px;
+            background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        .upload-crop-stage img {
+            position: absolute;
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-drag: none;
+        }
+
+        .upload-crop-selection {
+            position: absolute;
+            border: 2px solid #2563eb;
+            box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
+            cursor: move;
+        }
+
+        .upload-crop-handle {
+            position: absolute;
+            width: 14px;
+            height: 14px;
+            background: #ffffff;
+            border: 2px solid #2563eb;
+            border-radius: 9999px;
+        }
+
+        .upload-crop-handle.nw { left: -8px; top: -8px; cursor: nwse-resize; }
+        .upload-crop-handle.ne { right: -8px; top: -8px; cursor: nesw-resize; }
+        .upload-crop-handle.sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
+        .upload-crop-handle.se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+
+        @media (max-width: 768px) {
+            .upload-crop-panel {
+                max-height: 96vh;
+            }
+
+            .upload-crop-stage {
+                height: 56vh;
+            }
+        }
     </style>
 </head>
 <body class="app-page overflow-hidden">
@@ -381,8 +456,41 @@
         </aside>
     </div>
 
+    <div id="upload-crop-modal" class="upload-crop-modal hidden" aria-hidden="true">
+        <div class="upload-crop-panel">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
+                <div>
+                    <h2 class="text-xl font-bold text-slate-900">Recortar Imagem</h2>
+                    <p class="text-sm text-slate-500">A imagem so sera adicionada ao canvas depois de confirmar o recorte.</p>
+                </div>
+                <button id="upload-crop-cancel-top" class="p-2 rounded-lg hover:bg-slate-100" type="button" aria-label="Fechar recorte">
+                    <i data-lucide="x" class="w-5 h-5"></i>
+                </button>
+            </div>
+
+            <div id="upload-crop-stage" class="upload-crop-stage">
+                <img id="upload-crop-image" alt="Preview de recorte">
+                <div id="upload-crop-selection" class="upload-crop-selection hidden">
+                    <span class="upload-crop-handle nw" data-handle="nw"></span>
+                    <span class="upload-crop-handle ne" data-handle="ne"></span>
+                    <span class="upload-crop-handle sw" data-handle="sw"></span>
+                    <span class="upload-crop-handle se" data-handle="se"></span>
+                </div>
+            </div>
+
+            <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+                <button id="upload-crop-cancel" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100">
+                    Cancelar
+                </button>
+                <button id="upload-crop-apply" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                    Aplicar Recorte
+                </button>
+            </div>
+        </div>
+    </div>
+
     <script src="/assets/js/core/logic.js"></script>
-    <script src="/assets/js/pages/personalizar.js?v=20260319g"></script>
+    <script src="/assets/js/pages/personalizar.js?v=20260323a"></script>
     <script>
         lucide.createIcons();
     </script>
