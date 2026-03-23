@@ -845,15 +845,31 @@ body {
 
 /* ===== CATEGORY CARDS ===== */
 .category-card {
+    position: relative;
+    isolation: isolate;
     display: block;
     transition: all 0.3s ease;
     border-radius: 1.8rem;
     overflow: hidden;
 }
 
+.category-card::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    border: 1px solid rgba(148, 163, 184, 0.34);
+    border-radius: inherit;
+    pointer-events: none;
+    z-index: 3;
+}
+
 .category-card:hover {
     transform: translateY(-8px);
     box-shadow: 0 22px 50px rgba(15, 23, 42, 0.1);
+}
+
+.category-card:hover::after {
+    border-color: rgba(51, 65, 85, 0.42);
 }
 
 .homepage-card-tag {
