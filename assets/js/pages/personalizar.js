@@ -40,6 +40,7 @@ class DesignEditor {
         this.showGuides = false;
         this.guideLines = [];
         this.guideThreshold = 10; // pixels para snap
+        this.guideReleaseThreshold = 18;
         this.gridSize = 10; // para snap grid
         
         // ===== CROP =====
@@ -654,6 +655,32 @@ class DesignEditor {
         }
 
         return { deltaX: snappedDeltaX, deltaY: snappedDeltaY };
+    }
+
+    resolveStickySnap(axis, nextSnap, proposedCenterValue) {
+        if (!this.dragStart?.snapLock) {
+            return nextSnap;
+        }
+
+        const lockedSnap = this.dragStart.snapLock[axis];
+        if (nextSnap) {
+            this.dragStart.snapLock[axis] = nextSnap;
+            return nextSnap;
+        }
+
+        if (!lockedSnap) {
+            return null;
+        }
+
+        const releaseDistance = Math.max(this.guideThreshold + 2, this.guideReleaseThreshold);
+        const distanceFromLockedAxis = Math.abs(proposedCenterValue - lockedSnap.value);
+
+        if (distanceFromLockedAxis <= releaseDistance) {
+            return lockedSnap;
+        }
+
+        this.dragStart.snapLock[axis] = null;
+        return null;
     }
 
     applySnapToGrid(deltaX, deltaY, gridSize) {
@@ -1981,7 +2008,8 @@ class DesignEditor {
             mouseY: e.clientY,
             bbox: elementData.element.getBBox(),
             translateX: elementData.translateX || 0,
-            translateY: elementData.translateY || 0
+            translateY: elementData.translateY || 0,
+            snapLock: { x: null, y: null }
         };
         
         // Store current element position
@@ -2013,7 +2041,7 @@ class DesignEditor {
             // ===== GUIDES & SNAP ALIGNMENT (Shift only) =====
             if (e.shiftKey) {
                 const guides = this.calculateGuides(this.selectedElement);
-                const bbox = this.selectedElement.element.getBBox();
+                const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
                 const proposedY = bbox.y + deltaY;
                 const proposedX = bbox.x + deltaX;
                 const proposedCenter = {
@@ -2021,11 +2049,15 @@ class DesignEditor {
                     y: proposedY + bbox.height / 2
                 };
 
-                const snapPoints = this.findSnapPoints(
+                const rawSnapPoints = this.findSnapPoints(
                     proposedCenter,
                     guides,
                     this.guideThreshold
                 );
+                const snapPoints = {
+                    x: this.resolveStickySnap('x', rawSnapPoints.x, proposedCenter.x),
+                    y: this.resolveStickySnap('y', rawSnapPoints.y, proposedCenter.y)
+                };
 
                 if (snapPoints.x || snapPoints.y) {
                     this.showGuideLines(snapPoints);
@@ -2037,6 +2069,10 @@ class DesignEditor {
                 deltaX = snappedMove.deltaX;
                 deltaY = snappedMove.deltaY;
             } else {
+                if (this.dragStart?.snapLock) {
+                    this.dragStart.snapLock.x = null;
+                    this.dragStart.snapLock.y = null;
+                }
                 this.hideGuideLines();
             }
             
