@@ -1992,43 +1992,35 @@ class DesignEditor {
             );
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
-            
-            // ===== GUIDES & SNAP ALIGNMENT =====
-            // Calcular guides e mostrar linhas de alinhaçã o
-            const guides = this.calculateGuides(this.selectedElement);
-            
-            // Estimar posição final do elemento para snap
-            const bbox = this.selectedElement.element.getBBox();
-            const proposedY = bbox.y + deltaY;
-            const proposedX = bbox.x + deltaX;
-            const proposedCenter = {
-                x: proposedX + bbox.width / 2,
-                y: proposedY + bbox.height / 2
-            };
-            
-            const snapPoints = this.findSnapPoints(
-                proposedCenter,
-                guides,
-                this.guideThreshold
-            );
-            
-            // Mostrar guides visuais
-            if (snapPoints.x || snapPoints.y) {
-                this.showGuideLines(snapPoints);
-            } else {
-                this.hideGuideLines();
-            }
-            
-            // ===== SNAP-TO-GRID (Shift) =====
+
+            // ===== GUIDES & SNAP ALIGNMENT (Shift only) =====
             if (e.shiftKey) {
-                const gridSnap = this.applySnapToGrid(deltaX, deltaY, this.gridSize);
-                deltaX = gridSnap.deltaX;
-                deltaY = gridSnap.deltaY;
-            } else {
-                // Aplicar snap de alinhamento (sem shift, apenas visual)
+                const guides = this.calculateGuides(this.selectedElement);
+                const bbox = this.selectedElement.element.getBBox();
+                const proposedY = bbox.y + deltaY;
+                const proposedX = bbox.x + deltaX;
+                const proposedCenter = {
+                    x: proposedX + bbox.width / 2,
+                    y: proposedY + bbox.height / 2
+                };
+
+                const snapPoints = this.findSnapPoints(
+                    proposedCenter,
+                    guides,
+                    this.guideThreshold
+                );
+
+                if (snapPoints.x || snapPoints.y) {
+                    this.showGuideLines(snapPoints);
+                } else {
+                    this.hideGuideLines();
+                }
+
                 const snappedMove = this.applySnapToMove(deltaX, deltaY, snapPoints, proposedCenter);
                 deltaX = snappedMove.deltaX;
                 deltaY = snappedMove.deltaY;
+            } else {
+                this.hideGuideLines();
             }
             
             this.moveElementBy(this.selectedElement, deltaX, deltaY);
