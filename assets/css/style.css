@@ -1066,15 +1066,7 @@ body {
 }
 
 .homepage-cta-glow {
-    position: absolute;
-    width: 22rem;
-    height: 22rem;
-    border-radius: 999px;
-    top: -7rem;
-    right: -5rem;
-    background: radial-gradient(circle, rgba(56, 189, 248, 0.32) 0%, rgba(56, 189, 248, 0) 70%);
-    filter: blur(10px);
-    animation: glowPulse 8s ease-in-out infinite;
+    display: none;
 }
 
 .homepage-section-label {
