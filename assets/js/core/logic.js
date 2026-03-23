@@ -161,6 +161,100 @@ function getCartItemEditorLink(item, index) {
     return `/personalizar.html?produto=${item.id}&edit=${index}`;
 }
 
+function buildProductCustomizeUrl(productId) {
+    return `/personalizar.html?produto=${encodeURIComponent(productId)}`;
+}
+
+function closeCustomizationChoiceModal() {
+    const modal = document.getElementById('customization-choice-modal');
+    if (modal) {
+        modal.remove();
+    }
+    document.body.style.overflow = '';
+}
+
+function openProductCustomizationChoice(productData = {}) {
+    const productId = Number(productData.id);
+    if (!Number.isFinite(productId)) {
+        return false;
+    }
+
+    const currentCart = normalizeCartItems(getStoredCart());
+    const matchingItems = currentCart
+        .map((item, index) => ({ item, index }))
+        .filter(({ item }) => Number(item.id) === productId);
+
+    if (matchingItems.length === 0) {
+        window.location.href = buildProductCustomizeUrl(productId);
+        return false;
+    }
+
+    closeCustomizationChoiceModal();
+
+    const modal = document.createElement('div');
+    modal.id = 'customization-choice-modal';
+    modal.className = 'fixed inset-0 z-[9999] bg-black/60 flex items-center justify-center p-4';
+
+    const productLabel = productData.nome ? String(productData.nome) : 'este produto';
+    const editButtons = matchingItems.map(({ item, index }, position) => {
+        const link = getCartItemEditorLink(item, index);
+        const status = item.customized ? 'Personalizado' : 'Base';
+        const designLabel = item.designId ? ` • ${String(item.designId).slice(-6).toUpperCase()}` : '';
+
+        return `
+            <a href="${link}" class="choice-edit-item block w-full text-left border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition">
+                <span class="block text-sm font-semibold text-gray-900">Editar item ${position + 1}</span>
+                <span class="block text-xs text-gray-500">${status}${designLabel}</span>
+            </a>
+        `;
+    }).join('');
+
+    modal.innerHTML = `
+        <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
+            <div class="px-5 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
+                <div>
+                    <h3 class="text-lg font-bold text-gray-900">Produto já existe no carrinho</h3>
+                    <p class="text-sm text-gray-600 mt-1">Escolha se quer criar uma nova personalização ou editar uma existente para ${productLabel}.</p>
+                </div>
+                <button type="button" data-action="close" class="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
+            </div>
+            <div class="p-5 space-y-4">
+                <a href="${buildProductCustomizeUrl(productId)}" class="block w-full text-center bg-black text-white rounded-lg px-4 py-3 font-semibold hover:bg-gray-900 transition">
+                    Adicionar nova personalização
+                </a>
+                <div class="space-y-2">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Editar item existente</p>
+                    ${editButtons}
+                </div>
+            </div>
+            <div class="px-5 py-3 border-t border-gray-200 text-right">
+                <button type="button" data-action="close" class="text-sm font-semibold text-gray-700 hover:text-black">Cancelar</button>
+            </div>
+        </div>
+    `;
+
+    modal.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) {
+            return;
+        }
+
+        if (target === modal || target.closest('[data-action="close"]')) {
+            closeCustomizationChoiceModal();
+        }
+    });
+
+    document.addEventListener('keydown', function onEscape(event) {
+        if (event.key !== 'Escape') return;
+        closeCustomizationChoiceModal();
+        document.removeEventListener('keydown', onEscape);
+    });
+
+    document.body.appendChild(modal);
+    document.body.style.overflow = 'hidden';
+    return false;
+}
+
 function normalizeCartItems(items) {
     if (!Array.isArray(items)) {
         return [];
@@ -197,7 +291,7 @@ function renderProducts(products) {
             <div class="p-6 flex flex-col flex-grow">
                 <h3 class="text-xl font-bold mb-2 text-gray-900">${product.nome}</h3>
                 <p class="text-gray-600 text-sm mb-6 flex-grow">${product.descricao}</p>
-                <a href="/personalizar.html?produto=${product.id}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </a>
@@ -453,6 +547,29 @@ if (cartBtnMobile) {
     cartBtnMobile.addEventListener('click', openCart);
 }
 
+document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) {
+        return;
+    }
+
+    const customizeLink = target.closest('a[data-customize-product-id]');
+    if (!customizeLink) {
+        return;
+    }
+
+    const productId = Number(customizeLink.getAttribute('data-customize-product-id'));
+    if (!Number.isFinite(productId)) {
+        return;
+    }
+
+    event.preventDefault();
+    openProductCustomizationChoice({
+        id: productId,
+        nome: customizeLink.getAttribute('data-product-name') || ''
+    });
+});
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
@@ -470,3 +587,4 @@ window.removeFromCart = removeFromCart;
 window.updateQuantity = updateQuantity;
 window.getCartItemImage = getCartItemImage;
 window.quickView = quickView;
+window.openProductCustomizationChoice = openProductCustomizationChoice;

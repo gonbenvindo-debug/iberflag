@@ -73,7 +73,7 @@ function renderProductsGrid(products) {
                     <div class="price-tag">${product.preco.toFixed(2)}€</div>
                     <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>
                 </div>
-                <a href="/personalizar.html?produto=${product.id}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </a>
