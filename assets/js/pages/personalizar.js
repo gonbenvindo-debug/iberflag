@@ -1618,12 +1618,13 @@ class DesignEditor {
 
         const modal = document.getElementById('upload-crop-modal');
         const stage = document.getElementById('upload-crop-stage');
+        const viewport = document.getElementById('upload-crop-viewport');
         const selection = document.getElementById('upload-crop-selection');
         const cancelBtn = document.getElementById('upload-crop-cancel');
         const cancelTopBtn = document.getElementById('upload-crop-cancel-top');
         const applyBtn = document.getElementById('upload-crop-apply');
 
-        if (!modal || !stage || !selection || !cancelBtn || !cancelTopBtn || !applyBtn) {
+        if (!modal || !stage || !viewport || !selection || !cancelBtn || !cancelTopBtn || !applyBtn) {
             return;
         }
 
@@ -1664,6 +1665,7 @@ class DesignEditor {
             const dy = event.clientY - drag.startY;
             const minSize = 36;
             const imageRect = state.imageRect;
+            const baseRect = state.baseImageRect;
 
             if (drag.mode === 'pan') {
                 state.viewport.offsetX = drag.offsetX + dx;
@@ -1737,10 +1739,10 @@ class DesignEditor {
             };
 
             state.selectionNormalized = {
-                x: (state.selectionRect.x - imageRect.x) / imageRect.width,
-                y: (state.selectionRect.y - imageRect.y) / imageRect.height,
-                width: state.selectionRect.width / imageRect.width,
-                height: state.selectionRect.height / imageRect.height
+                x: state.selectionRect.x / baseRect.width,
+                y: state.selectionRect.y / baseRect.height,
+                width: state.selectionRect.width / baseRect.width,
+                height: state.selectionRect.height / baseRect.height
             };
 
             this.renderUploadCropSelection();
@@ -1812,9 +1814,10 @@ class DesignEditor {
 
         const modal = document.getElementById('upload-crop-modal');
         const image = document.getElementById('upload-crop-image');
+        const viewport = document.getElementById('upload-crop-viewport');
         const selection = document.getElementById('upload-crop-selection');
 
-        if (!modal || !image || !selection) {
+        if (!modal || !image || !viewport || !selection) {
             return Promise.resolve(null);
         }
 
@@ -1824,6 +1827,7 @@ class DesignEditor {
                 imageSrc,
                 naturalWidth: 0,
                 naturalHeight: 0,
+                baseImageRect: { x: 0, y: 0, width: 0, height: 0 },
                 imageRect: { x: 0, y: 0, width: 0, height: 0 },
                 selectionRect: null,
                 selectionNormalized: null,
@@ -1852,7 +1856,8 @@ class DesignEditor {
 
         const stage = document.getElementById('upload-crop-stage');
         const image = document.getElementById('upload-crop-image');
-        if (!stage || !image) return;
+        const viewport = document.getElementById('upload-crop-viewport');
+        if (!stage || !image || !viewport) return;
 
         const stageRect = stage.getBoundingClientRect();
         const maxWidth = Math.max(1, stageRect.width - 28);
@@ -1867,24 +1872,30 @@ class DesignEditor {
         }
 
         const scale = Math.max(1, this.uploadCropState.viewport?.scale || 1);
-        const drawWidth = fitWidth * scale;
-        const drawHeight = fitHeight * scale;
         const offsetX = this.uploadCropState.viewport?.offsetX || 0;
         const offsetY = this.uploadCropState.viewport?.offsetY || 0;
-        const drawX = ((stageRect.width - drawWidth) / 2) + offsetX;
-        const drawY = ((stageRect.height - drawHeight) / 2) + offsetY;
+        const drawX = ((stageRect.width - fitWidth) / 2) + offsetX;
+        const drawY = ((stageRect.height - fitHeight) / 2) + offsetY;
+
+        this.uploadCropState.baseImageRect = {
+            x: 0,
+            y: 0,
+            width: fitWidth,
+            height: fitHeight
+        };
 
         this.uploadCropState.imageRect = {
             x: drawX,
             y: drawY,
-            width: drawWidth,
-            height: drawHeight
+            width: fitWidth * scale,
+            height: fitHeight * scale
         };
 
-        image.style.left = `${drawX}px`;
-        image.style.top = `${drawY}px`;
-        image.style.width = `${drawWidth}px`;
-        image.style.height = `${drawHeight}px`;
+        viewport.style.left = `${drawX}px`;
+        viewport.style.top = `${drawY}px`;
+        viewport.style.width = `${fitWidth}px`;
+        viewport.style.height = `${fitHeight}px`;
+        viewport.style.transform = `scale(${scale})`;
 
         if (resetSelection || !this.uploadCropState.selectionNormalized) {
             this.uploadCropState.selectionNormalized = {
@@ -1905,10 +1916,10 @@ class DesignEditor {
         if (!selection) return;
 
         const normalized = this.uploadCropState.selectionNormalized || { x: 0, y: 0, width: 1, height: 1 };
-        const imageRect = this.uploadCropState.imageRect;
+        const imageRect = this.uploadCropState.baseImageRect;
         const rect = {
-            x: imageRect.x + imageRect.width * normalized.x,
-            y: imageRect.y + imageRect.height * normalized.y,
+            x: imageRect.width * normalized.x,
+            y: imageRect.height * normalized.y,
             width: imageRect.width * normalized.width,
             height: imageRect.height * normalized.height
         };
@@ -1966,6 +1977,7 @@ class DesignEditor {
 
         const modal = document.getElementById('upload-crop-modal');
         const image = document.getElementById('upload-crop-image');
+        const viewport = document.getElementById('upload-crop-viewport');
         const selection = document.getElementById('upload-crop-selection');
         const resolve = this.uploadCropState.resolve;
 
@@ -1978,6 +1990,9 @@ class DesignEditor {
         if (image) {
             image.removeAttribute('src');
             image.onload = null;
+        }
+        if (viewport) {
+            viewport.removeAttribute('style');
         }
         if (selection) {
             selection.classList.add('hidden');

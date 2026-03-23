@@ -177,6 +177,17 @@
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .upload-crop-viewport {
+            position: absolute;
+            left: 0;
+            top: 0;
+            transform-origin: top left;
         }
 
         .upload-crop-selection {
@@ -478,12 +489,14 @@
             </div>
 
             <div id="upload-crop-stage" class="upload-crop-stage">
-                <img id="upload-crop-image" alt="Preview de recorte">
-                <div id="upload-crop-selection" class="upload-crop-selection hidden">
-                    <span class="upload-crop-handle nw" data-handle="nw"></span>
-                    <span class="upload-crop-handle ne" data-handle="ne"></span>
-                    <span class="upload-crop-handle sw" data-handle="sw"></span>
-                    <span class="upload-crop-handle se" data-handle="se"></span>
+                <div id="upload-crop-viewport" class="upload-crop-viewport">
+                    <img id="upload-crop-image" alt="Preview de recorte">
+                    <div id="upload-crop-selection" class="upload-crop-selection hidden">
+                        <span class="upload-crop-handle nw" data-handle="nw"></span>
+                        <span class="upload-crop-handle ne" data-handle="ne"></span>
+                        <span class="upload-crop-handle sw" data-handle="sw"></span>
+                        <span class="upload-crop-handle se" data-handle="se"></span>
+                    </div>
                 </div>
             </div>
 
@@ -499,7 +512,7 @@
     </div>
 
     <script src="/assets/js/core/logic.js"></script>
-    <script src="/assets/js/pages/personalizar.js?v=20260323b"></script>
+    <script src="/assets/js/pages/personalizar.js?v=20260323c"></script>
     <script>
         lucide.createIcons();
     </script>
