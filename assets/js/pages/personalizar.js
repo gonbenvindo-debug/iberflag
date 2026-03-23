@@ -2556,9 +2556,10 @@ class DesignEditor {
 
         if (rotation !== 0) {
             this.applyRotatedResizeAnchor(this.selectedElement);
-            this.bringElementInBounds(this.selectedElement);
 
             // Never allow rotated elements to grow outside the design canvas.
+            // If a resize step crosses the wall, reject that step instead of
+            // translating the element, which can look like growth on the opposite side.
             if (!this.isElementFullyInsideEditableBounds(this.selectedElement)) {
                 this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
                 return;
