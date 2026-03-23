@@ -231,6 +231,104 @@ class DesignEditor {
         };
     }
 
+    constrainResizeRectWithRatio(startBox, proposedBox, handle, bounds, ratio) {
+        const safeRatio = Math.max(0.0001, Number(ratio) || 1);
+        const minWidthByHeight = 20 * safeRatio;
+        const minWidth = Math.max(20, minWidthByHeight);
+        const minHeightByWidth = 20 / safeRatio;
+        const minHeight = Math.max(20, minHeightByWidth);
+        const maxRight = bounds.x + bounds.width;
+        const maxBottom = bounds.y + bounds.height;
+        const startRight = startBox.x + startBox.width;
+        const startBottom = startBox.y + startBox.height;
+        const startCenterX = startBox.x + (startBox.width / 2);
+        const startCenterY = startBox.y + (startBox.height / 2);
+
+        const clamp = (value, min, max) => {
+            if (!Number.isFinite(value)) return min;
+            if (max < min) return min;
+            return Math.min(max, Math.max(min, value));
+        };
+
+        const buildFromWidth = (width, anchorX, anchorY, fromLeft, fromTop) => {
+            const h = width / safeRatio;
+            return {
+                x: fromLeft ? anchorX : anchorX - width,
+                y: fromTop ? anchorY : anchorY - h,
+                width,
+                height: h
+            };
+        };
+
+        if (handle === 'se') {
+            const anchorX = startBox.x;
+            const anchorY = startBox.y;
+            const maxWidth = Math.min(maxRight - anchorX, (maxBottom - anchorY) * safeRatio);
+            const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
+            const width = clamp(targetWidth, minWidth, maxWidth);
+            return buildFromWidth(width, anchorX, anchorY, true, true);
+        }
+
+        if (handle === 'sw') {
+            const anchorX = startRight;
+            const anchorY = startBox.y;
+            const maxWidth = Math.min(anchorX - bounds.x, (maxBottom - anchorY) * safeRatio);
+            const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
+            const width = clamp(targetWidth, minWidth, maxWidth);
+            return buildFromWidth(width, anchorX, anchorY, false, true);
+        }
+
+        if (handle === 'ne') {
+            const anchorX = startBox.x;
+            const anchorY = startBottom;
+            const maxWidth = Math.min(maxRight - anchorX, (anchorY - bounds.y) * safeRatio);
+            const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
+            const width = clamp(targetWidth, minWidth, maxWidth);
+            return buildFromWidth(width, anchorX, anchorY, true, false);
+        }
+
+        if (handle === 'nw') {
+            const anchorX = startRight;
+            const anchorY = startBottom;
+            const maxWidth = Math.min(anchorX - bounds.x, (anchorY - bounds.y) * safeRatio);
+            const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
+            const width = clamp(targetWidth, minWidth, maxWidth);
+            return buildFromWidth(width, anchorX, anchorY, false, false);
+        }
+
+        if (handle === 'e' || handle === 'w') {
+            const maxHeightByCenter = 2 * Math.min(startCenterY - bounds.y, maxBottom - startCenterY);
+            const maxWidthByHeight = maxHeightByCenter * safeRatio;
+            const maxWidthBySide = handle === 'e'
+                ? (maxRight - startBox.x)
+                : (startRight - bounds.x);
+            const maxWidth = Math.min(maxWidthBySide, maxWidthByHeight);
+            const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
+            const width = clamp(targetWidth, minWidth, maxWidth);
+            const height = width / safeRatio;
+            const y = startCenterY - (height / 2);
+            const x = handle === 'e' ? startBox.x : startRight - width;
+            return { x, y, width, height };
+        }
+
+        if (handle === 's' || handle === 'n') {
+            const maxWidthByCenter = 2 * Math.min(startCenterX - bounds.x, maxRight - startCenterX);
+            const maxHeightByWidth = maxWidthByCenter / safeRatio;
+            const maxHeightBySide = handle === 's'
+                ? (maxBottom - startBox.y)
+                : (startBottom - bounds.y);
+            const maxHeight = Math.min(maxHeightBySide, maxHeightByWidth);
+            const targetHeight = Math.max(proposedBox.height, proposedBox.width / safeRatio);
+            const height = clamp(targetHeight, minHeight, maxHeight);
+            const width = height * safeRatio;
+            const x = startCenterX - (width / 2);
+            const y = handle === 's' ? startBox.y : startBottom - height;
+            return { x, y, width, height };
+        }
+
+        return this.constrainResizeRect(startBox, proposedBox, handle, bounds);
+    }
+
     getEditableCenter() {
         const bounds = this.getEditableBounds();
         return {
@@ -427,13 +525,13 @@ class DesignEditor {
         
         const guides = {
             horizontal: [
-                { value: bounds.x + bounds.width / 2, type: 'center-canvas' },
+                { value: bounds.y + bounds.height / 2, type: 'center-canvas' },
                 { value: bbox.y, type: 'top' },
                 { value: bbox.y + bbox.height / 2, type: 'center-element' },
                 { value: bbox.y + bbox.height, type: 'bottom' }
             ],
             vertical: [
-                { value: bounds.y + bounds.height / 2, type: 'center-canvas' },
+                { value: bounds.x + bounds.width / 2, type: 'center-canvas' },
                 { value: bbox.x, type: 'left' },
                 { value: bbox.x + bbox.width / 2, type: 'center-element' },
                 { value: bbox.x + bbox.width, type: 'right' }
@@ -531,16 +629,18 @@ class DesignEditor {
         this.guideLines = [];
     }
 
-    applySnapToMove(deltaX, deltaY, snaps) {
+    applySnapToMove(deltaX, deltaY, snaps, proposedCenter) {
         let snappedDeltaX = deltaX;
         let snappedDeltaY = deltaY;
 
-        if (snaps.x && Math.abs(snaps.x.diff) < this.guideThreshold) {
-            snappedDeltaX = snaps.x.value - (this.dragStart.elementX || 0);
+        if (snaps.x && Math.abs(snaps.x.diff) < this.guideThreshold && proposedCenter) {
+            // Keep snap incremental to avoid runaway jumps while dragging.
+            snappedDeltaX += snaps.x.value - proposedCenter.x;
         }
 
-        if (snaps.y && Math.abs(snaps.y.diff) < this.guideThreshold) {
-            snappedDeltaY = snaps.y.value - (this.dragStart.elementY || 0);
+        if (snaps.y && Math.abs(snaps.y.diff) < this.guideThreshold && proposedCenter) {
+            // Keep snap incremental to avoid runaway jumps while dragging.
+            snappedDeltaY += snaps.y.value - proposedCenter.y;
         }
 
         return { deltaX: snappedDeltaX, deltaY: snappedDeltaY };
@@ -1898,15 +1998,18 @@ class DesignEditor {
             // ===== GUIDES & SNAP ALIGNMENT =====
             // Calcular guides e mostrar linhas de alinhaçã o
             const guides = this.calculateGuides(this.selectedElement);
-            const elementBbox = this.selectedElement.element.getBBox();
             
             // Estimar posição final do elemento para snap
             const bbox = this.selectedElement.element.getBBox();
             const proposedY = bbox.y + deltaY;
             const proposedX = bbox.x + deltaX;
+            const proposedCenter = {
+                x: proposedX + bbox.width / 2,
+                y: proposedY + bbox.height / 2
+            };
             
             const snapPoints = this.findSnapPoints(
-                { x: proposedX + bbox.width / 2, y: proposedY + bbox.height / 2 },
+                proposedCenter,
                 guides,
                 this.guideThreshold
             );
@@ -1925,7 +2028,7 @@ class DesignEditor {
                 deltaY = gridSnap.deltaY;
             } else {
                 // Aplicar snap de alinhamento (sem shift, apenas visual)
-                const snappedMove = this.applySnapToMove(deltaX, deltaY, snapPoints);
+                const snappedMove = this.applySnapToMove(deltaX, deltaY, snapPoints, proposedCenter);
                 deltaX = snappedMove.deltaX;
                 deltaY = snappedMove.deltaY;
             }
@@ -2210,22 +2313,33 @@ class DesignEditor {
             }
         }
         
-        const constrainedRect = this.constrainResizeRect(
-            {
-                x: bbox.x,
-                y: bbox.y,
-                width: bbox.width,
-                height: bbox.height
-            },
-            {
-                x: newX,
-                y: newY,
-                width: newWidth,
-                height: newHeight
-            },
-            this.resizeHandle,
-            canvasBounds
-        );
+        const startBox = {
+            x: bbox.x,
+            y: bbox.y,
+            width: bbox.width,
+            height: bbox.height
+        };
+        const proposedBox = {
+            x: newX,
+            y: newY,
+            width: newWidth,
+            height: newHeight
+        };
+
+        const constrainedRect = shouldKeepRatio
+            ? this.constrainResizeRectWithRatio(
+                startBox,
+                proposedBox,
+                this.resizeHandle,
+                canvasBounds,
+                bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
+            )
+            : this.constrainResizeRect(
+                startBox,
+                proposedBox,
+                this.resizeHandle,
+                canvasBounds
+            );
 
         newX = constrainedRect.x;
         newY = constrainedRect.y;
