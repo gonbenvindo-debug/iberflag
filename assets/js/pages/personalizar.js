@@ -501,6 +501,140 @@ class DesignEditor {
         this.bringElementInBounds(elementData);
     }
 
+    setElementTransform(elementData, translateX, translateY, rotation) {
+        const safeTranslateX = Number(translateX) || 0;
+        const safeTranslateY = Number(translateY) || 0;
+        const safeRotation = Number(rotation) || 0;
+
+        if (safeRotation === 0 && safeTranslateX === 0 && safeTranslateY === 0) {
+            elementData.element.removeAttribute('transform');
+            return;
+        }
+
+        const bbox = elementData.element.getBBox();
+        const centerX = bbox.x + bbox.width / 2;
+        const centerY = bbox.y + bbox.height / 2;
+        elementData.element.setAttribute(
+            'transform',
+            `translate(${safeTranslateX} ${safeTranslateY}) rotate(${safeRotation} ${centerX} ${centerY})`
+        );
+    }
+
+    getResizeAnchorPoint(box, handle) {
+        const left = box.x;
+        const right = box.x + box.width;
+        const top = box.y;
+        const bottom = box.y + box.height;
+        const centerX = box.x + box.width / 2;
+        const centerY = box.y + box.height / 2;
+
+        switch (handle) {
+            case 'se': return { x: left, y: top };
+            case 'sw': return { x: right, y: top };
+            case 'ne': return { x: left, y: bottom };
+            case 'nw': return { x: right, y: bottom };
+            case 'e': return { x: left, y: centerY };
+            case 'w': return { x: right, y: centerY };
+            case 's': return { x: centerX, y: top };
+            case 'n': return { x: centerX, y: bottom };
+            default: return { x: left, y: top };
+        }
+    }
+
+    getElementCanvasPoint(element, x, y) {
+        const ctm = element.getCTM();
+        if (!ctm) {
+            return { x, y };
+        }
+
+        const point = new DOMPoint(x, y).matrixTransform(ctm);
+        return { x: point.x, y: point.y };
+    }
+
+    captureResizeState(elementData) {
+        const state = {
+            transform: elementData.element.getAttribute('transform'),
+            translateX: elementData.translateX || 0,
+            translateY: elementData.translateY || 0
+        };
+
+        if (elementData.type === 'text') {
+            state.x = elementData.element.getAttribute('x');
+            state.y = elementData.element.getAttribute('y');
+            state.fontSize = elementData.element.getAttribute('font-size');
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            state.x = elementData.element.getAttribute('x');
+            state.y = elementData.element.getAttribute('y');
+            state.width = elementData.element.getAttribute('width');
+            state.height = elementData.element.getAttribute('height');
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            state.cx = elementData.element.getAttribute('cx');
+            state.cy = elementData.element.getAttribute('cy');
+            state.r = elementData.element.getAttribute('r');
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            state.points = elementData.element.getAttribute('points');
+        }
+
+        return state;
+    }
+
+    restoreResizeState(elementData, state) {
+        if (!state) return;
+
+        if (elementData.type === 'text') {
+            elementData.element.setAttribute('x', state.x);
+            elementData.element.setAttribute('y', state.y);
+            elementData.element.setAttribute('font-size', state.fontSize);
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            elementData.element.setAttribute('x', state.x);
+            elementData.element.setAttribute('y', state.y);
+            elementData.element.setAttribute('width', state.width);
+            elementData.element.setAttribute('height', state.height);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            elementData.element.setAttribute('cx', state.cx);
+            elementData.element.setAttribute('cy', state.cy);
+            elementData.element.setAttribute('r', state.r);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            elementData.element.setAttribute('points', state.points);
+        }
+
+        elementData.translateX = state.translateX || 0;
+        elementData.translateY = state.translateY || 0;
+
+        if (state.transform) {
+            elementData.element.setAttribute('transform', state.transform);
+        } else {
+            elementData.element.removeAttribute('transform');
+        }
+    }
+
+    applyRotatedResizeAnchor(elementData) {
+        const rotation = elementData.rotation || 0;
+        if (!rotation || !this.dragStart?.anchorCanvasPoint) {
+            return;
+        }
+
+        const baseTranslateX = this.dragStart.translateX || 0;
+        const baseTranslateY = this.dragStart.translateY || 0;
+
+        this.setElementTransform(elementData, baseTranslateX, baseTranslateY, rotation);
+
+        const currentBox = elementData.element.getBBox();
+        const anchorLocalPoint = this.getResizeAnchorPoint(currentBox, this.resizeHandle);
+        const currentAnchorPoint = this.getElementCanvasPoint(
+            elementData.element,
+            anchorLocalPoint.x,
+            anchorLocalPoint.y
+        );
+
+        const correctedTranslateX = baseTranslateX + (this.dragStart.anchorCanvasPoint.x - currentAnchorPoint.x);
+        const correctedTranslateY = baseTranslateY + (this.dragStart.anchorCanvasPoint.y - currentAnchorPoint.y);
+
+        elementData.translateX = correctedTranslateX;
+        elementData.translateY = correctedTranslateY;
+        this.setElementTransform(elementData, correctedTranslateX, correctedTranslateY, rotation);
+    }
+
     moveElementFromDragStart(elementData, deltaX, deltaY) {
         if (!elementData || !this.dragStart) {
             return;
@@ -2161,17 +2295,26 @@ class DesignEditor {
         this.beginHistoryGesture();
         this.isResizing = true;
         this.resizeHandle = position;
+        const bbox = this.selectedElement.element.getBBox();
+        const anchorLocalPoint = this.getResizeAnchorPoint(bbox, position);
         this.dragStart = {
             x: e.clientX,
             y: e.clientY,
             startClientX: e.clientX,
             startClientY: e.clientY,
-            bbox: this.selectedElement.element.getBBox(),
+            bbox,
             textWidth: this.selectedElement.width,
             textHeight: this.selectedElement.height,
             fontSize: this.selectedElement.size,
             textX: parseFloat(this.selectedElement.element.getAttribute('x') || '0'),
             textY: parseFloat(this.selectedElement.element.getAttribute('y') || '0'),
+            translateX: this.selectedElement.translateX || 0,
+            translateY: this.selectedElement.translateY || 0,
+            anchorCanvasPoint: this.getElementCanvasPoint(
+                this.selectedElement.element,
+                anchorLocalPoint.x,
+                anchorLocalPoint.y
+            ),
             points: this.selectedElement.shapeType === 'triangle'
                 ? (this.selectedElement.element.getAttribute('points') || '')
                     .trim()
@@ -2269,6 +2412,7 @@ class DesignEditor {
         
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getCanvasBounds();
+        const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -2387,35 +2531,11 @@ class DesignEditor {
         newHeight = constrainedRect.height;
         
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            // Store old values
-            const oldWidth = this.selectedElement.element.getAttribute('width');
-            const oldHeight = this.selectedElement.element.getAttribute('height');
-            const oldX = this.selectedElement.element.getAttribute('x');
-            const oldY = this.selectedElement.element.getAttribute('y');
-            
             // Apply new values
             this.selectedElement.element.setAttribute('width', newWidth);
             this.selectedElement.element.setAttribute('height', newHeight);
             this.selectedElement.element.setAttribute('x', newX);
             this.selectedElement.element.setAttribute('y', newY);
-            
-            // For rotated elements, check against the editable print area bounds
-            if (rotation !== 0) {
-                const transformed = this.getTransformedBounds(this.selectedElement);
-                const editableBounds = this.getCanvasBounds();
-
-                if (transformed.left < editableBounds.x ||
-                    transformed.right > editableBounds.x + editableBounds.width ||
-                    transformed.top < editableBounds.y ||
-                    transformed.bottom > editableBounds.y + editableBounds.height) {
-                    // Revert to old values
-                    this.selectedElement.element.setAttribute('width', oldWidth);
-                    this.selectedElement.element.setAttribute('height', oldHeight);
-                    this.selectedElement.element.setAttribute('x', oldX);
-                    this.selectedElement.element.setAttribute('y', oldY);
-                    return; // Exit early
-                }
-            }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(newWidth, newHeight) / 2;
             const maxRadius = Math.min(
@@ -2468,6 +2588,20 @@ class DesignEditor {
             const newBBox = this.selectedElement.element.getBBox();
             this.selectedElement.width = newBBox.width;
             this.selectedElement.height = newBBox.height;
+        }
+
+        if (rotation !== 0) {
+            this.applyRotatedResizeAnchor(this.selectedElement);
+
+            const transformed = this.getTransformedBounds(this.selectedElement);
+            const editableBounds = this.getCanvasBounds();
+            if (transformed.left < editableBounds.x ||
+                transformed.right > editableBounds.x + editableBounds.width ||
+                transformed.top < editableBounds.y ||
+                transformed.bottom > editableBounds.y + editableBounds.height) {
+                this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
+                return;
+            }
         }
 
         this.showResizeHandles(this.selectedElement);
