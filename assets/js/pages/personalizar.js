@@ -332,12 +332,13 @@ class DesignEditor {
     }
 
     generateCartPreviewSVG() {
-        // Crop viewBox to the print area only — removes the surrounding margin/canvas space
+        // Crop viewBox to print area + uniform padding on all sides
         const pb = this.printAreaBounds;
-        const cropX = Math.round(pb.x);
-        const cropY = Math.round(pb.y);
-        const cropW = Math.max(1, Math.round(pb.width));
-        const cropH = Math.max(1, Math.round(pb.height));
+        const pad = Math.round(Math.min(pb.width, pb.height) * 0.05); // 5% of shortest side
+        const cropX = Math.round(pb.x) - pad;
+        const cropY = Math.round(pb.y) - pad;
+        const cropW = Math.max(1, Math.round(pb.width) + pad * 2);
+        const cropH = Math.max(1, Math.round(pb.height) + pad * 2);
 
         const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
