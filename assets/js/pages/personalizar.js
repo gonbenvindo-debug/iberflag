@@ -2367,7 +2367,6 @@ class DesignEditor {
         
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getEditableBounds();
-        const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -2461,20 +2460,22 @@ class DesignEditor {
             height: newHeight
         };
 
-        const constrainedRect = shouldKeepRatio
-            ? this.constrainResizeRectWithRatio(
-                startBox,
-                proposedBox,
-                this.resizeHandle,
-                canvasBounds,
-                bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
-            )
-            : this.constrainResizeRect(
-                startBox,
-                proposedBox,
-                this.resizeHandle,
-                canvasBounds
-            );
+        const constrainedRect = rotation === 0
+            ? (shouldKeepRatio
+                ? this.constrainResizeRectWithRatio(
+                    startBox,
+                    proposedBox,
+                    this.resizeHandle,
+                    canvasBounds,
+                    bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
+                )
+                : this.constrainResizeRect(
+                    startBox,
+                    proposedBox,
+                    this.resizeHandle,
+                    canvasBounds
+                ))
+            : proposedBox;
 
         newX = constrainedRect.x;
         newY = constrainedRect.y;
@@ -2543,16 +2544,7 @@ class DesignEditor {
 
         if (rotation !== 0) {
             this.applyRotatedResizeAnchor(this.selectedElement);
-
-            const transformed = this.getTransformedBounds(this.selectedElement);
-            const editableBounds = this.getEditableBounds();
-            if (transformed.left < editableBounds.x ||
-                transformed.right > editableBounds.x + editableBounds.width ||
-                transformed.top < editableBounds.y ||
-                transformed.bottom > editableBounds.y + editableBounds.height) {
-                this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
-                return;
-            }
+            this.bringElementInBounds(this.selectedElement);
         }
 
         this.showResizeHandles(this.selectedElement);
