@@ -629,6 +629,53 @@ class DesignEditor {
         return Number(rotation.toFixed(1));
     }
 
+    getResizeCursor(handle, rotation = 0) {
+        const vectors = {
+            n: { x: 0, y: -1 },
+            ne: { x: 1, y: -1 },
+            e: { x: 1, y: 0 },
+            se: { x: 1, y: 1 },
+            s: { x: 0, y: 1 },
+            sw: { x: -1, y: 1 },
+            w: { x: -1, y: 0 },
+            nw: { x: -1, y: -1 }
+        };
+
+        const vector = vectors[handle] || vectors.se;
+        const rad = (Number(rotation) || 0) * Math.PI / 180;
+        const rotated = {
+            x: vector.x * Math.cos(rad) - vector.y * Math.sin(rad),
+            y: vector.x * Math.sin(rad) + vector.y * Math.cos(rad)
+        };
+
+        // Browser cursors are most consistent with these 4 resize families.
+        const families = [
+            { name: 'ns-resize', x: 0, y: 1 },
+            { name: 'ew-resize', x: 1, y: 0 },
+            { name: 'nwse-resize', x: 1, y: 1 },
+            { name: 'nesw-resize', x: 1, y: -1 }
+        ];
+
+        let best = families[0].name;
+        let bestDot = -Infinity;
+        const length = Math.hypot(rotated.x, rotated.y) || 1;
+        const nx = rotated.x / length;
+        const ny = rotated.y / length;
+
+        families.forEach((family) => {
+            const fl = Math.hypot(family.x, family.y) || 1;
+            const fx = family.x / fl;
+            const fy = family.y / fl;
+            const dot = Math.abs(nx * fx + ny * fy);
+            if (dot > bestDot) {
+                bestDot = dot;
+                best = family.name;
+            }
+        });
+
+        return best;
+    }
+
     // ===== GUIDES & ALIGNMENT =====
     calculateGuides(elementData) {
         if (!elementData) return { horizontal: [], vertical: [] };
@@ -1930,7 +1977,7 @@ class DesignEditor {
                 const handle = document.createElement('div');
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
-                handle.style.cursor = `${pos}-resize`;
+                handle.style.cursor = this.getResizeCursor(pos, elementData.rotation || 0);
                 handle.style.left = (point.x - 5) + 'px';
                 handle.style.top = (point.y - 5) + 'px';
                 
