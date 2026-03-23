@@ -2304,3 +2304,107 @@ button:active, .btn:active {
 @media (prefers-color-scheme: dark) {
     /* Add dark mode styles if needed */
 }
+
+/* ===== BRAND HARD OVERRIDE: NO BLUE TONES ===== */
+:root {
+    --shadow-soft: 0 12px 36px rgba(0, 0, 0, 0.1);
+    --shadow-strong: 0 22px 52px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary,
+.homepage-primary-action,
+.checkout-place-order-btn,
+a[href="/checkout.html"].block.w-full,
+.tool-tab.active,
+.homepage-cart-btn,
+.app-page #cart-btn,
+.app-page button.bg-blue-600.text-white,
+.app-page a.bg-blue-600.text-white,
+.bg-blue-600 {
+    background: #000000 !important;
+    border-color: #ef4825 !important;
+    color: #ffffff !important;
+}
+
+.btn-primary:hover,
+.homepage-primary-action:hover,
+.checkout-place-order-btn:hover,
+a[href="/checkout.html"].block.w-full:hover,
+.tool-tab.active:hover,
+.homepage-cart-btn:hover,
+.app-page #cart-btn:hover,
+.app-page button.bg-blue-600.text-white:hover,
+.app-page a.bg-blue-600.text-white:hover,
+.hover\:bg-blue-700:hover {
+    background: #111111 !important;
+}
+
+.homepage-cta,
+.app-page section.bg-gradient-to-r.from-blue-600.to-indigo-600.text-white.py-16,
+.from-blue-600,
+.to-indigo-600 {
+    background: #000000 !important;
+    background-image: none !important;
+    border-color: rgba(239, 72, 37, 0.85) !important;
+}
+
+.app-page nav.bg-white.shadow-sm,
+.app-page nav.bg-white.shadow-sm.sticky,
+.app-page nav.nav-blur {
+    border-bottom: 1px solid rgba(239, 72, 37, 0.6) !important;
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.1) !important;
+}
+
+.app-page footer.bg-gray-900,
+.app-page .checkout-footer {
+    background: #000000 !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.55) !important;
+}
+
+.social-icon,
+.brand-logo-badge {
+    border: 1px solid rgba(239, 72, 37, 0.65) !important;
+    background: #ffffff !important;
+}
+
+.text-blue-100,
+.text-blue-600,
+.text-blue-700,
+.text-blue-800,
+.text-slate-300,
+.text-slate-900 {
+    color: #000000 !important;
+}
+
+.border-blue-200,
+.border-blue-600 {
+    border-color: rgba(239, 72, 37, 0.75) !important;
+}
+
+.bg-blue-50 {
+    background: rgba(0, 0, 0, 0.03) !important;
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
+}
+
+.selection-box,
+.resize-handle,
+.rotate-handle,
+.element-wrapper.selected {
+    border-color: #ef4825 !important;
+    outline-color: #ef4825 !important;
+}
+
+.selection-box {
+    background: rgba(239, 72, 37, 0.12) !important;
+}
+
+.rotate-handle,
+.resize-handle {
+    color: #ef4825 !important;
+}
+
+.rotate-handle:hover,
+.resize-handle:hover {
+    background: #ef4825 !important;
+    color: #ffffff !important;
+}
