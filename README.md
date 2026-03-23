@@ -45,13 +45,14 @@ Plataforma completa de e-commerce especializada em flybanners e produtos publici
 
 ```
 iberflag/
-├── index.html              # Homepage
-├── produtos.html           # Catálogo de produtos
-├── contacto.html           # Formulário de contacto
-├── faq.html               # Perguntas frequentes
-├── envios.html            # Informações de envio
-├── admin.html             # Painel de administração
-├── personalizar.html      # Personalizador de produtos (Canva-style)
+├── pages/
+│   ├── index.html              # Homepage
+│   ├── produtos.html           # Catálogo de produtos
+│   ├── contacto.html           # Formulário de contacto
+│   ├── faq.html                # Perguntas frequentes
+│   ├── envios.html             # Informações de envio
+│   ├── admin.html              # Painel de administração
+│   └── personalizar.html       # Personalizador de produtos (Canva-style)
 ├── assets/
 │   ├── css/
 │   │   ├── style.css       # Estilos globais com animações
@@ -70,7 +71,11 @@ iberflag/
 │           ├── faq.js
 │           ├── personalizar.js
 │           └── produtos.js
-├── populate-products.js   # Script para popular DB com produtos teste
+├── scripts/
+│   ├── populate-products.js   # Script para popular DB com produtos teste
+│   ├── setup-security.js
+│   ├── audit.js
+│   └── audit2.js
 ├── package.json           # Dependências Node.js
 ├── .env                   # Variáveis de ambiente (Supabase)
 ├── supabase-schema.sql    # Schema da base de dados
@@ -145,7 +150,7 @@ npx serve
 
 ## 📊 Aceder ao Painel Admin
 
-1. Navegue para `/admin.html`
+1. Navegue para `/admin` (ou `/admin.html`)
 2. O painel está protegido - configure autenticação no Supabase
 3. Funcionalidades disponíveis:
    - Dashboard com estatísticas
@@ -168,13 +173,13 @@ Edite as variáveis CSS em `style.css`:
 
 ### Conteúdo
 - **Contactos**: Atualize email e telefone em todos os ficheiros HTML
-- **Morada**: Edite em `contacto.html` e `envios.html`
+- **Morada**: Edite em `pages/contacto.html` e `pages/envios.html`
 - **Redes Sociais**: Adicione links reais no footer
 - **Imagens**: Substitua URLs do Unsplash por imagens próprias
 
 ### Produtos
 Adicione produtos através de:
-1. Painel Admin (`/admin.html`)
+1. Painel Admin (`/admin` ou `/admin.html`)
 2. Diretamente no Supabase
 3. SQL: `INSERT INTO produtos (...) VALUES (...)`
 
@@ -208,12 +213,12 @@ Adicione produtos através de:
 
 ## 📱 Páginas Criadas
 
-- ✅ **Homepage** (`index.html`) - Hero, categorias, produtos em destaque
-- ✅ **Produtos** (`produtos.html`) - Catálogo completo com filtros
-- ✅ **Contacto** (`contacto.html`) - Formulário funcional
-- ✅ **FAQ** (`faq.html`) - Accordion com pesquisa
-- ✅ **Envios** (`envios.html`) - Informações de entrega
-- ✅ **Admin** (`admin.html`) - Painel de gestão completo
+- ✅ **Homepage** (`pages/index.html`) - Hero, categorias, produtos em destaque
+- ✅ **Produtos** (`pages/produtos.html`) - Catálogo completo com filtros
+- ✅ **Contacto** (`pages/contacto.html`) - Formulário funcional
+- ✅ **FAQ** (`pages/faq.html`) - Accordion com pesquisa
+- ✅ **Envios** (`pages/envios.html`) - Informações de entrega
+- ✅ **Admin** (`pages/admin.html`) - Painel de gestão completo
 
 ## 🔐 Segurança
 

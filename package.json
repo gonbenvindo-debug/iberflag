@@ -2,9 +2,9 @@
   "name": "iberflag",
   "version": "1.0.0",
   "description": "E-commerce iberico de produtos publicitarios com foco em flybanners",
-  "main": "index.html",
+  "main": "pages/index.html",
   "scripts": {
-    "populate": "node populate-products.js",
+    "populate": "node scripts/populate-products.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:css"
   },
