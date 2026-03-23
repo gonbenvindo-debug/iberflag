@@ -2381,27 +2381,23 @@ class DesignEditor {
                     newY = bbox.y + (bbox.height - newHeight);
                 }
             } else {
-                const widthFromHeight = Math.max(20, newHeight * ratio);
-                const heightFromWidth = Math.max(20, newWidth / ratio);
-                const widthDelta = Math.abs(newWidth - bbox.width);
-                const heightDelta = Math.abs(newHeight - bbox.height);
+                // Corner handles: project mouse delta into one continuous scalar
+                // to avoid frame-by-frame axis switching flicker.
+                const signX = this.resizeHandle.includes('w') ? -1 : 1;
+                const signY = this.resizeHandle.includes('n') ? -1 : 1;
+                const projectedHeightDelta = ((signY * dy) + ((signX * dx) / ratio)) / 2;
+                const targetHeight = Math.max(20, bbox.height + projectedHeightDelta);
+                const targetWidth = Math.max(20, targetHeight * ratio);
 
-                if (widthDelta >= heightDelta * ratio) {
-                    newHeight = heightFromWidth;
-                } else {
-                    newWidth = widthFromHeight;
-                }
+                newWidth = targetWidth;
+                newHeight = targetHeight;
 
-                if (this.resizeHandle === 'nw') {
-                    newX = bbox.x + (bbox.width - newWidth);
-                    newY = bbox.y + (bbox.height - newHeight);
-                }
-                if (this.resizeHandle === 'ne') {
-                    newY = bbox.y + (bbox.height - newHeight);
-                }
-                if (this.resizeHandle === 'sw') {
-                    newX = bbox.x + (bbox.width - newWidth);
-                }
+                newX = this.resizeHandle.includes('w')
+                    ? bbox.x + (bbox.width - newWidth)
+                    : bbox.x;
+                newY = this.resizeHandle.includes('n')
+                    ? bbox.y + (bbox.height - newHeight)
+                    : bbox.y;
             }
         }
         
