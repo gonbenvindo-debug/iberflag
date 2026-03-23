@@ -161,6 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 let currentTab = 'dashboard';
 let currentProductId = null;
+let currentBaseId = null;
 let currentContactId = null;
 let currentOrderId = null;
 let currentOrderData = null;
@@ -173,12 +174,17 @@ const adminDesignCache = new Map();
 const navTabs = document.querySelectorAll('.nav-tab');
 const tabPanels = document.querySelectorAll('.tab-panel');
 const productModal = document.getElementById('product-modal');
+const baseModal = document.getElementById('base-modal');
 const contactModal = document.getElementById('contact-modal');
 const orderModal = document.getElementById('order-modal');
 const productForm = document.getElementById('product-form');
+const baseForm = document.getElementById('base-form');
 const addProductBtn = document.getElementById('add-product-btn');
+const addBaseBtn = document.getElementById('add-base-btn');
 const closeModalBtn = document.getElementById('close-modal');
 const cancelModalBtn = document.getElementById('cancel-modal');
+const closeBaseModalBtn = document.getElementById('close-base-modal');
+const cancelBaseModalBtn = document.getElementById('cancel-base-modal');
 const closeContactModalBtns = document.querySelectorAll('.close-contact-modal');
 const closeOrderModalBtns = document.querySelectorAll('.close-order-modal');
 const markRespondedBtn = document.getElementById('mark-responded');
@@ -188,7 +194,10 @@ const openSvgPreviewBtn = document.getElementById('open-svg-preview');
 const closeSvgPreviewBtns = document.querySelectorAll('.close-svg-preview');
 const svgPreviewCanvas = document.getElementById('svg-preview-canvas');
 const svgPreviewStatus = document.getElementById('svg-preview-status');
-const adminModals = [productModal, contactModal, orderModal, svgPreviewModal].filter(Boolean);
+const adminModals = [productModal, baseModal, contactModal, orderModal, svgPreviewModal].filter(Boolean);
+
+const productBasesAssignments = document.getElementById('product-bases-assignments');
+let baseCatalogCache = [];
 
 function updateModalBodyLock() {
     const hasOpenModal = adminModals.some((modal) => !modal.classList.contains('hidden'));
@@ -258,6 +267,10 @@ async function loadTabData(tabName) {
             break;
         case 'produtos':
             await loadProducts();
+            await loadBaseCatalog();
+            break;
+        case 'bases':
+            await loadBases();
             break;
         case 'encomendas':
             await loadOrders();
@@ -268,6 +281,178 @@ async function loadTabData(tabName) {
         case 'contactos':
             await loadContacts();
             break;
+    }
+}
+
+function slugify(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .replace(/[^a-z0-9\s-]/g, '')
+        .trim()
+        .replace(/\s+/g, '-')
+        .replace(/-+/g, '-');
+}
+
+function isMissingBasesSchema(error) {
+    const msg = String(error?.message || error?.details || '').toLowerCase();
+    return msg.includes('bases_fixacao') || msg.includes('produto_bases_fixacao');
+}
+
+async function loadBaseCatalog(force = false) {
+    if (!force && Array.isArray(baseCatalogCache) && baseCatalogCache.length > 0) {
+        return baseCatalogCache;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('bases_fixacao')
+        .select('*')
+        .order('ordem', { ascending: true })
+        .order('nome', { ascending: true });
+
+    if (error) {
+        if (isMissingBasesSchema(error)) {
+            console.warn('Schema de bases ainda não aplicado:', error.message);
+            baseCatalogCache = [];
+            return [];
+        }
+        throw error;
+    }
+
+    baseCatalogCache = data || [];
+    return baseCatalogCache;
+}
+
+function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null) {
+    if (!productBasesAssignments) return;
+
+    const assignedSet = new Set((assignedBaseIds || []).map((id) => Number(id)));
+    const allBases = Array.isArray(baseCatalogCache) ? baseCatalogCache : [];
+
+    if (allBases.length === 0) {
+        productBasesAssignments.innerHTML = '<p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>';
+        return;
+    }
+
+    productBasesAssignments.innerHTML = allBases.map((base) => {
+        const checked = assignedSet.has(Number(base.id));
+        const defaultChecked = checked && Number(base.id) === Number(defaultBaseId);
+
+        return `
+            <div class="rounded-lg border border-gray-200 bg-white p-3">
+                <div class="flex items-start justify-between gap-3">
+                    <label class="flex items-start gap-2 cursor-pointer flex-1">
+                        <input type="checkbox" class="product-base-checkbox mt-1" value="${base.id}" ${checked ? 'checked' : ''}>
+                        <div>
+                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(base.nome)}</p>
+                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' • Inativa'}</p>
+                        </div>
+                    </label>
+                    <label class="text-xs text-gray-600 flex items-center gap-1.5">
+                        <input type="radio" name="product-base-default" class="product-base-default-radio" value="${base.id}" ${defaultChecked ? 'checked' : ''} ${checked ? '' : 'disabled'}>
+                        Default
+                    </label>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    productBasesAssignments.querySelectorAll('.product-base-checkbox').forEach((checkbox) => {
+        checkbox.addEventListener('change', () => {
+            const baseId = checkbox.value;
+            const defaultRadio = productBasesAssignments.querySelector(`.product-base-default-radio[value="${CSS.escape(baseId)}"]`);
+            if (!defaultRadio) return;
+
+            if (checkbox.checked) {
+                defaultRadio.disabled = false;
+            } else {
+                defaultRadio.checked = false;
+                defaultRadio.disabled = true;
+                const firstEnabled = productBasesAssignments.querySelector('.product-base-default-radio:not(:disabled)');
+                if (firstEnabled) {
+                    firstEnabled.checked = true;
+                }
+            }
+        });
+    });
+}
+
+async function loadProductBaseAssignments(productId) {
+    const { data, error } = await supabaseClient
+        .from('produto_bases_fixacao')
+        .select('base_id, is_default')
+        .eq('produto_id', productId)
+        .eq('ativo', true)
+        .order('ordem', { ascending: true });
+
+    if (error) {
+        if (isMissingBasesSchema(error)) {
+            return { ids: [], defaultId: null };
+        }
+        throw error;
+    }
+
+    const rows = data || [];
+    const ids = rows.map((row) => Number(row.base_id));
+    const defaultRow = rows.find((row) => row.is_default);
+
+    return {
+        ids,
+        defaultId: defaultRow ? Number(defaultRow.base_id) : null
+    };
+}
+
+function collectSelectedProductBaseAssignments() {
+    if (!productBasesAssignments) {
+        return { selectedIds: [], defaultId: null };
+    }
+
+    const selectedIds = Array.from(productBasesAssignments.querySelectorAll('.product-base-checkbox:checked'))
+        .map((checkbox) => Number(checkbox.value))
+        .filter(Number.isFinite);
+
+    const defaultSelected = productBasesAssignments.querySelector('.product-base-default-radio:checked');
+    const defaultId = defaultSelected ? Number(defaultSelected.value) : null;
+
+    return {
+        selectedIds,
+        defaultId: selectedIds.includes(defaultId) ? defaultId : null
+    };
+}
+
+async function saveProductBaseAssignments(productId) {
+    const { selectedIds, defaultId } = collectSelectedProductBaseAssignments();
+
+    const { error: deleteError } = await supabaseClient
+        .from('produto_bases_fixacao')
+        .delete()
+        .eq('produto_id', productId);
+
+    if (deleteError) {
+        if (isMissingBasesSchema(deleteError)) return;
+        throw deleteError;
+    }
+
+    if (selectedIds.length === 0) {
+        return;
+    }
+
+    const rows = selectedIds.map((baseId, index) => ({
+        produto_id: productId,
+        base_id: baseId,
+        ativo: true,
+        ordem: index + 1,
+        is_default: defaultId ? Number(baseId) === Number(defaultId) : index === 0
+    }));
+
+    const { error: insertError } = await supabaseClient
+        .from('produto_bases_fixacao')
+        .insert(rows);
+
+    if (insertError) {
+        if (isMissingBasesSchema(insertError)) return;
+        throw insertError;
     }
 }
 
@@ -390,12 +575,19 @@ async function loadProducts() {
 
 // ===== PRODUCT MODAL =====
 if (addProductBtn) {
-    addProductBtn.addEventListener('click', () => {
+    addProductBtn.addEventListener('click', async () => {
         currentProductId = null;
         document.getElementById('modal-title').textContent = 'Adicionar Produto';
         productForm.reset();
         document.getElementById('product-ativo').checked = true;
         resetSvgTemplateState();
+        try {
+            await loadBaseCatalog(true);
+            renderProductBaseAssignments([], null);
+        } catch (error) {
+            console.error('Erro ao carregar bases para produto:', error);
+            renderProductBaseAssignments([], null);
+        }
         openModal(productModal);
     });
 }
@@ -633,6 +825,17 @@ if (productForm) {
             }
             
             if (result.error) throw result.error;
+
+            if (currentProductId) {
+                await saveProductBaseAssignments(currentProductId);
+            } else {
+                const insertedProductId = Array.isArray(result.data) && result.data[0]?.id
+                    ? Number(result.data[0].id)
+                    : null;
+                if (insertedProductId) {
+                    await saveProductBaseAssignments(insertedProductId);
+                }
+            }
             
             showToast(currentProductId ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
             closeModal(productModal);
@@ -641,7 +844,11 @@ if (productForm) {
             
         } catch (error) {
             console.error('Erro ao guardar produto:', error);
-            showToast('Erro ao guardar produto', 'error');
+            if (isMissingBasesSchema(error)) {
+                showToast('Produto guardado, mas falta aplicar o schema SQL das bases.', 'warning');
+            } else {
+                showToast('Erro ao guardar produto', 'error');
+            }
         }
     });
 }
@@ -674,12 +881,173 @@ async function editProduct(id) {
         } else {
             resetSvgTemplateState();
         }
+
+        await loadBaseCatalog(true);
+        const baseAssignments = await loadProductBaseAssignments(id);
+        renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
         
         openModal(productModal);
         
     } catch (error) {
         console.error('Erro ao carregar produto:', error);
         showToast('Erro ao carregar produto', 'error');
+    }
+}
+
+// ===== BASES =====
+async function loadBases() {
+    try {
+        const bases = await loadBaseCatalog(true);
+        const tbody = document.getElementById('bases-tbody');
+        if (!tbody) return;
+
+        if (!bases.length) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma base encontrada</td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = bases.map((base) => `
+            <tr>
+                <td>${base.id}</td>
+                <td><img src="${escapeHtml(base.imagem)}" alt="${escapeHtml(base.nome)}" class="w-12 h-12 object-cover rounded"></td>
+                <td class="font-semibold">${escapeHtml(base.nome)}</td>
+                <td class="font-bold text-blue-600">+${formatCurrency(base.preco_extra || 0)}</td>
+                <td>${base.ordem || 0}</td>
+                <td>${base.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-danger">Inativa</span>'}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <button onclick="editBase(${base.id})" class="text-blue-600 hover:text-blue-800" title="Editar">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteBase(${base.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar bases:', error);
+        if (isMissingBasesSchema(error)) {
+            showToast('Aplique os SQL de variantes para ativar as bases.', 'warning');
+        } else {
+            showToast('Erro ao carregar bases', 'error');
+        }
+    }
+}
+
+if (addBaseBtn) {
+    addBaseBtn.addEventListener('click', () => {
+        currentBaseId = null;
+        document.getElementById('base-modal-title').textContent = 'Adicionar Base';
+        if (baseForm) baseForm.reset();
+        document.getElementById('base-preco-extra').value = '0';
+        document.getElementById('base-ordem').value = '0';
+        document.getElementById('base-ativo').checked = true;
+        openModal(baseModal);
+    });
+}
+
+if (closeBaseModalBtn) {
+    closeBaseModalBtn.addEventListener('click', () => closeModal(baseModal));
+}
+
+if (cancelBaseModalBtn) {
+    cancelBaseModalBtn.addEventListener('click', () => closeModal(baseModal));
+}
+
+if (baseForm) {
+    baseForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const nome = document.getElementById('base-nome').value.trim();
+        const baseData = {
+            nome,
+            slug: slugify(nome),
+            descricao: document.getElementById('base-descricao').value.trim() || null,
+            imagem: document.getElementById('base-imagem').value.trim(),
+            preco_extra: parseFloat(document.getElementById('base-preco-extra').value || '0') || 0,
+            ordem: parseInt(document.getElementById('base-ordem').value || '0', 10) || 0,
+            ativo: document.getElementById('base-ativo').checked
+        };
+
+        try {
+            let result;
+            if (currentBaseId) {
+                result = await supabaseClient
+                    .from('bases_fixacao')
+                    .update(baseData)
+                    .eq('id', currentBaseId);
+            } else {
+                result = await supabaseClient
+                    .from('bases_fixacao')
+                    .insert([baseData]);
+            }
+
+            if (result.error) throw result.error;
+
+            showToast(currentBaseId ? 'Base atualizada com sucesso!' : 'Base adicionada com sucesso!', 'success');
+            closeModal(baseModal);
+            await loadBases();
+            await loadBaseCatalog(true);
+        } catch (error) {
+            console.error('Erro ao guardar base:', error);
+            if (isMissingBasesSchema(error)) {
+                showToast('Aplique os SQL de variantes antes de criar bases.', 'warning');
+            } else {
+                showToast('Erro ao guardar base', 'error');
+            }
+        }
+    });
+}
+
+async function editBase(id) {
+    try {
+        const { data, error } = await supabaseClient
+            .from('bases_fixacao')
+            .select('*')
+            .eq('id', id)
+            .single();
+
+        if (error) throw error;
+
+        currentBaseId = id;
+        document.getElementById('base-modal-title').textContent = 'Editar Base';
+        document.getElementById('base-nome').value = data.nome || '';
+        document.getElementById('base-descricao').value = data.descricao || '';
+        document.getElementById('base-imagem').value = data.imagem || '';
+        document.getElementById('base-preco-extra').value = data.preco_extra ?? 0;
+        document.getElementById('base-ordem').value = data.ordem ?? 0;
+        document.getElementById('base-ativo').checked = Boolean(data.ativo);
+
+        openModal(baseModal);
+    } catch (error) {
+        console.error('Erro ao carregar base:', error);
+        showToast('Erro ao carregar base', 'error');
+    }
+}
+
+async function deleteBase(id) {
+    if (!confirm('Tem a certeza que deseja eliminar esta base?')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('bases_fixacao')
+            .delete()
+            .eq('id', id);
+
+        if (error) throw error;
+
+        showToast('Base eliminada com sucesso!', 'success');
+        await loadBases();
+        await loadBaseCatalog(true);
+    } catch (error) {
+        console.error('Erro ao eliminar base:', error);
+        showToast('Erro ao eliminar base', 'error');
     }
 }
 
@@ -1560,6 +1928,8 @@ document.addEventListener('DOMContentLoaded', () => {
 // Make functions globally available
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
+window.editBase = editBase;
+window.deleteBase = deleteBase;
 window.viewContact = viewContact;
 window.viewOrder = viewOrder;
 window.viewClient = viewClient;
