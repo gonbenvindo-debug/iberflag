@@ -5,7 +5,7 @@
   "main": "index.html",
   "scripts": {
     "populate": "node populate-products.js",
-    "build:css": "tailwindcss -i ./css/tailwind.css -o ./css/tailwind.output.css --minify",
+    "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:css"
   },
   "dependencies": {

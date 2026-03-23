@@ -51,14 +51,25 @@ iberflag/
 ├── faq.html               # Perguntas frequentes
 ├── envios.html            # Informações de envio
 ├── admin.html             # Painel de administração
-├── style.css              # Estilos globais com animações
-├── logic.js               # Lógica principal e carrinho
-├── produtos.js            # Lógica da página de produtos
-├── contacto.js            # Lógica do formulário
-├── faq.js                 # Lógica da FAQ
-├── admin.js               # Lógica do painel admin
 ├── personalizar.html      # Personalizador de produtos (Canva-style)
-├── personalizar.js        # Lógica do personalizador
+├── assets/
+│   ├── css/
+│   │   ├── style.css       # Estilos globais com animações
+│   │   ├── tailwind.css    # Fonte do Tailwind
+│   │   └── tailwind.output.css # CSS compilado
+│   └── js/
+│       ├── core/
+│       │   ├── logic.js    # Lógica partilhada e carrinho
+│       │   └── order-workflow.js # Workflow de encomendas
+│       └── pages/
+│           ├── admin.js
+│           ├── checkout.js
+│           ├── contacto.js
+│           ├── encomenda.js
+│           ├── encomendas.js
+│           ├── faq.js
+│           ├── personalizar.js
+│           └── produtos.js
 ├── populate-products.js   # Script para popular DB com produtos teste
 ├── package.json           # Dependências Node.js
 ├── .env                   # Variáveis de ambiente (Supabase)

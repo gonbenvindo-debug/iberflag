@@ -12,7 +12,7 @@
   ],
   "headers": [
     {
-      "source": "/css/(.*)",
+      "source": "/assets/css/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -21,7 +21,7 @@
       ]
     },
     {
-      "source": "/js/(.*)",
+      "source": "/assets/js/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
