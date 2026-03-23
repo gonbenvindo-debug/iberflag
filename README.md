@@ -114,7 +114,7 @@ Cada produto inclui um template SVG otimizado com área de impressão delimitada
 
 ### 2. Configurar Variáveis de Ambiente
 
-As credenciais do Supabase já estão no código:
+As credenciais do Supabase podem ser definidas via `window.APP_CONFIG` (opcional) e têm fallback para os valores atuais no `logic.js`:
 - URL: `https://nzwfquivulxkmxrwqalz.supabase.co`
 - ANON KEY: Já configurada em `logic.js`
 
@@ -151,8 +151,10 @@ npx serve
 ## 📊 Aceder ao Painel Admin
 
 1. Navegue para `/admin` (ou `/admin.html`)
-2. O painel está protegido - configure autenticação no Supabase
-3. Funcionalidades disponíveis:
+2. Configure o email único de admin no meta `iberflag-admin-email` em `pages/admin.html`
+3. O login é feito apenas com password (email não é pedido no formulário)
+4. O painel só aceita sessão do utilizador cujo email coincide com `iberflag-admin-email`
+5. Funcionalidades disponíveis:
    - Dashboard com estatísticas
    - Adicionar/Editar/Eliminar produtos
    - Ver encomendas e clientes
@@ -230,7 +232,7 @@ Adicione produtos através de:
 
 ## 📈 Próximos Passos
 
-1. **Autenticação Admin**: Implementar login seguro
+1. **Hardening Admin**: adicionar rate limit server-side e MFA para admin
 2. **Checkout**: Página de finalização de compra
 3. **Pagamentos**: Integração com Stripe/PayPal
 4. **Email**: Notificações automáticas

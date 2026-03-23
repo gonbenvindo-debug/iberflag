@@ -2,6 +2,24 @@
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
+const adminEmailMeta = document.querySelector('meta[name="iberflag-admin-email"]');
+const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
+let failedLoginAttempts = 0;
+let loginBlockedUntil = 0;
+
+function getSessionEmail(session) {
+    return (session?.user?.email || '').trim().toLowerCase();
+}
+
+function isAllowedAdminSession(session) {
+    if (!allowedAdminEmail) return false;
+    return getSessionEmail(session) === allowedAdminEmail;
+}
+
+function getRemainingLockSeconds() {
+    return Math.max(0, Math.ceil((loginBlockedUntil - Date.now()) / 1000));
+}
+
 function showLoginOverlay() {
     const overlay = document.getElementById('admin-login-overlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -17,10 +35,13 @@ function hideLoginOverlay() {
 async function checkAdminAuth() {
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) {
+        if (session && isAllowedAdminSession(session)) {
             hideLoginOverlay();
             loadDashboard();
         } else {
+            if (session && !isAllowedAdminSession(session)) {
+                await supabaseClient.auth.signOut();
+            }
             showLoginOverlay();
         }
     } catch {
@@ -34,24 +55,58 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email    = document.getElementById('admin-email').value.trim();
             const password = document.getElementById('admin-password').value;
             const btn      = document.getElementById('admin-login-btn');
             const btnText  = document.getElementById('admin-login-btn-text');
             const errorEl  = document.getElementById('admin-login-error');
 
+            if (!allowedAdminEmail) {
+                errorEl.textContent = 'Admin não configurado. Defina meta iberflag-admin-email em pages/admin.html.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            const remainingLockSeconds = getRemainingLockSeconds();
+            if (remainingLockSeconds > 0) {
+                errorEl.textContent = `Muitas tentativas falhadas. Aguarde ${remainingLockSeconds}s.`;
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
             btn.disabled = true;
             btnText.textContent = 'A entrar…';
             errorEl.classList.add('hidden');
 
-            const { error } = await supabaseClient.auth.signInWithPassword({ email, password });
+            const { error } = await supabaseClient.auth.signInWithPassword({
+                email: allowedAdminEmail,
+                password
+            });
 
             if (error) {
-                errorEl.textContent = 'Credenciais inválidas. Verifique o email e password.';
+                failedLoginAttempts += 1;
+                if (failedLoginAttempts >= 5) {
+                    loginBlockedUntil = Date.now() + 60_000;
+                    failedLoginAttempts = 0;
+                }
+
+                errorEl.textContent = 'Credenciais inválidas. Verifique a password.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
             } else {
+                const { data: { session } } = await supabaseClient.auth.getSession();
+                if (!isAllowedAdminSession(session)) {
+                    await supabaseClient.auth.signOut();
+                    errorEl.textContent = 'Acesso não autorizado para este utilizador.';
+                    errorEl.classList.remove('hidden');
+                    btn.disabled = false;
+                    btnText.textContent = 'Entrar';
+                    showLoginOverlay();
+                    return;
+                }
+
+                failedLoginAttempts = 0;
+                loginBlockedUntil = 0;
                 hideLoginOverlay();
                 loadDashboard();
                 if (typeof lucide !== 'undefined') lucide.createIcons();
