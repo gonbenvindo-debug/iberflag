@@ -708,7 +708,7 @@ class DesignEditor {
         } else {
             contentHeight = contentLongestSide;
             contentWidth = contentLongestSide * ratio;
-                return Math.min(max, Math.max(1, value));
+        }
 
         const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
         const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
