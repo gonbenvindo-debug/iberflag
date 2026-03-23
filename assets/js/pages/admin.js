@@ -4,8 +4,15 @@
 
 const adminUsernameMeta = document.querySelector('meta[name="iberflag-admin-username"]');
 const adminEmailMeta = document.querySelector('meta[name="iberflag-admin-email"]');
+const adminTestingMeta = document.querySelector('meta[name="iberflag-admin-testing"]');
+const adminTestUsernameMeta = document.querySelector('meta[name="iberflag-admin-test-username"]');
+const adminTestPasswordMeta = document.querySelector('meta[name="iberflag-admin-test-password"]');
 const allowedAdminUsername = (adminUsernameMeta?.content || '').trim().toLowerCase();
 const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
+const adminTestingEnabled = (adminTestingMeta?.content || '').trim().toLowerCase() === 'true';
+const testAdminUsername = (adminTestUsernameMeta?.content || '').trim().toLowerCase();
+const testAdminPassword = (adminTestPasswordMeta?.content || '').trim();
+const ADMIN_TEST_SESSION_KEY = 'iberflag_admin_test_auth';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
 
@@ -35,6 +42,12 @@ function hideLoginOverlay() {
 }
 
 async function checkAdminAuth() {
+    if (adminTestingEnabled && sessionStorage.getItem(ADMIN_TEST_SESSION_KEY) === '1') {
+        hideLoginOverlay();
+        loadDashboard();
+        return;
+    }
+
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && isAllowedAdminSession(session)) {
@@ -62,6 +75,16 @@ document.addEventListener('DOMContentLoaded', () => {
             const btn      = document.getElementById('admin-login-btn');
             const btnText  = document.getElementById('admin-login-btn-text');
             const errorEl  = document.getElementById('admin-login-error');
+
+            if (adminTestingEnabled && username === testAdminUsername && password === testAdminPassword) {
+                sessionStorage.setItem(ADMIN_TEST_SESSION_KEY, '1');
+                failedLoginAttempts = 0;
+                loginBlockedUntil = 0;
+                hideLoginOverlay();
+                loadDashboard();
+                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
+            }
 
             if (!allowedAdminUsername || !allowedAdminEmail) {
                 errorEl.textContent = 'Admin não configurado. Defina utilizador e email no head de pages/admin.html.';
@@ -127,6 +150,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
+            sessionStorage.removeItem(ADMIN_TEST_SESSION_KEY);
             await supabaseClient.auth.signOut();
             showLoginOverlay();
         });
