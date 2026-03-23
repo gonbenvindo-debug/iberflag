@@ -829,6 +829,13 @@ body {
     background: #f9fafb;
 }
 
+.trust-badge i,
+.trust-badge .lucide,
+.trust-badge svg {
+    color: #ef4825 !important;
+    stroke: currentColor;
+}
+
 .homepage-trust-strip {
     position: relative;
     background: #000000;
