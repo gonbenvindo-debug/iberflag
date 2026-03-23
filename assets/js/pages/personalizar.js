@@ -1,5 +1,14 @@
 // ===== MODERN PRODUCT CUSTOMIZER - CANVA STYLE =====
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/\"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 class DesignEditor {
     constructor() {
         this.canvas = document.getElementById('design-canvas');
@@ -52,6 +61,12 @@ class DesignEditor {
         // ===== PRE-INSERT CROP MODAL =====
         this.uploadCropState = null;
         this.uploadCropListenersReady = false;
+
+        // ===== ADD TO CART CHECKOUT-STEPS MODAL =====
+        this.cartStepsListenersReady = false;
+        this.cartStepsCurrent = 1;
+        this.cartStepsDesignSnapshot = null;
+        this.cartStepsDesignPreview = '';
         
         this.init();
     }
@@ -236,6 +251,167 @@ class DesignEditor {
         const total = basePrice + extra;
 
         priceEl.textContent = `${total.toFixed(2)}€`;
+    }
+
+    updateCartStepsTotalDisplay() {
+        const totalEl = document.getElementById('cart-steps-total');
+        if (!totalEl) return;
+
+        const basePrice = Number(this.currentProduct?.preco || 0);
+        const selectedBase = this.getSelectedBaseOption();
+        const extra = Number(selectedBase?.preco_extra_aplicado || 0);
+        const total = basePrice + extra;
+        totalEl.textContent = `${total.toFixed(2)}€`;
+    }
+
+    setupCartStepsModalListeners() {
+        if (this.cartStepsListenersReady) return;
+
+        const modal = document.getElementById('cart-steps-modal');
+        const closeBtn = document.getElementById('close-cart-steps');
+        const backBtn = document.getElementById('cart-steps-back');
+        const nextBtn = document.getElementById('cart-steps-next');
+        const confirmBtn = document.getElementById('cart-steps-confirm');
+
+        if (!modal || !closeBtn || !backBtn || !nextBtn || !confirmBtn) {
+            return;
+        }
+
+        const closeModal = () => this.closeCartStepsModal();
+
+        closeBtn.addEventListener('click', closeModal);
+        backBtn.addEventListener('click', () => this.setCartStepsCurrent(1));
+        nextBtn.addEventListener('click', () => this.setCartStepsCurrent(2));
+        confirmBtn.addEventListener('click', () => {
+            this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG());
+        });
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                closeModal();
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+                closeModal();
+            }
+        });
+
+        this.cartStepsListenersReady = true;
+    }
+
+    setCartStepsCurrent(stepNumber) {
+        this.cartStepsCurrent = stepNumber === 2 ? 2 : 1;
+
+        const step1 = document.getElementById('checkout-step-1');
+        const step2 = document.getElementById('checkout-step-2');
+        const pane1 = document.getElementById('cart-step-pane-1');
+        const pane2 = document.getElementById('cart-step-pane-2');
+        const backBtn = document.getElementById('cart-steps-back');
+        const nextBtn = document.getElementById('cart-steps-next');
+        const confirmBtn = document.getElementById('cart-steps-confirm');
+
+        if (step1 && step2) {
+            step1.classList.toggle('active', this.cartStepsCurrent === 1);
+            step1.classList.toggle('done', this.cartStepsCurrent === 2);
+            step2.classList.toggle('active', this.cartStepsCurrent === 2);
+            step2.classList.toggle('done', false);
+        }
+
+        if (pane1 && pane2) {
+            pane1.classList.toggle('active', this.cartStepsCurrent === 1);
+            pane2.classList.toggle('active', this.cartStepsCurrent === 2);
+        }
+
+        if (backBtn && nextBtn && confirmBtn) {
+            backBtn.classList.toggle('hidden', this.cartStepsCurrent !== 2);
+            nextBtn.classList.toggle('hidden', this.cartStepsCurrent !== 1);
+            confirmBtn.classList.toggle('hidden', this.cartStepsCurrent !== 2);
+        }
+    }
+
+    renderCartStepsBaseOptions() {
+        const optionsWrap = document.getElementById('cart-base-options');
+        const emptyState = document.getElementById('cart-base-empty');
+        if (!optionsWrap || !emptyState) return;
+
+        if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
+            optionsWrap.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            this.updateCartStepsTotalDisplay();
+            return;
+        }
+
+        emptyState.classList.add('hidden');
+        optionsWrap.innerHTML = this.availableBases.map((base) => {
+            const baseId = Number(base.base_id);
+            const selected = baseId === Number(this.selectedBaseId);
+            const extra = Number(base.preco_extra_aplicado || 0);
+            const baseName = escapeHtml(base.base_nome || 'Base');
+            const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId}/640/400`);
+
+            return `
+                <button type="button" class="cart-base-card ${selected ? 'selected' : ''}" data-base-id="${baseId}">
+                    <img src="${imageUrl}" alt="${baseName}">
+                    <p class="text-sm font-semibold text-slate-900">${baseName}</p>
+                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluída'}</p>
+                </button>
+            `;
+        }).join('');
+
+        optionsWrap.querySelectorAll('.cart-base-card').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.selectedBaseId = Number(button.getAttribute('data-base-id')) || null;
+                this.renderProductBaseOptions();
+                this.updateProductPriceDisplay();
+                this.renderCartStepsBaseOptions();
+            });
+        });
+
+        this.updateCartStepsTotalDisplay();
+    }
+
+    openCartStepsModal() {
+        if (this.elements.length === 0) {
+            showToast('Adicione pelo menos um elemento ao design', 'warning');
+            return;
+        }
+
+        this.setupCartStepsModalListeners();
+
+        const modal = document.getElementById('cart-steps-modal');
+        const previewImg = document.getElementById('cart-design-preview');
+        if (!modal || !previewImg) {
+            this.addToCart();
+            return;
+        }
+
+        this.ensureSelectedBase();
+        this.cartStepsDesignSnapshot = this.getDesignSVG();
+        this.cartStepsDesignPreview = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.cartStepsDesignSnapshot)}`;
+        previewImg.src = this.cartStepsDesignPreview;
+
+        this.renderCartStepsBaseOptions();
+        this.updateCartStepsTotalDisplay();
+        this.setCartStepsCurrent(1);
+
+        modal.classList.add('is-open');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden';
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    }
+
+    closeCartStepsModal() {
+        const modal = document.getElementById('cart-steps-modal');
+        if (!modal) return;
+
+        modal.classList.remove('is-open');
+        modal.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = '';
     }
 
     getAutosaveKey() {
@@ -1513,7 +1689,7 @@ class DesignEditor {
         document.getElementById('redo-btn').addEventListener('click', () => this.redo());
         
         // Add to cart
-        document.getElementById('add-to-cart-btn').addEventListener('click', () => this.addToCart());
+        document.getElementById('add-to-cart-btn').addEventListener('click', () => this.openCartStepsModal());
 
         const baseSelect = document.getElementById('base-select');
         if (baseSelect) {
@@ -1567,6 +1743,7 @@ class DesignEditor {
         // Property controls
         this.setupPropertyControls();
         this.setupUploadCropModalListeners();
+        this.setupCartStepsModalListeners();
     }
     
     setupPropertyControls() {
@@ -4159,14 +4336,15 @@ class DesignEditor {
     }
     
     // ===== ADD TO CART =====
-    addToCart() {
-        if (this.elements.length === 0) {
+    addToCart(designOverride = null) {
+        const design = designOverride || this.getDesignSVG();
+
+        if (!design && this.elements.length === 0) {
             showToast('Adicione pelo menos um elemento ao design', 'warning');
             return;
         }
         
         const cart = this.getCartData();
-        const design = this.getDesignSVG();
         const targetIndex = this.resolveEditingCartIndex(cart);
 
         const existingCartItem = targetIndex >= 0 ? cart[targetIndex] : null;
@@ -4202,6 +4380,7 @@ class DesignEditor {
         this.saveCartData(cart);
         localStorage.removeItem(this.getAutosaveKey());
         this.getLegacyAutosaveKeys().forEach((key) => localStorage.removeItem(key));
+        this.closeCartStepsModal();
         
         setTimeout(() => {
             window.location.href = '/produtos.html';

@@ -3,11 +3,15 @@
 
 insert into public.bases_fixacao (nome, slug, descricao, imagem, preco_extra, ativo, ordem)
 values
-    ('Base Cruzeta', 'base-cruzeta', 'Base em cruz para uso interior e exterior em superficies planas.', 'https://images.unsplash.com/photo-1582719478185-2f8fbe8c4f9f?auto=format&fit=crop&w=900&q=80', 14.90, true, 1),
-    ('Base Espeto', 'base-espeto', 'Fixacao para relva, terra e areia compacta.', 'https://images.unsplash.com/photo-1596461404969-9ae70f2830c1?auto=format&fit=crop&w=900&q=80', 9.90, true, 2),
-    ('Base Placa 8kg', 'base-placa-8kg', 'Base metalica de 8kg para alta estabilidade.', 'https://images.unsplash.com/photo-1523726491678-bf852e717f6a?auto=format&fit=crop&w=900&q=80', 24.90, true, 3),
-    ('Base Rodas', 'base-rodas', 'Base com rodas para deslocacao rapida em eventos.', 'https://images.unsplash.com/photo-1598300042247-d088f8ab3a91?auto=format&fit=crop&w=900&q=80', 29.90, true, 4),
-    ('Base Enchivel Agua', 'base-enchivel-agua', 'Base enchivel para maior peso e estabilidade no exterior.', 'https://images.unsplash.com/photo-1518457909831-5f6487e7f0db?auto=format&fit=crop&w=900&q=80', 19.90, true, 5)
+    ('Base Cruzeta', 'base-cruzeta', 'Base em cruz para uso interior e exterior em superficies planas.', 'https://picsum.photos/seed/base-cruzeta/900/560', 14.90, true, 1),
+    ('Base Espeto', 'base-espeto', 'Fixacao para relva, terra e areia compacta.', 'https://picsum.photos/seed/base-espeto/900/560', 9.90, true, 2),
+    ('Base Placa 8kg', 'base-placa-8kg', 'Base metalica de 8kg para alta estabilidade.', 'https://picsum.photos/seed/base-placa8/900/560', 24.90, true, 3),
+    ('Base Rodas', 'base-rodas', 'Base com rodas para deslocacao rapida em eventos.', 'https://picsum.photos/seed/base-rodas/900/560', 29.90, true, 4),
+    ('Base Enchivel Agua', 'base-enchivel-agua', 'Base enchivel para maior peso e estabilidade no exterior.', 'https://picsum.photos/seed/base-agua/900/560', 19.90, true, 5),
+    ('Base Slim Indoor', 'base-slim-indoor', 'Base leve para uso interior em superficies lisas.', 'https://picsum.photos/seed/base-slim/900/560', 11.50, true, 6),
+    ('Base Tripe Reforcado', 'base-tripe-reforcado', 'Tripe de aluminio reforcado para maior estabilidade.', 'https://picsum.photos/seed/base-tripe/900/560', 17.40, true, 7),
+    ('Base Cimento 12kg', 'base-cimento-12kg', 'Base de cimento compacta com 12kg para vento moderado.', 'https://picsum.photos/seed/base-cimento/900/560', 32.00, true, 8),
+    ('Base Premium 360', 'base-premium-360', 'Base premium com sistema de rotacao suave 360 graus.', 'https://picsum.photos/seed/base-premium360/900/560', 39.90, true, 9)
 on conflict (slug) do update set
     nome = excluded.nome,
     descricao = excluded.descricao,
@@ -32,6 +36,10 @@ mapa as (
             when 'base-placa-8kg' then 3
             when 'base-enchivel-agua' then 4
             when 'base-rodas' then 5
+            when 'base-slim-indoor' then 6
+            when 'base-tripe-reforcado' then 7
+            when 'base-cimento-12kg' then 8
+            when 'base-premium-360' then 9
             else 99
         end as ordem,
         case
@@ -46,7 +54,7 @@ mapa as (
         or
         (p.categoria = 'rollups' and b.slug in ('base-placa-8kg', 'base-rodas', 'base-cruzeta'))
         or
-        (p.categoria in ('lonas', 'banners') and b.slug in ('base-cruzeta', 'base-placa-8kg', 'base-rodas'))
+        (p.categoria in ('lonas', 'banners') and b.slug in ('base-espeto', 'base-cruzeta', 'base-placa-8kg', 'base-enchivel-agua', 'base-rodas', 'base-slim-indoor', 'base-tripe-reforcado', 'base-cimento-12kg', 'base-premium-360'))
     )
 )
 insert into public.produto_bases_fixacao (produto_id, base_id, ativo, ordem, is_default)
