@@ -1,16 +1,472 @@
 <!DOCTYPE html>
-<html lang="pt-PT">
+<html lang="pt-pt">
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>IberFlag</title>
-    <meta http-equiv="refresh" content="0; url=/pages/index.html" />
-    <script>
-        window.location.replace('/pages/index.html');
-    </script>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>IberFlag - Flybanners e Publicidade para a Peninsula Iberica</title>
+    <meta name="description" content="Especialistas em flybanners, roll-ups e produtos publicitarios para Portugal e Espanha. Producao rapida, qualidade premium e precos competitivos.">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="stylesheet" href="/assets/css/tailwind.output.css">
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="/assets/css/style.css">
 </head>
-<body>
-    <p>A redirecionar para a homepage...</p>
-    <p><a href="/pages/index.html">Clique aqui se nao for redirecionado automaticamente</a>.</p>
+<body class="homepage bg-white font-sans text-gray-900">
+
+    <!-- Navigation -->
+    <nav class="sticky top-0 z-50 nav-blur homepage-nav">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <span class="text-2xl font-bold tracking-tight text-gray-900">IberFlag</span>
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Início</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn" class="relative homepage-cart-btn px-4 py-2 transition-all flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                    </button>
+                </div>
+                <!-- Mobile Menu Button -->
+                <div class="md:hidden flex items-center gap-2">
+                    <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100">
+                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                        <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
+                    </button>
+                    <button id="mobile-menu-btn" class="p-2 hover:bg-gray-100">
+                        <i data-lucide="menu" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </nav>
+    
+    <!-- Mobile Menu -->
+    <div id="mobile-menu" class="hidden md:hidden bg-white border-b">
+        <div class="px-4 py-2 space-y-1">
+            <a href="/" class="block px-4 py-3 hover:bg-gray-100 font-medium">Início</a>
+            <a href="/produtos.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Produtos</a>
+            <a href="/sobre.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Sobre Nós</a>
+            <a href="/faq.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">FAQ</a>
+            <a href="/contacto.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Contacto</a>
+        </div>
+    </div>
+
+    <!-- Hero Section -->
+    <header class="homepage-hero overflow-hidden">
+        <div class="homepage-ambient" aria-hidden="true">
+            <div class="homepage-orb homepage-orb-1"></div>
+            <div class="homepage-orb homepage-orb-2"></div>
+            <div class="homepage-orb homepage-orb-3"></div>
+            <div class="homepage-grid-lines"></div>
+        </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10 pt-16 pb-24 md:pt-24 md:pb-28">
+            <div class="grid lg:grid-cols-[1.05fr_0.95fr] gap-12 lg:gap-16 items-center">
+                <div class="text-left fade-in-up">
+                    <h1 class="text-5xl md:text-7xl font-extrabold mb-6 leading-[0.95] tracking-tight max-w-4xl">
+                        Publicidade física,
+                        <span class="homepage-display block mt-2">tratada como marca.</span>
+                    </h1>
+                    <p class="homepage-lead text-lg md:text-2xl mb-8 leading-relaxed max-w-2xl">
+                        Flybanners, roll-ups e formatos promocionais com direção visual premium, operação rápida e presença forte no momento em que o cliente entra no espaço.
+                    </p>
+                    <div class="flex flex-col sm:flex-row gap-4 mb-10">
+                        <a href="/produtos.html" class="btn-primary group homepage-primary-action">
+                            Ver Catálogo
+                            <i data-lucide="arrow-right" class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
+                        </a>
+                        <a href="/contacto.html" class="btn-secondary homepage-secondary-action">
+                            Falar com Consultor
+                        </a>
+                    </div>
+                    <div class="grid sm:grid-cols-3 gap-4 max-w-3xl">
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">Nova marca</span>
+                            <span class="homepage-metric-label">crescimento com cada projeto</span>
+                        </div>
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">12-24h</span>
+                            <span class="homepage-metric-label">produção standard</span>
+                        </div>
+                        <div class="homepage-metric-card">
+                            <span class="homepage-metric-value">PT + ES</span>
+                            <span class="homepage-metric-label">cobertura ibérica</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="relative hidden md:block fade-in-up">
+                    <div class="homepage-hero-showcase">
+                        <div class="homepage-showcase-orbit homepage-showcase-orbit-a"></div>
+                        <div class="homepage-showcase-orbit homepage-showcase-orbit-b"></div>
+                        <div class="homepage-showcase-card homepage-showcase-card-main">
+                            <div class="homepage-showcase-image" style="background-image: url('https://images.unsplash.com/photo-1596435707700-6264292b919d?auto=format&fit=crop&q=80&w=1200');"></div>
+                            <div class="homepage-showcase-copy">
+                                <span class="homepage-floating-label">Flybanners</span>
+                                <p>Presença de grande leitura para rua, feira e ponto de venda.</p>
+                            </div>
+                        </div>
+                        <div class="homepage-showcase-card homepage-showcase-card-top">
+                            <div class="homepage-showcase-image" style="background-image: url('https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80&w=900');"></div>
+                            <div class="homepage-showcase-chip">Roll-ups</div>
+                        </div>
+                        <div class="homepage-showcase-card homepage-showcase-card-side">
+                            <div class="homepage-showcase-image" style="background-image: url('https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80&w=900');"></div>
+                            <div class="homepage-showcase-chip">Banners PVC</div>
+                        </div>
+                        <div class="homepage-showcase-ribbon">
+                            <span>Flybanners</span>
+                            <span>Roll-ups</span>
+                            <span>Lonas</span>
+                            <span>Displays</span>
+                            <span>Stands</span>
+                            <span>Retail</span>
+                        </div>
+                        <div class="homepage-showcase-note homepage-showcase-note-left">
+                            <strong>Outdoor</strong>
+                            <span>estrutura, tecido e impressão preparados para impacto à distância</span>
+                        </div>
+                        <div class="homepage-showcase-note homepage-showcase-note-right">
+                            <strong>Eventos</strong>
+                            <span>composição visual coerente entre formatos, materiais e aplicação</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Trust Badges -->
+    <section class="homepage-trust-strip py-8">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                <div class="trust-badge">
+                    <i data-lucide="truck" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Entrega Preparada</h3>
+                    <p class="text-xs text-slate-300">produção e envio coordenados</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="shield-check" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Qualidade Controlada</h3>
+                    <p class="text-xs text-slate-300">acabamento profissional</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="palette" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Direção Visual</h3>
+                    <p class="text-xs text-slate-300">apoio gráfico orientado à marca</p>
+                </div>
+                <div class="trust-badge">
+                    <i data-lucide="sparkles" class="w-6 h-6 text-sky-300 mx-auto mb-3"></i>
+                    <h3 class="font-bold text-sm">Presença Premium</h3>
+                    <p class="text-xs text-slate-300">concebido para impressionar</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Featured Categories -->
+    <section class="py-24 bg-white border-b border-stone-200 homepage-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in-up">
+                <span class="homepage-section-label">Formatos principais</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-4">Escolha o formato certo para o espaço.</h2>
+                <p class="text-gray-600 text-lg max-w-3xl mx-auto">Cada solução foi pensada para criar presença com leitura clara, montagem simples e impacto imediato.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <a href="/produtos.html?categoria=flybanners" class="category-card group">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
+                        <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80" alt="Flybanners" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Outdoor</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Flybanners</h3>
+                            <p class="text-sm text-white/70">Leitura imediata para montra, rua e evento.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 45€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+                <a href="/produtos.html?categoria=rollups" class="category-card group">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
+                        <img src="https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80" alt="Roll-ups" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Eventos</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Roll-ups</h3>
+                            <p class="text-sm text-white/70">Mensagem vertical, elegante e portátil.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 65€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+                <a href="/produtos.html?categoria=lonas" class="category-card group">
+                    <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
+                        <img src="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80" alt="Lonas" class="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500">
+                        <div class="absolute inset-0 bg-gradient-to-t from-slate-950/70 via-slate-950/20 to-transparent"></div>
+                        <div class="absolute inset-x-0 top-0 p-4 text-left text-white">
+                            <span class="homepage-card-tag">Grande formato</span>
+                        </div>
+                        <div class="absolute inset-x-0 bottom-0 p-5 text-white">
+                            <h3 class="text-2xl font-bold mb-1">Lonas & Banners</h3>
+                            <p class="text-sm text-white/70">Escala, resistência e visibilidade exterior.</p>
+                        </div>
+                    </div>
+                    <div class="bg-white p-6 border border-stone-200">
+                        <div class="flex items-center justify-between text-gray-900 mb-4">
+                            <span class="text-sm text-gray-500">A partir de 25€</span>
+                            <span class="homepage-card-link">Ver coleção</span>
+                        </div>
+                        <div class="flex items-center text-slate-900 font-semibold">
+                            Ver Modelos
+                            <i data-lucide="arrow-right" class="w-4 h-4 ml-2 group-hover:translate-x-2 transition-transform"></i>
+                        </div>
+                    </div>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Best Sellers -->
+    <section id="produtos" class="py-24 bg-stone-50/80 border-b border-stone-200 homepage-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16 fade-in-up">
+                <span class="homepage-section-label">Seleção</span>
+                <h2 class="text-4xl md:text-5xl font-bold text-gray-900 mb-4 mt-4">Os formatos mais pedidos.</h2>
+                <p class="text-gray-600 text-lg">Peças escolhidas por marcas que precisam de rapidez sem abdicar da apresentação.</p>
+            </div>
+            <div id="products-container" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                <!-- Loading Skeleton -->
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+                <div class="skeleton-card">
+                    <div class="skeleton-image"></div>
+                    <div class="p-6">
+                        <div class="skeleton-line w-3/4 mb-4"></div>
+                        <div class="skeleton-line w-full mb-2"></div>
+                        <div class="skeleton-line w-5/6"></div>
+                    </div>
+                </div>
+            </div>
+            <div class="text-center mt-12">
+                <a href="/produtos.html" class="btn-primary inline-flex">
+                    Ver Todos os Produtos
+                    <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- Why Choose Us -->
+    <section class="py-24 bg-white border-b border-stone-200 homepage-section">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="text-center mb-16">
+                <span class="homepage-section-label">Método</span>
+                <h2 class="text-4xl md:text-5xl font-bold mb-4 text-gray-900 mt-4">Um processo mais elegante do briefing à entrega.</h2>
+                <p class="text-gray-600 text-lg max-w-3xl mx-auto">Menos ruído operacional, mais controlo visual e maior confiança em cada encomenda.</p>
+            </div>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+                <div class="feature-card">
+                    <div class="homepage-feature-index">01</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="zap" class="w-8 h-8 text-slate-900"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Velocidade bem controlada</h3>
+                    <p class="text-gray-600">Produção rápida com prazos claros e execução preparada para equipas comerciais exigentes.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="homepage-feature-index">02</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="award" class="w-8 h-8 text-slate-900"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Qualidade que se sente</h3>
+                    <p class="text-gray-600">Materiais, impressão e acabamento selecionados para reforçar a percepção de marca no espaço físico.</p>
+                </div>
+                <div class="feature-card">
+                    <div class="homepage-feature-index">03</div>
+                    <div class="w-16 h-16 border border-stone-200 flex items-center justify-center mb-6 bg-stone-50 rounded-2xl">
+                        <i data-lucide="headphones" class="w-8 h-8 text-slate-900"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-3 text-gray-900">Acompanhamento direto</h3>
+                    <p class="text-gray-600">Contacto comercial próximo e apoio criativo para acelerar decisões sem perder coerência visual.</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="py-24 bg-white homepage-section">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="homepage-cta homepage-lead-form-wrap p-8 md:p-12 text-white cta-card">
+                <div class="homepage-cta-glow" aria-hidden="true"></div>
+                <div class="grid lg:grid-cols-2 gap-8 lg:gap-10 items-start relative z-10">
+                    <div>
+                        <span class="homepage-section-label homepage-section-label-invert">Pedido rápido</span>
+                        <h2 class="text-3xl md:text-4xl font-bold mt-4 mb-4">Não encontra o que procura?</h2>
+                        <p class="text-white/70 text-base md:text-lg leading-relaxed">Envie-nos o que precisa e a equipa responde com proposta personalizada, prazo e melhor solução para o seu caso.</p>
+                        <div class="mt-6 flex items-center gap-3 text-sm text-white/70">
+                            <i data-lucide="sparkles" class="w-4 h-4"></i>
+                            <span>Resposta comercial rápida</span>
+                        </div>
+                    </div>
+                    <form class="homepage-inline-form" action="/contacto.html" method="get">
+                        <div class="homepage-form-grid">
+                            <label class="homepage-field">
+                                <span>Nome</span>
+                                <input type="text" name="nome" placeholder="O seu nome" required>
+                            </label>
+                            <label class="homepage-field">
+                                <span>Email</span>
+                                <input type="email" name="email" placeholder="nome@empresa.com" required>
+                            </label>
+                        </div>
+                        <label class="homepage-field mt-4">
+                            <span>Produto</span>
+                            <input type="text" name="assunto" placeholder="Ex.: Flybanner para feira" required>
+                        </label>
+                        <label class="homepage-field mt-4">
+                            <span>Mensagem</span>
+                            <textarea name="mensagem" rows="4" placeholder="Descreva o formato, quantidades e prazo pretendido" required></textarea>
+                        </label>
+                        <div class="mt-5 flex flex-col sm:flex-row gap-3">
+                            <button type="submit" class="btn-primary homepage-primary-action px-6 py-3 font-bold inline-flex items-center justify-center gap-2">
+                                <i data-lucide="send" class="w-4 h-4"></i>
+                                Enviar Pedido
+                            </button>
+                            <a href="mailto:geral@latinflag.pt" class="btn-secondary homepage-secondary-action px-6 py-3 font-bold inline-flex items-center justify-center gap-2 text-white border-white/30">
+                                <i data-lucide="mail" class="w-4 h-4"></i>
+                                Enviar Email
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="homepage-footer py-16 border-t border-gray-200 bg-white text-gray-500">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="flex items-center gap-2 text-gray-900 mb-6">
+                        <span class="text-2xl font-bold">IberFlag</span>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="social-icon">
+                            <i data-lucide="facebook" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="instagram" class="w-5 h-5"></i>
+                        </a>
+                        <a href="#" class="social-icon">
+                            <i data-lucide="linkedin" class="w-5 h-5"></i>
+                        </a>
+                    </div>
+                </div>
+                <div>
+                    <h4 class="text-gray-900 font-bold mb-4">Links Rápidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-gray-900 transition">Início</a></li>
+                        <li><a href="/produtos.html" class="hover:text-gray-900 transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-gray-900 transition">Sobre Nós</a></li>
+                        <li><a href="/faq.html" class="hover:text-gray-900 transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-gray-900 transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-gray-900 font-bold mb-4">Informações</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-gray-900 transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-gray-900 transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-gray-900 transition">Política de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-gray-900 transition">Devoluções</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-200 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">
+                        © 2024 IberFlag. Todos os direitos reservados.
+                    </div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@latinflag.pt" class="hover:text-gray-900 transition">geral@latinflag.pt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Cart Sidebar -->
+    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+        <div class="flex flex-col h-full">
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                <div class="text-center text-gray-500 py-12">
+                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p>O seu carrinho está vazio</p>
+                </div>
+            </div>
+            <div class="border-t p-6">
+                <div class="flex justify-between mb-4 text-lg font-bold">
+                    <span>Total:</span>
+                    <span id="cart-total">0.00€</span>
+                </div>
+                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    </div>
+    <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
+
+    <script src="/assets/js/core/logic.js"></script>
+    <script>
+        lucide.createIcons();
+    </script>
 </body>
 </html>
