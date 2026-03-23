@@ -1069,27 +1069,6 @@ body {
     display: none;
 }
 
-.homepage-section-label {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 0.55rem 0.95rem;
-    border-radius: 999px;
-    border: 1px solid rgba(148, 163, 184, 0.18);
-    background: rgba(255, 255, 255, 0.72);
-    color: #475569;
-    font-size: 0.78rem;
-    font-weight: 800;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-}
-
-.homepage-section-label-invert {
-    background: rgba(255, 255, 255, 0.08);
-    border-color: rgba(255, 255, 255, 0.12);
-    color: rgba(255, 255, 255, 0.7);
-}
-
 @media (max-width: 767px) {
     .homepage-form-grid {
         grid-template-columns: 1fr;
