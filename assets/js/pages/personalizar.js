@@ -1633,11 +1633,9 @@ class DesignEditor {
             if (event.button !== undefined && event.button !== 0) return;
 
             const handle = event.target?.dataset?.handle || null;
-            const isSelectionDrag = event.target === selection || Boolean(handle);
-
-            if (isSelectionDrag) {
+            if (handle) {
                 this.uploadCropState.dragging = {
-                    mode: handle ? 'resize' : 'move',
+                    mode: 'resize',
                     handle,
                     startX: event.clientX,
                     startY: event.clientY,
@@ -1675,10 +1673,7 @@ class DesignEditor {
 
             let next = { ...drag.rect };
 
-            if (drag.mode === 'move') {
-                next.x = drag.rect.x + dx;
-                next.y = drag.rect.y + dy;
-            } else {
+            {
                 const right = drag.rect.x + drag.rect.width;
                 const bottom = drag.rect.y + drag.rect.height;
 
