@@ -2,9 +2,8 @@
   "version": 2,
   "cleanUrls": true,
   "rewrites": [
-    { "source": "/", "destination": "/pages/index.html" },
-    { "source": "/index", "destination": "/pages/index.html" },
-    { "source": "/index.html", "destination": "/pages/index.html" },
+    { "source": "/", "destination": "/index.html" },
+    { "source": "/index", "destination": "/index.html" },
     { "source": "/produtos", "destination": "/pages/produtos.html" },
     { "source": "/produtos.html", "destination": "/pages/produtos.html" },
     { "source": "/contacto", "destination": "/pages/contacto.html" },
