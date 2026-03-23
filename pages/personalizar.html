@@ -165,6 +165,11 @@
             background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
             overflow: hidden;
             user-select: none;
+            cursor: grab;
+        }
+
+        .upload-crop-stage.is-panning {
+            cursor: grabbing;
         }
 
         .upload-crop-stage img {
@@ -494,7 +499,7 @@
     </div>
 
     <script src="/assets/js/core/logic.js"></script>
-    <script src="/assets/js/pages/personalizar.js?v=20260323a"></script>
+    <script src="/assets/js/pages/personalizar.js?v=20260323b"></script>
     <script>
         lucide.createIcons();
     </script>

@@ -1632,13 +1632,26 @@ class DesignEditor {
             if (event.button !== undefined && event.button !== 0) return;
 
             const handle = event.target?.dataset?.handle || null;
-            this.uploadCropState.dragging = {
-                mode: handle ? 'resize' : 'move',
-                handle,
-                startX: event.clientX,
-                startY: event.clientY,
-                rect: { ...this.uploadCropState.selectionRect }
-            };
+            const isSelectionDrag = event.target === selection || Boolean(handle);
+
+            if (isSelectionDrag) {
+                this.uploadCropState.dragging = {
+                    mode: handle ? 'resize' : 'move',
+                    handle,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    rect: { ...this.uploadCropState.selectionRect }
+                };
+            } else {
+                this.uploadCropState.dragging = {
+                    mode: 'pan',
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    offsetX: this.uploadCropState.viewport.offsetX,
+                    offsetY: this.uploadCropState.viewport.offsetY
+                };
+                stage.classList.add('is-panning');
+            }
             event.preventDefault();
         };
 
@@ -1651,6 +1664,13 @@ class DesignEditor {
             const dy = event.clientY - drag.startY;
             const minSize = 36;
             const imageRect = state.imageRect;
+
+            if (drag.mode === 'pan') {
+                state.viewport.offsetX = drag.offsetX + dx;
+                state.viewport.offsetY = drag.offsetY + dy;
+                this.layoutUploadCropModal(false);
+                return;
+            }
 
             let next = { ...drag.rect };
 
@@ -1716,17 +1736,57 @@ class DesignEditor {
                 height: Math.max(minSize, next.height)
             };
 
+            state.selectionNormalized = {
+                x: (state.selectionRect.x - imageRect.x) / imageRect.width,
+                y: (state.selectionRect.y - imageRect.y) / imageRect.height,
+                width: state.selectionRect.width / imageRect.width,
+                height: state.selectionRect.height / imageRect.height
+            };
+
             this.renderUploadCropSelection();
         };
 
         const endPointer = () => {
             if (!this.uploadCropState) return;
+            stage.classList.remove('is-panning');
             this.uploadCropState.dragging = null;
         };
 
+        const handleWheel = (event) => {
+            if (!this.uploadCropState) return;
+
+            event.preventDefault();
+            const state = this.uploadCropState;
+            const stageRect = stage.getBoundingClientRect();
+            const pointerX = event.clientX - stageRect.left;
+            const pointerY = event.clientY - stageRect.top;
+            const prevRect = state.imageRect;
+            const minScale = 1;
+            const maxScale = 6;
+            const zoomFactor = event.deltaY < 0 ? 1.12 : (1 / 1.12);
+            const nextScale = Math.min(maxScale, Math.max(minScale, state.viewport.scale * zoomFactor));
+
+            if (nextScale === state.viewport.scale) {
+                return;
+            }
+
+            const relX = prevRect.width ? (pointerX - prevRect.x) / prevRect.width : 0.5;
+            const relY = prevRect.height ? (pointerY - prevRect.y) / prevRect.height : 0.5;
+
+            state.viewport.scale = nextScale;
+            this.layoutUploadCropModal(false);
+
+            const nextRect = state.imageRect;
+            state.viewport.offsetX += pointerX - (nextRect.x + nextRect.width * relX);
+            state.viewport.offsetY += pointerY - (nextRect.y + nextRect.height * relY);
+            this.layoutUploadCropModal(false);
+        };
+
         selection.addEventListener('mousedown', startPointer);
+        stage.addEventListener('mousedown', startPointer);
         document.addEventListener('mousemove', movePointer);
         document.addEventListener('mouseup', endPointer);
+        stage.addEventListener('wheel', handleWheel, { passive: false });
 
         const cancelFlow = () => this.resolveUploadCropModal(null);
         cancelBtn.addEventListener('click', cancelFlow);
@@ -1766,6 +1826,8 @@ class DesignEditor {
                 naturalHeight: 0,
                 imageRect: { x: 0, y: 0, width: 0, height: 0 },
                 selectionRect: null,
+                selectionNormalized: null,
+                viewport: { scale: 1, offsetX: 0, offsetY: 0 },
                 dragging: null
             };
 
@@ -1775,7 +1837,7 @@ class DesignEditor {
             image.onload = () => {
                 state.naturalWidth = image.naturalWidth;
                 state.naturalHeight = image.naturalHeight;
-                this.layoutUploadCropModal();
+                this.layoutUploadCropModal(true);
             };
 
             image.src = imageSrc;
@@ -1785,7 +1847,7 @@ class DesignEditor {
         });
     }
 
-    layoutUploadCropModal() {
+    layoutUploadCropModal(resetSelection = false) {
         if (!this.uploadCropState) return;
 
         const stage = document.getElementById('upload-crop-stage');
@@ -1797,15 +1859,20 @@ class DesignEditor {
         const maxHeight = Math.max(1, stageRect.height - 28);
         const imageRatio = this.uploadCropState.naturalWidth / Math.max(1, this.uploadCropState.naturalHeight);
 
-        let drawWidth = maxWidth;
-        let drawHeight = drawWidth / imageRatio;
-        if (drawHeight > maxHeight) {
-            drawHeight = maxHeight;
-            drawWidth = drawHeight * imageRatio;
+        let fitWidth = maxWidth;
+        let fitHeight = fitWidth / imageRatio;
+        if (fitHeight > maxHeight) {
+            fitHeight = maxHeight;
+            fitWidth = fitHeight * imageRatio;
         }
 
-        const drawX = (stageRect.width - drawWidth) / 2;
-        const drawY = (stageRect.height - drawHeight) / 2;
+        const scale = Math.max(1, this.uploadCropState.viewport?.scale || 1);
+        const drawWidth = fitWidth * scale;
+        const drawHeight = fitHeight * scale;
+        const offsetX = this.uploadCropState.viewport?.offsetX || 0;
+        const offsetY = this.uploadCropState.viewport?.offsetY || 0;
+        const drawX = ((stageRect.width - drawWidth) / 2) + offsetX;
+        const drawY = ((stageRect.height - drawHeight) / 2) + offsetY;
 
         this.uploadCropState.imageRect = {
             x: drawX,
@@ -1819,21 +1886,12 @@ class DesignEditor {
         image.style.width = `${drawWidth}px`;
         image.style.height = `${drawHeight}px`;
 
-        if (!this.uploadCropState.selectionRect) {
-            this.uploadCropState.selectionRect = {
-                x: drawX,
-                y: drawY,
-                width: drawWidth,
-                height: drawHeight
-            };
-        } else {
-            const prev = this.uploadCropState.selectionRect;
-            const minSize = 36;
-            this.uploadCropState.selectionRect = {
-                x: Math.max(drawX, Math.min(prev.x, drawX + drawWidth - minSize)),
-                y: Math.max(drawY, Math.min(prev.y, drawY + drawHeight - minSize)),
-                width: Math.max(minSize, Math.min(prev.width, drawWidth)),
-                height: Math.max(minSize, Math.min(prev.height, drawHeight))
+        if (resetSelection || !this.uploadCropState.selectionNormalized) {
+            this.uploadCropState.selectionNormalized = {
+                x: 0,
+                y: 0,
+                width: 1,
+                height: 1
             };
         }
 
@@ -1846,7 +1904,15 @@ class DesignEditor {
         const selection = document.getElementById('upload-crop-selection');
         if (!selection) return;
 
-        const rect = this.uploadCropState.selectionRect;
+        const normalized = this.uploadCropState.selectionNormalized || { x: 0, y: 0, width: 1, height: 1 };
+        const imageRect = this.uploadCropState.imageRect;
+        const rect = {
+            x: imageRect.x + imageRect.width * normalized.x,
+            y: imageRect.y + imageRect.height * normalized.y,
+            width: imageRect.width * normalized.width,
+            height: imageRect.height * normalized.height
+        };
+        this.uploadCropState.selectionRect = rect;
         selection.style.left = `${rect.x}px`;
         selection.style.top = `${rect.y}px`;
         selection.style.width = `${rect.width}px`;
@@ -1860,15 +1926,16 @@ class DesignEditor {
         const image = document.getElementById('upload-crop-image');
         if (!image) return null;
 
-        const { imageRect, selectionRect, naturalWidth, naturalHeight } = this.uploadCropState;
-        if (!selectionRect || !imageRect.width || !imageRect.height) {
+        const { naturalWidth, naturalHeight } = this.uploadCropState;
+        const normalized = this.uploadCropState.selectionNormalized;
+        if (!normalized) {
             return null;
         }
 
-        const sx = ((selectionRect.x - imageRect.x) / imageRect.width) * naturalWidth;
-        const sy = ((selectionRect.y - imageRect.y) / imageRect.height) * naturalHeight;
-        const sw = (selectionRect.width / imageRect.width) * naturalWidth;
-        const sh = (selectionRect.height / imageRect.height) * naturalHeight;
+        const sx = normalized.x * naturalWidth;
+        const sy = normalized.y * naturalHeight;
+        const sw = normalized.width * naturalWidth;
+        const sh = normalized.height * naturalHeight;
 
         const safeW = Math.max(1, Math.round(sw));
         const safeH = Math.max(1, Math.round(sh));
