@@ -358,7 +358,7 @@ if (placeOrderBtn) {
             // Clear cart
             cart = [];
             localStorage.removeItem('iberflag_cart');
-            localStorage.removeItem('latinflag_cart');
+            localStorage.removeItem('iberflag_cart');
             localStorage.removeItem('cart');
 
             // Show success message

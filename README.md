@@ -259,7 +259,7 @@ Adicione produtos através de:
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
-- Email: geral@latinflag.pt
+- Email: geral@iberflag.pt
 - Telefone: +351 900 000 000
 
 ## 📄 Licença

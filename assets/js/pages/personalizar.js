@@ -29,7 +29,7 @@ class DesignEditor {
         this.editDesignId = null;
         this.productId = null;
         this.cartStorageKey = 'iberflag_cart';
-        this.legacyCartStorageKeys = ['latinflag_cart', 'cart'];
+        this.legacyCartStorageKeys = ['iberflag_cart', 'cart'];
         this.printAreaBounds = { x: 50, y: 50, width: 700, height: 500 };
         this.keepAspectRatio = false;
         this.baseCanvasSize = { width: 800, height: 600 };
@@ -126,7 +126,7 @@ class DesignEditor {
     }
 
     getLegacyAutosaveKeys() {
-        return [`latinflag_autosave_${this.productId || 'default'}`];
+        return [`iberflag_autosave_${this.productId || 'default'}`];
     }
 
     getCartData() {

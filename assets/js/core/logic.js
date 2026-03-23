@@ -7,7 +7,7 @@ const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ===== CART MANAGEMENT =====
 const CART_STORAGE_KEY = 'iberflag_cart';
-const LEGACY_CART_STORAGE_KEYS = ['latinflag_cart', 'cart'];
+const LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
 
 function getStoredCart() {
     const storageKeys = [CART_STORAGE_KEY, ...LEGACY_CART_STORAGE_KEYS];
