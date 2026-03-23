@@ -2,7 +2,9 @@
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
+const adminUsernameMeta = document.querySelector('meta[name="iberflag-admin-username"]');
 const adminEmailMeta = document.querySelector('meta[name="iberflag-admin-email"]');
+const allowedAdminUsername = (adminUsernameMeta?.content || '').trim().toLowerCase();
 const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
@@ -55,13 +57,20 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            const username = document.getElementById('admin-username').value.trim().toLowerCase();
             const password = document.getElementById('admin-password').value;
             const btn      = document.getElementById('admin-login-btn');
             const btnText  = document.getElementById('admin-login-btn-text');
             const errorEl  = document.getElementById('admin-login-error');
 
-            if (!allowedAdminEmail) {
-                errorEl.textContent = 'Admin não configurado. Defina meta iberflag-admin-email em pages/admin.html.';
+            if (!allowedAdminUsername || !allowedAdminEmail) {
+                errorEl.textContent = 'Admin não configurado. Defina utilizador e email no head de pages/admin.html.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
+
+            if (username !== allowedAdminUsername) {
+                errorEl.textContent = 'Utilizador inválido.';
                 errorEl.classList.remove('hidden');
                 return;
             }
@@ -89,7 +98,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     failedLoginAttempts = 0;
                 }
 
-                errorEl.textContent = 'Credenciais inválidas. Verifique a password.';
+                errorEl.textContent = 'Credenciais inválidas. Verifique o utilizador e password.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
