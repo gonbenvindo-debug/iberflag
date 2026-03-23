@@ -1426,6 +1426,17 @@ class DesignEditor {
         document.addEventListener('mouseup', () => this.handleMouseUp());
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         window.addEventListener('resize', () => this.syncCanvasViewport());
+
+        // Paste image (Ctrl+V)
+        document.addEventListener('paste', (e) => this.handlePaste(e));
+
+        // Drag & drop image onto the canvas area
+        const canvasStage = document.getElementById('canvas-stage');
+        if (canvasStage) {
+            canvasStage.addEventListener('dragover', (e) => this.handleDragOver(e));
+            canvasStage.addEventListener('dragleave', (e) => this.handleDragLeave(e));
+            canvasStage.addEventListener('drop', (e) => this.handleDrop(e));
+        }
         
         // Property controls
         this.setupPropertyControls();
@@ -1587,28 +1598,73 @@ class DesignEditor {
     handleImageUpload(e) {
         const file = e.target.files[0];
         if (!file) return;
-        
-        const reader = new FileReader();
-        reader.onload = async (event) => {
-            const src = event.target.result;
-            const fallbackName = (file && file.name ? file.name.replace(/\.[^.]+$/, '') : '').trim();
-            const imageName = fallbackName || 'Imagem';
+        this.handleImageFile(file).finally(() => { e.target.value = ''; });
+    }
 
-            try {
-                const cropped = await this.openUploadCropModal(src);
-                if (!cropped) {
-                    return;
+    handleImageFile(file) {
+        if (!file || !file.type.startsWith('image/')) return Promise.resolve();
+        return new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = async (event) => {
+                const src = event.target.result;
+                const fallbackName = (file.name ? file.name.replace(/\.[^.]+$/, '') : '').trim();
+                const imageName = fallbackName || 'Imagem';
+                try {
+                    const cropped = await this.openUploadCropModal(src);
+                    if (cropped) {
+                        this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName);
+                    }
+                } catch (error) {
+                    console.error('Erro ao inserir imagem:', error);
+                    showToast('Nao foi possivel inserir a imagem', 'error');
+                } finally {
+                    resolve();
                 }
+            };
+            reader.onerror = () => resolve();
+            reader.readAsDataURL(file);
+        });
+    }
 
-                this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName);
-            } catch (error) {
-                console.error('Erro no recorte da imagem antes de inserir:', error);
-                showToast('Nao foi possivel recortar a imagem', 'error');
-            } finally {
-                e.target.value = '';
+    handlePaste(e) {
+        const target = e.target;
+        if (target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName)) return;
+        const items = e.clipboardData?.items;
+        if (!items) return;
+        for (const item of items) {
+            if (item.kind === 'file' && item.type.startsWith('image/')) {
+                e.preventDefault();
+                const file = item.getAsFile();
+                if (file) this.handleImageFile(file);
+                break;
             }
-        };
-        reader.readAsDataURL(file);
+        }
+    }
+
+    handleDragOver(e) {
+        const hasImage = Array.from(e.dataTransfer?.items || []).some(
+            item => item.kind === 'file' && item.type.startsWith('image/')
+        );
+        if (!hasImage) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'copy';
+        document.getElementById('canvas-wrapper')?.classList.add('drop-target');
+    }
+
+    handleDragLeave(e) {
+        const stage = document.getElementById('canvas-stage');
+        if (stage && !stage.contains(e.relatedTarget)) {
+            document.getElementById('canvas-wrapper')?.classList.remove('drop-target');
+        }
+    }
+
+    handleDrop(e) {
+        e.preventDefault();
+        document.getElementById('canvas-wrapper')?.classList.remove('drop-target');
+        const files = Array.from(e.dataTransfer?.files || []).filter(f => f.type.startsWith('image/'));
+        if (files.length > 0) {
+            this.handleImageFile(files[0]);
+        }
     }
 
     setupUploadCropModalListeners() {
