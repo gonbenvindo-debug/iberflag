@@ -1662,7 +1662,7 @@ class DesignEditor {
             const dx = event.clientX - drag.startX;
             const dy = event.clientY - drag.startY;
             const minSize = 36;
-            const baseRect = state.baseImageRect;
+            const imageRect = state.imageRect;
 
             if (drag.mode === 'pan') {
                 state.viewport.offsetX = drag.offsetX + dx;
@@ -1733,10 +1733,10 @@ class DesignEditor {
             };
 
             state.selectionNormalized = {
-                x: state.selectionRect.x / baseRect.width,
-                y: state.selectionRect.y / baseRect.height,
-                width: state.selectionRect.width / baseRect.width,
-                height: state.selectionRect.height / baseRect.height
+                x: (state.selectionRect.x - imageRect.x) / imageRect.width,
+                y: (state.selectionRect.y - imageRect.y) / imageRect.height,
+                width: state.selectionRect.width / imageRect.width,
+                height: state.selectionRect.height / imageRect.height
             };
 
             this.renderUploadCropSelection();
@@ -1821,7 +1821,6 @@ class DesignEditor {
                 imageSrc,
                 naturalWidth: 0,
                 naturalHeight: 0,
-                baseImageRect: { x: 0, y: 0, width: 0, height: 0 },
                 imageRect: { x: 0, y: 0, width: 0, height: 0 },
                 selectionRect: null,
                 selectionNormalized: null,
@@ -1871,13 +1870,6 @@ class DesignEditor {
         const drawX = ((stageRect.width - fitWidth) / 2) + offsetX;
         const drawY = ((stageRect.height - fitHeight) / 2) + offsetY;
 
-        this.uploadCropState.baseImageRect = {
-            x: 0,
-            y: 0,
-            width: fitWidth,
-            height: fitHeight
-        };
-
         this.uploadCropState.imageRect = {
             x: drawX,
             y: drawY,
@@ -1910,10 +1902,10 @@ class DesignEditor {
         if (!selection) return;
 
         const normalized = this.uploadCropState.selectionNormalized || { x: 0, y: 0, width: 1, height: 1 };
-        const imageRect = this.uploadCropState.baseImageRect;
+        const imageRect = this.uploadCropState.imageRect;
         const rect = {
-            x: imageRect.width * normalized.x,
-            y: imageRect.height * normalized.y,
+            x: imageRect.x + imageRect.width * normalized.x,
+            y: imageRect.y + imageRect.height * normalized.y,
             width: imageRect.width * normalized.width,
             height: imageRect.height * normalized.height
         };
