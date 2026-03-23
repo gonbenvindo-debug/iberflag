@@ -500,6 +500,42 @@ class DesignEditor {
         this.bringElementInBounds(elementData);
     }
 
+    moveElementFromDragStart(elementData, deltaX, deltaY) {
+        if (!elementData || !this.dragStart) {
+            return;
+        }
+
+        if (elementData.rotation && elementData.rotation !== 0) {
+            const proposedTranslateX = (this.dragStart.translateX ?? elementData.translateX ?? 0) + deltaX;
+            const proposedTranslateY = (this.dragStart.translateY ?? elementData.translateY ?? 0) + deltaY;
+            const clampedTranslate = this.clampRotatedTranslate(
+                elementData,
+                proposedTranslateX,
+                proposedTranslateY
+            );
+
+            elementData.translateX = clampedTranslate.translateX;
+            elementData.translateY = clampedTranslate.translateY;
+            return;
+        }
+
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+            elementData.element.setAttribute('x', (this.dragStart.elementX || 0) + deltaX);
+            elementData.element.setAttribute('y', (this.dragStart.elementY || 0) + deltaY);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            elementData.element.setAttribute('cx', (this.dragStart.elementX || 0) + deltaX);
+            elementData.element.setAttribute('cy', (this.dragStart.elementY || 0) + deltaY);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+            const startPoints = this.dragStart.points || [];
+            if (startPoints.length >= 3) {
+                const translatedPoints = startPoints.map(([x, y]) => `${x + deltaX},${y + deltaY}`);
+                elementData.element.setAttribute('points', translatedPoints.join(' '));
+            }
+        }
+
+        this.bringElementInBounds(elementData);
+    }
+
     normalizeRotation(rotation) {
         // Clean up floating point errors
         const deadzone = 0.1;
@@ -521,39 +557,15 @@ class DesignEditor {
         if (!elementData) return { horizontal: [], vertical: [] };
 
         const bounds = this.getEditableBounds();
-            const bbox = elementData.element.getBBox();
         
-        const guides = {
+        return {
             horizontal: [
-                { value: bounds.y, type: 'canvas-edge' },
-                { value: bounds.y + bounds.height / 2, type: 'center-canvas' },
-                { value: bounds.y + bounds.height, type: 'canvas-edge' }
+                { value: bounds.y + bounds.height / 2, type: 'center-canvas' }
             ],
             vertical: [
-                { value: bounds.x, type: 'canvas-edge' },
-                { value: bounds.x + bounds.width / 2, type: 'center-canvas' },
-                { value: bounds.x + bounds.width, type: 'canvas-edge' }
+                { value: bounds.x + bounds.width / 2, type: 'center-canvas' }
             ]
         };
-
-        // Adicionar guides de outros elementos
-        this.elements.forEach(el => {
-            if (el.id !== elementData.id) {
-                const elBbox = el.element.getBBox();
-                guides.horizontal.push(
-                    { value: elBbox.y, type: 'element', elementId: el.id },
-                    { value: elBbox.y + elBbox.height / 2, type: 'element', elementId: el.id },
-                    { value: elBbox.y + elBbox.height, type: 'element', elementId: el.id }
-                );
-                guides.vertical.push(
-                    { value: elBbox.x, type: 'element', elementId: el.id },
-                    { value: elBbox.x + elBbox.width / 2, type: 'element', elementId: el.id },
-                    { value: elBbox.x + elBbox.width, type: 'element', elementId: el.id }
-                );
-            }
-        });
-
-        return guides;
     }
 
     findSnapPoints(position, guides, threshold) {
@@ -1963,8 +1975,13 @@ class DesignEditor {
 
         // Store the mouse position at drag start
         this.dragStart = {
+            startClientX: e.clientX,
+            startClientY: e.clientY,
             mouseX: e.clientX,
-            mouseY: e.clientY
+            mouseY: e.clientY,
+            bbox: elementData.element.getBBox(),
+            translateX: elementData.translateX || 0,
+            translateY: elementData.translateY || 0
         };
         
         // Store current element position
@@ -1987,8 +2004,8 @@ class DesignEditor {
         if (this.isDragging && this.selectedElement) {
             // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
             const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - this.dragStart.mouseX,
-                e.clientY - this.dragStart.mouseY
+                e.clientX - (this.dragStart.startClientX ?? this.dragStart.mouseX),
+                e.clientY - (this.dragStart.startClientY ?? this.dragStart.mouseY)
             );
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
@@ -2023,10 +2040,7 @@ class DesignEditor {
                 this.hideGuideLines();
             }
             
-            this.moveElementBy(this.selectedElement, deltaX, deltaY);
-
-            this.dragStart.mouseX = e.clientX;
-            this.dragStart.mouseY = e.clientY;
+            this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
             
             this.showResizeHandles(this.selectedElement);
         } else if (this.isResizing && this.selectedElement) {
