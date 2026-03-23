@@ -150,18 +150,8 @@ class DesignEditor {
     }
 
     getEditableBounds() {
-        if (this.printAreaBounds) {
-            return this.printAreaBounds;
-        }
-
-        const canvasWidth = Number(this.baseCanvasSize?.width) || 800;
-        const canvasHeight = Number(this.baseCanvasSize?.height) || 600;
-        return {
-            x: 50,
-            y: 50,
-            width: Math.max(100, canvasWidth - 100),
-            height: Math.max(100, canvasHeight - 100)
-        };
+        // Element interaction limits must match the visible canvas-wrapper area.
+        return this.getCanvasBounds();
     }
 
     getCanvasBounds() {
