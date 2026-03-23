@@ -246,7 +246,7 @@ class DesignEditor {
 
         const clamp = (value, min, max) => {
             if (!Number.isFinite(value)) return min;
-            if (max < min) return min;
+            if (max < min) return Math.max(1, max);
             return Math.min(max, Math.max(min, value));
         };
 
@@ -521,20 +521,18 @@ class DesignEditor {
         if (!elementData) return { horizontal: [], vertical: [] };
 
         const bounds = this.getEditableBounds();
-        const bbox = elementData.element.getBBox();
+            const bbox = elementData.element.getBBox();
         
         const guides = {
             horizontal: [
+                { value: bounds.y, type: 'canvas-edge' },
                 { value: bounds.y + bounds.height / 2, type: 'center-canvas' },
-                { value: bbox.y, type: 'top' },
-                { value: bbox.y + bbox.height / 2, type: 'center-element' },
-                { value: bbox.y + bbox.height, type: 'bottom' }
+                { value: bounds.y + bounds.height, type: 'canvas-edge' }
             ],
             vertical: [
+                { value: bounds.x, type: 'canvas-edge' },
                 { value: bounds.x + bounds.width / 2, type: 'center-canvas' },
-                { value: bbox.x, type: 'left' },
-                { value: bbox.x + bbox.width / 2, type: 'center-element' },
-                { value: bbox.x + bbox.width, type: 'right' }
+                { value: bounds.x + bounds.width, type: 'canvas-edge' }
             ]
         };
 
@@ -710,7 +708,7 @@ class DesignEditor {
         } else {
             contentHeight = contentLongestSide;
             contentWidth = contentLongestSide * ratio;
-        }
+                return Math.min(max, Math.max(1, value));
 
         const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
         const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
@@ -1023,7 +1021,7 @@ class DesignEditor {
 
             if (viewBoxAttr) {
                 const parts = viewBoxAttr.split(/\s+/).map(Number);
-                if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+            if (max < min) return Math.max(1, max);
                     sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
                 }
             } else {
