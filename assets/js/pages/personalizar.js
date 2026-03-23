@@ -36,6 +36,16 @@ class DesignEditor {
         this.initialCanvasSize = null; // Will store computed base size at 100% zoom
         this.handlesFrameRequest = null;
         
+        // ===== GUIDES & SNAP =====
+        this.showGuides = false;
+        this.guideLines = [];
+        this.guideThreshold = 10; // pixels para snap
+        this.gridSize = 10; // para snap grid
+        
+        // ===== CROP =====
+        this.cropMode = false;
+        this.cropBounds = null;
+        
         this.init();
     }
     
@@ -406,6 +416,141 @@ class DesignEditor {
         rotation = ((rotation % 360) + 360) % 360;
 
         return Number(rotation.toFixed(1));
+    }
+
+    // ===== GUIDES & ALIGNMENT =====
+    calculateGuides(elementData) {
+        if (!elementData) return { horizontal: [], vertical: [] };
+
+        const bounds = this.getEditableBounds();
+        const bbox = elementData.element.getBBox();
+        
+        const guides = {
+            horizontal: [
+                { value: bounds.x + bounds.width / 2, type: 'center-canvas' },
+                { value: bbox.y, type: 'top' },
+                { value: bbox.y + bbox.height / 2, type: 'center-element' },
+                { value: bbox.y + bbox.height, type: 'bottom' }
+            ],
+            vertical: [
+                { value: bounds.y + bounds.height / 2, type: 'center-canvas' },
+                { value: bbox.x, type: 'left' },
+                { value: bbox.x + bbox.width / 2, type: 'center-element' },
+                { value: bbox.x + bbox.width, type: 'right' }
+            ]
+        };
+
+        // Adicionar guides de outros elementos
+        this.elements.forEach(el => {
+            if (el.id !== elementData.id) {
+                const elBbox = el.element.getBBox();
+                guides.horizontal.push(
+                    { value: elBbox.y, type: 'element', elementId: el.id },
+                    { value: elBbox.y + elBbox.height / 2, type: 'element', elementId: el.id },
+                    { value: elBbox.y + elBbox.height, type: 'element', elementId: el.id }
+                );
+                guides.vertical.push(
+                    { value: elBbox.x, type: 'element', elementId: el.id },
+                    { value: elBbox.x + elBbox.width / 2, type: 'element', elementId: el.id },
+                    { value: elBbox.x + elBbox.width, type: 'element', elementId: el.id }
+                );
+            }
+        });
+
+        return guides;
+    }
+
+    findSnapPoints(position, guides, threshold) {
+        const snaps = { x: null, y: null };
+
+        // Snap horizontal
+        guides.horizontal.forEach(guide => {
+            const diff = Math.abs(position.y - guide.value);
+            if (diff < threshold && diff < (snaps.y?.diff === undefined ? Infinity : snaps.y.diff)) {
+                snaps.y = { value: guide.value, diff, type: guide.type };
+            }
+        });
+
+        // Snap vertical
+        guides.vertical.forEach(guide => {
+            const diff = Math.abs(position.x - guide.value);
+            if (diff < threshold && diff < (snaps.x?.diff === undefined ? Infinity : snaps.x.diff)) {
+                snaps.x = { value: guide.value, diff, type: guide.type };
+            }
+        });
+
+        return snaps;
+    }
+
+    showGuideLines(snaps) {
+        this.hideGuideLines();
+
+        if (!snaps.x && !snaps.y) return;
+
+        const canvasBounds = this.getCanvasBounds();
+
+        // Linha vertical
+        if (snaps.x) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', String(snaps.x.value));
+            line.setAttribute('y1', String(canvasBounds.y));
+            line.setAttribute('x2', String(snaps.x.value));
+            line.setAttribute('y2', String(canvasBounds.y + canvasBounds.height));
+            line.setAttribute('stroke', '#3b82f6');
+            line.setAttribute('stroke-width', '1');
+            line.setAttribute('stroke-dasharray', '4,4');
+            line.setAttribute('pointer-events', 'none');
+            line.setAttribute('class', 'guide-line');
+            line.setAttribute('opacity', '0.7');
+            this.canvas.appendChild(line);
+            this.guideLines.push(line);
+        }
+
+        // Linha horizontal
+        if (snaps.y) {
+            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+            line.setAttribute('x1', String(canvasBounds.x));
+            line.setAttribute('y1', String(snaps.y.value));
+            line.setAttribute('x2', String(canvasBounds.x + canvasBounds.width));
+            line.setAttribute('y2', String(snaps.y.value));
+            line.setAttribute('stroke', '#3b82f6');
+            line.setAttribute('stroke-width', '1');
+            line.setAttribute('stroke-dasharray', '4,4');
+            line.setAttribute('pointer-events', 'none');
+            line.setAttribute('class', 'guide-line');
+            line.setAttribute('opacity', '0.7');
+            this.canvas.appendChild(line);
+            this.guideLines.push(line);
+        }
+
+        this.bringPrintAreaOverlaysToFront();
+    }
+
+    hideGuideLines() {
+        this.guideLines.forEach(line => line.remove());
+        this.guideLines = [];
+    }
+
+    applySnapToMove(deltaX, deltaY, snaps) {
+        let snappedDeltaX = deltaX;
+        let snappedDeltaY = deltaY;
+
+        if (snaps.x && Math.abs(snaps.x.diff) < this.guideThreshold) {
+            snappedDeltaX = snaps.x.value - (this.dragStart.elementX || 0);
+        }
+
+        if (snaps.y && Math.abs(snaps.y.diff) < this.guideThreshold) {
+            snappedDeltaY = snaps.y.value - (this.dragStart.elementY || 0);
+        }
+
+        return { deltaX: snappedDeltaX, deltaY: snappedDeltaY };
+    }
+
+    applySnapToGrid(deltaX, deltaY, gridSize) {
+        return {
+            deltaX: Math.round(deltaX / gridSize) * gridSize,
+            deltaY: Math.round(deltaY / gridSize) * gridSize
+        };
     }
 
     setDefaultPrintArea() {
@@ -1078,6 +1223,12 @@ class DesignEditor {
             this.updateRotation(e.target.value);
             document.getElementById('prop-shape-rotation-val').textContent = e.target.value;
         });
+
+        // Crop image button
+        const cropBtn = document.getElementById('crop-image-btn');
+        if (cropBtn) {
+            cropBtn.addEventListener('click', () => this.startCropMode());
+        }
     }
     
     focusPropertiesPanel() {
@@ -1741,8 +1892,43 @@ class DesignEditor {
                 e.clientX - this.dragStart.mouseX,
                 e.clientY - this.dragStart.mouseY
             );
-            const deltaX = svgDelta.dx;
-            const deltaY = svgDelta.dy;
+            let deltaX = svgDelta.dx;
+            let deltaY = svgDelta.dy;
+            
+            // ===== GUIDES & SNAP ALIGNMENT =====
+            // Calcular guides e mostrar linhas de alinhaçã o
+            const guides = this.calculateGuides(this.selectedElement);
+            const elementBbox = this.selectedElement.element.getBBox();
+            
+            // Estimar posição final do elemento para snap
+            const bbox = this.selectedElement.element.getBBox();
+            const proposedY = bbox.y + deltaY;
+            const proposedX = bbox.x + deltaX;
+            
+            const snapPoints = this.findSnapPoints(
+                { x: proposedX + bbox.width / 2, y: proposedY + bbox.height / 2 },
+                guides,
+                this.guideThreshold
+            );
+            
+            // Mostrar guides visuais
+            if (snapPoints.x || snapPoints.y) {
+                this.showGuideLines(snapPoints);
+            } else {
+                this.hideGuideLines();
+            }
+            
+            // ===== SNAP-TO-GRID (Shift) =====
+            if (e.shiftKey) {
+                const gridSnap = this.applySnapToGrid(deltaX, deltaY, this.gridSize);
+                deltaX = gridSnap.deltaX;
+                deltaY = gridSnap.deltaY;
+            } else {
+                // Aplicar snap de alinhamento (sem shift, apenas visual)
+                const snappedMove = this.applySnapToMove(deltaX, deltaY, snapPoints);
+                deltaX = snappedMove.deltaX;
+                deltaY = snappedMove.deltaY;
+            }
             
             this.moveElementBy(this.selectedElement, deltaX, deltaY);
 
@@ -1765,6 +1951,10 @@ class DesignEditor {
         if (this.isDragging || this.isResizing || this.isRotating) {
             this.commitHistoryGesture();
         }
+        
+        // Limpar guides
+        this.hideGuideLines();
+        
         this.isDragging = false;
         this.isResizing = false;
         this.isRotating = false;
@@ -1776,12 +1966,20 @@ class DesignEditor {
             this.handlesFrameRequest = null;
         }
 
+        // ===== APPLY CROP AUTOMATICALLY =====
+        if (this.cropMode && wasResizing) {
+            // Auto-apply crop após reposicionar handles
+            showToast('Pressione Enter para confirmar corte ou Escape para cancelar', 'info');
+        }
+
         if (this.selectedElement) {
             // After rotation or drag, ensure element stays within bounds
-            if (wasRotating || wasDragging || wasResizing) {
+            if ((wasRotating || wasDragging || wasResizing) && !this.cropMode) {
                 this.bringElementInBounds(this.selectedElement);
             }
-            this.showResizeHandles(this.selectedElement);
+            if (!this.cropMode) {
+                this.showResizeHandles(this.selectedElement);
+            }
         }
     }
     
@@ -1842,6 +2040,72 @@ class DesignEditor {
     
     doResize(e) {
         if (!this.selectedElement) return;
+
+        // ===== CROP MODE =====
+        if (this.cropMode && this.cropBounds) {
+            const svgDelta = this.clientDeltaToSvgDelta(
+                e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
+                e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
+            );
+            let dx = svgDelta.dx;
+            let dy = svgDelta.dy;
+
+            const bbox = this.dragStart.bbox || this.cropBounds;
+            let newWidth = bbox.width;
+            let newHeight = bbox.height;
+            let newX = bbox.x;
+            let newY = bbox.y;
+
+            switch(this.resizeHandle) {
+                case 'se':
+                    newWidth = Math.max(20, bbox.width + dx);
+                    newHeight = Math.max(20, bbox.height + dy);
+                    break;
+                case 'sw':
+                    newWidth = Math.max(20, bbox.width - dx);
+                    newHeight = Math.max(20, bbox.height + dy);
+                    newX = bbox.x + dx;
+                    break;
+                case 'ne':
+                    newWidth = Math.max(20, bbox.width + dx);
+                    newHeight = Math.max(20, bbox.height - dy);
+                    newY = bbox.y + dy;
+                    break;
+                case 'nw':
+                    newWidth = Math.max(20, bbox.width - dx);
+                    newHeight = Math.max(20, bbox.height - dy);
+                    newX = bbox.x + dx;
+                    newY = bbox.y + dy;
+                    break;
+                case 'e':
+                    newWidth = Math.max(20, bbox.width + dx);
+                    break;
+                case 'w':
+                    newWidth = Math.max(20, bbox.width - dx);
+                    newX = bbox.x + dx;
+                    break;
+                case 's':
+                    newHeight = Math.max(20, bbox.height + dy);
+                    break;
+                case 'n':
+                    newHeight = Math.max(20, bbox.height - dy);
+                    newY = bbox.y + dy;
+                    break;
+            }
+
+            // Garantir que o crop não sai dos limites da imagem
+            const imageBbox = this.selectedElement.element.getBBox();
+            newX = Math.max(imageBbox.x, Math.min(newX, imageBbox.x + imageBbox.width - 20));
+            newY = Math.max(imageBbox.y, Math.min(newY, imageBbox.y + imageBbox.height - 20));
+            newWidth = Math.min(newWidth, imageBbox.x + imageBbox.width - newX);
+            newHeight = Math.min(newHeight, imageBbox.y + imageBbox.height - newY);
+
+            this.cropBounds = { x: newX, y: newY, width: newWidth, height: newHeight };
+            this.showCropHandles();
+            return;
+        }
+
+        // ===== NORMAL RESIZE =====
 
         const svgDelta = this.clientDeltaToSvgDelta(
             e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
@@ -2437,6 +2701,24 @@ class DesignEditor {
         const targetTag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         const isTypingContext = ['input', 'textarea', 'select'].includes(targetTag);
 
+        // ===== CROP MODE HANDLING =====
+        if (this.cropMode) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                this.applyCrop();
+                return;
+            }
+            if (e.key === 'Escape') {
+                e.preventDefault();
+                this.cropMode = false;
+                this.cropBounds = null;
+                this.hideResizeHandles();
+                this.selectElement(this.selectedElement);
+                showToast('Corte cancelado', 'info');
+                return;
+            }
+        }
+
         if ((e.ctrlKey || e.metaKey) && !isTypingContext) {
             const key = e.key.toLowerCase();
             if (key === 'z' && !e.shiftKey) {
@@ -2877,6 +3159,161 @@ class DesignEditor {
         this.getLegacyAutosaveKeys().forEach((key) => {
             localStorage.setItem(key, design);
         });
+    }
+
+    // ===== CROP FUNCTIONALITY =====
+    startCropMode() {
+        if (!this.selectedElement || this.selectedElement.type !== 'image') {
+            showToast('Seleccione uma imagem para cortar', 'warning');
+            return;
+        }
+
+        this.cropMode = true;
+        this.isDragging = false;
+        this.isResizing = false;
+        
+        const bbox = this.selectedElement.element.getBBox();
+        this.cropBounds = {
+            x: bbox.x,
+            y: bbox.y,
+            width: bbox.width,
+            height: bbox.height
+        };
+
+        showToast('Modo de corte ativo - arraste os handles para cortar', 'info');
+        this.showCropHandles();
+    }
+
+    showCropHandles() {
+        const handlesContainer = document.getElementById('resize-handles');
+        handlesContainer.innerHTML = '';
+        handlesContainer.classList.remove('hidden');
+
+        const canvasRect = this.canvas.getBoundingClientRect();
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        const bbox = this.cropBounds;
+        const ctm = this.selectedElement.element.getScreenCTM();
+
+        if (!ctm) return;
+
+        const toCanvasPoint = (x, y) => {
+            const p = new DOMPoint(x, y).matrixTransform(ctm);
+            return {
+                x: p.x - wrapperRect.left,
+                y: p.y - wrapperRect.top
+            };
+        };
+
+        const tl = toCanvasPoint(bbox.x, bbox.y);
+        const tr = toCanvasPoint(bbox.x + bbox.width, bbox.y);
+        const br = toCanvasPoint(bbox.x + bbox.width, bbox.y + bbox.height);
+        const bl = toCanvasPoint(bbox.x, bbox.y + bbox.height);
+
+        const mid = (a, b) => ({
+            x: (a.x + b.x) / 2,
+            y: (a.y + b.y) / 2
+        });
+
+        const tc = mid(tl, tr);
+        const rc = mid(tr, br);
+        const bc = mid(bl, br);
+        const lc = mid(tl, bl);
+
+        const handlePositions = {
+            'nw': tl,
+            'ne': tr,
+            'sw': bl,
+            'se': br,
+            'n': tc,
+            's': bc,
+            'e': rc,
+            'w': lc
+        };
+
+        Object.entries(handlePositions).forEach(([pos, point]) => {
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle crop-handle';
+            handle.dataset.position = pos;
+            handle.style.cursor = `${pos}-resize`;
+            handle.style.left = (point.x - 5) + 'px';
+            handle.style.top = (point.y - 5) + 'px';
+            handle.style.backgroundColor = '#a855f7';
+            
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                this.startCropResize(e, pos);
+            });
+            
+            handlesContainer.appendChild(handle);
+        });
+    }
+
+    startCropResize(e, position) {
+        this.isResizing = true;
+        this.resizeHandle = position;
+        this.dragStart = {
+            x: e.clientX,
+            y: e.clientY,
+            startClientX: e.clientX,
+            startClientY: e.clientY,
+            bbox: { ...this.cropBounds }
+        };
+    }
+
+    applyCrop() {
+        if (!this.selectedElement || this.selectedElement.type !== 'image' || !this.cropBounds) {
+            return;
+        }
+
+        const currentBbox = this.selectedElement.element.getBBox();
+        const widthRatio = this.cropBounds.width / currentBbox.width;
+        const heightRatio = this.cropBounds.height / currentBbox.height;
+        const xRatio = (this.cropBounds.x - currentBbox.x) / currentBbox.width;
+        const yRatio = (this.cropBounds.y - currentBbox.y) / currentBbox.height;
+
+        // Armazenar crop no elementData
+        this.selectedElement.cropBounds = this.cropBounds;
+        this.selectedElement.cropData = {
+            widthRatio,
+            heightRatio,
+            xRatio,
+            yRatio
+        };
+
+        // Aplicar clipPath ao elemento
+        const clipPathId = `crop-clip-${this.selectedElement.id}`;
+        let defs = this.canvas.querySelector('defs');
+        if (!defs) {
+            defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+            this.canvas.prepend(defs);
+        }
+
+        const existingClip = defs.querySelector(`#${clipPathId}`);
+        if (existingClip) {
+            existingClip.remove();
+        }
+
+        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        clipPath.setAttribute('id', clipPathId);
+
+        const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        clipRect.setAttribute('x', String(this.cropBounds.x));
+        clipRect.setAttribute('y', String(this.cropBounds.y));
+        clipRect.setAttribute('width', String(this.cropBounds.width));
+        clipRect.setAttribute('height', String(this.cropBounds.height));
+
+        clipPath.appendChild(clipRect);
+        defs.appendChild(clipPath);
+
+        this.selectedElement.element.setAttribute('clip-path', `url(#${clipPathId})`);
+
+        this.cropMode = false;
+        this.cropBounds = null;
+        this.hideResizeHandles();
+        this.selectElement(this.selectedElement);
+        
+        showToast('Imagem cortada com sucesso', 'success');
+        this.saveHistory();
     }
 
     createExportMaskShape() {
