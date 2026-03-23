@@ -1,9 +1,9 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #ef4825;
-    --primary-dark: #cf3b1d;
-    --secondary: #231f20;
+    --primary: #000000;
+    --primary-dark: #000000;
+    --secondary: #000000;
     --accent: #ef4825;
     --success: #16a34a;
     --warning: #d97706;
@@ -11,7 +11,7 @@
     --surface: #ffffff;
     --surface-muted: #f8fafc;
     --surface-soft: #f1f5f9;
-    --text-main: #0f172a;
+    --text-main: #000000;
     --text-muted: #64748b;
     --line: #e2e8f0;
     --line-strong: #cbd5e1;
@@ -56,7 +56,7 @@ body {
 }
 
 .app-page {
-    background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
+    background: linear-gradient(180deg, #ffffff 0%, #f5f5f5 100%);
     color: var(--text-main);
 }
 
@@ -65,8 +65,8 @@ body {
 .app-page nav.nav-blur {
     background: rgba(255, 255, 255, 0.86) !important;
     backdrop-filter: blur(14px);
-    border-bottom: 1px solid var(--line);
-    box-shadow: 0 10px 26px rgba(15, 23, 42, 0.06);
+    border-bottom: 1px solid rgba(239, 72, 37, 0.45);
+    box-shadow: 0 10px 26px rgba(0, 0, 0, 0.08);
 }
 
 .app-page .text-transparent.bg-clip-text {
@@ -76,8 +76,9 @@ body {
 }
 
 .app-page section.bg-gradient-to-r.from-blue-600.to-indigo-600.text-white.py-16 {
-    background: linear-gradient(120deg, #0f172a 0%, #1e293b 52%, #334155 100%) !important;
-    border-bottom: 1px solid rgba(148, 163, 184, 0.25);
+    background: linear-gradient(120deg, #000000 0%, #000000 100%) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.7);
+    border-bottom: 1px solid rgba(239, 72, 37, 0.8);
 }
 
 .app-page section.bg-gradient-to-r.from-blue-600.to-indigo-600.text-white.py-16 p {
@@ -87,13 +88,14 @@ body {
 .app-page .bg-white.rounded-xl.border.border-gray-200,
 .app-page .bg-white.rounded-2xl.border.border-gray-200,
 .app-page .admin-card {
-    border-color: var(--line) !important;
+    border-color: rgba(0, 0, 0, 0.12) !important;
+    border-left: 2px solid rgba(239, 72, 37, 0.7) !important;
     border-radius: var(--radius-md) !important;
     box-shadow: var(--shadow-soft);
 }
 
 .app-page .bg-white.rounded-xl.border-2.border-blue-600 {
-    border-color: #94a3b8 !important;
+    border-color: rgba(239, 72, 37, 0.85) !important;
     border-width: 1px !important;
     border-radius: var(--radius-md) !important;
     box-shadow: var(--shadow-soft);
@@ -101,46 +103,47 @@ body {
 
 .app-page footer.bg-gray-900,
 .app-page .checkout-footer {
-    background: #0f172a !important;
-    color: #94a3b8 !important;
-    border-top: 1px solid rgba(148, 163, 184, 0.2);
+    background: #000000 !important;
+    color: #d1d5db !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.45);
 }
 
 .app-page #cart-btn {
     background: var(--primary) !important;
-    border: 1px solid rgba(15, 23, 42, 0.1);
+    border: 1px solid rgba(239, 72, 37, 0.8);
     border-radius: 0.8rem !important;
-    box-shadow: 0 14px 30px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 14px 30px rgba(0, 0, 0, 0.22);
 }
 
 .app-page #cart-btn:hover {
-    background: #17233c !important;
+    background: #111111 !important;
 }
 
 .app-page button.bg-blue-600.text-white,
 .app-page a.bg-blue-600.text-white {
     background: var(--primary) !important;
-    border-color: rgba(15, 23, 42, 0.1);
+    border: 1px solid rgba(239, 72, 37, 0.8) !important;
 }
 
 .app-page button.bg-blue-600.text-white:hover,
 .app-page a.bg-blue-600.text-white:hover {
-    background: #17233c !important;
+    background: #111111 !important;
 }
 
 .app-page .text-blue-600,
 .app-page .text-blue-700,
 .app-page .text-blue-800 {
-    color: #ef4825 !important;
+    color: #000000 !important;
 }
 
 .app-page .border-blue-200,
 .app-page .border-blue-600 {
-    border-color: rgba(239, 72, 37, 0.35) !important;
+    border-color: rgba(239, 72, 37, 0.75) !important;
 }
 
 .app-page .bg-blue-50 {
-    background-color: rgba(239, 72, 37, 0.08) !important;
+    background-color: rgba(0, 0, 0, 0.04) !important;
+    border: 1px solid rgba(255, 255, 255, 0.95) !important;
 }
 
 .homepage {
