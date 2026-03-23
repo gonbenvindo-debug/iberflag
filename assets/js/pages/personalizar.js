@@ -1021,7 +1021,7 @@ class DesignEditor {
 
             if (viewBoxAttr) {
                 const parts = viewBoxAttr.split(/\s+/).map(Number);
-            if (max < min) return Math.max(1, max);
+            if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
                     sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
                 }
             } else {
