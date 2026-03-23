@@ -331,6 +331,87 @@ class DesignEditor {
         }
     }
 
+    generateCartPreviewSVG() {
+        const vb = this.getCanvasViewBoxSize();
+        const exportWidth = Math.max(1, Math.round(vb.width));
+        const exportHeight = Math.max(1, Math.round(vb.height));
+
+        const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+        exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+        exportSvg.setAttribute('viewBox', `0 0 ${exportWidth} ${exportHeight}`);
+        exportSvg.setAttribute('width', String(exportWidth));
+        exportSvg.setAttribute('height', String(exportHeight));
+        exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+        // --- defs: clip path for design + inverted mask for outside area ---
+        const svgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+
+        const designClip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+        designClip.setAttribute('id', 'cart-preview-clip');
+        designClip.appendChild(this.createExportMaskShape());
+        svgDefs.appendChild(designClip);
+
+        // Inverted mask: visible (white) everywhere except inside the print area (black = transparent)
+        const outsideMask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
+        outsideMask.setAttribute('id', 'cart-preview-outside-mask');
+        outsideMask.setAttribute('maskUnits', 'userSpaceOnUse');
+        const maskFill = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        maskFill.setAttribute('x', '0'); maskFill.setAttribute('y', '0');
+        maskFill.setAttribute('width', String(exportWidth)); maskFill.setAttribute('height', String(exportHeight));
+        maskFill.setAttribute('fill', '#ffffff');
+        const maskCutout = this.createExportMaskShape();
+        maskCutout.setAttribute('fill', '#000000');
+        outsideMask.appendChild(maskFill);
+        outsideMask.appendChild(maskCutout);
+        svgDefs.appendChild(outsideMask);
+
+        exportSvg.appendChild(svgDefs);
+
+        // --- white background ---
+        const bg = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        bg.setAttribute('x', '0'); bg.setAttribute('y', '0');
+        bg.setAttribute('width', String(exportWidth)); bg.setAttribute('height', String(exportHeight));
+        bg.setAttribute('fill', '#ffffff');
+        exportSvg.appendChild(bg);
+
+        // --- design elements clipped to print area ---
+        const clippedGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        clippedGroup.setAttribute('clip-path', 'url(#cart-preview-clip)');
+        Array.from(this.canvas.children)
+            .filter(node => {
+                const id = node.getAttribute('id') || '';
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline'
+                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
+            })
+            .forEach(node => clippedGroup.appendChild(node.cloneNode(true)));
+        exportSvg.appendChild(clippedGroup);
+
+        // --- solid white overlay outside the print area ---
+        const outsideRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        outsideRect.setAttribute('x', '0'); outsideRect.setAttribute('y', '0');
+        outsideRect.setAttribute('width', String(exportWidth)); outsideRect.setAttribute('height', String(exportHeight));
+        outsideRect.setAttribute('fill', '#ffffff');
+        outsideRect.setAttribute('mask', 'url(#cart-preview-outside-mask)');
+        exportSvg.appendChild(outsideRect);
+
+        // --- subtle border along the print area shape ---
+        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
+        if (shapeOutline) {
+            const border = shapeOutline.cloneNode(true);
+            border.removeAttribute('id');
+            border.setAttribute('fill', 'none');
+            border.setAttribute('stroke', 'rgba(0,0,0,0.15)');
+            border.setAttribute('stroke-width', '1.5');
+            border.removeAttribute('stroke-dasharray');
+            border.removeAttribute('vector-effect');
+            border.setAttribute('opacity', '1');
+            border.setAttribute('pointer-events', 'none');
+            exportSvg.appendChild(border);
+        }
+
+        return new XMLSerializer().serializeToString(exportSvg);
+    }
+
     renderCartStepsBaseOptions() {
         const optionsWrap = document.getElementById('cart-base-options');
         const emptyState = document.getElementById('cart-base-empty');
@@ -389,8 +470,9 @@ class DesignEditor {
 
         this.ensureSelectedBase();
         this.cartStepsDesignSnapshot = this.getDesignSVG();
-        this.cartStepsDesignPreview = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(this.cartStepsDesignSnapshot)}`;
-        previewImg.src = this.cartStepsDesignPreview;
+        const previewSvg = this.generateCartPreviewSVG();
+        previewImg.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+        this.cartStepsDesignPreview = previewImg.src;
 
         this.renderCartStepsBaseOptions();
         this.updateCartStepsTotalDisplay();
