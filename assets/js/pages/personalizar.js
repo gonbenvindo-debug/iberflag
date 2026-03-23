@@ -1707,22 +1707,22 @@ class DesignEditor {
                 }
             }
 
-            next.x = Math.max(baseRect.x, Math.min(next.x, baseRect.x + baseRect.width - next.width));
-            next.y = Math.max(baseRect.y, Math.min(next.y, baseRect.y + baseRect.height - next.height));
+            next.x = Math.max(imageRect.x, Math.min(next.x, imageRect.x + imageRect.width - next.width));
+            next.y = Math.max(imageRect.y, Math.min(next.y, imageRect.y + imageRect.height - next.height));
 
-            if (next.x < baseRect.x) {
-                next.width -= (baseRect.x - next.x);
-                next.x = baseRect.x;
+            if (next.x < imageRect.x) {
+                next.width -= (imageRect.x - next.x);
+                next.x = imageRect.x;
             }
-            if (next.y < baseRect.y) {
-                next.height -= (baseRect.y - next.y);
-                next.y = baseRect.y;
+            if (next.y < imageRect.y) {
+                next.height -= (imageRect.y - next.y);
+                next.y = imageRect.y;
             }
-            if (next.x + next.width > baseRect.x + baseRect.width) {
-                next.width = baseRect.x + baseRect.width - next.x;
+            if (next.x + next.width > imageRect.x + imageRect.width) {
+                next.width = imageRect.x + imageRect.width - next.x;
             }
-            if (next.y + next.height > baseRect.y + baseRect.height) {
-                next.height = baseRect.y + baseRect.height - next.y;
+            if (next.y + next.height > imageRect.y + imageRect.height) {
+                next.height = imageRect.y + imageRect.height - next.y;
             }
 
             state.selectionRect = {
