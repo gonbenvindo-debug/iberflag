@@ -1,10 +1,10 @@
 @import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,700&family=Inter:wght@300;400;500;600;700;800;900&family=Manrope:wght@400;500;600;700;800&display=swap');
 
 :root {
-    --primary: #0f172a;
-    --primary-dark: #020617;
-    --secondary: #334155;
-    --accent: #0ea5e9;
+    --primary: #ef4825;
+    --primary-dark: #cf3b1d;
+    --secondary: #231f20;
+    --accent: #ef4825;
     --success: #16a34a;
     --warning: #d97706;
     --danger: #dc2626;
@@ -128,10 +128,52 @@ body {
     background: #17233c !important;
 }
 
+.app-page .text-blue-600,
+.app-page .text-blue-700,
+.app-page .text-blue-800 {
+    color: #ef4825 !important;
+}
+
+.app-page .border-blue-200,
+.app-page .border-blue-600 {
+    border-color: rgba(239, 72, 37, 0.35) !important;
+}
+
+.app-page .bg-blue-50 {
+    background-color: rgba(239, 72, 37, 0.08) !important;
+}
+
 .homepage {
     background: linear-gradient(180deg, #f4efe7 0%, #f8fafc 38%, #ffffff 100%);
     color: #111827;
     font-family: 'Manrope', sans-serif;
+}
+
+.brand-logo-full {
+    display: block;
+    width: auto;
+    height: 2rem;
+}
+
+.brand-logo-compact {
+    display: block;
+    width: auto;
+    height: 1.75rem;
+}
+
+.brand-logo-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 0.65rem;
+    padding: 0.45rem 0.6rem;
+}
+
+.brand-logo-footer {
+    display: block;
+    width: auto;
+    height: 1.95rem;
 }
 
 /* ===== ANIMATIONS ===== */
