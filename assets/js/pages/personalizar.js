@@ -332,15 +332,18 @@ class DesignEditor {
     }
 
     generateCartPreviewSVG() {
-        const vb = this.getCanvasViewBoxSize();
-        const exportWidth = Math.max(1, Math.round(vb.width));
-        const exportHeight = Math.max(1, Math.round(vb.height));
+        // Crop viewBox to the print area only — removes the surrounding margin/canvas space
+        const pb = this.printAreaBounds;
+        const cropX = Math.round(pb.x);
+        const cropY = Math.round(pb.y);
+        const cropW = Math.max(1, Math.round(pb.width));
+        const cropH = Math.max(1, Math.round(pb.height));
 
         const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        exportSvg.setAttribute('viewBox', `0 0 ${exportWidth} ${exportHeight}`);
-        exportSvg.setAttribute('width', String(exportWidth));
-        exportSvg.setAttribute('height', String(exportHeight));
+        exportSvg.setAttribute('viewBox', `${cropX} ${cropY} ${cropW} ${cropH}`);
+        exportSvg.setAttribute('width', String(cropW));
+        exportSvg.setAttribute('height', String(cropH));
         exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
         // --- defs: clip path that follows the print area shape exactly ---
