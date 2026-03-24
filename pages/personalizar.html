@@ -390,28 +390,81 @@
 
         /* ===== RESPONSIVE EDITOR ===== */
 
-        /* Desktop: normal sidebars */
+        /* MOBILE DEFAULTS (base for mobile, hidden desktop items) */
+        .editor-mobile-tabs { display: none; }
+        .editor-mobile-backdrop { 
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 399;
+            background: rgba(15, 23, 42, 0.46);
+        }
+        .editor-mobile-backdrop.active { display: block; }
+
+        /* DESKTOP: >= 1024px (normal 3-column layout) */
         @media (min-width: 1024px) {
+            /* Restore default sidebar styles */
             .editor-sidebar-left,
             .editor-sidebar-right {
                 position: static !important;
-                visibility: visible;
-                opacity: 1;
-                bottom: auto;
-                left: auto;
-                right: auto;
+                visibility: visible !important;
+                opacity: 1 !important;
+                bottom: auto !important;
+                left: auto !important;
+                right: auto !important;
                 width: auto !important;
-                max-height: none;
-                background: transparent;
-                border-radius: 0;
-                box-shadow: none;
-                z-index: auto;
-                transition: none;
+                max-height: none !important;
+                background: var(--panel-bg) !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+                z-index: auto !important;
+                transition: none !important;
+                margin: 0 !important;
+                padding: var(--sidebar-padding, 1rem 1rem 1rem 0.5rem) !important;
+                overflow-y: auto !important;
+                position: static !important;
             }
+
+            /* Normal layout for main */
+            .editor-main {
+                flex: 1 !important;
+                min-height: auto !important;
+            }
+
+            #canvas-stage {
+                padding: 2rem !important;
+                min-height: auto !important;
+            }
+
+            /* Show desktop elements */
+            #product-name {
+                max-width: none;
+                white-space: normal;
+                font-size: 1rem;
+            }
+            .editor-cart-text { display: inline !important; }
+            #add-to-cart-btn { padding: 0.5rem 1.5rem !important; }
+            .editor-undo-redo { display: flex !important; }
+
+            /* Restore toolbar layout */
+            .editor-bottom-bar > div,
+            .editor-bottom-bar .flex { flex-direction: row !important; }
+            .editor-bottom-bar button,
+            .editor-bottom-bar span { width: auto !important; }
+            nav .flex > button,
+            nav .flex > a,
+            nav .flex > div { width: auto !important; flex-direction: row !important; }
+
+            /* Hide mobile tab bar on desktop */
+            .editor-mobile-tabs { display: none !important; }
         }
 
-        /* Mobile: sidebars become full-width bottom drawers */
+        /* MOBILE: < 1024px (sidebars as bottom drawers) */
         @media (max-width: 1023px) {
+            .editor-body-layout {
+                flex-direction: column !important;
+            }
+
             .editor-sidebar-left,
             .editor-sidebar-right {
                 /* Hide by default on mobile */
@@ -481,32 +534,10 @@
             nav .flex > button,
             nav .flex > a,
             nav .flex > div { width: auto !important; flex-direction: row !important; }
-        }
 
-        /* Mobile backdrop overlay */
-        .editor-mobile-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 399;
-            background: rgba(15, 23, 42, 0.46);
-        }
-        .editor-mobile-backdrop.active { display: block; }
-
-        /* Mobile bottom tab bar */
-        .editor-mobile-tabs { display: none; }
-        @media (max-width: 1023px) {
-            .editor-mobile-tabs {
-                display: grid;
-                grid-template-columns: repeat(3, 1fr);
-                border-top: 1px solid #e2e8f0;
-                background: #fff;
-                flex-shrink: 0;
-            }
-        }
-        @media (max-width: 1280px) {
-            .editor-mobile-tabs {
-                display: grid;
+            /* Show mobile tab bar */
+            .editor-mobile-tabs { 
+                display: grid !important;
                 grid-template-columns: repeat(3, 1fr);
                 border-top: 1px solid #e2e8f0;
                 background: #fff;
@@ -789,7 +820,6 @@
                     <span id="product-price" class="text-lg font-bold text-blue-600"></span>
                 </div>
             </div>
-        </main>
 
             <!-- Mobile Tab Bar -->
             <nav class="editor-mobile-tabs" aria-label="Ferramentas do editor">
