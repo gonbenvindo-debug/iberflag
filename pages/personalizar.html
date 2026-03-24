@@ -538,13 +538,27 @@
                 display: flex !important;
                 flex-direction: column !important;
                 overflow: hidden;
+                padding: 0 !important;
             }
-            /* Remover o padding do canvas-stage — a quadrícula aparece à volta do canvas real */
+
+            /* canvas-stage em mobile: apenas contentor transparente, sem grelha nem borda */
             #canvas-stage {
                 flex: 1 !important;
-                padding: 0.25rem !important;
+                padding: 0 !important;
+                margin: 0 !important;
                 min-height: 0 !important;
                 overflow: hidden !important;
+                background: transparent !important;
+                background-image: none !important;
+                border: none !important;
+                border-radius: 0 !important;
+                box-shadow: none !important;
+            }
+
+            /* canvas-wrapper: sem sombra, sem cantos arredondados — borda do ecrã */
+            #canvas-wrapper {
+                box-shadow: none !important;
+                border-radius: 0 !important;
             }
 
             /* Toolbar inferior: compacta */

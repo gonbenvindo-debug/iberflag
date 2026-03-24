@@ -4002,8 +4002,10 @@ class DesignEditor {
         );
 
         if (needsResizeRecalc) {
-            const targetWidth = stageWidth * 0.9;
-            const targetHeight = stageHeight * 0.9;
+            const isMobile = window.innerWidth <= 1023;
+            const fillFactor = isMobile ? 1.0 : 0.9;
+            const targetWidth = stageWidth * fillFactor;
+            const targetHeight = stageHeight * fillFactor;
             const sourceWidth = Number(this.baseCanvasSize?.width) || 800;
             const sourceHeight = Number(this.baseCanvasSize?.height) || 600;
             const ratio = sourceWidth / sourceHeight;
