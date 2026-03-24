@@ -2,7 +2,7 @@
 <html lang="pt-pt">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Personalizar Produto - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css">
@@ -455,6 +455,33 @@
            ============================ */
         @media (max-width: 1023px) {
 
+            /* Layout geral: usar dvh para evitar overflow com barra do browser */
+            body.app-page {
+                height: 100dvh;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+            }
+
+            /* Navbar: altura fixa + safe-area-top para notch/dynamic island */
+            body.app-page > nav {
+                flex-shrink: 0;
+                height: auto !important;
+                min-height: 3.5rem;
+                padding-top: max(0.75rem, env(safe-area-inset-top));
+                padding-bottom: 0.75rem;
+                padding-left: max(0.75rem, env(safe-area-inset-left));
+                padding-right: max(0.75rem, env(safe-area-inset-right));
+            }
+
+            /* Body layout: ocupa o resto da altura dinâmica */
+            .editor-body-layout {
+                flex: 1 !important;
+                height: auto !important;
+                min-height: 0;
+                overflow: hidden;
+            }
+
             /* Grip visível em mobile */
             .drawer-grip { display: block; }
 
@@ -466,14 +493,14 @@
                 left: 0;
                 right: 0;
                 width: 100% !important;
-                max-height: 65vh;
+                /* max-height com safe-area para não ficar por baixo dos botões do sistema */
+                max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
                 z-index: 60;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #ffffff;
                 border-radius: 20px 20px 0 0;
                 box-shadow: 0 -6px 32px rgba(15, 23, 42, 0.2);
-                /* Slide-up animation via transform */
                 transform: translateY(100%);
                 transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
                 will-change: transform;
@@ -486,7 +513,7 @@
                 transform: translateY(0);
             }
 
-            /* Sidebar content: scrollável */
+            /* Sidebar content: scrollável com safe-area no fundo */
             .editor-sidebar-left .sidebar-shell,
             .editor-sidebar-right .sidebar-shell {
                 flex: 1;
@@ -495,28 +522,34 @@
                 border: none !important;
                 border-radius: 0 !important;
                 height: auto !important;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
             }
 
-            /* Canvas: ocupa todo o espaço disponível */
+            /* Canvas: ocupa todo o espaço disponível sem margens */
             .editor-main {
                 flex: 1 !important;
                 min-height: 0 !important;
                 display: flex !important;
                 flex-direction: column !important;
+                overflow: hidden;
             }
+            /* Remover o padding do canvas-stage — a quadrícula aparece à volta do canvas real */
             #canvas-stage {
                 flex: 1 !important;
-                padding: 0.5rem !important;
+                padding: 0.25rem !important;
                 min-height: 0 !important;
+                overflow: hidden !important;
             }
 
             /* Toolbar inferior: compacta */
             .editor-bottom-bar {
-                padding-top: 0.35rem !important;
-                padding-bottom: 0.35rem !important;
+                padding-top: 0.3rem !important;
+                padding-bottom: 0.3rem !important;
+                padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
+                padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
             }
 
-            /* Navbar: compacta */
+            /* Navbar: nome do produto compacto */
             #product-name {
                 max-width: 7rem;
                 overflow: hidden;
@@ -524,22 +557,29 @@
                 white-space: nowrap;
                 font-size: 0.82rem;
             }
-            .editor-cart-text    { display: none !important; }
-            #add-to-cart-btn     { padding: 0.4rem 0.7rem !important; }
-            .editor-undo-redo    { display: none !important; }
+            .editor-cart-text { display: none !important; }
+            #add-to-cart-btn  { padding: 0.4rem 0.7rem !important; }
+            .editor-undo-redo { display: none !important; }
 
-            /* Tab bar: visível em mobile */
+            /* Tab bar: visível + safe-area-bottom para não ficar atrás dos botões do sistema */
             .editor-mobile-tabs {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr);
                 background: #ffffff;
                 border-top: 1px solid #e5e7eb;
                 flex-shrink: 0;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                /* safe-area também afecta a altura mínima do tab */
+            }
+
+            /* Anular a altura fixa do Tailwind h-[calc(100vh-64px)] em mobile */
+            #editor-body-layout {
+                height: auto !important;
             }
         }
     </style>
 </head>
-<body class="app-page overflow-hidden">
+<body class="app-page" style="overflow: hidden;">
     
     <!-- Top Navigation -->
     <nav class="panel-clean border-0 border-b h-16 flex items-center px-3 lg:px-4 justify-between gap-2">
@@ -571,7 +611,7 @@
         </div>
     </nav>
 
-    <div class="flex h-[calc(100vh-64px)] editor-body-layout">
+    <div class="flex h-[calc(100vh-64px)] editor-body-layout" id="editor-body-layout">
         
         <!-- Left Sidebar - Tools -->
         <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
