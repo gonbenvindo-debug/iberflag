@@ -1460,13 +1460,13 @@ class DesignEditor {
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
 
-        const areaBounds = this.getTemplateElementBounds(areaElement, sourceBounds);
-        const maskRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        maskRect.setAttribute('x', String(offsetX + (areaBounds.x * uniformScale)));
-        maskRect.setAttribute('y', String(offsetY + (areaBounds.y * uniformScale)));
-        maskRect.setAttribute('width', String(Math.max(1, areaBounds.width * uniformScale)));
-        maskRect.setAttribute('height', String(Math.max(1, areaBounds.height * uniformScale)));
-        this.upsertOutsideAreaOverlay(maskRect);
+        const maskShape = visualArea.cloneNode(true);
+        maskShape.removeAttribute('id');
+        maskShape.setAttribute('fill', '#000000');
+        maskShape.setAttribute('stroke', 'none');
+        maskShape.setAttribute('opacity', '1');
+        maskShape.setAttribute('pointer-events', 'none');
+        this.upsertOutsideAreaOverlay(maskShape);
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
@@ -1556,65 +1556,6 @@ class DesignEditor {
         }
 
         return 0;
-    }
-
-    getTemplateElementBounds(element, fallbackBounds = { x: 0, y: 0, width: 800, height: 600 }) {
-        if (!element || !element.tagName) {
-            return { ...fallbackBounds };
-        }
-
-        const tagName = element.tagName.toLowerCase();
-
-        if (tagName === 'rect') {
-            const x = parseFloat(element.getAttribute('x') || '0');
-            const y = parseFloat(element.getAttribute('y') || '0');
-            const width = parseFloat(element.getAttribute('width') || '0');
-            const height = parseFloat(element.getAttribute('height') || '0');
-            if ([x, y, width, height].every(Number.isFinite) && width > 0 && height > 0) {
-                return { x, y, width, height };
-            }
-        }
-
-        if (tagName === 'circle') {
-            const cx = parseFloat(element.getAttribute('cx') || '0');
-            const cy = parseFloat(element.getAttribute('cy') || '0');
-            const r = parseFloat(element.getAttribute('r') || '0');
-            if ([cx, cy, r].every(Number.isFinite) && r > 0) {
-                return { x: cx - r, y: cy - r, width: r * 2, height: r * 2 };
-            }
-        }
-
-        if (tagName === 'ellipse') {
-            const cx = parseFloat(element.getAttribute('cx') || '0');
-            const cy = parseFloat(element.getAttribute('cy') || '0');
-            const rx = parseFloat(element.getAttribute('rx') || '0');
-            const ry = parseFloat(element.getAttribute('ry') || '0');
-            if ([cx, cy, rx, ry].every(Number.isFinite) && rx > 0 && ry > 0) {
-                return { x: cx - rx, y: cy - ry, width: rx * 2, height: ry * 2 };
-            }
-        }
-
-        if (tagName === 'polygon') {
-            const points = (element.getAttribute('points') || '')
-                .trim()
-                .split(/\s+/)
-                .map(point => point.split(',').map(Number))
-                .filter(point => point.length === 2 && point.every(Number.isFinite));
-
-            if (points.length > 0) {
-                const xs = points.map(point => point[0]);
-                const ys = points.map(point => point[1]);
-                const minX = Math.min(...xs);
-                const maxX = Math.max(...xs);
-                const minY = Math.min(...ys);
-                const maxY = Math.max(...ys);
-                if (maxX > minX && maxY > minY) {
-                    return { x: minX, y: minY, width: maxX - minX, height: maxY - minY };
-                }
-            }
-        }
-
-        return { ...fallbackBounds };
     }
 
     isTemplateBackgroundElement(element, sourceBounds) {
