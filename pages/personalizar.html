@@ -5,12 +5,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Personalizar Produto - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
-    <link rel="stylesheet" href="/assets/css/tailwind.output.css">
+    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260324">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260324">
     <style>
         :root {
             --ui-bg: #f3f6fb;
@@ -389,20 +389,12 @@
         }
 
         /* =============================================
-           EDITOR LAYOUT
-           Desktop → regras dentro de @media min-width (nunca interferem com mobile)
-           Mobile  → regras dentro de @media max-width
+           EDITOR LAYOUT — CSS puro, zero Tailwind no layout estrutural
+           Os elementos estruturais (nav, body-layout, main, canvas-stage,
+           bottom-bar) não têm classes Tailwind de layout — só CSS aqui.
            ============================================= */
 
-        /* Desktop (≥1024px) ---------------------------------------- */
-        @media (min-width: 1024px) {
-            #editor-nav           { height: 4rem; }
-            .editor-body-layout   { height: calc(100vh - 4rem); }
-            .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
-            .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
-        }
-
-        /* Componentes always-hidden no desktop, always-shown no mobile */
+        /* ----- Componentes UI (desktop e mobile) ----- */
         .drawer-grip {
             display: none;
             width: 40px; height: 4px;
@@ -433,7 +425,6 @@
             text-transform: uppercase;
         }
         .editor-mobile-tab.active { color: #2563eb; border-top-color: #2563eb; }
-
         .editor-mobile-backdrop {
             display: none;
             position: fixed;
@@ -445,12 +436,53 @@
         }
         .editor-mobile-backdrop.active { display: block; }
 
-        /* Mobile (<1024px) ----------------------------------------- */
+        /* ----- DESKTOP (≥1024px) ----- */
+        #editor-nav {
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+        .editor-body-layout {
+            display: flex;
+            height: calc(100vh - 4rem);
+            overflow: hidden;
+        }
+        .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
+        .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 1rem 1rem 1rem 0.5rem;
+            min-height: 0;
+            overflow: hidden;
+        }
+        #canvas-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 2rem;
+            min-height: 0;
+            overflow: auto;
+        }
+        .editor-bottom-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.5rem 1rem;
+            margin-top: 0.5rem;
+            flex-shrink: 0;
+        }
+
+        /* ----- MOBILE (<1024px) ----- */
         @media (max-width: 1023px) {
 
-            /* 1. Body: coluna de altura total dinâmica.
-                  box-sizing: border-box garante que padding-top (safe-area)
-                  está incluído nos 100dvh — nada fica cortado em baixo. */
             body.app-page {
                 height: 100dvh;
                 box-sizing: border-box;
@@ -460,52 +492,40 @@
                 padding-top: env(safe-area-inset-top, 0px);
             }
 
-            /* 2. Navbar: altura fixa 3rem, sem padding vertical, centrado.
-                  Duplo selector (ID + posição) para máxima fiabilidade. */
-            #editor-nav,
-            body.app-page > nav {
-                flex-shrink: 0 !important;
-                height: 3rem !important;
-                min-height: 3rem !important;
-                max-height: 3rem !important;
-                padding-top: 0 !important;
-                padding-bottom: 0 !important;
-                padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
-                padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
-                display: flex !important;
-                align-items: center !important;
-                box-sizing: border-box !important;
+            #editor-nav {
+                height: 3rem;
+                min-height: 3rem;
+                max-height: 3rem;
+                padding: 0 max(0.75rem, env(safe-area-inset-right, 0px)) 0 max(0.75rem, env(safe-area-inset-left, 0px));
+                gap: 0.5rem;
+                flex-shrink: 0;
             }
 
-            /* 3. Área do editor: ocupa altura restante */
-            #editor-body-layout,
             .editor-body-layout {
-                flex: 1 !important;
-                height: auto !important;
-                min-height: 0 !important;
-                overflow: hidden !important;
+                flex: 1;
+                height: auto;
+                min-height: 0;
+                overflow: hidden;
             }
 
-            /* 4. Grip arrastável visível */
             .drawer-grip { display: block; }
 
-            /* 5. Sidebars → bottom sheets que sobem do fundo */
             .editor-sidebar-left,
             .editor-sidebar-right {
-                position: fixed !important;
+                position: fixed;
                 bottom: 0; left: 0; right: 0;
-                width: 100% !important;
+                width: 100%;
                 max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
                 z-index: 120;
-                padding: 0 !important;
-                margin: 0 !important;
+                padding: 0;
+                margin: 0;
                 background: #ffffff;
                 border-radius: 20px 20px 0 0;
                 box-shadow: 0 -6px 32px rgba(15, 23, 42, 0.2);
                 transform: translateY(100%);
                 transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
                 will-change: transform;
-                display: flex !important;
+                display: flex;
                 flex-direction: column;
                 overflow: hidden;
             }
@@ -517,57 +537,47 @@
                 flex: 1;
                 overflow-y: auto;
                 -webkit-overflow-scrolling: touch;
-                border: none !important;
-                border-radius: 0 !important;
-                height: auto !important;
+                border: none;
+                border-radius: 0;
+                height: auto;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
             }
 
-            /* 6. Área principal do canvas */
             .editor-main {
-                flex: 1 !important;
-                min-height: 0 !important;
-                display: flex !important;
-                flex-direction: column !important;
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                padding: 0;
                 overflow: hidden;
-                padding: 0 !important;
             }
 
-            /* 7. Canvas-stage: flex centrado, fundo transparente.
-                  Anula TODOS os estilos de .canvas-container (grelha, borda,
-                  sombra) — só o canvas-wrapper é visível. */
             #canvas-stage {
-                flex: 1 !important;
-                display: flex !important;
-                align-items: center !important;
-                justify-content: center !important;
-                padding: 0.5rem !important;
-                min-height: 0 !important;
-                overflow: hidden !important;
-                background: transparent !important;
-                background-image: none !important;
-                border: none !important;
-                border-radius: 0 !important;
-                box-shadow: none !important;
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0.5rem;
+                min-height: 0;
+                overflow: hidden;
+                background: transparent;
+                background-image: none;
+                border: none;
+                border-radius: 0;
+                box-shadow: none;
             }
 
-            /* 8. Canvas-wrapper: sem decorações de desktop */
             #canvas-wrapper {
                 flex-shrink: 0;
-                box-shadow: none !important;
-                border-radius: 0 !important;
+                box-shadow: none;
+                border-radius: 0;
             }
 
-            /* 9. Toolbar inferior: compacta, sem margem extra */
             .editor-bottom-bar {
-                margin-top: 0 !important;
-                padding-top: 0.3rem !important;
-                padding-bottom: 0.3rem !important;
-                padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
-                padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
+                margin-top: 0;
+                padding: 0.3rem max(0.75rem, env(safe-area-inset-right, 0px)) 0.3rem max(0.75rem, env(safe-area-inset-left, 0px));
             }
 
-            /* 10. Elementos da navbar compactados */
             #product-name {
                 max-width: 7rem;
                 overflow: hidden;
@@ -575,13 +585,12 @@
                 white-space: nowrap;
                 font-size: 0.82rem;
             }
-            .editor-cart-text { display: none !important; }
-            #add-to-cart-btn  { padding: 0.4rem 0.7rem !important; }
-            .editor-undo-redo { display: none !important; }
+            .editor-cart-text { display: none; }
+            #add-to-cart-btn  { padding: 0.4rem 0.7rem; }
+            .editor-undo-redo { display: none; }
 
-            /* 11. Barra de tabs: visível + safe-area-bottom */
             .editor-mobile-tabs {
-                display: grid !important;
+                display: grid;
                 grid-template-columns: repeat(3, 1fr);
                 background: #ffffff;
                 border-top: 1px solid #e5e7eb;
@@ -594,7 +603,7 @@
 <body class="app-page" style="overflow: hidden;">
     
     <!-- Top Navigation -->
-    <nav class="panel-clean border-0 border-b flex items-center px-3 lg:px-4 justify-between gap-2" id="editor-nav">
+    <nav class="panel-clean border-0 border-b" id="editor-nav">
         <div class="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
             <a href="/" aria-label="IberFlag" class="flex-shrink-0">
                 <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact">
@@ -623,7 +632,7 @@
         </div>
     </nav>
 
-    <div class="flex editor-body-layout" id="editor-body-layout">
+    <div class="editor-body-layout" id="editor-body-layout">
         
         <!-- Left Sidebar - Tools -->
         <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
@@ -804,8 +813,8 @@
         </aside>
 
         <!-- Canvas Area -->
-        <main class="flex-1 flex flex-col p-4 pl-2 min-h-0 editor-main">
-            <div id="canvas-stage" class="flex-1 canvas-container flex items-center justify-center p-8 overflow-auto min-h-0">
+        <main class="editor-main">
+            <div id="canvas-stage" class="canvas-container">
                 <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
                     <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
                         <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"/>
@@ -816,7 +825,7 @@
             </div>
             
             <!-- Bottom Toolbar -->
-            <div class="panel-clean mt-2 px-3 lg:px-4 py-2 lg:py-3 flex items-center justify-between editor-bottom-bar">
+            <div class="panel-clean editor-bottom-bar">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded">
