@@ -461,17 +461,23 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                /* safe-area-top no body, assim todos os filhos ficam abaixo do notch */
+                padding-top: env(safe-area-inset-top, 0px);
             }
 
-            /* Navbar: altura fixa + safe-area-top para notch/dynamic island */
+            /* Navbar: altura fixa compacta + safe-area no padding lateral */
             body.app-page > nav {
                 flex-shrink: 0;
-                height: auto !important;
-                min-height: 3.5rem;
-                padding-top: max(0.75rem, env(safe-area-inset-top));
-                padding-bottom: 0.75rem;
-                padding-left: max(0.75rem, env(safe-area-inset-left));
-                padding-right: max(0.75rem, env(safe-area-inset-right));
+                /* Substituir h-16 (4rem) por 3rem em mobile */
+                height: 3rem !important;
+                min-height: 3rem !important;
+                padding-top: 0 !important;
+                padding-bottom: 0 !important;
+                padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
+                padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
+                /* safe-area-top resolvida pelo body — a nav fica abaixo do notch */
+                align-items: center !important;
+                display: flex !important;
             }
 
             /* Body layout: ocupa o resto da altura dinâmica */
