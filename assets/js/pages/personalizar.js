@@ -3393,6 +3393,13 @@ class DesignEditor {
         this.rotationCenterClient = null;
         this.rotationHandleRadiusClient = null;
 
+        // Reset handles container CSS transform so showResizeHandles can reposition cleanly.
+        const handlesContainer = document.getElementById('resize-handles');
+        if (handlesContainer) {
+            handlesContainer.style.transform = '';
+            handlesContainer.style.transformOrigin = '';
+        }
+
         if (this.handlesFrameRequest !== null) {
             cancelAnimationFrame(this.handlesFrameRequest);
             this.handlesFrameRequest = null;
@@ -3789,19 +3796,17 @@ class DesignEditor {
         const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
         this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
 
-        // Compute exact radius from the actual handle DOM position (avoids geometry estimation errors).
+        // Record the rotation at the start of this gesture so we can compute the CSS delta.
+        this._rotateStartRotation = elementData.rotation || 0;
+
+        // Apply CSS transform-origin on the handles container so all handles rotate together.
         const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const rotHandleEl = document.getElementById('resize-handles')?.querySelector('.rotate-handle');
-        if (rotHandleEl) {
-            const hl = parseFloat(rotHandleEl.style.left || '0') + 18; // handle center x in wrapper px
-            const ht = parseFloat(rotHandleEl.style.top || '0') + 18;  // handle center y in wrapper px
-            this.rotationHandleRadiusClient = Math.hypot(
-                (hl + wrapperRect.left) - centerClient.x,
-                (ht + wrapperRect.top) - centerClient.y
-            );
-        } else {
-            const halfHeightPx = (bbox.height / 2) * Math.hypot(ctm.a, ctm.b, ctm.c, ctm.d) * 0.5;
-            this.rotationHandleRadiusClient = halfHeightPx + 24;
+        const handlesContainer = document.getElementById('resize-handles');
+        if (handlesContainer) {
+            const originX = centerClient.x - wrapperRect.left;
+            const originY = centerClient.y - wrapperRect.top;
+            handlesContainer.style.transformOrigin = `${originX}px ${originY}px`;
+            handlesContainer.style.transform = 'rotate(0deg)';
         }
 
         const mouseX = e.clientX;
@@ -3906,25 +3911,12 @@ class DesignEditor {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        // During rotation, lock the rotate handle with a direct top-of-element calculation.
-        this.updateRotateHandleLockedToTop(rotation);
-    }
-
-    updateRotateHandleLockedToTop(rotation) {
-        if (!this.rotationCenterClient || !this.canvasWrapper) return;
-        // Always query fresh – the element may have been recreated since startRotate.
-        const rotateHandle = document.getElementById('resize-handles')?.querySelector('.rotate-handle');
-        if (!rotateHandle) return;
-
-        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const radius = Number(this.rotationHandleRadiusClient) || 60;
-        const angleRad = (Number(rotation) || 0) * Math.PI / 180;
-
-        const hcx = this.rotationCenterClient.x + Math.sin(angleRad) * radius;
-        const hcy = this.rotationCenterClient.y - Math.cos(angleRad) * radius;
-
-        rotateHandle.style.left = `${hcx - wrapperRect.left - 18}px`;
-        rotateHandle.style.top = `${hcy - wrapperRect.top - 18}px`;
+        // Rotate the entire handles container by the delta angle — zero JS geometry, instant GPU sync.
+        const handlesContainer = document.getElementById('resize-handles');
+        if (handlesContainer) {
+            const delta = rotation - (this._rotateStartRotation || 0);
+            handlesContainer.style.transform = `rotate(${delta}deg)`;
+        }
     }
     
     updateRotation(value) {
