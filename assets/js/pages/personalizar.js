@@ -34,7 +34,6 @@ class DesignEditor {
         this.rotationStart = 0;
         this.rotationCenterClient = null;
         this.rotationHandleRadiusClient = null;
-        this.activeRotateHandle = null;
         this.currentProduct = null;
         this.editIndex = null;
         this.editDesignId = null;
@@ -3393,7 +3392,6 @@ class DesignEditor {
         this.resizeHandle = null;
         this.rotationCenterClient = null;
         this.rotationHandleRadiusClient = null;
-        this.activeRotateHandle = null;
 
         if (this.handlesFrameRequest !== null) {
             cancelAnimationFrame(this.handlesFrameRequest);
@@ -3790,10 +3788,21 @@ class DesignEditor {
         if (!ctm) return;
         const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
         this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
-        const halfHeightPx = (bbox.height / 2) * Math.hypot(ctm.c, ctm.d);
-        const rotateOffset = 24;
-        this.rotationHandleRadiusClient = Math.max(halfHeightPx + rotateOffset, rotateOffset);
-        this.activeRotateHandle = document.getElementById('resize-handles')?.querySelector('.rotate-handle') || null;
+
+        // Compute exact radius from the actual handle DOM position (avoids geometry estimation errors).
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        const rotHandleEl = document.getElementById('resize-handles')?.querySelector('.rotate-handle');
+        if (rotHandleEl) {
+            const hl = parseFloat(rotHandleEl.style.left || '0') + 18; // handle center x in wrapper px
+            const ht = parseFloat(rotHandleEl.style.top || '0') + 18;  // handle center y in wrapper px
+            this.rotationHandleRadiusClient = Math.hypot(
+                (hl + wrapperRect.left) - centerClient.x,
+                (ht + wrapperRect.top) - centerClient.y
+            );
+        } else {
+            const halfHeightPx = (bbox.height / 2) * Math.hypot(ctm.a, ctm.b, ctm.c, ctm.d) * 0.5;
+            this.rotationHandleRadiusClient = halfHeightPx + 24;
+        }
 
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -3902,19 +3911,20 @@ class DesignEditor {
     }
 
     updateRotateHandleLockedToTop(rotation) {
-        if (!this.rotationCenterClient || !this.activeRotateHandle || !this.canvasWrapper) return;
+        if (!this.rotationCenterClient || !this.canvasWrapper) return;
+        // Always query fresh – the element may have been recreated since startRotate.
+        const rotateHandle = document.getElementById('resize-handles')?.querySelector('.rotate-handle');
+        if (!rotateHandle) return;
 
         const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const radius = Number(this.rotationHandleRadiusClient) || 24;
+        const radius = Number(this.rotationHandleRadiusClient) || 60;
         const angleRad = (Number(rotation) || 0) * Math.PI / 180;
 
-        const dirX = Math.sin(angleRad);
-        const dirY = -Math.cos(angleRad);
-        const centerX = this.rotationCenterClient.x + (dirX * radius);
-        const centerY = this.rotationCenterClient.y + (dirY * radius);
+        const hcx = this.rotationCenterClient.x + Math.sin(angleRad) * radius;
+        const hcy = this.rotationCenterClient.y - Math.cos(angleRad) * radius;
 
-        this.activeRotateHandle.style.left = `${centerX - wrapperRect.left - 18}px`;
-        this.activeRotateHandle.style.top = `${centerY - wrapperRect.top - 18}px`;
+        rotateHandle.style.left = `${hcx - wrapperRect.left - 18}px`;
+        rotateHandle.style.top = `${hcy - wrapperRect.top - 18}px`;
     }
     
     updateRotation(value) {
