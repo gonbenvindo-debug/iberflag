@@ -389,10 +389,18 @@
         }
 
         /* =============================================
-           EDITOR RESPONSIVO — BOTTOM SHEET MOBILE
-           Desktop: Tailwind trata de tudo (3 colunas)
-           Mobile (<1024px): sidebars = bottom sheets
+           EDITOR LAYOUT — fonte única, sem conflito Tailwind
            ============================================= */
+
+        /* Desktop: nav e editor-body com altura explícita em CSS.
+           h-16 e h-[calc(...)] foram removidos do HTML para evitar conflitos. */
+        #editor-nav {
+            height: 4rem;
+            flex-shrink: 0;
+        }
+        .editor-body-layout {
+            height: calc(100vh - 4rem);
+        }
 
         /* --- Desktop: sidebar precisa de padding próprio --- */
         .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
@@ -443,7 +451,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 55;
+            z-index: 110;
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
@@ -501,7 +509,7 @@
                 width: 100% !important;
                 /* max-height com safe-area para não ficar por baixo dos botões do sistema */
                 max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
-                z-index: 60;
+                z-index: 120;
                 padding: 0 !important;
                 margin: 0 !important;
                 background: #ffffff;
@@ -541,8 +549,9 @@
                 padding: 0 !important;
             }
 
-            /* canvas-stage em mobile: apenas contentor transparente, sem grelha nem borda */
+            /* canvas-stage em mobile: bloco simples — remove o flex centering do Tailwind */
             #canvas-stage {
+                display: block !important;
                 flex: 1 !important;
                 padding: 0 !important;
                 margin: 0 !important;
@@ -555,7 +564,7 @@
                 box-shadow: none !important;
             }
 
-            /* canvas-wrapper: sem sombra, sem cantos arredondados — borda do ecrã */
+            /* canvas-wrapper: preenche toda a largura, height calculada pelo JS (aspect ratio) */
             #canvas-wrapper {
                 box-shadow: none !important;
                 border-radius: 0 !important;
@@ -602,7 +611,7 @@
 <body class="app-page" style="overflow: hidden;">
     
     <!-- Top Navigation -->
-    <nav class="panel-clean border-0 border-b h-16 flex items-center px-3 lg:px-4 justify-between gap-2">
+    <nav class="panel-clean border-0 border-b flex items-center px-3 lg:px-4 justify-between gap-2" id="editor-nav">
         <div class="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
             <a href="/" aria-label="IberFlag" class="flex-shrink-0">
                 <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact">
@@ -631,7 +640,7 @@
         </div>
     </nav>
 
-    <div class="flex h-[calc(100vh-64px)] editor-body-layout" id="editor-body-layout">
+    <div class="flex editor-body-layout" id="editor-body-layout">
         
         <!-- Left Sidebar - Tools -->
         <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
