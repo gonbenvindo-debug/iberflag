@@ -1815,10 +1815,24 @@ class DesignEditor {
         }
         
         // Canvas interactions
-        this.canvas.addEventListener('mousedown', (e) => this.handleCanvasMouseDown(e));
-        document.addEventListener('mousedown', (e) => this.handleDocumentMouseDown(e));
-        document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
-        document.addEventListener('mouseup', () => this.handleMouseUp());
+        this._lastTouchInteractionAt = 0;
+        const isRecentTouch = () => (Date.now() - (this._lastTouchInteractionAt || 0)) < 700;
+
+        this.canvas.addEventListener('mousedown', (e) => {
+            if (isRecentTouch()) return;
+            this.handleCanvasMouseDown(e);
+        });
+        document.addEventListener('mousedown', (e) => {
+            if (isRecentTouch()) return;
+            this.handleDocumentMouseDown(e);
+        });
+        document.addEventListener('mousemove', (e) => {
+            if (isRecentTouch()) return;
+            this.handleMouseMove(e);
+        });
+        document.addEventListener('mouseup', () => {
+            this.handleMouseUp('mouse');
+        });
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         window.addEventListener('resize', () => {
             this._lastViewportStageWidth = null;
@@ -1867,6 +1881,7 @@ class DesignEditor {
             // ===== TOUCH SUPPORT =====
             this.canvas.addEventListener('touchstart', (e) => {
                 if (e.touches.length !== 1) return;
+                this._lastTouchInteractionAt = Date.now();
                 e.preventDefault();
                 const t = e.touches[0];
                 this.handleCanvasMouseDown({ target: e.target, clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} });
@@ -1874,6 +1889,7 @@ class DesignEditor {
 
             document.addEventListener('touchmove', (e) => {
                 if (e.touches.length !== 1) return;
+                this._lastTouchInteractionAt = Date.now();
                 if (this.isDragging || this.isResizing || this.isRotating) {
                     e.preventDefault();
                     const t = e.touches[0];
@@ -1882,9 +1898,10 @@ class DesignEditor {
             }, { passive: false });
 
             document.addEventListener('touchend', (e) => {
+                this._lastTouchInteractionAt = Date.now();
                 if (this.isDragging || this.isResizing || this.isRotating) {
                     const t = e.changedTouches[0];
-                    this.handleMouseUp(t ? { clientX: t.clientX, clientY: t.clientY } : {});
+                    this.handleMouseUp('touch', t ? { clientX: t.clientX, clientY: t.clientY } : {});
                 }
             }, { passive: false });
 
@@ -2148,8 +2165,12 @@ class DesignEditor {
             return;
         }
 
+        let cropLastTouchAt = 0;
+        const cropIsRecentTouch = () => (Date.now() - cropLastTouchAt) < 700;
+
         const startPointer = (event) => {
             if (!this.uploadCropState) return;
+            if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
             if (event.button !== undefined && event.button !== 0) return;
 
             const handle = event.target?.dataset?.handle || null;
@@ -2176,6 +2197,7 @@ class DesignEditor {
 
         const movePointer = (event) => {
             if (!this.uploadCropState?.dragging) return;
+            if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
 
             const state = this.uploadCropState;
             const drag = state.dragging;
@@ -2262,7 +2284,8 @@ class DesignEditor {
             this.renderUploadCropSelection();
         };
 
-        const endPointer = () => {
+        const endPointer = (event) => {
+            if (cropIsRecentTouch() && event?.pointerSource === 'mouse') return;
             if (!this.uploadCropState) return;
             stage.classList.remove('is-panning');
             this.uploadCropState.dragging = null;
@@ -2298,30 +2321,54 @@ class DesignEditor {
             this.layoutUploadCropModal(false);
         };
 
-        selection.addEventListener('mousedown', startPointer);
-        stage.addEventListener('mousedown', startPointer);
+        selection.addEventListener('mousedown', (event) => {
+            startPointer({ ...event, pointerSource: 'mouse' });
+        });
+        stage.addEventListener('mousedown', (event) => {
+            startPointer({ ...event, pointerSource: 'mouse' });
+        });
         
         // Touch events for mobile
         const startTouchPointer = (event) => {
             if (event.touches.length !== 1) return;
+            cropLastTouchAt = Date.now();
+            event.preventDefault();
             const touch = event.touches[0];
-            startPointer({ ...event, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+            startPointer({
+                clientX: touch.clientX,
+                clientY: touch.clientY,
+                button: 0,
+                target: event.target,
+                pointerSource: 'touch',
+                preventDefault: () => {}
+            });
         };
         
         const moveTouchPointer = (event) => {
             if (event.touches.length !== 1) return;
+            cropLastTouchAt = Date.now();
+            event.preventDefault();
             const touch = event.touches[0];
-            movePointer({ clientX: touch.clientX, clientY: touch.clientY });
+            movePointer({ clientX: touch.clientX, clientY: touch.clientY, pointerSource: 'touch' });
+        };
+
+        const endTouchPointer = () => {
+            cropLastTouchAt = Date.now();
+            endPointer({ pointerSource: 'touch' });
         };
         
         selection.addEventListener('touchstart', startTouchPointer, { passive: false });
         stage.addEventListener('touchstart', startTouchPointer, { passive: false });
         document.addEventListener('touchmove', moveTouchPointer, { passive: false });
-        document.addEventListener('touchend', endPointer);
-        document.addEventListener('touchcancel', endPointer);
+        document.addEventListener('touchend', endTouchPointer);
+        document.addEventListener('touchcancel', endTouchPointer);
         
-        document.addEventListener('mousemove', movePointer);
-        document.addEventListener('mouseup', endPointer);
+        document.addEventListener('mousemove', (event) => {
+            movePointer({ ...event, pointerSource: 'mouse' });
+        });
+        document.addEventListener('mouseup', (event) => {
+            endPointer({ ...event, pointerSource: 'mouse' });
+        });
         stage.addEventListener('wheel', handleWheel, { passive: false });
 
         const cancelFlow = () => this.resolveUploadCropModal(null);
@@ -3152,7 +3199,11 @@ class DesignEditor {
         }
     }
     
-    handleMouseUp() {
+    handleMouseUp(source = 'mouse') {
+        if (source === 'mouse' && (Date.now() - (this._lastTouchInteractionAt || 0)) < 700) {
+            return;
+        }
+
         const wasRotating = this.isRotating;
         const wasDragging = this.isDragging;
         const wasResizing = this.isResizing;
