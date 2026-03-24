@@ -1663,6 +1663,84 @@ class DesignEditor {
         return data;
     }
 
+    sanitizeImportedEditableNode(node) {
+        if (!node || !node.tagName) return false;
+
+        const tagName = node.tagName.toLowerCase();
+        const bounds = this.getEditableBounds();
+        const center = this.getEditableCenter();
+        const defaultWidth = Math.max(48, bounds.width * 0.35);
+        const defaultHeight = Math.max(48, bounds.height * 0.2);
+        const defaultRadius = Math.max(20, Math.min(bounds.width, bounds.height) * 0.12);
+
+        const sanitizeNumericAttr = (attrName, fallback, minValue = null) => {
+            const rawValue = node.getAttribute(attrName);
+            if (rawValue === null) return;
+
+            let numericValue = Number(rawValue);
+            if (!Number.isFinite(numericValue)) {
+                numericValue = fallback;
+            }
+
+            if (minValue !== null) {
+                numericValue = Math.max(minValue, numericValue);
+            }
+
+            node.setAttribute(attrName, String(numericValue));
+        };
+
+        const transformValue = node.getAttribute('transform') || '';
+        if (/Infinity|NaN/i.test(transformValue)) {
+            node.removeAttribute('transform');
+        }
+
+        if (tagName === 'text') {
+            sanitizeNumericAttr('x', center.x);
+            sanitizeNumericAttr('y', center.y);
+            sanitizeNumericAttr('font-size', 24, 1);
+            return true;
+        }
+
+        if (tagName === 'image' || tagName === 'rect') {
+            sanitizeNumericAttr('x', center.x - (defaultWidth / 2));
+            sanitizeNumericAttr('y', center.y - (defaultHeight / 2));
+            sanitizeNumericAttr('width', defaultWidth, 1);
+            sanitizeNumericAttr('height', defaultHeight, 1);
+            return true;
+        }
+
+        if (tagName === 'circle') {
+            sanitizeNumericAttr('cx', center.x);
+            sanitizeNumericAttr('cy', center.y);
+            sanitizeNumericAttr('r', defaultRadius, 1);
+            return true;
+        }
+
+        if (tagName === 'polygon') {
+            const rawPoints = node.getAttribute('points') || '';
+            const pointPairs = rawPoints
+                .trim()
+                .split(/\s+/)
+                .map((pair) => pair.split(',').map(Number));
+
+            const hasInvalidPoint = !pointPairs.length || pointPairs.some(
+                (pair) => pair.length < 2 || !Number.isFinite(pair[0]) || !Number.isFinite(pair[1])
+            );
+
+            if (hasInvalidPoint) {
+                const half = defaultRadius;
+                const p1 = `${center.x},${center.y - half}`;
+                const p2 = `${center.x + half},${center.y + (half * 0.75)}`;
+                const p3 = `${center.x - half},${center.y + (half * 0.75)}`;
+                node.setAttribute('points', `${p1} ${p2} ${p3}`);
+            }
+
+            return true;
+        }
+
+        return true;
+    }
+
     syncElementMetadata(elementData) {
         if (!elementData?.element) return;
 
@@ -1705,6 +1783,9 @@ class DesignEditor {
                 
                 designElements.forEach(el => {
                     const imported = document.importNode(el, true);
+                    if (!this.sanitizeImportedEditableNode(imported)) {
+                        return;
+                    }
                     this.canvas.appendChild(imported);
                     const elementData = this.buildElementDataFromNode(imported);
                     
@@ -1735,8 +1816,17 @@ class DesignEditor {
             const svgDoc = parser.parseFromString(autosave, 'image/svg+xml');
             const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
 
+            let hadSanitizedNode = false;
+
             designElements.forEach(el => {
                 const imported = document.importNode(el, true);
+                const beforeMarkup = imported.outerHTML;
+                if (!this.sanitizeImportedEditableNode(imported)) {
+                    return;
+                }
+                if (beforeMarkup !== imported.outerHTML) {
+                    hadSanitizedNode = true;
+                }
                 this.canvas.appendChild(imported);
                 const elementData = this.buildElementDataFromNode(imported);
 
@@ -1749,6 +1839,11 @@ class DesignEditor {
                 this.updateLayers();
                 showToast('Design recuperado automaticamente', 'info');
                 this.saveHistory();
+
+                if (hadSanitizedNode) {
+                    this.autoSave();
+                    console.warn('Autosave continha valores invalidos e foi saneado automaticamente.');
+                }
             }
         } catch (error) {
             console.warn('Falha ao recuperar autosave:', error);
@@ -4281,6 +4376,9 @@ class DesignEditor {
                 if (!restored) return;
 
                 const imported = document.importNode(restored, true);
+                if (!this.sanitizeImportedEditableNode(imported)) {
+                    return;
+                }
                 this.canvas.appendChild(imported);
 
                 const elementData = this.buildElementDataFromNode(imported, saved.id);

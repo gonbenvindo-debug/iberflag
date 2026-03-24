@@ -433,8 +433,12 @@
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
+            pointer-events: none;
         }
-        .editor-mobile-backdrop.active { display: block; }
+        .editor-mobile-backdrop.active {
+            display: block;
+            pointer-events: auto;
+        }
 
         /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepõe via @media) ----- */
         #editor-nav {
@@ -486,6 +490,8 @@
             padding: 1rem 1rem 0.5rem 0.5rem;
             min-height: 0;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         #canvas-stage {
             flex: 1;
@@ -495,6 +501,8 @@
             padding: 1.5rem;
             min-height: 0;
             overflow: hidden;
+            position: relative;
+            z-index: 1;
         }
         .editor-bottom-bar {
             display: flex;
@@ -552,9 +560,13 @@
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
+                pointer-events: none;
             }
             .editor-sidebar-left.panel-open,
-            .editor-sidebar-right.panel-open { transform: translateY(0); }
+            .editor-sidebar-right.panel-open {
+                transform: translateY(0);
+                pointer-events: auto;
+            }
 
             .editor-sidebar-left .sidebar-shell,
             .editor-sidebar-right .sidebar-shell {
@@ -584,11 +596,6 @@
                 padding: 0.5rem;
                 min-height: 0;
                 overflow: hidden;
-                background: transparent;
-                background-image: none;
-                border: none;
-                border-radius: 0;
-                box-shadow: none;
             }
 
             #canvas-wrapper {
