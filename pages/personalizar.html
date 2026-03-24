@@ -381,7 +381,6 @@
         }
 
         #cart-steps-next {
-        #cart-steps-next {
             background: #111827;
             color: #ffffff;
         }
@@ -391,35 +390,75 @@
 
         /* ===== RESPONSIVE EDITOR ===== */
 
+        /* Desktop: normal sidebars */
+        @media (min-width: 1024px) {
+            .editor-sidebar-left,
+            .editor-sidebar-right {
+                position: static !important;
+                visibility: visible;
+                opacity: 1;
+                bottom: auto;
+                left: auto;
+                right: auto;
+                width: auto !important;
+                max-height: none;
+                background: transparent;
+                border-radius: 0;
+                box-shadow: none;
+                z-index: auto;
+                transition: none;
+            }
+        }
+
         /* Mobile: sidebars become full-width bottom drawers */
         @media (max-width: 1023px) {
             .editor-sidebar-left,
             .editor-sidebar-right {
+                /* Hide by default on mobile */
+                visibility: hidden;
+                opacity: 0;
+                
+                /* Positioning for drawer */
                 position: fixed !important;
                 bottom: 0;
                 left: 0;
                 right: 0;
                 width: 100% !important;
+                width: 100vw !important;
+                margin: 0 !important;
                 padding: 0 !important;
                 max-height: 72vh;
                 z-index: 400;
                 background: #fff;
                 border-radius: 16px 16px 0 0;
                 box-shadow: 0 -4px 32px rgba(15, 23, 42, 0.22);
-                transform: translateY(100%);
-                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                
+                /* Animation */
                 overflow-y: auto;
                 overscroll-behavior: contain;
+                transition: visibility 0.3s, opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             }
             .editor-sidebar-left.panel-open,
             .editor-sidebar-right.panel-open {
-                transform: translateY(0);
+                visibility: visible;
+                opacity: 1;
             }
             .editor-sidebar-left .sidebar-shell,
             .editor-sidebar-right .sidebar-shell {
                 height: auto !important;
                 border: none !important;
                 border-radius: 0 !important;
+            }
+
+            /* Main canvas area takes full space on mobile */
+            .editor-main {
+                flex: 1 1 100% !important;
+                min-height: 0 !important;
+            }
+
+            #canvas-stage {
+                padding: 0.75rem !important;
+                min-height: calc(100vh - 64px - 52px) !important; /* Nav height + tab bar height */
             }
 
             /* Compact nav on mobile */
@@ -433,9 +472,6 @@
             .editor-cart-text { display: none !important; }
             #add-to-cart-btn { padding: 0.45rem 0.7rem !important; }
             .editor-undo-redo { display: none !important; }
-
-            /* Canvas stage padding reduced */
-            #canvas-stage { padding: 0.75rem !important; }
 
             /* Prevent global flex overrides from breaking editor toolbar */
             .editor-bottom-bar > div,
