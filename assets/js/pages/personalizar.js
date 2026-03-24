@@ -2935,19 +2935,21 @@ class DesignEditor {
                 handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
                 handle.style.left = (point.x - 5) + 'px';
                 handle.style.top = (point.y - 5) + 'px';
+                handle.style.pointerEvents = 'auto';
                 
                 handle.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
+                    e.preventDefault();
                     this.startResize(e, pos);
                 });
 
-                    handle.addEventListener('touchstart', (e) => {
-                        if (e.touches.length !== 1) return;
-                        e.stopPropagation();
-                        e.preventDefault();
-                        const t = e.touches[0];
-                        this.startResize({ clientX: t.clientX, clientY: t.clientY }, pos);
-                    }, { passive: false });
+                handle.addEventListener('touchstart', (e) => {
+                    if (e.touches.length !== 1) return;
+                    e.stopPropagation();
+                    e.preventDefault();
+                    const t = e.touches[0];
+                    this.startResize({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, pos);
+                }, { passive: false });
                 
                 handlesContainer.appendChild(handle);
             });
@@ -2974,20 +2976,22 @@ class DesignEditor {
         rotateHandle.style.cursor = 'grab';
         rotateHandle.style.left = (rotatePoint.x - 16) + 'px';
         rotateHandle.style.top = (rotatePoint.y - 16) + 'px';
+        rotateHandle.style.pointerEvents = 'auto';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
         rotateHandle.addEventListener('mousedown', (e) => {
             e.stopPropagation();
+            e.preventDefault();
             this.startRotate(e, elementData);
         });
 
-            rotateHandle.addEventListener('touchstart', (e) => {
-                if (e.touches.length !== 1) return;
-                e.stopPropagation();
-                e.preventDefault();
-                const t = e.touches[0];
-                this.startRotate({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, elementData);
-            }, { passive: false });
+        rotateHandle.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            e.stopPropagation();
+            e.preventDefault();
+            const t = e.touches[0];
+            this.startRotate({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, elementData);
+        }, { passive: false });
         
         handlesContainer.appendChild(rotateHandle);
     }
@@ -3246,12 +3250,24 @@ class DesignEditor {
                     .trim()
                     .split(/\s+/)
                     .map((pair) => pair.split(',').map(Number))
-                : null
+                : null,
+            movementThreshold: 3,
+            hasMovement: false
         };
     }
     
     doResize(e) {
         if (!this.selectedElement) return;
+
+        // Verificar threshold de movimento para mobile
+        if (!this.dragStart.hasMovement && this.dragStart.movementThreshold) {
+            const dx = Math.abs(e.clientX - this.dragStart.startClientX);
+            const dy = Math.abs(e.clientY - this.dragStart.startClientY);
+            if (dx < this.dragStart.movementThreshold && dy < this.dragStart.movementThreshold) {
+                return; // Muito pequeno ainda, aguardar
+            }
+            this.dragStart.hasMovement = true;
+        }
 
         // ===== CROP MODE =====
         if (this.cropMode && this.cropBounds) {
@@ -3531,7 +3547,7 @@ class DesignEditor {
     
     // ===== ROTATION =====
     startRotate(e, elementData) {
-        e.preventDefault();
+        if (e.preventDefault) e.preventDefault();
         this.beginHistoryGesture();
         this.isDragging = false;
         this.isResizing = false;
@@ -3551,10 +3567,25 @@ class DesignEditor {
         
         this.rotationStart = Math.atan2(mouseY - centerClient.y, mouseX - centerClient.x) * (180 / Math.PI);
         this.rotationStart -= (elementData.rotation || 0);
+        
+        // Tracking para mobile
+        this.rotationStartX = mouseX;
+        this.rotationStartY = mouseY;
+        this.rotationHasMovement = false;
     }
     
     doRotate(e) {
         if (!this.selectedElement) return;
+
+        // Threshold para mobile
+        if (!this.rotationHasMovement) {
+            const dx = Math.abs(e.clientX - this.rotationStartX);
+            const dy = Math.abs(e.clientY - this.rotationStartY);
+            if (dx < 5 && dy < 5) {
+                return; // Muito pequeno ainda
+            }
+            this.rotationHasMovement = true;
+        }
 
         const bbox = this.selectedElement.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;

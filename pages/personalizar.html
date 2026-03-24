@@ -41,8 +41,8 @@
         }
         
         .resize-handle {
-            width: 10px;
-            height: 10px;
+            width: 12px;
+            height: 12px;
             background: white;
             border: 2px solid #2563eb;
             border-radius: 50%;
@@ -51,16 +51,25 @@
             z-index: 1000;
             touch-action: none;
             -webkit-touch-callout: none;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+        
+        .resize-handle::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            cursor: inherit;
         }
         
         .resize-handle:hover {
             background: #2563eb;
-            transform: scale(1.3);
+            transform: scale(1.4);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         .rotate-handle {
-            width: 32px;
-            height: 32px;
+            width: 36px;
+            height: 36px;
             position: absolute;
             cursor: grab;
             z-index: 1000;
@@ -70,6 +79,23 @@
             display: flex;
             align-items: center;
             justify-content: center;
+            background: white;
+            border: 2px solid #2563eb;
+            border-radius: 50%;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+        }
+
+        .rotate-handle::before {
+            content: '';
+            position: absolute;
+            inset: -8px;
+            cursor: inherit;
+        }
+
+        .rotate-handle:hover {
+            background: #f0f4ff;
+            transform: scale(1.15);
+            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
         }
 
         .rotate-handle:active {
@@ -967,12 +993,12 @@
         <!-- Canvas Area -->
         <main class="editor-main">
             <div id="canvas-stage" class="canvas-container">
-                <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
+                <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px; position: relative; z-index: 1;">
                     <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 w-full h-full">
                         <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"/>
                         <!-- Template will be loaded here -->
                     </svg>
-                    <div id="resize-handles" class="hidden"></div>
+                    <div id="resize-handles" class="hidden" style="position: absolute; inset: 0; z-index: 1001;"></div>
                 </div>
             </div>
             
