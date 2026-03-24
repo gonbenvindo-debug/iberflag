@@ -790,17 +790,30 @@ class DesignEditor {
             return;
         }
 
+        const toFinite = (value, fallback = 0) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : fallback;
+        };
+
         if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
-            const currentX = pointSet ? pointSet.x : parseFloat(elementData.element.getAttribute('x') || '0') + deltaX;
-            const currentY = pointSet ? pointSet.y : parseFloat(elementData.element.getAttribute('y') || '0') + deltaY;
+            const currentX = pointSet
+                ? toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('x') || '0'))
+                : toFinite(parseFloat(elementData.element.getAttribute('x') || '0') + deltaX, parseFloat(elementData.element.getAttribute('x') || '0'));
+            const currentY = pointSet
+                ? toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('y') || '0'))
+                : toFinite(parseFloat(elementData.element.getAttribute('y') || '0') + deltaY, parseFloat(elementData.element.getAttribute('y') || '0'));
             elementData.element.setAttribute('x', currentX);
             elementData.element.setAttribute('y', currentY);
             return;
         }
 
         if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            const currentCx = pointSet ? pointSet.x : parseFloat(elementData.element.getAttribute('cx') || '0') + deltaX;
-            const currentCy = pointSet ? pointSet.y : parseFloat(elementData.element.getAttribute('cy') || '0') + deltaY;
+            const currentCx = pointSet
+                ? toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('cx') || '0'))
+                : toFinite(parseFloat(elementData.element.getAttribute('cx') || '0') + deltaX, parseFloat(elementData.element.getAttribute('cx') || '0'));
+            const currentCy = pointSet
+                ? toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('cy') || '0'))
+                : toFinite(parseFloat(elementData.element.getAttribute('cy') || '0') + deltaY, parseFloat(elementData.element.getAttribute('cy') || '0'));
             elementData.element.setAttribute('cx', currentCx);
             elementData.element.setAttribute('cy', currentCy);
             return;
@@ -2726,8 +2739,14 @@ class DesignEditor {
         
         // Find min/max of transformed corners (in SVG coordinates)
         const svgRect = this.canvas.getBoundingClientRect();
-        const svgLeft = 0; // SVG coordinate system
-        const svgTop = 0;
+        if (!svgRect.width || !svgRect.height) {
+            return {
+                left: bbox.x,
+                right: bbox.x + bbox.width,
+                top: bbox.y,
+                bottom: bbox.y + bbox.height
+            };
+        }
         
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         
@@ -2736,11 +2755,21 @@ class DesignEditor {
             const vb = this.getCanvasViewBoxSize();
             const svgX = (corner.x - svgRect.left) / svgRect.width * vb.width;
             const svgY = (corner.y - svgRect.top) / svgRect.height * vb.height;
+            if (!Number.isFinite(svgX) || !Number.isFinite(svgY)) return;
             minX = Math.min(minX, svgX);
             maxX = Math.max(maxX, svgX);
             minY = Math.min(minY, svgY);
             maxY = Math.max(maxY, svgY);
         });
+
+        if (![minX, maxX, minY, maxY].every(Number.isFinite)) {
+            return {
+                left: bbox.x,
+                right: bbox.x + bbox.width,
+                top: bbox.y,
+                bottom: bbox.y + bbox.height
+            };
+        }
         
         return {
             left: minX,
@@ -4036,7 +4065,21 @@ class DesignEditor {
 
         const stageWidth = this.canvasStage.clientWidth;
         const stageHeight = this.canvasStage.clientHeight;
-        if (!stageWidth || !stageHeight) return;
+        if (!stageWidth || !stageHeight) {
+            if (!this.initialCanvasSize) {
+                this.initialCanvasSize = {
+                    width: Number(this.baseCanvasSize?.width) || 800,
+                    height: Number(this.baseCanvasSize?.height) || 600
+                };
+            }
+
+            const fallbackWidth = this.initialCanvasSize.width * this.zoom;
+            const fallbackHeight = this.initialCanvasSize.height * this.zoom;
+            this.canvasWrapper.style.width = `${fallbackWidth}px`;
+            this.canvasWrapper.style.height = `${fallbackHeight}px`;
+            this.canvasWrapper.style.transform = 'none';
+            return;
+        }
 
         const needsResizeRecalc = (
             !this.initialCanvasSize ||
