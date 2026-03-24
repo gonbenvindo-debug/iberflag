@@ -387,8 +387,7 @@ class DesignEditor {
             .filter(node => {
                 const id = node.getAttribute('id') || '';
                 return id !== 'print-area-outline' && id !== 'print-area-shape-outline'
-                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid'
-                    && id !== 'product-template-layer';
+                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
             })
             .forEach(node => clippedGroup.appendChild(node.cloneNode(true)));
         exportSvg.appendChild(clippedGroup);
@@ -1459,53 +1458,6 @@ class DesignEditor {
         this.bringPrintAreaOverlaysToFront();
     }
 
-    renderTemplateLayer(root, sourceBounds, targetBounds) {
-        const existingLayer = this.canvas.querySelector('#product-template-layer');
-        if (existingLayer) {
-            existingLayer.remove();
-        }
-
-        if (!root || !sourceBounds || !targetBounds) {
-            return;
-        }
-
-        const safeSourceWidth = Math.max(1, Number(sourceBounds.width) || 1);
-        const safeSourceHeight = Math.max(1, Number(sourceBounds.height) || 1);
-        const safeTargetWidth = Math.max(1, Number(targetBounds.width) || 1);
-        const safeTargetHeight = Math.max(1, Number(targetBounds.height) || 1);
-
-        const scale = Math.min(safeTargetWidth / safeSourceWidth, safeTargetHeight / safeSourceHeight);
-        const renderedWidth = safeSourceWidth * scale;
-        const renderedHeight = safeSourceHeight * scale;
-        const offsetX = Number(targetBounds.x) + ((safeTargetWidth - renderedWidth) / 2) - (Number(sourceBounds.x) * scale);
-        const offsetY = Number(targetBounds.y) + ((safeTargetHeight - renderedHeight) / 2) - (Number(sourceBounds.y) * scale);
-
-        const layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        layer.setAttribute('id', 'product-template-layer');
-        layer.setAttribute('pointer-events', 'none');
-        layer.setAttribute('data-non-export', 'true');
-        layer.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scale} ${scale})`);
-
-        Array.from(root.children).forEach((child) => {
-            const tag = child.tagName.toLowerCase();
-            if (tag === 'script') {
-                return;
-            }
-
-            const clone = document.importNode(child, true);
-            layer.appendChild(clone);
-        });
-
-        this.canvas.appendChild(layer);
-
-        const defs = this.canvas.querySelector('defs[data-print-overlay-defs="1"]');
-        if (defs) {
-            this.canvas.insertBefore(layer, defs.nextSibling);
-        } else if (this.printArea && this.printArea.parentNode === this.canvas) {
-            this.canvas.insertBefore(layer, this.printArea);
-        }
-    }
-
     getTemplateElementArea(element) {
         const tagName = element.tagName.toLowerCase();
 
@@ -1621,7 +1573,7 @@ class DesignEditor {
 
             if (viewBoxAttr) {
                 const parts = viewBoxAttr.split(/\s+/).map(Number);
-                if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+            if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
                     sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
                 }
             } else {
@@ -1636,17 +1588,10 @@ class DesignEditor {
 
             if (!areaElement) {
                 this.setDefaultPrintArea();
-                this.renderTemplateLayer(root, sourceBounds, {
-                    x: this.printAreaBounds.x,
-                    y: this.printAreaBounds.y,
-                    width: this.printAreaBounds.width,
-                    height: this.printAreaBounds.height
-                });
                 return;
             }
 
             this.updatePrintAreaFromElement(areaElement, sourceBounds);
-            this.renderTemplateLayer(root, sourceBounds, this.printAreaBounds);
         } catch (error) {
             console.error('Error loading SVG template:', error);
             this.setDefaultPrintArea();
@@ -1718,84 +1663,6 @@ class DesignEditor {
         return data;
     }
 
-    sanitizeImportedEditableNode(node) {
-        if (!node || !node.tagName) return false;
-
-        const tagName = node.tagName.toLowerCase();
-        const bounds = this.getEditableBounds();
-        const center = this.getEditableCenter();
-        const defaultWidth = Math.max(48, bounds.width * 0.35);
-        const defaultHeight = Math.max(48, bounds.height * 0.2);
-        const defaultRadius = Math.max(20, Math.min(bounds.width, bounds.height) * 0.12);
-
-        const sanitizeNumericAttr = (attrName, fallback, minValue = null) => {
-            const rawValue = node.getAttribute(attrName);
-            if (rawValue === null) return;
-
-            let numericValue = Number(rawValue);
-            if (!Number.isFinite(numericValue)) {
-                numericValue = fallback;
-            }
-
-            if (minValue !== null) {
-                numericValue = Math.max(minValue, numericValue);
-            }
-
-            node.setAttribute(attrName, String(numericValue));
-        };
-
-        const transformValue = node.getAttribute('transform') || '';
-        if (/Infinity|NaN/i.test(transformValue)) {
-            node.removeAttribute('transform');
-        }
-
-        if (tagName === 'text') {
-            sanitizeNumericAttr('x', center.x);
-            sanitizeNumericAttr('y', center.y);
-            sanitizeNumericAttr('font-size', 24, 1);
-            return true;
-        }
-
-        if (tagName === 'image' || tagName === 'rect') {
-            sanitizeNumericAttr('x', center.x - (defaultWidth / 2));
-            sanitizeNumericAttr('y', center.y - (defaultHeight / 2));
-            sanitizeNumericAttr('width', defaultWidth, 1);
-            sanitizeNumericAttr('height', defaultHeight, 1);
-            return true;
-        }
-
-        if (tagName === 'circle') {
-            sanitizeNumericAttr('cx', center.x);
-            sanitizeNumericAttr('cy', center.y);
-            sanitizeNumericAttr('r', defaultRadius, 1);
-            return true;
-        }
-
-        if (tagName === 'polygon') {
-            const rawPoints = node.getAttribute('points') || '';
-            const pointPairs = rawPoints
-                .trim()
-                .split(/\s+/)
-                .map((pair) => pair.split(',').map(Number));
-
-            const hasInvalidPoint = !pointPairs.length || pointPairs.some(
-                (pair) => pair.length < 2 || !Number.isFinite(pair[0]) || !Number.isFinite(pair[1])
-            );
-
-            if (hasInvalidPoint) {
-                const half = defaultRadius;
-                const p1 = `${center.x},${center.y - half}`;
-                const p2 = `${center.x + half},${center.y + (half * 0.75)}`;
-                const p3 = `${center.x - half},${center.y + (half * 0.75)}`;
-                node.setAttribute('points', `${p1} ${p2} ${p3}`);
-            }
-
-            return true;
-        }
-
-        return true;
-    }
-
     syncElementMetadata(elementData) {
         if (!elementData?.element) return;
 
@@ -1838,9 +1705,6 @@ class DesignEditor {
                 
                 designElements.forEach(el => {
                     const imported = document.importNode(el, true);
-                    if (!this.sanitizeImportedEditableNode(imported)) {
-                        return;
-                    }
                     this.canvas.appendChild(imported);
                     const elementData = this.buildElementDataFromNode(imported);
                     
@@ -1871,17 +1735,8 @@ class DesignEditor {
             const svgDoc = parser.parseFromString(autosave, 'image/svg+xml');
             const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
 
-            let hadSanitizedNode = false;
-
             designElements.forEach(el => {
                 const imported = document.importNode(el, true);
-                const beforeMarkup = imported.outerHTML;
-                if (!this.sanitizeImportedEditableNode(imported)) {
-                    return;
-                }
-                if (beforeMarkup !== imported.outerHTML) {
-                    hadSanitizedNode = true;
-                }
                 this.canvas.appendChild(imported);
                 const elementData = this.buildElementDataFromNode(imported);
 
@@ -1894,11 +1749,6 @@ class DesignEditor {
                 this.updateLayers();
                 showToast('Design recuperado automaticamente', 'info');
                 this.saveHistory();
-
-                if (hadSanitizedNode) {
-                    this.autoSave();
-                    console.warn('Autosave continha valores invalidos e foi saneado automaticamente.');
-                }
             }
         } catch (error) {
             console.warn('Falha ao recuperar autosave:', error);
@@ -4431,9 +4281,6 @@ class DesignEditor {
                 if (!restored) return;
 
                 const imported = document.importNode(restored, true);
-                if (!this.sanitizeImportedEditableNode(imported)) {
-                    return;
-                }
                 this.canvas.appendChild(imported);
 
                 const elementData = this.buildElementDataFromNode(imported, saved.id);
@@ -4685,7 +4532,7 @@ class DesignEditor {
         Array.from(this.canvas.children)
             .filter((node) => {
                 const id = node.getAttribute('id');
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid' && id !== 'product-template-layer';
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
             })
             .forEach((node) => {
                 clippedGroup.appendChild(node.cloneNode(true));
