@@ -388,118 +388,154 @@
             background: #1f2937;
         }
 
-        /* ===== RESPONSIVE EDITOR =====
-         * Desktop-first: o layout normal de 3 colunas funciona via Tailwind.
-         * Apenas adicionamos overrides para mobile (< 1024px).
-         * ============================== */
+        /* =============================================
+           EDITOR RESPONSIVO — BOTTOM SHEET MOBILE
+           Desktop: Tailwind trata de tudo (3 colunas)
+           Mobile (<1024px): sidebars = bottom sheets
+           ============================================= */
 
-        /* Tab bar e backdrop: escondidos por defeito (desktop) */
+        /* --- Desktop: sidebar precisa de padding próprio --- */
+        .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
+        .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
+
+        /* --- Grip: sempre visível no topo dos drawers --- */
+        .drawer-grip {
+            display: none; /* escondido no desktop */
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 9999px;
+            margin: 10px auto 8px;
+            flex-shrink: 0;
+            cursor: grab;
+        }
+
+        /* --- Tab bar: escondida no desktop --- */
         .editor-mobile-tabs { display: none; }
-        .editor-mobile-backdrop {
-            display: none;
-            position: fixed;
-            inset: 0;
-            z-index: 399;
-            background: rgba(15, 23, 42, 0.46);
-        }
-        .editor-mobile-backdrop.active { display: block; }
 
-        /* MOBILE: sidebars tornam-se drawers na base do ecrã */
-        @media (max-width: 1023px) {
-            /* Sidebars: escondidas e fixas na base */
-            .editor-sidebar-left,
-            .editor-sidebar-right {
-                visibility: hidden;
-                opacity: 0;
-                position: fixed !important;
-                bottom: 0;
-                left: 0;
-                right: 0;
-                width: 100vw !important;
-                margin: 0 !important;
-                padding: 0 !important;
-                max-height: 72vh;
-                z-index: 400;
-                background: #fff;
-                border-radius: 16px 16px 0 0;
-                box-shadow: 0 -4px 32px rgba(15, 23, 42, 0.22);
-                overflow-y: auto;
-                overscroll-behavior: contain;
-                transition: visibility 0.3s, opacity 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            }
-            .editor-sidebar-left.panel-open,
-            .editor-sidebar-right.panel-open {
-                visibility: visible;
-                opacity: 1;
-            }
-            .editor-sidebar-left .sidebar-shell,
-            .editor-sidebar-right .sidebar-shell {
-                height: auto !important;
-                border: none !important;
-                border-radius: 0 !important;
-            }
-
-            /* Canvas ocupa toda a área disponível */
-            .editor-main {
-                flex: 1 1 100% !important;
-                min-height: 0 !important;
-            }
-            #canvas-stage {
-                padding: 0.75rem !important;
-                min-height: calc(100vh - 64px - 52px) !important;
-            }
-
-            /* Navbar compacta */
-            #product-name {
-                max-width: 100px;
-                white-space: nowrap;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                font-size: 0.82rem;
-            }
-            .editor-cart-text { display: none !important; }
-            #add-to-cart-btn { padding: 0.45rem 0.7rem !important; }
-            .editor-undo-redo { display: none !important; }
-
-            /* Tab bar visível em mobile */
-            .editor-mobile-tabs {
-                display: grid !important;
-                grid-template-columns: repeat(3, 1fr);
-                border-top: 1px solid #e2e8f0;
-                background: #fff;
-                flex-shrink: 0;
-            }
-        }
+        /* --- Tab button: estilos base --- */
         .editor-mobile-tab {
             display: flex;
             flex-direction: column;
             align-items: center;
             justify-content: center;
             gap: 3px;
-            padding: 7px 4px;
-            font-size: 0.67rem;
-            font-weight: 600;
-            color: #64748b;
+            padding: 6px 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #94a3b8;
             border: none;
+            border-top: 2px solid transparent;
             background: transparent;
             cursor: pointer;
-            transition: color 0.15s;
-            min-height: 52px;
-            letter-spacing: 0.025em;
+            transition: color 0.15s, border-color 0.15s;
+            min-height: 50px;
+            letter-spacing: 0.04em;
             text-transform: uppercase;
         }
-        .editor-mobile-tab i { width: 20px; height: 20px; display: block; }
-        .editor-mobile-tab.active { color: #2563eb; }
+        .editor-mobile-tab.active {
+            color: #2563eb;
+            border-top-color: #2563eb;
+        }
 
-        /* Drawer top drag grip */
-        .drawer-grip {
-            display: block;
-            width: 36px;
-            height: 4px;
-            background: #cbd5e1;
-            border-radius: 9999px;
-            margin: 10px auto 2px;
-            flex-shrink: 0;
+        /* --- Backdrop: escondido por defeito --- */
+        .editor-mobile-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 55;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+        }
+        .editor-mobile-backdrop.active { display: block; }
+
+        /* ============================
+           @media: MOBILE (< 1024px)
+           ============================ */
+        @media (max-width: 1023px) {
+
+            /* Grip visível em mobile */
+            .drawer-grip { display: block; }
+
+            /* Sidebars = bottom sheets */
+            .editor-sidebar-left,
+            .editor-sidebar-right {
+                position: fixed !important;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100% !important;
+                max-height: 65vh;
+                z-index: 60;
+                padding: 0 !important;
+                margin: 0 !important;
+                background: #ffffff;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -6px 32px rgba(15, 23, 42, 0.2);
+                /* Slide-up animation via transform */
+                transform: translateY(100%);
+                transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+                will-change: transform;
+                display: flex !important;
+                flex-direction: column;
+                overflow: hidden;
+            }
+            .editor-sidebar-left.panel-open,
+            .editor-sidebar-right.panel-open {
+                transform: translateY(0);
+            }
+
+            /* Sidebar content: scrollável */
+            .editor-sidebar-left .sidebar-shell,
+            .editor-sidebar-right .sidebar-shell {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                border: none !important;
+                border-radius: 0 !important;
+                height: auto !important;
+            }
+
+            /* Canvas: ocupa todo o espaço disponível */
+            .editor-main {
+                flex: 1 !important;
+                min-height: 0 !important;
+                display: flex !important;
+                flex-direction: column !important;
+            }
+            #canvas-stage {
+                flex: 1 !important;
+                padding: 0.5rem !important;
+                min-height: 0 !important;
+            }
+
+            /* Toolbar inferior: compacta */
+            .editor-bottom-bar {
+                padding-top: 0.35rem !important;
+                padding-bottom: 0.35rem !important;
+            }
+
+            /* Navbar: compacta */
+            #product-name {
+                max-width: 7rem;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+                font-size: 0.82rem;
+            }
+            .editor-cart-text    { display: none !important; }
+            #add-to-cart-btn     { padding: 0.4rem 0.7rem !important; }
+            .editor-undo-redo    { display: none !important; }
+
+            /* Tab bar: visível em mobile */
+            .editor-mobile-tabs {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr);
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+                flex-shrink: 0;
+            }
         }
     </style>
 </head>
@@ -538,9 +574,9 @@
     <div class="flex h-[calc(100vh-64px)] editor-body-layout">
         
         <!-- Left Sidebar - Tools -->
-        <aside class="w-80 p-4 pr-2 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
-            <span class="drawer-grip"></span>
+        <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
             <div class="sidebar-shell">
+            <span class="drawer-grip"></span>
             <div id="elements-panel" class="sidebar-section overflow-y-auto">
                 <p class="section-title">Elementos</p>
                 <div class="space-y-3 mb-4">
@@ -765,12 +801,9 @@
         </main>
 
         <!-- Right Sidebar - Layers -->
-        <aside class="w-64 p-4 pl-2 editor-sidebar-right" id="editor-sidebar-right">
-            <span class="drawer-grip"></span>
+        <aside class="w-64 editor-sidebar-right" id="editor-sidebar-right">
             <div class="sidebar-shell">
-                <!-- Mobile Backdrop -->
-                <div id="mobile-panel-backdrop" class="editor-mobile-backdrop" aria-hidden="true"></div>
-
+            <span class="drawer-grip"></span>
             <div class="p-4 border-b border-gray-100">
                 <h3 class="font-bold text-lg">Camadas</h3>
             </div>
@@ -779,6 +812,9 @@
             </div>
             </div>
         </aside>
+
+        <!-- Mobile backdrop: at layout level so it's always clickable -->
+        <div id="mobile-panel-backdrop" class="editor-mobile-backdrop" aria-hidden="true"></div>
     </div>
 
     <div id="upload-crop-modal" class="upload-crop-modal hidden" aria-hidden="true">

@@ -72,78 +72,61 @@ class DesignEditor {
     }
     
     async init() {
-        console.log('DesignEditor init starting...');
         await this.loadProduct();
         this.setupEventListeners();
         this.syncCanvasViewport();
-        try {
-            this.setupMobileUI();
-        } catch (e) {
-            console.error('setupMobileUI error:', e);
-        }
+        this.setupMobileUI();
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
-        console.log('DesignEditor init complete');
     }
 
     // ===== MOBILE UI =====
     setupMobileUI() {
-            const backdrop = document.getElementById('mobile-panel-backdrop');
-            const sidebarLeft = document.getElementById('editor-sidebar-left');
-            const sidebarRight = document.getElementById('editor-sidebar-right');
-            const tabElements = document.getElementById('mobile-tab-elements');
-            const tabProperties = document.getElementById('mobile-tab-properties');
-            const tabLayers = document.getElementById('mobile-tab-layers');
+        const backdrop = document.getElementById('mobile-panel-backdrop');
+        const sidebarLeft = document.getElementById('editor-sidebar-left');
+        const sidebarRight = document.getElementById('editor-sidebar-right');
+        const tabElements = document.getElementById('mobile-tab-elements');
+        const tabProperties = document.getElementById('mobile-tab-properties');
+        const tabLayers = document.getElementById('mobile-tab-layers');
 
-            console.log('setupMobileUI: backdrop=', backdrop, 'sidebarLeft=', sidebarLeft, 'sidebarRight=', sidebarRight);
-            console.log('setupMobileUI: tabElements=', tabElements, 'tabProperties=', tabProperties, 'tabLayers=', tabLayers);
+        if (!backdrop || !sidebarLeft || !sidebarRight) return;
 
-            if (!backdrop || !sidebarLeft || !sidebarRight) {
-                console.warn('setupMobileUI: Missing DOM elements, skipping mobile UI setup');
-                return;
+        const closeAll = () => {
+            sidebarLeft.classList.remove('panel-open');
+            sidebarRight.classList.remove('panel-open');
+            backdrop.classList.remove('active');
+            document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
+        };
+
+        backdrop.addEventListener('click', closeAll);
+
+        const openLeft = (panelId, tabId) => {
+            const isAlreadyOpen = sidebarLeft.classList.contains('panel-open') &&
+                document.getElementById(tabId)?.classList.contains('active');
+            closeAll();
+            if (!isAlreadyOpen) {
+                document.getElementById('elements-panel')?.classList.toggle('hidden', panelId !== 'elements-panel');
+                document.getElementById('properties-panel')?.classList.toggle('hidden', panelId !== 'properties-panel');
+                sidebarLeft.classList.add('panel-open');
+                backdrop.classList.add('active');
+                document.getElementById(tabId)?.classList.add('active');
             }
+        };
 
-            const closeAll = () => {
-                sidebarLeft?.classList.remove('panel-open');
-                sidebarRight?.classList.remove('panel-open');
-                backdrop?.classList.remove('active');
-                document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
-            };
-
-            backdrop?.addEventListener('click', closeAll);
-
-            const openLeft = (panelId, tabId) => {
-                const isAlreadyOpen = sidebarLeft?.classList.contains('panel-open') &&
-                    document.getElementById(tabId)?.classList.contains('active');
-                closeAll();
-                if (!isAlreadyOpen) {
-                    if (panelId === 'properties-panel') {
-                        document.getElementById('elements-panel')?.classList.add('hidden');
-                        document.getElementById('properties-panel')?.classList.remove('hidden');
-                    } else {
-                        document.getElementById('elements-panel')?.classList.remove('hidden');
-                        document.getElementById('properties-panel')?.classList.add('hidden');
-                    }
-                    sidebarLeft?.classList.add('panel-open');
-                    backdrop?.classList.add('active');
-                    document.getElementById(tabId)?.classList.add('active');
-                }
-            };
-
-            tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
-            tabProperties?.addEventListener('click', () => openLeft('properties-panel', 'mobile-tab-properties'));
-            tabLayers?.addEventListener('click', () => {
-                const isAlreadyOpen = sidebarRight?.classList.contains('panel-open') &&
-                    document.getElementById('mobile-tab-layers')?.classList.contains('active');
-                closeAll();
-                if (!isAlreadyOpen) {
-                    sidebarRight?.classList.add('panel-open');
-                    backdrop?.classList.add('active');
-                    document.getElementById('mobile-tab-layers')?.classList.add('active');
-                }
-            });
-        }
+        tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
+        tabProperties?.addEventListener('click', () => openLeft('properties-panel', 'mobile-tab-properties'));
+        tabLayers?.addEventListener('click', () => {
+            const isAlreadyOpen = sidebarRight.classList.contains('panel-open') &&
+                tabLayers?.classList.contains('active');
+            closeAll();
+            if (!isAlreadyOpen) {
+                sidebarRight.classList.add('panel-open');
+                backdrop.classList.add('active');
+                tabLayers?.classList.add('active');
+            }
+        });
+    }
     
     // ===== PRODUCT LOADING =====
     async loadProduct() {
