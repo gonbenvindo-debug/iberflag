@@ -1818,6 +1818,8 @@ class DesignEditor {
         this._lastTouchInteractionAt = 0;
         const isRecentTouch = () => (Date.now() - (this._lastTouchInteractionAt || 0)) < 700;
 
+        this._activeGestureTouchId = null;
+
         this.canvas.addEventListener('mousedown', (e) => {
             if (isRecentTouch()) return;
             this.handleCanvasMouseDown(e);
@@ -1882,27 +1884,42 @@ class DesignEditor {
             this.canvas.addEventListener('touchstart', (e) => {
                 if (e.touches.length !== 1) return;
                 this._lastTouchInteractionAt = Date.now();
+                this._touchGestureActive = true;
+                this._activeGestureTouchId = e.touches[0].identifier;
                 e.preventDefault();
                 const t = e.touches[0];
                 this.handleCanvasMouseDown({ target: e.target, clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} });
             }, { passive: false });
 
             document.addEventListener('touchmove', (e) => {
-                if (e.touches.length !== 1) return;
                 this._lastTouchInteractionAt = Date.now();
                 if (this.isDragging || this.isResizing || this.isRotating) {
+                    const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId);
+                    if (!trackedTouch) return;
                     e.preventDefault();
-                    const t = e.touches[0];
-                    this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY, shiftKey: false });
+                    this._touchGestureActive = true;
+                    this.handleMouseMove({ clientX: trackedTouch.clientX, clientY: trackedTouch.clientY, shiftKey: false });
                 }
             }, { passive: false });
 
             document.addEventListener('touchend', (e) => {
                 this._lastTouchInteractionAt = Date.now();
                 if (this.isDragging || this.isResizing || this.isRotating) {
-                    const t = e.changedTouches[0];
-                    this.handleMouseUp('touch', t ? { clientX: t.clientX, clientY: t.clientY } : {});
+                    const releasedTrackedTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this._activeGestureTouchId);
+                    if (!releasedTrackedTouch) return;
+                    this.handleMouseUp('touch', { clientX: releasedTrackedTouch.clientX, clientY: releasedTrackedTouch.clientY });
                 }
+                this._touchGestureActive = false;
+                this._activeGestureTouchId = null;
+            }, { passive: false });
+
+            document.addEventListener('touchcancel', () => {
+                this._lastTouchInteractionAt = Date.now();
+                if (this.isDragging || this.isResizing || this.isRotating) {
+                    this.handleMouseUp('touch');
+                }
+                this._touchGestureActive = false;
+                this._activeGestureTouchId = null;
             }, { passive: false });
 
         // Paste image (Ctrl+V)
@@ -2773,6 +2790,8 @@ class DesignEditor {
             e.stopPropagation();
             e.preventDefault();
             const t = e.touches[0];
+            this._touchGestureActive = true;
+            this._activeGestureTouchId = t.identifier;
             this.startDrag({ clientX: t.clientX, clientY: t.clientY }, elementData);
             handleElementPress();
         }, { passive: false });
@@ -2995,6 +3014,8 @@ class DesignEditor {
                     e.stopPropagation();
                     e.preventDefault();
                     const t = e.touches[0];
+                    this._touchGestureActive = true;
+                    this._activeGestureTouchId = t.identifier;
                     this.startResize({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, pos);
                 }, { passive: false });
                 
@@ -3037,6 +3058,8 @@ class DesignEditor {
             e.stopPropagation();
             e.preventDefault();
             const t = e.touches[0];
+            this._touchGestureActive = true;
+            this._activeGestureTouchId = t.identifier;
             this.startRotate({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, elementData);
         }, { passive: false });
         
@@ -3593,7 +3616,9 @@ class DesignEditor {
             }
         }
 
-        this.showResizeHandles(this.selectedElement);
+        if (!this._touchGestureActive) {
+            this.showResizeHandles(this.selectedElement);
+        }
     }
     
     // ===== ROTATION =====
@@ -3700,7 +3725,9 @@ class DesignEditor {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        this.requestHandlesRefresh();
+        if (!this._touchGestureActive) {
+            this.requestHandlesRefresh();
+        }
     }
     
     updateRotation(value) {
