@@ -448,9 +448,12 @@
         /* Mobile (<1024px) ----------------------------------------- */
         @media (max-width: 1023px) {
 
-            /* 1. Body: coluna de altura total dinâmica */
+            /* 1. Body: coluna de altura total dinâmica.
+                  box-sizing: border-box garante que padding-top (safe-area)
+                  está incluído nos 100dvh — nada fica cortado em baixo. */
             body.app-page {
                 height: 100dvh;
+                box-sizing: border-box;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
@@ -530,9 +533,9 @@
                 padding: 0 !important;
             }
 
-            /* 7. Canvas-stage: flex centrado, fundo de quadrícula (sem borda/sombra)
-                  O canvas-wrapper fica centrado no espaço disponível — espaço
-                  acima/abaixo é simétrico e mostra o fundo de editor. */
+            /* 7. Canvas-stage: flex centrado, fundo transparente.
+                  Anula TODOS os estilos de .canvas-container (grelha, borda,
+                  sombra) — só o canvas-wrapper é visível. */
             #canvas-stage {
                 flex: 1 !important;
                 display: flex !important;
@@ -541,6 +544,8 @@
                 padding: 0.5rem !important;
                 min-height: 0 !important;
                 overflow: hidden !important;
+                background: transparent !important;
+                background-image: none !important;
                 border: none !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
