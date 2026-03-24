@@ -387,7 +387,8 @@ class DesignEditor {
             .filter(node => {
                 const id = node.getAttribute('id') || '';
                 return id !== 'print-area-outline' && id !== 'print-area-shape-outline'
-                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
+                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid'
+                    && id !== 'product-template-layer';
             })
             .forEach(node => clippedGroup.appendChild(node.cloneNode(true)));
         exportSvg.appendChild(clippedGroup);
@@ -1458,6 +1459,53 @@ class DesignEditor {
         this.bringPrintAreaOverlaysToFront();
     }
 
+    renderTemplateLayer(root, sourceBounds, targetBounds) {
+        const existingLayer = this.canvas.querySelector('#product-template-layer');
+        if (existingLayer) {
+            existingLayer.remove();
+        }
+
+        if (!root || !sourceBounds || !targetBounds) {
+            return;
+        }
+
+        const safeSourceWidth = Math.max(1, Number(sourceBounds.width) || 1);
+        const safeSourceHeight = Math.max(1, Number(sourceBounds.height) || 1);
+        const safeTargetWidth = Math.max(1, Number(targetBounds.width) || 1);
+        const safeTargetHeight = Math.max(1, Number(targetBounds.height) || 1);
+
+        const scale = Math.min(safeTargetWidth / safeSourceWidth, safeTargetHeight / safeSourceHeight);
+        const renderedWidth = safeSourceWidth * scale;
+        const renderedHeight = safeSourceHeight * scale;
+        const offsetX = Number(targetBounds.x) + ((safeTargetWidth - renderedWidth) / 2) - (Number(sourceBounds.x) * scale);
+        const offsetY = Number(targetBounds.y) + ((safeTargetHeight - renderedHeight) / 2) - (Number(sourceBounds.y) * scale);
+
+        const layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+        layer.setAttribute('id', 'product-template-layer');
+        layer.setAttribute('pointer-events', 'none');
+        layer.setAttribute('data-non-export', 'true');
+        layer.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${scale} ${scale})`);
+
+        Array.from(root.children).forEach((child) => {
+            const tag = child.tagName.toLowerCase();
+            if (tag === 'script') {
+                return;
+            }
+
+            const clone = document.importNode(child, true);
+            layer.appendChild(clone);
+        });
+
+        this.canvas.appendChild(layer);
+
+        const defs = this.canvas.querySelector('defs[data-print-overlay-defs="1"]');
+        if (defs) {
+            this.canvas.insertBefore(layer, defs.nextSibling);
+        } else if (this.printArea && this.printArea.parentNode === this.canvas) {
+            this.canvas.insertBefore(layer, this.printArea);
+        }
+    }
+
     getTemplateElementArea(element) {
         const tagName = element.tagName.toLowerCase();
 
@@ -1573,7 +1621,7 @@ class DesignEditor {
 
             if (viewBoxAttr) {
                 const parts = viewBoxAttr.split(/\s+/).map(Number);
-            if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+                if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
                     sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
                 }
             } else {
@@ -1588,10 +1636,17 @@ class DesignEditor {
 
             if (!areaElement) {
                 this.setDefaultPrintArea();
+                this.renderTemplateLayer(root, sourceBounds, {
+                    x: this.printAreaBounds.x,
+                    y: this.printAreaBounds.y,
+                    width: this.printAreaBounds.width,
+                    height: this.printAreaBounds.height
+                });
                 return;
             }
 
             this.updatePrintAreaFromElement(areaElement, sourceBounds);
+            this.renderTemplateLayer(root, sourceBounds, this.printAreaBounds);
         } catch (error) {
             console.error('Error loading SVG template:', error);
             this.setDefaultPrintArea();
@@ -4630,7 +4685,7 @@ class DesignEditor {
         Array.from(this.canvas.children)
             .filter((node) => {
                 const id = node.getAttribute('id');
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
+                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid' && id !== 'product-template-layer';
             })
             .forEach((node) => {
                 clippedGroup.appendChild(node.cloneNode(true));
