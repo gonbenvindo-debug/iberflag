@@ -1162,6 +1162,53 @@ class DesignEditor {
         this.guideLines = [];
     }
 
+    showRotationGuideLine(rotation, center) {
+        this.hideGuideLines();
+
+        if (!Number.isFinite(rotation) || !center) return;
+
+        const normalized = this.normalizeRotation(rotation);
+        const snapped = Math.round(normalized / 45) * 45;
+        const diff = Math.abs((((normalized - snapped) % 360) + 540) % 360 - 180);
+
+        if (diff > 4) {
+            return;
+        }
+
+        const bounds = this.getEditableBounds();
+        const lineLength = Math.hypot(bounds.width, bounds.height) * 1.25;
+        const angleRad = (snapped * Math.PI) / 180;
+        const dx = Math.cos(angleRad) * lineLength;
+        const dy = Math.sin(angleRad) * lineLength;
+
+        const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+        line.setAttribute('x1', String(center.x - dx));
+        line.setAttribute('y1', String(center.y - dy));
+        line.setAttribute('x2', String(center.x + dx));
+        line.setAttribute('y2', String(center.y + dy));
+        line.setAttribute('stroke', '#2563eb');
+        line.setAttribute('stroke-width', '1.5');
+        line.setAttribute('stroke-dasharray', '6,6');
+        line.setAttribute('pointer-events', 'none');
+        line.setAttribute('class', 'guide-line guide-line-rotation');
+        line.setAttribute('opacity', '0.9');
+        this.canvas.appendChild(line);
+        this.guideLines.push(line);
+
+        const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+        ring.setAttribute('cx', String(center.x));
+        ring.setAttribute('cy', String(center.y));
+        ring.setAttribute('r', '6');
+        ring.setAttribute('fill', '#ffffff');
+        ring.setAttribute('stroke', '#2563eb');
+        ring.setAttribute('stroke-width', '1.5');
+        ring.setAttribute('pointer-events', 'none');
+        ring.setAttribute('class', 'guide-line guide-line-rotation-center');
+        ring.setAttribute('opacity', '0.95');
+        this.canvas.appendChild(ring);
+        this.guideLines.push(ring);
+    }
+
     applySnapToMove(deltaX, deltaY, snaps, proposedCenter) {
         let snappedDeltaX = deltaX;
         let snappedDeltaY = deltaY;
@@ -3742,7 +3789,7 @@ class DesignEditor {
         if (!this.rotationHasMovement) {
             const dx = Math.abs(e.clientX - this.rotationStartX);
             const dy = Math.abs(e.clientY - this.rotationStartY);
-            if (dx < 5 && dy < 5) {
+            if (dx < 2 && dy < 2) {
                 return; // Muito pequeno ainda
             }
             this.rotationHasMovement = true;
@@ -3751,6 +3798,7 @@ class DesignEditor {
         const bbox = this.selectedElement.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
+        const elementCenter = { x: centerX, y: centerY };
 
         const center = this.rotationCenterClient;
         if (!center) return;
@@ -3791,6 +3839,7 @@ class DesignEditor {
         // Rotation is valid, apply it
         this.selectedElement.rotation = rotation;
         this.applyElementRotation(this.selectedElement, rotation);
+        this.showRotationGuideLine(rotation, elementCenter);
         
         // Sync rotation input/display based on element type
         if (this.selectedElement.type === 'text') {
@@ -3810,11 +3859,7 @@ class DesignEditor {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        if (this._touchGestureActive) {
-            this.updateResizeHandlesPosition(this.selectedElement);
-        } else {
-            this.requestHandlesRefresh();
-        }
+        this.updateResizeHandlesPosition(this.selectedElement);
     }
     
     updateRotation(value) {
