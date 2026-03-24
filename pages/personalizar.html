@@ -381,47 +381,163 @@
         }
 
         #cart-steps-next {
+        #cart-steps-next {
             background: #111827;
             color: #ffffff;
         }
         #cart-steps-next:hover {
             background: #1f2937;
         }
+
+        /* ===== RESPONSIVE EDITOR ===== */
+
+        /* Mobile: sidebars become full-width bottom drawers */
+        @media (max-width: 1023px) {
+            .editor-sidebar-left,
+            .editor-sidebar-right {
+                position: fixed !important;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100% !important;
+                padding: 0 !important;
+                max-height: 72vh;
+                z-index: 400;
+                background: #fff;
+                border-radius: 16px 16px 0 0;
+                box-shadow: 0 -4px 32px rgba(15, 23, 42, 0.22);
+                transform: translateY(100%);
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+                overflow-y: auto;
+                overscroll-behavior: contain;
+            }
+            .editor-sidebar-left.panel-open,
+            .editor-sidebar-right.panel-open {
+                transform: translateY(0);
+            }
+            .editor-sidebar-left .sidebar-shell,
+            .editor-sidebar-right .sidebar-shell {
+                height: auto !important;
+                border: none !important;
+                border-radius: 0 !important;
+            }
+
+            /* Compact nav on mobile */
+            #product-name {
+                max-width: 100px;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+                font-size: 0.82rem;
+            }
+            .editor-cart-text { display: none !important; }
+            #add-to-cart-btn { padding: 0.45rem 0.7rem !important; }
+            .editor-undo-redo { display: none !important; }
+
+            /* Canvas stage padding reduced */
+            #canvas-stage { padding: 0.75rem !important; }
+
+            /* Prevent global flex overrides from breaking editor toolbar */
+            .editor-bottom-bar > div,
+            .editor-bottom-bar .flex { flex-direction: row !important; }
+            .editor-bottom-bar button,
+            .editor-bottom-bar span { width: auto !important; }
+            nav .flex > button,
+            nav .flex > a,
+            nav .flex > div { width: auto !important; flex-direction: row !important; }
+        }
+
+        /* Mobile backdrop overlay */
+        .editor-mobile-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 399;
+            background: rgba(15, 23, 42, 0.46);
+        }
+        .editor-mobile-backdrop.active { display: block; }
+
+        /* Mobile bottom tab bar */
+        .editor-mobile-tabs { display: none; }
+        @media (max-width: 1023px) {
+            .editor-mobile-tabs {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                border-top: 1px solid #e2e8f0;
+                background: #fff;
+                flex-shrink: 0;
+            }
+        }
+        .editor-mobile-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 7px 4px;
+            font-size: 0.67rem;
+            font-weight: 600;
+            color: #64748b;
+            border: none;
+            background: transparent;
+            cursor: pointer;
+            transition: color 0.15s;
+            min-height: 52px;
+            letter-spacing: 0.025em;
+            text-transform: uppercase;
+        }
+        .editor-mobile-tab i { width: 20px; height: 20px; display: block; }
+        .editor-mobile-tab.active { color: #2563eb; }
+
+        /* Drawer top drag grip */
+        .drawer-grip {
+            display: block;
+            width: 36px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 9999px;
+            margin: 10px auto 2px;
+            flex-shrink: 0;
+        }
     </style>
 </head>
 <body class="app-page overflow-hidden">
     
     <!-- Top Navigation -->
-    <nav class="panel-clean border-0 border-b h-16 flex items-center px-4 justify-between">
-        <div class="flex items-center gap-4">
-            <a href="/" aria-label="IberFlag">
+    <nav class="panel-clean border-0 border-b h-16 flex items-center px-3 lg:px-4 justify-between gap-2">
+        <div class="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
+            <a href="/" aria-label="IberFlag" class="flex-shrink-0">
                 <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact">
             </a>
-            <span class="text-gray-400">|</span>
-            <span id="product-name" class="font-semibold text-gray-700"></span>
+            <span class="text-gray-400 flex-shrink-0">|</span>
+            <span id="product-name" class="font-semibold text-gray-700 truncate min-w-0"></span>
         </div>
         
-        <div class="flex items-center gap-3">
-            <button id="undo-btn" class="p-2 hover:bg-gray-100 rounded" title="Desfazer">
-                <i data-lucide="undo" class="w-5 h-5"></i>
+        <div class="flex items-center gap-1 lg:gap-3 flex-shrink-0">
+            <div class="editor-undo-redo flex items-center gap-1">
+                <button id="undo-btn" class="p-2 hover:bg-gray-100 rounded" title="Desfazer">
+                    <i data-lucide="undo" class="w-5 h-5"></i>
+                </button>
+                <button id="redo-btn" class="p-2 hover:bg-gray-100 rounded" title="Refazer">
+                    <i data-lucide="redo" class="w-5 h-5"></i>
+                </button>
+            </div>
+            <div class="w-px h-6 bg-gray-300 editor-undo-redo"></div>
+            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2">
+                <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                <span class="editor-cart-text">Adicionar ao Carrinho</span>
             </button>
-            <button id="redo-btn" class="p-2 hover:bg-gray-100 rounded" title="Refazer">
-                <i data-lucide="redo" class="w-5 h-5"></i>
-            </button>
-            <div class="w-px h-6 bg-gray-300"></div>
-            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold">
-                Adicionar ao Carrinho
-            </button>
-            <a href="/produtos.html" class="p-2 hover:bg-gray-100 rounded">
+            <a href="/produtos.html" class="p-2 hover:bg-gray-100 rounded" title="Fechar editor">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </a>
         </div>
     </nav>
 
-    <div class="flex h-[calc(100vh-64px)]">
+    <div class="flex h-[calc(100vh-64px)] editor-body-layout">
         
         <!-- Left Sidebar - Tools -->
-        <aside class="w-80 p-4 pr-2 overflow-y-auto">
+        <aside class="w-80 p-4 pr-2 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
+            <span class="drawer-grip"></span>
             <div class="sidebar-shell">
             <div id="elements-panel" class="sidebar-section overflow-y-auto">
                 <p class="section-title">Elementos</p>
@@ -598,7 +714,7 @@
         </aside>
 
         <!-- Canvas Area -->
-        <main class="flex-1 flex flex-col p-4 pl-2 min-h-0">
+        <main class="flex-1 flex flex-col p-4 pl-2 min-h-0 editor-main">
             <div id="canvas-stage" class="flex-1 canvas-container flex items-center justify-center p-8 overflow-auto min-h-0">
                 <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
                     <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
@@ -610,7 +726,7 @@
             </div>
             
             <!-- Bottom Toolbar -->
-            <div class="panel-clean mt-3 px-4 py-3 flex items-center justify-between">
+            <div class="panel-clean mt-2 px-3 lg:px-4 py-2 lg:py-3 flex items-center justify-between editor-bottom-bar">
                 <div class="flex items-center gap-4">
                     <div class="flex items-center gap-2">
                         <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded">
@@ -630,9 +746,30 @@
             </div>
         </main>
 
+            <!-- Mobile Tab Bar -->
+            <nav class="editor-mobile-tabs" aria-label="Ferramentas do editor">
+                <button class="editor-mobile-tab active" id="mobile-tab-elements" data-sidebar="editor-sidebar-left" data-panel="elements-panel">
+                    <i data-lucide="plus-square" class="w-5 h-5 mx-auto"></i>
+                    <span>Adicionar</span>
+                </button>
+                <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left" data-panel="properties-panel">
+                    <i data-lucide="sliders-horizontal" class="w-5 h-5 mx-auto"></i>
+                    <span>Editar</span>
+                </button>
+                <button class="editor-mobile-tab" id="mobile-tab-layers" data-sidebar="editor-sidebar-right">
+                    <i data-lucide="layers" class="w-5 h-5 mx-auto"></i>
+                    <span>Camadas</span>
+                </button>
+            </nav>
+        </main>
+
         <!-- Right Sidebar - Layers -->
-        <aside class="w-64 p-4 pl-2">
+        <aside class="w-64 p-4 pl-2 editor-sidebar-right" id="editor-sidebar-right">
+            <span class="drawer-grip"></span>
             <div class="sidebar-shell">
+                <!-- Mobile Backdrop -->
+                <div id="mobile-panel-backdrop" class="editor-mobile-backdrop" aria-hidden="true"></div>
+
             <div class="p-4 border-b border-gray-100">
                 <h3 class="font-bold text-lg">Camadas</h3>
             </div>

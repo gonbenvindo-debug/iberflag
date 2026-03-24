@@ -75,10 +75,62 @@ class DesignEditor {
         await this.loadProduct();
         this.setupEventListeners();
         this.syncCanvasViewport();
+            this.setupMobileUI();
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
     }
+
+        // ===== MOBILE UI =====
+        setupMobileUI() {
+            const backdrop = document.getElementById('mobile-panel-backdrop');
+            const sidebarLeft = document.getElementById('editor-sidebar-left');
+            const sidebarRight = document.getElementById('editor-sidebar-right');
+
+            const closeAll = () => {
+                sidebarLeft?.classList.remove('panel-open');
+                sidebarRight?.classList.remove('panel-open');
+                backdrop?.classList.remove('active');
+                document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
+            };
+
+            backdrop?.addEventListener('click', closeAll);
+
+            const openLeft = (panelId, tabId) => {
+                const isAlreadyOpen = sidebarLeft?.classList.contains('panel-open') &&
+                    document.getElementById(tabId)?.classList.contains('active');
+                closeAll();
+                if (!isAlreadyOpen) {
+                    if (panelId === 'properties-panel') {
+                        document.getElementById('elements-panel')?.classList.add('hidden');
+                        document.getElementById('properties-panel')?.classList.remove('hidden');
+                    } else {
+                        document.getElementById('elements-panel')?.classList.remove('hidden');
+                        document.getElementById('properties-panel')?.classList.add('hidden');
+                    }
+                    sidebarLeft?.classList.add('panel-open');
+                    backdrop?.classList.add('active');
+                    document.getElementById(tabId)?.classList.add('active');
+                }
+            };
+
+            document.getElementById('mobile-tab-elements')?.addEventListener('click', () =>
+                openLeft('elements-panel', 'mobile-tab-elements'));
+
+            document.getElementById('mobile-tab-properties')?.addEventListener('click', () =>
+                openLeft('properties-panel', 'mobile-tab-properties'));
+
+            document.getElementById('mobile-tab-layers')?.addEventListener('click', () => {
+                const isAlreadyOpen = sidebarRight?.classList.contains('panel-open') &&
+                    document.getElementById('mobile-tab-layers')?.classList.contains('active');
+                closeAll();
+                if (!isAlreadyOpen) {
+                    sidebarRight?.classList.add('panel-open');
+                    backdrop?.classList.add('active');
+                    document.getElementById('mobile-tab-layers')?.classList.add('active');
+                }
+            });
+        }
     
     // ===== PRODUCT LOADING =====
     async loadProduct() {
@@ -1751,6 +1803,30 @@ class DesignEditor {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         window.addEventListener('resize', () => this.syncCanvasViewport());
 
+            // ===== TOUCH SUPPORT =====
+            this.canvas.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.preventDefault();
+                const t = e.touches[0];
+                this.handleCanvasMouseDown({ target: e.target, clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} });
+            }, { passive: false });
+
+            document.addEventListener('touchmove', (e) => {
+                if (e.touches.length !== 1) return;
+                if (this.isDragging || this.isResizing || this.isRotating) {
+                    e.preventDefault();
+                    const t = e.touches[0];
+                    this.handleMouseMove({ clientX: t.clientX, clientY: t.clientY, shiftKey: false });
+                }
+            }, { passive: false });
+
+            document.addEventListener('touchend', (e) => {
+                if (this.isDragging || this.isResizing || this.isRotating) {
+                    const t = e.changedTouches[0];
+                    this.handleMouseUp(t ? { clientX: t.clientX, clientY: t.clientY } : {});
+                }
+            }, { passive: false });
+
         // Paste image (Ctrl+V)
         document.addEventListener('paste', (e) => this.handlePaste(e));
 
@@ -2541,6 +2617,15 @@ class DesignEditor {
             this.selectElement(elementData);
             this.startDrag(e, elementData);
         });
+
+            elementData.element.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                e.preventDefault();
+                const t = e.touches[0];
+                this.selectElement(elementData);
+                this.startDrag({ clientX: t.clientX, clientY: t.clientY }, elementData);
+            }, { passive: false });
     }
     
     selectElement(elementData, options = {}) {
@@ -2736,6 +2821,14 @@ class DesignEditor {
                     e.stopPropagation();
                     this.startResize(e, pos);
                 });
+
+                    handle.addEventListener('touchstart', (e) => {
+                        if (e.touches.length !== 1) return;
+                        e.stopPropagation();
+                        e.preventDefault();
+                        const t = e.touches[0];
+                        this.startResize({ clientX: t.clientX, clientY: t.clientY }, pos);
+                    }, { passive: false });
                 
                 handlesContainer.appendChild(handle);
             });
@@ -2768,6 +2861,14 @@ class DesignEditor {
             e.stopPropagation();
             this.startRotate(e, elementData);
         });
+
+            rotateHandle.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                e.preventDefault();
+                const t = e.touches[0];
+                this.startRotate({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, elementData);
+            }, { passive: false });
         
         handlesContainer.appendChild(rotateHandle);
     }

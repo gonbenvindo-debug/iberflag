@@ -2153,22 +2153,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     .admin-content { margin-left: 0 !important; }
     
     /* Customizer - Improved */
-    .flex.h-\[calc\(100vh-64px\)\] { flex-direction: column !important; height: auto !important; }
-    aside.w-80 { 
-        width: 100% !important; 
-        max-height: none !important;
-        border-right: none !important;
-        border-bottom: 1px solid #e5e7eb;
-    }
-    #canvas-container { 
-        width: 100% !important; 
-        height: 60vh !important;
-        padding: 1rem !important;
-    }
-    #design-canvas { 
-        width: 100% !important; 
-        height: 100% !important;
-    }
+    /* Customizer layout is handled in personalizar.html <style> block */
     
     /* Resize handles smaller on mobile */
     .resize-handle {
@@ -2189,7 +2174,9 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     footer .col-span-2 { grid-column: span 1 !important; }
     
     /* Buttons */
-    .flex.gap-3 button { font-size: 0.875rem !important; padding: 0.75rem 1rem !important; }
+    /* Buttons (homepage/marketing pages only — editor overrides in personalizar.html) */
+    .homepage .flex.gap-3 button,
+    .checkout-page .flex.gap-3 button { font-size: 0.875rem !important; padding: 0.75rem 1rem !important; }
     
     /* Modal */
     .modal-content { width: 95% !important; max-height: 90vh !important; overflow-y: auto; }
@@ -2231,6 +2218,27 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     #canvas-container { height: 300px !important; }
     #design-canvas { height: 300px !important; }
 }
+    @media (max-width: 640px) {
+        /* Extra small screens — homepage/marketing typography */
+        .homepage h1 { font-size: 1.75rem !important; }
+
+        /* Homepage/product grid single column on xs */
+        .homepage .grid,
+        .produtos-page .grid { grid-template-columns: 1fr !important; }
+
+        /* Homepage CTA buttons stacked */
+        .homepage .flex.gap-2,
+        .homepage .flex.gap-3 { flex-direction: column !important; }
+        .homepage .flex.gap-2 > *,
+        .homepage .flex.gap-3 > * { width: 100% !important; }
+
+        /* Checkout form buttons stack */
+        .checkout-page .flex.gap-2:not(.items-center),
+        .checkout-page .flex.gap-3:not(.items-center) { flex-direction: column !important; }
+
+        /* Form inputs — prevent iOS zoom on focus */
+        input, select, textarea { font-size: 16px !important; }
+    }
 
 /* Tablet styles */
 @media (min-width: 769px) and (max-width: 1024px) {
@@ -2241,7 +2249,9 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 /* Touch device improvements */
 @media (hover: none) and (pointer: coarse) {
     /* Larger touch targets */
-    button, a { min-height: 44px; min-width: 44px; }
+    /* Larger touch targets — only navigation & CTA elements, not all buttons */
+    nav a, .btn-primary, .btn-secondary,
+    .checkout-place-order-btn, .homepage-cart-btn { min-height: 44px; }
     
     /* Remove hover effects */
     .hover\:bg-blue-700:hover { background-color: inherit; }
