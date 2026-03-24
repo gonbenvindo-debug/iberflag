@@ -85,9 +85,10 @@ class DesignEditor {
         this.saveHistory();
         this.updateSidebarMode();
         console.log('DesignEditor init complete');
+    }
 
-        // ===== MOBILE UI =====
-        setupMobileUI() {
+    // ===== MOBILE UI =====
+    setupMobileUI() {
             const backdrop = document.getElementById('mobile-panel-backdrop');
             const sidebarLeft = document.getElementById('editor-sidebar-left');
             const sidebarRight = document.getElementById('editor-sidebar-right');
