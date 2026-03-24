@@ -1460,7 +1460,12 @@ class DesignEditor {
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
 
-        this.upsertOutsideAreaOverlay(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
+        const fullProductMaskShape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+        fullProductMaskShape.setAttribute('x', String(this.printAreaBounds.x));
+        fullProductMaskShape.setAttribute('y', String(this.printAreaBounds.y));
+        fullProductMaskShape.setAttribute('width', String(this.printAreaBounds.width));
+        fullProductMaskShape.setAttribute('height', String(this.printAreaBounds.height));
+        this.upsertOutsideAreaOverlay(fullProductMaskShape);
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
