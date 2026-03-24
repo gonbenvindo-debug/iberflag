@@ -46,6 +46,7 @@ class DesignEditor {
         this.baseCanvasSize = { width: 800, height: 600 };
         this.initialCanvasSize = null; // Will store computed base size at 100% zoom
         this.handlesFrameRequest = null;
+        this.handlesPositionFrameRequest = null;
         
         // ===== GUIDES & SNAP =====
         this.showGuides = false;
@@ -3220,6 +3221,17 @@ class DesignEditor {
             }
         });
     }
+
+    scheduleHandlesPositionSync(elementData = this.selectedElement) {
+        if (!elementData || !elementData.element) return;
+        if (this.handlesPositionFrameRequest !== null) return;
+
+        this.handlesPositionFrameRequest = requestAnimationFrame(() => {
+            this.handlesPositionFrameRequest = null;
+            if (!this.selectedElement || this.selectedElement !== elementData) return;
+            this.updateResizeHandlesPosition(elementData);
+        });
+    }
     
     hideResizeHandles() {
         document.getElementById('resize-handles').classList.add('hidden');
@@ -3394,6 +3406,11 @@ class DesignEditor {
         if (this.handlesFrameRequest !== null) {
             cancelAnimationFrame(this.handlesFrameRequest);
             this.handlesFrameRequest = null;
+        }
+
+        if (this.handlesPositionFrameRequest !== null) {
+            cancelAnimationFrame(this.handlesPositionFrameRequest);
+            this.handlesPositionFrameRequest = null;
         }
 
         // ===== APPLY CROP AUTOMATICALLY =====
@@ -3877,6 +3894,7 @@ class DesignEditor {
         }
 
         this.updateResizeHandlesPosition(this.selectedElement);
+        this.scheduleHandlesPositionSync(this.selectedElement);
     }
     
     updateRotation(value) {
