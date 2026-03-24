@@ -48,12 +48,32 @@
             border-radius: 50%;
             position: absolute;
             cursor: pointer;
-            z-index: 100;
+            z-index: 1000;
+            touch-action: none;
+            -webkit-touch-callout: none;
         }
         
         .resize-handle:hover {
             background: #2563eb;
             transform: scale(1.3);
+        }
+
+        .rotate-handle {
+            width: 32px;
+            height: 32px;
+            position: absolute;
+            cursor: grab;
+            z-index: 1000;
+            color: #2563eb;
+            touch-action: none;
+            -webkit-touch-callout: none;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .rotate-handle:active {
+            cursor: grabbing;
         }
 
         .panel-clean {
@@ -634,6 +654,99 @@
                 flex-shrink: 0;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
             }
+
+            /* Compact Mobile Panels */
+            .sidebar-section {
+                padding: 0.75rem 0.75rem;
+            }
+
+            .section-title {
+                font-size: 0.7rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .action-btn {
+                padding: 0.45rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .grid-cols-2 {
+                gap: 0.5rem !important;
+            }
+
+            #text-properties,
+            #image-properties,
+            #shape-properties {
+                padding: 0.75rem;
+            }
+
+            #text-properties div,
+            #image-properties div,
+            #shape-properties div {
+                margin-bottom: 0.5rem !important;
+            }
+
+            #text-properties label,
+            #image-properties label,
+            #shape-properties label {
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+            }
+
+            #text-properties input:not([type="color"]),
+            #text-properties select,
+            #image-properties input:not([type="color"]),
+            #shape-properties input:not([type="color"]) {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            #text-properties input[type="range"],
+            #image-properties input[type="range"],
+            #shape-properties input[type="range"] {
+                height: 4px;
+            }
+
+            #add-text-btn, .upload-image-btn-mobile {
+                width: 100%;
+                padding: 0.5rem !important;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+
+    <style>
+        /* Slide Button Style */
+        .slide-button {
+            display: inline-flex;
+            align-items: center;
+            position: relative;
+            width: 48px;
+            height: 28px;
+            background-color: #cbd5e1;
+            border: none;
+            border-radius: 14px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+            padding: 2px;
+            box-sizing: border-box;
+        }
+
+        .slide-button.active {
+            background-color: #2563eb;
+        }
+
+        .slide-button-toggle {
+            width: 24px;
+            height: 24px;
+            background-color: white;
+            border-radius: 12px;
+            transition: transform 0.3s ease;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .slide-button.active .slide-button-toggle {
+            transform: translateX(20px);
         }
     </style>
 </head>
@@ -722,9 +835,11 @@
             <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
                 <p class="section-title">Propriedades</p>
 
-                <div class="mb-4">
-                    <label class="flex items-center gap-2 text-sm text-gray-700 select-none cursor-pointer">
-                        <input id="keep-aspect-ratio" type="checkbox" class="custom-checkbox">
+                <div class="mb-4 flex items-center gap-3">
+                    <button id="keep-aspect-ratio" class="slide-button" title="Manter proporções">
+                        <span class="slide-button-toggle"></span>
+                    </button>
+                    <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
                         Manter proporcoes
                     </label>
                 </div>

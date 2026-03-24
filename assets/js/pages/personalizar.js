@@ -93,7 +93,10 @@ class DesignEditor {
 
         if (!backdrop || !sidebarLeft || !sidebarRight) return;
 
+        let isClosingProgrammatically = false;
+
         const closeAll = () => {
+            if (isClosingProgrammatically) return;
             sidebarLeft.classList.remove('panel-open');
             sidebarRight.classList.remove('panel-open');
             backdrop.classList.remove('active');
@@ -127,6 +130,12 @@ class DesignEditor {
                 tabLayers?.classList.add('active');
             }
         });
+
+        // Store flag for preventing sidebar closure during element operations
+        this.preventSidebarClose = () => {
+            isClosingProgrammatically = true;
+            setTimeout(() => { isClosingProgrammatically = false; }, 100);
+        };
     }
     
     // ===== PRODUCT LOADING =====
@@ -1797,11 +1806,11 @@ class DesignEditor {
         const centerVBtn = document.getElementById('center-v-btn');
         if (centerVBtn) centerVBtn.addEventListener('click', () => this.centerSelected('vertical'));
 
-        const keepAspectCheckbox = document.getElementById('keep-aspect-ratio');
-        if (keepAspectCheckbox) {
-            this.keepAspectRatio = keepAspectCheckbox.checked;
-            keepAspectCheckbox.addEventListener('change', (e) => {
-                this.keepAspectRatio = e.target.checked;
+        const keepAspectBtn = document.getElementById('keep-aspect-ratio');
+        if (keepAspectBtn) {
+            keepAspectBtn.addEventListener('click', () => {
+                keepAspectBtn.classList.toggle('active');
+                this.keepAspectRatio = keepAspectBtn.classList.contains('active');
             });
         }
         
@@ -2004,6 +2013,7 @@ class DesignEditor {
     
     // ===== ADD ELEMENTS =====
     addText() {
+        this.preventSidebarClose();
         const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
         const baseFontSize = Math.round(Math.max(14, Math.min(40, scale.shortSide * 0.09)));
@@ -2049,6 +2059,7 @@ class DesignEditor {
     }
     
     handleImageUpload(e) {
+        this.preventSidebarClose();
         const file = e.target.files[0];
         if (!file) return;
         this.handleImageFile(file).finally(() => { e.target.value = ''; });
@@ -2289,6 +2300,26 @@ class DesignEditor {
 
         selection.addEventListener('mousedown', startPointer);
         stage.addEventListener('mousedown', startPointer);
+        
+        // Touch events for mobile
+        const startTouchPointer = (event) => {
+            if (event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            startPointer({ ...event, clientX: touch.clientX, clientY: touch.clientY, button: 0 });
+        };
+        
+        const moveTouchPointer = (event) => {
+            if (event.touches.length !== 1) return;
+            const touch = event.touches[0];
+            movePointer({ clientX: touch.clientX, clientY: touch.clientY });
+        };
+        
+        selection.addEventListener('touchstart', startTouchPointer, { passive: false });
+        stage.addEventListener('touchstart', startTouchPointer, { passive: false });
+        document.addEventListener('touchmove', moveTouchPointer, { passive: false });
+        document.addEventListener('touchend', endPointer);
+        document.addEventListener('touchcancel', endPointer);
+        
         document.addEventListener('mousemove', movePointer);
         document.addEventListener('mouseup', endPointer);
         stage.addEventListener('wheel', handleWheel, { passive: false });
@@ -2601,6 +2632,7 @@ class DesignEditor {
     }
     
     addShape(shapeType) {
+        this.preventSidebarClose();
         const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
         const baseSize = Math.max(48, Math.min(180, scale.shortSide * 0.28));
@@ -2663,21 +2695,40 @@ class DesignEditor {
         elementData.element.style.userSelect = 'none';
         elementData.element.style.webkitUserSelect = 'none';
         
+        // Track double-click for text editing
+        let lastClickTime = 0;
+        const doubleClickThreshold = 300;
+        
+        const handleElementPress = () => {
+            this.selectElement(elementData);
+            
+            // Double-click/tap to edit text
+            const now = Date.now();
+            if (now - lastClickTime < doubleClickThreshold && elementData.type === 'text') {
+                const textContent = document.getElementById('prop-text-content');
+                if (textContent) {
+                    textContent.focus();
+                    textContent.select();
+                }
+            }
+            lastClickTime = now;
+        };
+        
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            e.preventDefault(); // Prevent text selection
-            this.selectElement(elementData);
+            e.preventDefault();
             this.startDrag(e, elementData);
+            handleElementPress();
         });
 
-            elementData.element.addEventListener('touchstart', (e) => {
-                if (e.touches.length !== 1) return;
-                e.stopPropagation();
-                e.preventDefault();
-                const t = e.touches[0];
-                this.selectElement(elementData);
-                this.startDrag({ clientX: t.clientX, clientY: t.clientY }, elementData);
-            }, { passive: false });
+        elementData.element.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            e.stopPropagation();
+            e.preventDefault();
+            const t = e.touches[0];
+            this.startDrag({ clientX: t.clientX, clientY: t.clientY }, elementData);
+            handleElementPress();
+        }, { passive: false });
     }
     
     selectElement(elementData, options = {}) {
