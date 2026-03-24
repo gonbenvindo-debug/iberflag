@@ -1894,7 +1894,8 @@ class DesignEditor {
             document.addEventListener('touchmove', (e) => {
                 this._lastTouchInteractionAt = Date.now();
                 if (this.isDragging || this.isResizing || this.isRotating) {
-                    const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId);
+                    const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
+                        || (e.touches.length > 0 ? e.touches[0] : null);
                     if (!trackedTouch) return;
                     e.preventDefault();
                     this._touchGestureActive = true;
@@ -3066,6 +3067,84 @@ class DesignEditor {
         handlesContainer.appendChild(rotateHandle);
     }
 
+    updateResizeHandlesPosition(elementData) {
+        const handlesContainer = document.getElementById('resize-handles');
+        if (!handlesContainer || handlesContainer.classList.contains('hidden')) return;
+        if (!elementData || !elementData.element) return;
+
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        const bbox = elementData.element.getBBox();
+        const ctm = elementData.element.getScreenCTM();
+        if (!ctm) return;
+
+        const toCanvasPoint = (x, y) => {
+            const p = new DOMPoint(x, y).matrixTransform(ctm);
+            return {
+                x: p.x - wrapperRect.left,
+                y: p.y - wrapperRect.top
+            };
+        };
+
+        const mid = (a, b) => ({
+            x: (a.x + b.x) / 2,
+            y: (a.y + b.y) / 2
+        });
+
+        const tl = toCanvasPoint(bbox.x, bbox.y);
+        const tr = toCanvasPoint(bbox.x + bbox.width, bbox.y);
+        const br = toCanvasPoint(bbox.x + bbox.width, bbox.y + bbox.height);
+        const bl = toCanvasPoint(bbox.x, bbox.y + bbox.height);
+
+        const tc = mid(tl, tr);
+        const rc = mid(tr, br);
+        const bc = mid(bl, br);
+        const lc = mid(tl, bl);
+        const center = {
+            x: (tl.x + tr.x + br.x + bl.x) / 4,
+            y: (tl.y + tr.y + br.y + bl.y) / 4
+        };
+
+        const handlePositions = {
+            nw: tl,
+            ne: tr,
+            sw: bl,
+            se: br,
+            n: tc,
+            s: bc,
+            e: rc,
+            w: lc
+        };
+
+        Object.entries(handlePositions).forEach(([pos, point]) => {
+            const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
+            if (!handle) return;
+            handle.style.left = `${point.x - 5}px`;
+            handle.style.top = `${point.y - 5}px`;
+            handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
+        });
+
+        const topDirection = {
+            x: tc.x - center.x,
+            y: tc.y - center.y
+        };
+        const magnitude = Math.hypot(topDirection.x, topDirection.y) || 1;
+        const normal = {
+            x: topDirection.x / magnitude,
+            y: topDirection.y / magnitude
+        };
+        const rotateOffset = 24;
+        const rotatePoint = {
+            x: tc.x + normal.x * rotateOffset,
+            y: tc.y + normal.y * rotateOffset
+        };
+
+        const rotateHandle = handlesContainer.querySelector('.rotate-handle');
+        if (rotateHandle) {
+            rotateHandle.style.left = `${rotatePoint.x - 16}px`;
+            rotateHandle.style.top = `${rotatePoint.y - 16}px`;
+        }
+    }
+
     requestHandlesRefresh() {
         if (!this.selectedElement) return;
         if (this.handlesFrameRequest !== null) return;
@@ -3213,8 +3292,12 @@ class DesignEditor {
             }
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
-            
-            this.showResizeHandles(this.selectedElement);
+
+            if (this._touchGestureActive) {
+                this.updateResizeHandlesPosition(this.selectedElement);
+            } else {
+                this.showResizeHandles(this.selectedElement);
+            }
         } else if (this.isResizing && this.selectedElement) {
             this.doResize(e);
         } else if (this.isRotating && this.selectedElement) {
@@ -3616,7 +3699,9 @@ class DesignEditor {
             }
         }
 
-        if (!this._touchGestureActive) {
+        if (this._touchGestureActive) {
+            this.updateResizeHandlesPosition(this.selectedElement);
+        } else {
             this.showResizeHandles(this.selectedElement);
         }
     }
@@ -3725,7 +3810,9 @@ class DesignEditor {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        if (!this._touchGestureActive) {
+        if (this._touchGestureActive) {
+            this.updateResizeHandlesPosition(this.selectedElement);
+        } else {
             this.requestHandlesRefresh();
         }
     }
