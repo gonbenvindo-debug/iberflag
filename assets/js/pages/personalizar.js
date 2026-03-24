@@ -3836,8 +3836,17 @@ class DesignEditor {
         // Normalize rotation and snap to 45-degree guides when very close.
         rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
         
-        // Temporarily apply the new rotation to test bounds
-        this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
+        const previousTransform = this.selectedElement.element.getAttribute('transform');
+        const candidateTransform = rotation
+            ? `rotate(${rotation} ${centerX} ${centerY})`
+            : null;
+
+        // Apply candidate transform once to validate bounds at the same pivot.
+        if (candidateTransform) {
+            this.selectedElement.element.setAttribute('transform', candidateTransform);
+        } else {
+            this.selectedElement.element.removeAttribute('transform');
+        }
         
         const transformed = this.getTransformedBounds(this.selectedElement);
         const bounds = this.getEditableBounds();
@@ -3849,15 +3858,17 @@ class DesignEditor {
         const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
         
         if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
-            // Revert to previous rotation - not allowed to escape completely
-            const prevRotation = this.selectedElement.rotation || 0;
-            this.applyElementRotation(this.selectedElement, prevRotation);
+            // Revert to previous transform - not allowed to escape completely.
+            if (previousTransform) {
+                this.selectedElement.element.setAttribute('transform', previousTransform);
+            } else {
+                this.selectedElement.element.removeAttribute('transform');
+            }
             return; // Don't update the display
         }
         
-        // Rotation is valid, apply it
+        // Rotation is valid; keep the candidate transform exactly as-is.
         this.selectedElement.rotation = rotation;
-        this.applyElementRotation(this.selectedElement, rotation);
         this.showRotationGuideLine(rotation, elementCenter);
         
         // Sync rotation input/display based on element type
@@ -3889,8 +3900,17 @@ class DesignEditor {
             
             let rotation = this.getRotationGuideSnap(parseFloat(value), 4).value;
 
-            // Test the new rotation
-            this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
+            const previousTransform = this.selectedElement.element.getAttribute('transform');
+            const candidateTransform = rotation
+                ? `rotate(${rotation} ${centerX} ${centerY})`
+                : null;
+
+            // Test the new rotation using the same pivot.
+            if (candidateTransform) {
+                this.selectedElement.element.setAttribute('transform', candidateTransform);
+            } else {
+                this.selectedElement.element.removeAttribute('transform');
+            }
             
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
@@ -3902,10 +3922,14 @@ class DesignEditor {
             const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
             
             if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
-                // Reject this rotation - revert to previous
-                const prevRotation = this.selectedElement.rotation || 0;
-                this.applyElementRotation(this.selectedElement, prevRotation);
+                // Reject this rotation - revert to previous transform.
+                if (previousTransform) {
+                    this.selectedElement.element.setAttribute('transform', previousTransform);
+                } else {
+                    this.selectedElement.element.removeAttribute('transform');
+                }
                 // Reset input to previous value
+                const prevRotation = this.selectedElement.rotation || 0;
                 const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
                                this.selectedElement.type === 'image' ? 'prop-image-rotation' :
                                'prop-shape-rotation';
@@ -3914,9 +3938,8 @@ class DesignEditor {
                 return;
             }
             
-            // Rotation is valid, apply it
+            // Rotation is valid; keep tested transform and persist angle.
             this.selectedElement.rotation = rotation;
-            this.applyElementRotation(this.selectedElement, rotation);
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
         }
