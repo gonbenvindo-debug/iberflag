@@ -1327,15 +1327,8 @@ class DesignEditor {
             mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
             mask.setAttribute('id', 'print-area-outside-mask');
             mask.setAttribute('maskUnits', 'userSpaceOnUse');
-            mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
-            mask.setAttribute('mask-type', 'luminance');
             defs.appendChild(mask);
         }
-
-        mask.setAttribute('x', '0');
-        mask.setAttribute('y', '0');
-        mask.setAttribute('width', String(canvasWidth));
-        mask.setAttribute('height', String(canvasHeight));
 
         while (mask.firstChild) {
             mask.removeChild(mask.firstChild);
@@ -1460,13 +1453,7 @@ class DesignEditor {
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
 
-        const maskShape = visualArea.cloneNode(true);
-        maskShape.removeAttribute('id');
-        maskShape.setAttribute('fill', '#000000');
-        maskShape.setAttribute('stroke', 'none');
-        maskShape.setAttribute('opacity', '1');
-        maskShape.setAttribute('pointer-events', 'none');
-        this.upsertOutsideAreaOverlay(maskShape);
+        this.upsertOutsideAreaOverlay(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
