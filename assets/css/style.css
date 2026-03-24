@@ -2215,8 +2215,20 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     input, select, textarea { font-size: 16px !important; } /* Prevent zoom on iOS */
     
     /* Canvas */
-    #canvas-container { height: 300px !important; }
-    #design-canvas { height: 300px !important; }
+    #canvas-stage {
+        height: 55vh !important;
+        padding: 0.5rem !important;
+    }
+    #canvas-wrapper {
+        width: 100% !important;
+        height: auto !important;
+        max-height: 100% !important;
+        aspect-ratio: auto;
+    }
+    #design-canvas {
+        width: 100% !important;
+        height: 100% !important;
+    }
 }
     @media (max-width: 640px) {
         /* Extra small screens — homepage/marketing typography */
