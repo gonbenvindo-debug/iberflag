@@ -86,6 +86,16 @@ begin
 
     if not exists (
         select 1 from pg_policies
+        where schemaname = 'public' and tablename = 'bases_fixacao' and policyname = 'bases_fixacao_admin_authenticated_write'
+    ) then
+        create policy bases_fixacao_admin_authenticated_write on public.bases_fixacao
+            for all
+            using (auth.role() = 'authenticated')
+            with check (auth.role() = 'authenticated');
+    end if;
+
+    if not exists (
+        select 1 from pg_policies
         where schemaname = 'public' and tablename = 'produto_bases_fixacao' and policyname = 'produto_bases_fixacao_public_select'
     ) then
         create policy produto_bases_fixacao_public_select on public.produto_bases_fixacao
@@ -101,6 +111,16 @@ begin
             for all
             using (auth.role() = 'service_role')
             with check (auth.role() = 'service_role');
+    end if;
+
+    if not exists (
+        select 1 from pg_policies
+        where schemaname = 'public' and tablename = 'produto_bases_fixacao' and policyname = 'produto_bases_fixacao_admin_authenticated_write'
+    ) then
+        create policy produto_bases_fixacao_admin_authenticated_write on public.produto_bases_fixacao
+            for all
+            using (auth.role() = 'authenticated')
+            with check (auth.role() = 'authenticated');
     end if;
 end $$;
 

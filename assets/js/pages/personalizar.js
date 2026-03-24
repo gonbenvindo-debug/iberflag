@@ -212,33 +212,9 @@ class DesignEditor {
     }
 
     renderProductBaseOptions() {
-        const wrapper = document.getElementById('base-option-wrapper');
-        const select = document.getElementById('base-select');
-        const extraInfo = document.getElementById('base-price-extra');
-
-        if (!wrapper || !select || !extraInfo) return;
-
-        const hasBases = Array.isArray(this.availableBases) && this.availableBases.length > 0;
-        wrapper.classList.toggle('hidden', !hasBases);
-        wrapper.classList.toggle('flex', hasBases);
-
-        if (!hasBases) {
-            select.innerHTML = '';
-            extraInfo.textContent = '';
-            return;
-        }
-
-        select.innerHTML = this.availableBases.map((base) => {
-            const extra = Number(base.preco_extra_aplicado || 0);
-            const extraLabel = extra > 0 ? ` (+${extra.toFixed(2)}€)` : '';
-            const selected = Number(base.base_id) === Number(this.selectedBaseId) ? 'selected' : '';
-
-            return `<option value="${base.base_id}" ${selected}>${base.base_nome}${extraLabel}</option>`;
-        }).join('');
-
-        const selectedBase = this.getSelectedBaseOption();
-        const selectedExtra = Number(selectedBase?.preco_extra_aplicado || 0);
-        extraInfo.textContent = selectedExtra > 0 ? `Acresce ${selectedExtra.toFixed(2)}€` : 'Sem acrescimo';
+        // Mantido para compatibilidade com chamadas existentes.
+        // A escolha da base acontece no modal de passos do carrinho.
+        this.updateProductPriceDisplay();
     }
 
     updateProductPriceDisplay() {
@@ -1745,15 +1721,6 @@ class DesignEditor {
         
         // Add to cart
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.openCartStepsModal());
-
-        const baseSelect = document.getElementById('base-select');
-        if (baseSelect) {
-            baseSelect.addEventListener('change', (event) => {
-                this.selectedBaseId = Number(event.target.value) || null;
-                this.renderProductBaseOptions();
-                this.updateProductPriceDisplay();
-            });
-        }
         
         // Delete element
         document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
