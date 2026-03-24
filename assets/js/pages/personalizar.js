@@ -1162,18 +1162,35 @@ class DesignEditor {
         this.guideLines = [];
     }
 
+    getRotationGuideSnap(rotation, threshold = 4) {
+        if (!Number.isFinite(rotation)) {
+            return { snapped: false, value: rotation, guide: null, diff: Infinity };
+        }
+
+        const normalized = this.normalizeRotation(rotation);
+        const guide = Math.round(normalized / 45) * 45;
+        const wrappedGuide = this.normalizeRotation(guide);
+        const diff = Math.abs((((normalized - wrappedGuide) % 360) + 540) % 360 - 180);
+
+        if (diff <= threshold) {
+            return { snapped: true, value: wrappedGuide, guide: wrappedGuide, diff };
+        }
+
+        return { snapped: false, value: normalized, guide: wrappedGuide, diff };
+    }
+
     showRotationGuideLine(rotation, center) {
         this.hideGuideLines();
 
         if (!Number.isFinite(rotation) || !center) return;
 
-        const normalized = this.normalizeRotation(rotation);
-        const snapped = Math.round(normalized / 45) * 45;
-        const diff = Math.abs((((normalized - snapped) % 360) + 540) % 360 - 180);
+        const snap = this.getRotationGuideSnap(rotation, 4);
 
-        if (diff > 4) {
+        if (!snap.snapped) {
             return;
         }
+
+        const snapped = snap.value;
 
         const bounds = this.getEditableBounds();
         const lineLength = Math.hypot(bounds.width, bounds.height) * 1.25;
@@ -3814,8 +3831,8 @@ class DesignEditor {
             rotation = Math.round(rotation / 15) * 15;
         }
 
-        // Normalize rotation to remove floating point artifacts
-        rotation = this.normalizeRotation(rotation);
+        // Normalize rotation and snap to 45-degree guides when very close.
+        rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
         
         // Temporarily apply the new rotation to test bounds
         this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
@@ -3868,7 +3885,7 @@ class DesignEditor {
             const centerX = bbox.x + bbox.width / 2;
             const centerY = bbox.y + bbox.height / 2;
             
-            let rotation = this.normalizeRotation(parseFloat(value));
+            let rotation = this.getRotationGuideSnap(parseFloat(value), 4).value;
 
             // Test the new rotation
             this.selectedElement.element.setAttribute('transform', `rotate(${rotation} ${centerX} ${centerY})`);
