@@ -1081,15 +1081,34 @@ class DesignEditor {
         if (!elementData) return { horizontal: [], vertical: [] };
 
         const bounds = this.getEditableBounds();
-        
-        return {
-            horizontal: [
-                { value: bounds.y + bounds.height / 2, type: 'center-canvas' }
-            ],
-            vertical: [
-                { value: bounds.x + bounds.width / 2, type: 'center-canvas' }
-            ]
-        };
+        const horizontal = [];
+        const vertical = [];
+
+        // Canvas centre
+        horizontal.push({ value: bounds.y + bounds.height / 2, type: 'center-canvas' });
+        vertical.push({ value: bounds.x + bounds.width / 2, type: 'center-canvas' });
+
+        // Canvas edges
+        horizontal.push({ value: bounds.y, type: 'edge-canvas' });
+        horizontal.push({ value: bounds.y + bounds.height, type: 'edge-canvas' });
+        vertical.push({ value: bounds.x, type: 'edge-canvas' });
+        vertical.push({ value: bounds.x + bounds.width, type: 'edge-canvas' });
+
+        // Other elements: centres and edges
+        this.elements.forEach(el => {
+            if (el === elementData || !el.element) return;
+            const t = this.getTransformedBounds(el);
+            // horizontal guides (for Y-axis alignment)
+            horizontal.push({ value: t.top,                       type: 'edge-element' });
+            horizontal.push({ value: (t.top + t.bottom) / 2,      type: 'center-element' });
+            horizontal.push({ value: t.bottom,                    type: 'edge-element' });
+            // vertical guides (for X-axis alignment)
+            vertical.push({ value: t.left,                        type: 'edge-element' });
+            vertical.push({ value: (t.left + t.right) / 2,        type: 'center-element' });
+            vertical.push({ value: t.right,                       type: 'edge-element' });
+        });
+
+        return { horizontal, vertical };
     }
 
     findSnapPoints(position, guides, threshold) {
@@ -1119,41 +1138,42 @@ class DesignEditor {
 
         if (!snaps.x && !snaps.y) return;
 
-        const canvasBounds = this.getEditableBounds();
+        const b = this.getEditableBounds();
+        // Extend lines slightly beyond canvas edges for visibility
+        const x0 = b.x - 20;
+        const y0 = b.y - 20;
+        const x1 = b.x + b.width + 20;
+        const y1 = b.y + b.height + 20;
 
-        // Linha vertical
-        if (snaps.x) {
+        const colorFor = (type) => {
+            if (type === 'center-canvas')  return '#f59e0b'; // amber  – canvas centre
+            if (type === 'edge-canvas')    return '#10b981'; // green  – canvas edge
+            if (type === 'center-element') return '#8b5cf6'; // purple – element centre
+            return '#ef4444';                                // red    – element edge
+        };
+        const dashFor = (type) => {
+            if (type?.includes('canvas'))  return '6,4';
+            return '4,3';
+        };
+
+        const makeLine = (x1v, y1v, x2v, y2v, type) => {
             const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', String(snaps.x.value));
-            line.setAttribute('y1', String(canvasBounds.y));
-            line.setAttribute('x2', String(snaps.x.value));
-            line.setAttribute('y2', String(canvasBounds.y + canvasBounds.height));
-            line.setAttribute('stroke', '#3b82f6');
-            line.setAttribute('stroke-width', '1');
-            line.setAttribute('stroke-dasharray', '4,4');
+            line.setAttribute('x1', String(x1v));
+            line.setAttribute('y1', String(y1v));
+            line.setAttribute('x2', String(x2v));
+            line.setAttribute('y2', String(y2v));
+            line.setAttribute('stroke', colorFor(type));
+            line.setAttribute('stroke-width', type?.includes('canvas') ? '1.5' : '1');
+            line.setAttribute('stroke-dasharray', dashFor(type));
             line.setAttribute('pointer-events', 'none');
             line.setAttribute('class', 'guide-line');
-            line.setAttribute('opacity', '0.7');
+            line.setAttribute('opacity', '0.85');
             this.canvas.appendChild(line);
             this.guideLines.push(line);
-        }
+        };
 
-        // Linha horizontal
-        if (snaps.y) {
-            const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-            line.setAttribute('x1', String(canvasBounds.x));
-            line.setAttribute('y1', String(snaps.y.value));
-            line.setAttribute('x2', String(canvasBounds.x + canvasBounds.width));
-            line.setAttribute('y2', String(snaps.y.value));
-            line.setAttribute('stroke', '#3b82f6');
-            line.setAttribute('stroke-width', '1');
-            line.setAttribute('stroke-dasharray', '4,4');
-            line.setAttribute('pointer-events', 'none');
-            line.setAttribute('class', 'guide-line');
-            line.setAttribute('opacity', '0.7');
-            this.canvas.appendChild(line);
-            this.guideLines.push(line);
-        }
+        if (snaps.x) makeLine(snaps.x.value, y0, snaps.x.value, y1, snaps.x.type);
+        if (snaps.y) makeLine(x0, snaps.y.value, x1, snaps.y.value, snaps.y.type);
 
         this.bringPrintAreaOverlaysToFront();
     }
@@ -3320,23 +3340,45 @@ class DesignEditor {
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
 
-            // ===== GUIDES & SNAP ALIGNMENT (Shift only) =====
-            if (e.shiftKey) {
+            // ===== GUIDES & SNAP ALIGNMENT (sempre activo durante drag) =====
+            {
                 const guides = this.calculateGuides(this.selectedElement);
                 const transformedBounds = this.dragStart.transformedBounds || this.getTransformedBounds(this.selectedElement);
-                const proposedCenter = {
-                    x: ((transformedBounds.left + transformedBounds.right) / 2) + deltaX,
-                    y: ((transformedBounds.top + transformedBounds.bottom) / 2) + deltaY
-                };
+                const elLeft   = transformedBounds.left   + deltaX;
+                const elRight  = transformedBounds.right  + deltaX;
+                const elTop    = transformedBounds.top    + deltaY;
+                const elBottom = transformedBounds.bottom + deltaY;
+                const elCenterX = (elLeft + elRight) / 2;
+                const elCenterY = (elTop + elBottom) / 2;
 
-                const rawSnapPoints = this.findSnapPoints(
-                    proposedCenter,
-                    guides,
-                    this.guideThreshold
-                );
+                // Test all meaningful points of the moving element against guides.
+                const testH = [elTop, elCenterY, elBottom];
+                const testV = [elLeft, elCenterX, elRight];
+
+                let bestX = null;
+                let bestY = null;
+
+                testV.forEach(vx => {
+                    guides.vertical.forEach(g => {
+                        const diff = Math.abs(vx - g.value);
+                        if (diff < this.guideThreshold && (!bestX || diff < bestX.diff)) {
+                            bestX = { value: g.value, diff, type: g.type, offsetX: g.value - vx };
+                        }
+                    });
+                });
+
+                testH.forEach(hy => {
+                    guides.horizontal.forEach(g => {
+                        const diff = Math.abs(hy - g.value);
+                        if (diff < this.guideThreshold && (!bestY || diff < bestY.diff)) {
+                            bestY = { value: g.value, diff, type: g.type, offsetY: g.value - hy };
+                        }
+                    });
+                });
+
                 const snapPoints = {
-                    x: this.resolveStickySnap('x', rawSnapPoints.x, proposedCenter.x),
-                    y: this.resolveStickySnap('y', rawSnapPoints.y, proposedCenter.y)
+                    x: this.resolveStickySnap('x', bestX, elCenterX),
+                    y: this.resolveStickySnap('y', bestY, elCenterY)
                 };
 
                 if (snapPoints.x || snapPoints.y) {
@@ -3345,15 +3387,8 @@ class DesignEditor {
                     this.hideGuideLines();
                 }
 
-                const snappedMove = this.applySnapToMove(deltaX, deltaY, snapPoints, proposedCenter);
-                deltaX = snappedMove.deltaX;
-                deltaY = snappedMove.deltaY;
-            } else {
-                if (this.dragStart?.snapLock) {
-                    this.dragStart.snapLock.x = null;
-                    this.dragStart.snapLock.y = null;
-                }
-                this.hideGuideLines();
+                if (snapPoints.x) deltaX += snapPoints.x.offsetX ?? 0;
+                if (snapPoints.y) deltaY += snapPoints.y.offsetY ?? 0;
             }
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
