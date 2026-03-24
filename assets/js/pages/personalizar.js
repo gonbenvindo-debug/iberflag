@@ -72,20 +72,36 @@ class DesignEditor {
     }
     
     async init() {
+        console.log('DesignEditor init starting...');
         await this.loadProduct();
         this.setupEventListeners();
         this.syncCanvasViewport();
+        try {
             this.setupMobileUI();
+        } catch (e) {
+            console.error('setupMobileUI error:', e);
+        }
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
-    }
+        console.log('DesignEditor init complete');
 
         // ===== MOBILE UI =====
         setupMobileUI() {
             const backdrop = document.getElementById('mobile-panel-backdrop');
             const sidebarLeft = document.getElementById('editor-sidebar-left');
             const sidebarRight = document.getElementById('editor-sidebar-right');
+            const tabElements = document.getElementById('mobile-tab-elements');
+            const tabProperties = document.getElementById('mobile-tab-properties');
+            const tabLayers = document.getElementById('mobile-tab-layers');
+
+            console.log('setupMobileUI: backdrop=', backdrop, 'sidebarLeft=', sidebarLeft, 'sidebarRight=', sidebarRight);
+            console.log('setupMobileUI: tabElements=', tabElements, 'tabProperties=', tabProperties, 'tabLayers=', tabLayers);
+
+            if (!backdrop || !sidebarLeft || !sidebarRight) {
+                console.warn('setupMobileUI: Missing DOM elements, skipping mobile UI setup');
+                return;
+            }
 
             const closeAll = () => {
                 sidebarLeft?.classList.remove('panel-open');
@@ -114,13 +130,9 @@ class DesignEditor {
                 }
             };
 
-            document.getElementById('mobile-tab-elements')?.addEventListener('click', () =>
-                openLeft('elements-panel', 'mobile-tab-elements'));
-
-            document.getElementById('mobile-tab-properties')?.addEventListener('click', () =>
-                openLeft('properties-panel', 'mobile-tab-properties'));
-
-            document.getElementById('mobile-tab-layers')?.addEventListener('click', () => {
+            tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
+            tabProperties?.addEventListener('click', () => openLeft('properties-panel', 'mobile-tab-properties'));
+            tabLayers?.addEventListener('click', () => {
                 const isAlreadyOpen = sidebarRight?.classList.contains('panel-open') &&
                     document.getElementById('mobile-tab-layers')?.classList.contains('active');
                 closeAll();
