@@ -389,39 +389,30 @@
         }
 
         /* =============================================
-           EDITOR LAYOUT — fonte única, sem conflito Tailwind
+           EDITOR LAYOUT
+           Desktop → regras dentro de @media min-width (nunca interferem com mobile)
+           Mobile  → regras dentro de @media max-width
            ============================================= */
 
-        /* Desktop: nav e editor-body com altura explícita em CSS.
-           h-16 e h-[calc(...)] foram removidos do HTML para evitar conflitos. */
-        #editor-nav {
-            height: 4rem;
-            flex-shrink: 0;
-        }
-        .editor-body-layout {
-            height: calc(100vh - 4rem);
+        /* Desktop (≥1024px) ---------------------------------------- */
+        @media (min-width: 1024px) {
+            #editor-nav           { height: 4rem; }
+            .editor-body-layout   { height: calc(100vh - 4rem); }
+            .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
+            .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
         }
 
-        /* --- Desktop: sidebar precisa de padding próprio --- */
-        .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
-        .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
-
-        /* --- Grip: sempre visível no topo dos drawers --- */
+        /* Componentes always-hidden no desktop, always-shown no mobile */
         .drawer-grip {
-            display: none; /* escondido no desktop */
-            width: 40px;
-            height: 4px;
+            display: none;
+            width: 40px; height: 4px;
             background: #cbd5e1;
             border-radius: 9999px;
             margin: 10px auto 8px;
             flex-shrink: 0;
             cursor: grab;
         }
-
-        /* --- Tab bar: escondida no desktop --- */
         .editor-mobile-tabs { display: none; }
-
-        /* --- Tab button: estilos base --- */
         .editor-mobile-tab {
             display: flex;
             flex-direction: column;
@@ -441,12 +432,8 @@
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
-        .editor-mobile-tab.active {
-            color: #2563eb;
-            border-top-color: #2563eb;
-        }
+        .editor-mobile-tab.active { color: #2563eb; border-top-color: #2563eb; }
 
-        /* --- Backdrop: escondido por defeito --- */
         .editor-mobile-backdrop {
             display: none;
             position: fixed;
@@ -458,56 +445,53 @@
         }
         .editor-mobile-backdrop.active { display: block; }
 
-        /* ============================
-           @media: MOBILE (< 1024px)
-           ============================ */
+        /* Mobile (<1024px) ----------------------------------------- */
         @media (max-width: 1023px) {
 
-            /* Layout geral: usar dvh para evitar overflow com barra do browser */
+            /* 1. Body: coluna de altura total dinâmica */
             body.app-page {
                 height: 100dvh;
                 display: flex;
                 flex-direction: column;
                 overflow: hidden;
-                /* safe-area-top no body, assim todos os filhos ficam abaixo do notch */
                 padding-top: env(safe-area-inset-top, 0px);
             }
 
-            /* Navbar: altura fixa compacta + safe-area no padding lateral */
+            /* 2. Navbar: altura fixa 3rem, sem padding vertical, centrado.
+                  Duplo selector (ID + posição) para máxima fiabilidade. */
+            #editor-nav,
             body.app-page > nav {
-                flex-shrink: 0;
-                /* Substituir h-16 (4rem) por 3rem em mobile */
+                flex-shrink: 0 !important;
                 height: 3rem !important;
                 min-height: 3rem !important;
+                max-height: 3rem !important;
                 padding-top: 0 !important;
                 padding-bottom: 0 !important;
-                padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
-                padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
-                /* safe-area-top resolvida pelo body — a nav fica abaixo do notch */
-                align-items: center !important;
+                padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+                padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
                 display: flex !important;
+                align-items: center !important;
+                box-sizing: border-box !important;
             }
 
-            /* Body layout: ocupa o resto da altura dinâmica */
+            /* 3. Área do editor: ocupa altura restante */
+            #editor-body-layout,
             .editor-body-layout {
                 flex: 1 !important;
                 height: auto !important;
-                min-height: 0;
-                overflow: hidden;
+                min-height: 0 !important;
+                overflow: hidden !important;
             }
 
-            /* Grip visível em mobile */
+            /* 4. Grip arrastável visível */
             .drawer-grip { display: block; }
 
-            /* Sidebars = bottom sheets */
+            /* 5. Sidebars → bottom sheets que sobem do fundo */
             .editor-sidebar-left,
             .editor-sidebar-right {
                 position: fixed !important;
-                bottom: 0;
-                left: 0;
-                right: 0;
+                bottom: 0; left: 0; right: 0;
                 width: 100% !important;
-                /* max-height com safe-area para não ficar por baixo dos botões do sistema */
                 max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
                 z-index: 120;
                 padding: 0 !important;
@@ -523,11 +507,8 @@
                 overflow: hidden;
             }
             .editor-sidebar-left.panel-open,
-            .editor-sidebar-right.panel-open {
-                transform: translateY(0);
-            }
+            .editor-sidebar-right.panel-open { transform: translateY(0); }
 
-            /* Sidebar content: scrollável com safe-area no fundo */
             .editor-sidebar-left .sidebar-shell,
             .editor-sidebar-right .sidebar-shell {
                 flex: 1;
@@ -539,7 +520,7 @@
                 padding-bottom: env(safe-area-inset-bottom, 0px);
             }
 
-            /* Canvas: ocupa todo o espaço disponível sem margens */
+            /* 6. Área principal do canvas */
             .editor-main {
                 flex: 1 !important;
                 min-height: 0 !important;
@@ -549,36 +530,39 @@
                 padding: 0 !important;
             }
 
-            /* canvas-stage em mobile: bloco simples — remove o flex centering do Tailwind */
+            /* 7. Canvas-stage: flex centrado, fundo de quadrícula (sem borda/sombra)
+                  O canvas-wrapper fica centrado no espaço disponível — espaço
+                  acima/abaixo é simétrico e mostra o fundo de editor. */
             #canvas-stage {
-                display: block !important;
                 flex: 1 !important;
-                padding: 0 !important;
-                margin: 0 !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                padding: 0.5rem !important;
                 min-height: 0 !important;
                 overflow: hidden !important;
-                background: transparent !important;
-                background-image: none !important;
                 border: none !important;
                 border-radius: 0 !important;
                 box-shadow: none !important;
             }
 
-            /* canvas-wrapper: preenche toda a largura, height calculada pelo JS (aspect ratio) */
+            /* 8. Canvas-wrapper: sem decorações de desktop */
             #canvas-wrapper {
+                flex-shrink: 0;
                 box-shadow: none !important;
                 border-radius: 0 !important;
             }
 
-            /* Toolbar inferior: compacta */
+            /* 9. Toolbar inferior: compacta, sem margem extra */
             .editor-bottom-bar {
+                margin-top: 0 !important;
                 padding-top: 0.3rem !important;
                 padding-bottom: 0.3rem !important;
-                padding-left: max(0.75rem, env(safe-area-inset-left)) !important;
-                padding-right: max(0.75rem, env(safe-area-inset-right)) !important;
+                padding-left: max(0.75rem, env(safe-area-inset-left, 0px)) !important;
+                padding-right: max(0.75rem, env(safe-area-inset-right, 0px)) !important;
             }
 
-            /* Navbar: nome do produto compacto */
+            /* 10. Elementos da navbar compactados */
             #product-name {
                 max-width: 7rem;
                 overflow: hidden;
@@ -590,7 +574,7 @@
             #add-to-cart-btn  { padding: 0.4rem 0.7rem !important; }
             .editor-undo-redo { display: none !important; }
 
-            /* Tab bar: visível + safe-area-bottom para não ficar atrás dos botões do sistema */
+            /* 11. Barra de tabs: visível + safe-area-bottom */
             .editor-mobile-tabs {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr);
@@ -598,12 +582,6 @@
                 border-top: 1px solid #e5e7eb;
                 flex-shrink: 0;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
-                /* safe-area também afecta a altura mínima do tab */
-            }
-
-            /* Anular a altura fixa do Tailwind h-[calc(100vh-64px)] em mobile */
-            #editor-body-layout {
-                height: auto !important;
             }
         }
     </style>
