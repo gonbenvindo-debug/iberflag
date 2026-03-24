@@ -1327,8 +1327,15 @@ class DesignEditor {
             mask = document.createElementNS('http://www.w3.org/2000/svg', 'mask');
             mask.setAttribute('id', 'print-area-outside-mask');
             mask.setAttribute('maskUnits', 'userSpaceOnUse');
+            mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+            mask.setAttribute('mask-type', 'luminance');
             defs.appendChild(mask);
         }
+
+        mask.setAttribute('x', '0');
+        mask.setAttribute('y', '0');
+        mask.setAttribute('width', String(canvasWidth));
+        mask.setAttribute('height', String(canvasHeight));
 
         while (mask.firstChild) {
             mask.removeChild(mask.firstChild);
