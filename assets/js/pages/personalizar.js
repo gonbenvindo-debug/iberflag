@@ -33,6 +33,8 @@ class DesignEditor {
         this.resizeHandle = null;
         this.rotationStart = 0;
         this.rotationCenterClient = null;
+        this.rotationHandleRadiusClient = null;
+        this.activeRotateHandle = null;
         this.currentProduct = null;
         this.editIndex = null;
         this.editDesignId = null;
@@ -3390,6 +3392,8 @@ class DesignEditor {
         this.isRotating = false;
         this.resizeHandle = null;
         this.rotationCenterClient = null;
+        this.rotationHandleRadiusClient = null;
+        this.activeRotateHandle = null;
 
         if (this.handlesFrameRequest !== null) {
             cancelAnimationFrame(this.handlesFrameRequest);
@@ -3786,6 +3790,10 @@ class DesignEditor {
         if (!ctm) return;
         const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
         this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
+        const halfHeightPx = (bbox.height / 2) * Math.hypot(ctm.c, ctm.d);
+        const rotateOffset = 24;
+        this.rotationHandleRadiusClient = Math.max(halfHeightPx + rotateOffset, rotateOffset);
+        this.activeRotateHandle = document.getElementById('resize-handles')?.querySelector('.rotate-handle') || null;
 
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -3889,7 +3897,24 @@ class DesignEditor {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        this.updateResizeHandlesPosition(this.selectedElement);
+        // During rotation, lock the rotate handle with a direct top-of-element calculation.
+        this.updateRotateHandleLockedToTop(rotation);
+    }
+
+    updateRotateHandleLockedToTop(rotation) {
+        if (!this.rotationCenterClient || !this.activeRotateHandle || !this.canvasWrapper) return;
+
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        const radius = Number(this.rotationHandleRadiusClient) || 24;
+        const angleRad = (Number(rotation) || 0) * Math.PI / 180;
+
+        const dirX = Math.sin(angleRad);
+        const dirY = -Math.cos(angleRad);
+        const centerX = this.rotationCenterClient.x + (dirX * radius);
+        const centerY = this.rotationCenterClient.y + (dirY * radius);
+
+        this.activeRotateHandle.style.left = `${centerX - wrapperRect.left - 18}px`;
+        this.activeRotateHandle.style.top = `${centerY - wrapperRect.top - 18}px`;
     }
     
     updateRotation(value) {
