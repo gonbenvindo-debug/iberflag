@@ -52,6 +52,7 @@
             touch-action: none;
             -webkit-touch-callout: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            pointer-events: auto;
         }
         
         .resize-handle::before {
@@ -83,6 +84,7 @@
             border: 2px solid #2563eb;
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+            pointer-events: auto;
         }
 
         .rotate-handle::before {
@@ -1001,7 +1003,7 @@
                         <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"/>
                         <!-- Template will be loaded here -->
                     </svg>
-                    <div id="resize-handles" class="hidden" style="position: absolute; inset: 0; z-index: 1001;"></div>
+                    <div id="resize-handles" class="hidden" style="position: absolute; inset: 0; z-index: 1001; pointer-events: none;"></div>
                 </div>
             </div>
             

@@ -3000,8 +3000,8 @@ class DesignEditor {
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
                 handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
-                handle.style.left = (point.x - 5) + 'px';
-                handle.style.top = (point.y - 5) + 'px';
+                handle.style.left = (point.x - 6) + 'px';
+                handle.style.top = (point.y - 6) + 'px';
                 handle.style.pointerEvents = 'auto';
                 
                 handle.addEventListener('mousedown', (e) => {
@@ -3043,8 +3043,8 @@ class DesignEditor {
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
-        rotateHandle.style.left = (rotatePoint.x - 16) + 'px';
-        rotateHandle.style.top = (rotatePoint.y - 16) + 'px';
+        rotateHandle.style.left = (rotatePoint.x - 18) + 'px';
+        rotateHandle.style.top = (rotatePoint.y - 18) + 'px';
         rotateHandle.style.pointerEvents = 'auto';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
@@ -3118,8 +3118,8 @@ class DesignEditor {
         Object.entries(handlePositions).forEach(([pos, point]) => {
             const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
             if (!handle) return;
-            handle.style.left = `${point.x - 5}px`;
-            handle.style.top = `${point.y - 5}px`;
+            handle.style.left = `${point.x - 6}px`;
+            handle.style.top = `${point.y - 6}px`;
             handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
         });
 
@@ -3140,8 +3140,8 @@ class DesignEditor {
 
         const rotateHandle = handlesContainer.querySelector('.rotate-handle');
         if (rotateHandle) {
-            rotateHandle.style.left = `${rotatePoint.x - 16}px`;
-            rotateHandle.style.top = `${rotatePoint.y - 16}px`;
+            rotateHandle.style.left = `${rotatePoint.x - 18}px`;
+            rotateHandle.style.top = `${rotatePoint.y - 18}px`;
         }
     }
 
