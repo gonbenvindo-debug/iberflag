@@ -74,11 +74,12 @@ class DesignEditor {
     async init() {
         await this.loadProduct();
         this.setupEventListeners();
-        this.syncCanvasViewport();
         this.setupMobileUI();
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
+        // Garantir que o layout está calculado antes de medir o stage
+        requestAnimationFrame(() => this.syncCanvasViewport());
     }
 
     // ===== MOBILE UI =====
@@ -1797,7 +1798,49 @@ class DesignEditor {
         document.addEventListener('mousemove', (e) => this.handleMouseMove(e));
         document.addEventListener('mouseup', () => this.handleMouseUp());
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        window.addEventListener('resize', () => this.syncCanvasViewport());
+        window.addEventListener('resize', () => {
+            this._lastViewportStageWidth = null;
+            this._lastViewportStageHeight = null;
+            this.syncCanvasViewport();
+        });
+
+        // ResizeObserver: recalcula canvas quando o stage muda de tamanho
+        if (this.canvasStage && typeof ResizeObserver !== 'undefined') {
+            new ResizeObserver(() => {
+                this._lastViewportStageWidth = null;
+                this._lastViewportStageHeight = null;
+                this.syncCanvasViewport();
+            }).observe(this.canvasStage);
+        }
+
+        // Pinch-to-zoom no canvas-stage (mobile)
+        let _pinchDist0 = null;
+        let _pinchZoom0 = 1;
+        const stage = this.canvasStage;
+        if (stage) {
+            stage.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 2) {
+                    _pinchDist0 = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    _pinchZoom0 = this.zoom;
+                }
+            }, { passive: true });
+            stage.addEventListener('touchmove', (e) => {
+                if (e.touches.length === 2 && _pinchDist0) {
+                    e.preventDefault();
+                    const d = Math.hypot(
+                        e.touches[0].clientX - e.touches[1].clientX,
+                        e.touches[0].clientY - e.touches[1].clientY
+                    );
+                    this.setZoom(_pinchZoom0 * (d / _pinchDist0));
+                }
+            }, { passive: false });
+            stage.addEventListener('touchend', (e) => {
+                if (e.touches.length < 2) _pinchDist0 = null;
+            }, { passive: true });
+        }
 
             // ===== TOUCH SUPPORT =====
             this.canvas.addEventListener('touchstart', (e) => {

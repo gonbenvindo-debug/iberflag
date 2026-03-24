@@ -436,20 +436,48 @@
         }
         .editor-mobile-backdrop.active { display: block; }
 
-        /* ----- DESKTOP (≥1024px) ----- */
+        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepõe via @media) ----- */
         #editor-nav {
             height: 4rem;
             display: flex;
             align-items: center;
             justify-content: space-between;
-            gap: 0.5rem;
+            gap: 0.75rem;
             padding: 0 1rem;
             flex-shrink: 0;
             box-sizing: border-box;
         }
+        #editor-info-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            height: 2.25rem;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--panel-border);
+            background: #f8fafc;
+            overflow: hidden;
+        }
+        .editor-info-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1e293b;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+            min-width: 0;
+        }
+        .editor-info-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2563eb;
+            flex-shrink: 0;
+        }
         .editor-body-layout {
             display: flex;
-            height: calc(100vh - 4rem);
+            height: calc(100vh - 4rem - 2.25rem);
             overflow: hidden;
         }
         .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
@@ -458,7 +486,7 @@
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 1rem 1rem 1rem 0.5rem;
+            padding: 1rem 1rem 0.5rem 0.5rem;
             min-height: 0;
             overflow: hidden;
         }
@@ -467,17 +495,16 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            padding: 2rem;
+            padding: 1.5rem;
             min-height: 0;
-            overflow: auto;
+            overflow: hidden;
         }
         .editor-bottom-bar {
             display: flex;
             align-items: center;
-            justify-content: space-between;
-            padding: 0.5rem 1rem;
-            margin-top: 0.5rem;
+            padding: 0.4rem 0.75rem;
             flex-shrink: 0;
+            border-top: 1px solid var(--panel-border);
         }
 
         /* ----- MOBILE (<1024px) ----- */
@@ -589,6 +616,12 @@
             #add-to-cart-btn  { padding: 0.4rem 0.7rem; }
             .editor-undo-redo { display: none; }
 
+            #editor-info-bar {
+                padding: 0 max(0.75rem, env(safe-area-inset-left, 0px));
+            }
+
+            .editor-bottom-bar { display: none; }
+
             .editor-mobile-tabs {
                 display: grid;
                 grid-template-columns: repeat(3, 1fr);
@@ -604,16 +637,11 @@
     
     <!-- Top Navigation -->
     <nav class="panel-clean border-0 border-b" id="editor-nav">
-        <div class="flex items-center gap-2 lg:gap-4 min-w-0 flex-1">
-            <a href="/" aria-label="IberFlag" class="flex-shrink-0">
-                <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact">
-            </a>
-            <span class="text-gray-400 flex-shrink-0">|</span>
-            <span id="product-name" class="font-semibold text-gray-700 truncate min-w-0"></span>
-        </div>
-        
-        <div class="flex items-center gap-1 lg:gap-3 flex-shrink-0">
-            <div class="editor-undo-redo flex items-center gap-1">
+        <a href="/" aria-label="IberFlag" class="flex-shrink-0">
+            <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact">
+        </a>
+        <div style="display:flex;align-items:center;gap:0.5rem;flex-shrink:0;">
+            <div class="editor-undo-redo" style="display:flex;align-items:center;gap:0.25rem;">
                 <button id="undo-btn" class="p-2 hover:bg-gray-100 rounded" title="Desfazer">
                     <i data-lucide="undo" class="w-5 h-5"></i>
                 </button>
@@ -622,7 +650,7 @@
                 </button>
             </div>
             <div class="w-px h-6 bg-gray-300 editor-undo-redo"></div>
-            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center gap-2">
+            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold" style="display:flex;align-items:center;gap:0.5rem;">
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 <span class="editor-cart-text">Adicionar ao Carrinho</span>
             </button>
@@ -631,6 +659,11 @@
             </a>
         </div>
     </nav>
+
+    <div id="editor-info-bar" class="editor-info-bar">
+        <span id="product-name" class="editor-info-name"></span>
+        <span id="product-price" class="editor-info-price"></span>
+    </div>
 
     <div class="editor-body-layout" id="editor-body-layout">
         
@@ -815,7 +848,7 @@
         <!-- Canvas Area -->
         <main class="editor-main">
             <div id="canvas-stage" class="canvas-container">
-                <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px;">
+                <div id="canvas-wrapper" class="relative bg-white shadow-2xl">
                     <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="none" class="absolute inset-0 w-full h-full">
                         <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"/>
                         <!-- Template will be loaded here -->
@@ -824,23 +857,16 @@
                 </div>
             </div>
             
-            <!-- Bottom Toolbar -->
+            <!-- Bottom Toolbar (desktop apenas — em mobile está escondido) -->
             <div class="panel-clean editor-bottom-bar">
-                <div class="flex items-center gap-4">
-                    <div class="flex items-center gap-2">
-                        <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded">
-                            <i data-lucide="zoom-out" class="w-4 h-4"></i>
-                        </button>
-                        <span id="zoom-level" class="text-sm font-semibold min-w-[60px] text-center">100%</span>
-                        <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded">
-                            <i data-lucide="zoom-in" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <span class="text-sm text-gray-600">Preço:</span>
-                    <span id="product-price" class="text-lg font-bold text-blue-600"></span>
+                <div style="display:flex;align-items:center;gap:0.25rem;">
+                    <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
+                        <i data-lucide="zoom-out" class="w-4 h-4"></i>
+                    </button>
+                    <span id="zoom-level" class="text-sm font-semibold" style="min-width:3rem;text-align:center;">100%</span>
+                    <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded" title="Aumentar zoom">
+                        <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                    </button>
                 </div>
             </div>
 
