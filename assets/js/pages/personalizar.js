@@ -3027,68 +3027,72 @@ class DesignEditor {
         }
     }
     
+    // Compute all handle positions for elementData using direct SVG viewport math,
+    // without getScreenCTM(). This is immune to CTM staleness during active gestures.
+    getHandlePoints(elementData) {
+        const bbox = elementData.element.getBBox();
+        const vb = this.getCanvasViewBoxSize();
+        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        const sx = wrapperRect.width  / vb.width;
+        const sy = wrapperRect.height / vb.height;
+
+        const rotation = (elementData.rotation || 0) * Math.PI / 180;
+        const cx = bbox.x + bbox.width  / 2;
+        const cy = bbox.y + bbox.height / 2;
+
+        // Rotate a point around the element's centre, then scale to wrapper pixels.
+        const toWrapper = (px, py) => {
+            if (!rotation) return { x: px * sx, y: py * sy };
+            const dx = px - cx;
+            const dy = py - cy;
+            return {
+                x: (cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * sx,
+                y: (cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * sy
+            };
+        };
+
+        const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
+
+        const tl = toWrapper(bbox.x,              bbox.y);
+        const tr = toWrapper(bbox.x + bbox.width,  bbox.y);
+        const br = toWrapper(bbox.x + bbox.width,  bbox.y + bbox.height);
+        const bl = toWrapper(bbox.x,              bbox.y + bbox.height);
+        const tc     = mid(tl, tr);
+        const rc     = mid(tr, br);
+        const bc     = mid(bl, br);
+        const lc     = mid(tl, bl);
+        const center = mid(mid(tl, br), mid(tr, bl));
+
+        const topDir = { x: tc.x - center.x, y: tc.y - center.y };
+        const mag    = Math.hypot(topDir.x, topDir.y) || 1;
+        const rotatePoint = {
+            x: tc.x + (topDir.x / mag) * 24,
+            y: tc.y + (topDir.y / mag) * 24
+        };
+
+        return { tl, tr, br, bl, tc, rc, bc, lc, center, rotatePoint };
+    }
+
     showResizeHandles(elementData) {
         const handlesContainer = document.getElementById('resize-handles');
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
 
-        const canvasRect = this.canvas.getBoundingClientRect();
-        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const bbox = elementData.element.getBBox();
-        const ctm = elementData.element.getScreenCTM();
+        const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        if (!ctm) return;
-
-        const toCanvasPoint = (x, y) => {
-            const p = new DOMPoint(x, y).matrixTransform(ctm);
-            return {
-                // Position relative to canvas-wrapper, accounting for scroll
-                x: p.x - wrapperRect.left,
-                y: p.y - wrapperRect.top
-            };
-        };
-
-        const mid = (a, b) => ({
-            x: (a.x + b.x) / 2,
-            y: (a.y + b.y) / 2
-        });
-
-        const tl = toCanvasPoint(bbox.x, bbox.y);
-        const tr = toCanvasPoint(bbox.x + bbox.width, bbox.y);
-        const br = toCanvasPoint(bbox.x + bbox.width, bbox.y + bbox.height);
-        const bl = toCanvasPoint(bbox.x, bbox.y + bbox.height);
-
-        const tc = mid(tl, tr);
-        const rc = mid(tr, br);
-        const bc = mid(bl, br);
-        const lc = mid(tl, bl);
-        const center = {
-            x: (tl.x + tr.x + br.x + bl.x) / 4,
-            y: (tl.y + tr.y + br.y + bl.y) / 4
-        };
-        
         // Only show resize handles for non-text elements
         if (elementData.type !== 'text') {
-            const handlePositions = {
-                'nw': tl,
-                'ne': tr,
-                'sw': bl,
-                'se': br,
-                'n': tc,
-                's': bc,
-                'e': rc,
-                'w': lc
-            };
-            
+            const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
+
             Object.entries(handlePositions).forEach(([pos, point]) => {
                 const handle = document.createElement('div');
                 handle.className = 'resize-handle';
                 handle.dataset.position = pos;
                 handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
                 handle.style.left = (point.x - 6) + 'px';
-                handle.style.top = (point.y - 6) + 'px';
+                handle.style.top  = (point.y - 6) + 'px';
                 handle.style.pointerEvents = 'auto';
-                
+
                 handle.addEventListener('mousedown', (e) => {
                     e.stopPropagation();
                     e.preventDefault();
@@ -3104,32 +3108,17 @@ class DesignEditor {
                     this._activeGestureTouchId = t.identifier;
                     this.startResize({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, pos);
                 }, { passive: false });
-                
+
                 handlesContainer.appendChild(handle);
             });
         }
 
-        // Add rotation handle aligned with transformed top edge
-        const topDirection = {
-            x: tc.x - center.x,
-            y: tc.y - center.y
-        };
-        const magnitude = Math.hypot(topDirection.x, topDirection.y) || 1;
-        const normal = {
-            x: topDirection.x / magnitude,
-            y: topDirection.y / magnitude
-        };
-        const rotateOffset = 24;
-        const rotatePoint = {
-            x: tc.x + normal.x * rotateOffset,
-            y: tc.y + normal.y * rotateOffset
-        };
-        
+        // Rotate handle — position computed via getHandlePoints (already done above)
         const rotateHandle = document.createElement('div');
         rotateHandle.className = 'rotate-handle';
         rotateHandle.style.cursor = 'grab';
         rotateHandle.style.left = (rotatePoint.x - 18) + 'px';
-        rotateHandle.style.top = (rotatePoint.y - 18) + 'px';
+        rotateHandle.style.top  = (rotatePoint.y - 18) + 'px';
         rotateHandle.style.pointerEvents = 'auto';
         rotateHandle.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M2.5 22v-6h6M2 11.5a10 10 0 0 1 18.8-4.3M22 12.5a10 10 0 0 1-18.8 4.2"/></svg>';
         
@@ -3157,76 +3146,21 @@ class DesignEditor {
         if (!handlesContainer || handlesContainer.classList.contains('hidden')) return;
         if (!elementData || !elementData.element) return;
 
-        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const bbox = elementData.element.getBBox();
-        const ctm = elementData.element.getScreenCTM();
-        if (!ctm) return;
+        const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        const toCanvasPoint = (x, y) => {
-            const p = new DOMPoint(x, y).matrixTransform(ctm);
-            return {
-                x: p.x - wrapperRect.left,
-                y: p.y - wrapperRect.top
-            };
-        };
-
-        const mid = (a, b) => ({
-            x: (a.x + b.x) / 2,
-            y: (a.y + b.y) / 2
-        });
-
-        const tl = toCanvasPoint(bbox.x, bbox.y);
-        const tr = toCanvasPoint(bbox.x + bbox.width, bbox.y);
-        const br = toCanvasPoint(bbox.x + bbox.width, bbox.y + bbox.height);
-        const bl = toCanvasPoint(bbox.x, bbox.y + bbox.height);
-
-        const tc = mid(tl, tr);
-        const rc = mid(tr, br);
-        const bc = mid(bl, br);
-        const lc = mid(tl, bl);
-        const center = {
-            x: (tl.x + tr.x + br.x + bl.x) / 4,
-            y: (tl.y + tr.y + br.y + bl.y) / 4
-        };
-
-        const handlePositions = {
-            nw: tl,
-            ne: tr,
-            sw: bl,
-            se: br,
-            n: tc,
-            s: bc,
-            e: rc,
-            w: lc
-        };
-
+        const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
         Object.entries(handlePositions).forEach(([pos, point]) => {
             const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
             if (!handle) return;
             handle.style.left = `${point.x - 6}px`;
-            handle.style.top = `${point.y - 6}px`;
+            handle.style.top  = `${point.y - 6}px`;
             handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
         });
-
-        const topDirection = {
-            x: tc.x - center.x,
-            y: tc.y - center.y
-        };
-        const magnitude = Math.hypot(topDirection.x, topDirection.y) || 1;
-        const normal = {
-            x: topDirection.x / magnitude,
-            y: topDirection.y / magnitude
-        };
-        const rotateOffset = 24;
-        const rotatePoint = {
-            x: tc.x + normal.x * rotateOffset,
-            y: tc.y + normal.y * rotateOffset
-        };
 
         const rotateHandle = handlesContainer.querySelector('.rotate-handle');
         if (rotateHandle) {
             rotateHandle.style.left = `${rotatePoint.x - 18}px`;
-            rotateHandle.style.top = `${rotatePoint.y - 18}px`;
+            rotateHandle.style.top  = `${rotatePoint.y - 18}px`;
         }
     }
 
