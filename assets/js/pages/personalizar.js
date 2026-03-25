@@ -3327,11 +3327,7 @@ class DesignEditor {
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
 
-            if (this._touchGestureActive) {
-                this.updateResizeHandlesPosition(this.selectedElement);
-            } else {
-                this.showResizeHandles(this.selectedElement);
-            }
+            this.updateResizeHandlesPosition(this.selectedElement);
         } else if (this.isResizing && this.selectedElement) {
             this.doResize(e);
         } else if (this.isRotating && this.selectedElement) {
@@ -3741,11 +3737,7 @@ class DesignEditor {
             }
         }
 
-        if (this._touchGestureActive) {
-            this.updateResizeHandlesPosition(this.selectedElement);
-        } else {
-            this.showResizeHandles(this.selectedElement);
-        }
+        this.updateResizeHandlesPosition(this.selectedElement);
     }
     
     // ===== ROTATION =====
