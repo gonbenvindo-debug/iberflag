@@ -1137,7 +1137,18 @@
 
     <div id="resize-handles" class="hidden" style="position: fixed; inset: 0; z-index: 9999; pointer-events: none;"></div>
     <script src="/assets/js/core/logic.js"></script>
-    <script src="/assets/js/pages/personalizar.js?v=20260323f"></script>
+    <!-- DesignEditor modules — load order matters -->
+    <script src="/assets/js/pages/personalizador/core.js"></script>
+    <script src="/assets/js/pages/personalizador/product.js"></script>
+    <script src="/assets/js/pages/personalizador/canvas.js"></script>
+    <script src="/assets/js/pages/personalizador/geometry.js"></script>
+    <script src="/assets/js/pages/personalizador/template.js"></script>
+    <script src="/assets/js/pages/personalizador/elements.js"></script>
+    <script src="/assets/js/pages/personalizador/upload.js"></script>
+    <script src="/assets/js/pages/personalizador/handles.js"></script>
+    <script src="/assets/js/pages/personalizador/properties.js"></script>
+    <script src="/assets/js/pages/personalizador/export.js"></script>
+    <script src="/assets/js/pages/personalizar.js"></script>
     <script>
         lucide.createIcons();
     </script>
