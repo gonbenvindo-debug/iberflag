@@ -2066,7 +2066,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     align-items: center;
     justify-content: center;
     color: #2563eb;
-    transition: all 0.2s;
+    transition: background 0.15s, color 0.15s, transform 0.15s;
 }
 
 .rotate-handle:hover {
