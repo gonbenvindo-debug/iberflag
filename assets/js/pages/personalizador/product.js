@@ -148,7 +148,7 @@ Object.assign(DesignEditor.prototype, {
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
 
-        priceEl.textContent = `${total.toFixed(2)}Ôé¼`;
+        priceEl.textContent = `${total.toFixed(2)}€`;
     },
 
     updateCartStepsTotalDisplay() {
@@ -159,7 +159,7 @@ Object.assign(DesignEditor.prototype, {
         const selectedBase = this.getSelectedBaseOption();
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
-        totalEl.textContent = `${total.toFixed(2)}Ôé¼`;
+        totalEl.textContent = `${total.toFixed(2)}€`;
     },
 
     setupCartStepsModalListeners() {
@@ -307,7 +307,7 @@ Object.assign(DesignEditor.prototype, {
                 <button type="button" class="cart-base-card ${selected ? 'selected' : ''}" data-base-id="${baseId}">
                     <img src="${imageUrl}" alt="${baseName}">
                     <p class="text-sm font-semibold text-slate-900">${baseName}</p>
-                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}Ôé¼` : 'Inclu├¡da'}</p>
+                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluída'}</p>
                 </button>
             `;
         }).join('');
