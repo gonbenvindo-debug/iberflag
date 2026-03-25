@@ -3053,10 +3053,15 @@ class DesignEditor {
 
         const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
-        const tl = toWrapper(bbox.x,              bbox.y);
-        const tr = toWrapper(bbox.x + bbox.width,  bbox.y);
-        const br = toWrapper(bbox.x + bbox.width,  bbox.y + bbox.height);
-        const bl = toWrapper(bbox.x,              bbox.y + bbox.height);
+        // Offset to viewport coords so handles work inside position:fixed container.
+        const ox = wrapperRect.left;
+        const oy = wrapperRect.top;
+        const toVP = (p) => ({ x: p.x + ox, y: p.y + oy });
+
+        const tl = toVP(toWrapper(bbox.x,              bbox.y));
+        const tr = toVP(toWrapper(bbox.x + bbox.width,  bbox.y));
+        const br = toVP(toWrapper(bbox.x + bbox.width,  bbox.y + bbox.height));
+        const bl = toVP(toWrapper(bbox.x,              bbox.y + bbox.height));
         const tc     = mid(tl, tr);
         const rc     = mid(tr, br);
         const bc     = mid(bl, br);
@@ -3761,12 +3766,10 @@ class DesignEditor {
         this._rotateStartRotation = elementData.rotation || 0;
 
         // Apply CSS transform-origin on the handles container so all handles rotate together.
-        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
+        // Container is position:fixed inset:0, so origin coords are raw viewport (clientX/Y).
         const handlesContainer = document.getElementById('resize-handles');
         if (handlesContainer) {
-            const originX = centerClient.x - wrapperRect.left;
-            const originY = centerClient.y - wrapperRect.top;
-            handlesContainer.style.transformOrigin = `${originX}px ${originY}px`;
+            handlesContainer.style.transformOrigin = `${centerClient.x}px ${centerClient.y}px`;
             handlesContainer.style.transform = 'rotate(0deg)';
         }
 
