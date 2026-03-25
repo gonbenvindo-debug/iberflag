@@ -20,8 +20,8 @@
 
     const script = document.createElement('script');
     script.id = scriptId;
-    script.src = 'https://unpkg.com/lucide@latest';
-    script.defer = true;
+    script.src = 'https://unpkg.com/lucide@0.474.0/dist/umd/lucide.min.js';
+    script.async = true;
 
     script.onload = () => {
         const realLucide = window.lucide;
