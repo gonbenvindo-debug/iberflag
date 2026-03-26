@@ -635,6 +635,7 @@
                 border-radius: 0;
                 height: auto;
                 padding-bottom: env(safe-area-inset-bottom, 0px);
+                pointer-events: auto !important;
             }
 
             .editor-main {
@@ -684,6 +685,16 @@
             /* Compact Mobile Panels */
             .sidebar-section {
                 padding: 0.75rem 0.75rem;
+            }
+            
+            /* Garantir inputs funcionem no mobile */
+            .sidebar-shell input,
+            .sidebar-shell select,
+            .sidebar-shell button,
+            .sidebar-shell textarea {
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1;
             }
 
             .section-title {
@@ -753,7 +764,59 @@
             #text-properties input[type="range"],
             #image-properties input[type="range"],
             #shape-properties input[type="range"] {
-                height: 4px;
+                height: 32px;
+                padding: 0;
+                margin: 8px 0;
+                touch-action: manipulation;
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1;
+            }
+            
+            /* Melhorar thumb do range no mobile */
+            #text-properties input[type="range"]::-webkit-slider-thumb,
+            #image-properties input[type="range"]::-webkit-slider-thumb,
+            #shape-properties input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 24px;
+                height: 24px;
+                background: #2563eb;
+                cursor: pointer;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            
+            #text-properties input[type="range"]::-moz-range-thumb,
+            #image-properties input[type="range"]::-moz-range-thumb,
+            #shape-properties input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+                background: #2563eb;
+                cursor: pointer;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            }
+            
+            /* Estilizar track do range */
+            #text-properties input[type="range"]::-webkit-slider-runnable-track,
+            #image-properties input[type="range"]::-webkit-slider-runnable-track,
+            #shape-properties input[type="range"]::-webkit-slider-runnable-track {
+                width: 100%;
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
+            }
+            
+            #text-properties input[type="range"]::-moz-range-track,
+            #image-properties input[type="range"]::-moz-range-track,
+            #shape-properties input[type="range"]::-moz-range-track {
+                width: 100%;
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
             }
 
             #add-text-btn, .upload-image-btn-mobile {
