@@ -672,7 +672,7 @@
 
             .editor-mobile-tabs {
                 display: grid;
-                grid-template-columns: 1fr 1fr;
+                grid-template-columns: repeat(3, 1fr);
                 gap: 0.5rem;
                 background: #ffffff;
                 border-top: 1px solid #e5e7eb;
@@ -711,6 +711,16 @@
             .grid.grid-cols-3 {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
+            }
+            
+            /* Esconder botao propriedades quando nao ha selecao */
+            #mobile-tab-properties {
+                display: none !important;
+            }
+            
+            /* Mostrar botao propriedades quando ha elemento selecionado */
+            body.has-element-selected #mobile-tab-properties {
+                display: flex !important;
             }
 
             #text-properties,
@@ -875,7 +885,7 @@
                 <p class="section-title">Propriedades</p>
 
                 <div class="mb-4 flex items-center gap-3">
-                    <button id="keep-aspect-ratio" class="slide-button" title="Manter proporções">
+                    <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
                         <span class="slide-button-toggle"></span>
                     </button>
                     <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
@@ -1037,6 +1047,10 @@
                 <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left" data-panel="properties-panel">
                     <i data-lucide="sliders-horizontal" class="w-5 h-5 mx-auto"></i>
                     <span>Propriedades</span>
+                </button>
+                <button class="editor-mobile-tab" id="mobile-tab-layers" data-sidebar="editor-sidebar-right">
+                    <i data-lucide="layers" class="w-5 h-5 mx-auto"></i>
+                    <span>Camadas</span>
                 </button>
             </nav>
         </main>

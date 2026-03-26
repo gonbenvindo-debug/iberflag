@@ -37,6 +37,9 @@ Object.assign(DesignEditor.prototype, {
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
         this.clearPropertiesSections();
         this.updateSidebarMode();
+        
+        // Remove class from body to hide properties tab on mobile
+        document.body.classList.remove('has-element-selected');
         this.updateLayers();
     },
     

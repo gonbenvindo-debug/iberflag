@@ -64,6 +64,9 @@ Object.assign(DesignEditor.prototype, {
         this.selectedElement = elementData;
         elementData.element.classList.add('element-selected');
         
+        // Add class to body for mobile tab visibility
+        document.body.classList.add('has-element-selected');
+        
         // Ensure element is within bounds before showing handles
         if (!skipReposition) {
             this.bringElementInBounds(elementData);
