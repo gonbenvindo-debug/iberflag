@@ -45,11 +45,24 @@ Object.assign(DesignEditor.prototype, {
             left = startLeft;
             right = Math.min(maxRight, Math.max(right, startLeft + minWidth));
         } else {
-            left = Math.max(bounds.x, left);
-            right = Math.min(maxRight, right);
+            // When moving both sides (corner handles), keep within bounds
+            if (movesWest && movesEast) {
+                left = Math.max(bounds.x, left);
+                right = Math.min(maxRight, right);
+            }
+            // Ensure minimum size
             if ((right - left) < minWidth) {
-                right = Math.min(maxRight, left + minWidth);
-                left = Math.max(bounds.x, right - minWidth);
+                const centerX = (left + right) / 2;
+                left = centerX - (minWidth / 2);
+                right = centerX + (minWidth / 2);
+                // Clamp to bounds if needed
+                if (left < bounds.x) {
+                    left = bounds.x;
+                    right = left + minWidth;
+                } else if (right > maxRight) {
+                    right = maxRight;
+                    left = right - minWidth;
+                }
             }
         }
 
@@ -60,11 +73,24 @@ Object.assign(DesignEditor.prototype, {
             top = startTop;
             bottom = Math.min(maxBottom, Math.max(bottom, startTop + minHeight));
         } else {
-            top = Math.max(bounds.y, top);
-            bottom = Math.min(maxBottom, bottom);
+            // When moving both sides (corner handles), keep within bounds
+            if (movesNorth && movesSouth) {
+                top = Math.max(bounds.y, top);
+                bottom = Math.min(maxBottom, bottom);
+            }
+            // Ensure minimum size
             if ((bottom - top) < minHeight) {
-                bottom = Math.min(maxBottom, top + minHeight);
-                top = Math.max(bounds.y, bottom - minHeight);
+                const centerY = (top + bottom) / 2;
+                top = centerY - (minHeight / 2);
+                bottom = centerY + (minHeight / 2);
+                // Clamp to bounds if needed
+                if (top < bounds.y) {
+                    top = bounds.y;
+                    bottom = top + minHeight;
+                } else if (bottom > maxBottom) {
+                    bottom = maxBottom;
+                    top = bottom - minHeight;
+                }
             }
         }
 
