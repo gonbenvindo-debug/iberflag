@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Personalizar Produto - IberFlag</title>
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <link rel="icon" type="image/svg+xml" href="/assets/images/favicon.svg">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260324">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
@@ -651,30 +651,6 @@
                 display: flex;
                 align-items: center;
                 justify-content: center;
-                padding: 0.5rem;
-                min-height: 0;
-                overflow: hidden;
-            }
-
-            #canvas-wrapper {
-                flex-shrink: 0;
-                box-shadow: none;
-                border-radius: 0;
-            }
-
-            .editor-bottom-bar {
-                margin-top: 0;
-                padding: 0.3rem max(0.75rem, env(safe-area-inset-right, 0px)) 0.3rem max(0.75rem, env(safe-area-inset-left, 0px));
-            }
-
-            #product-name {
-                max-width: 7rem;
-                overflow: hidden;
-                text-overflow: ellipsis;
-                white-space: nowrap;
-                font-size: 0.82rem;
-            }
-            .editor-cart-text { display: none; }
             #add-to-cart-btn  { padding: 0.4rem 0.7rem; }
             .editor-undo-redo { display: none; }
 
@@ -686,11 +662,13 @@
 
             .editor-mobile-tabs {
                 display: grid;
-                grid-template-columns: repeat(3, 1fr);
+                grid-template-columns: 1fr 1fr;
+                gap: 0.5rem;
                 background: #ffffff;
                 border-top: 1px solid #e5e7eb;
                 flex-shrink: 0;
-                padding-bottom: env(safe-area-inset-bottom, 0px);
+                padding: 0.75rem;
+                padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
             }
 
             /* Compact Mobile Panels */
@@ -1035,11 +1013,7 @@
                 </button>
                 <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left" data-panel="properties-panel">
                     <i data-lucide="sliders-horizontal" class="w-5 h-5 mx-auto"></i>
-                    <span>Editar</span>
-                </button>
-                <button class="editor-mobile-tab" id="mobile-tab-layers" data-sidebar="editor-sidebar-right">
-                    <i data-lucide="layers" class="w-5 h-5 mx-auto"></i>
-                    <span>Camadas</span>
+                    <span>Propriedades</span>
                 </button>
             </nav>
         </main>
@@ -1096,7 +1070,7 @@
         </div>
     </div>
 
-    <div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true">
+    <div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true" inert>
         <div class="cart-steps-panel">
             <div class="checkout-steps">
                 <div id="checkout-step-1" class="checkout-step active">

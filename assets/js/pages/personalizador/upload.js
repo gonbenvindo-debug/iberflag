@@ -334,10 +334,10 @@ Object.assign(DesignEditor.prototype, {
         };
 
         selection.addEventListener('mousedown', (event) => {
-            startPointer({ ...event, pointerSource: 'mouse' });
+            startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
         });
         stage.addEventListener('mousedown', (event) => {
-            startPointer({ ...event, pointerSource: 'mouse' });
+            startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
         });
         
         // Touch events for mobile
