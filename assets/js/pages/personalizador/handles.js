@@ -1002,14 +1002,15 @@ Object.assign(DesignEditor.prototype, {
         const transformed = this.getTransformedBounds(this.selectedElement);
         const bounds = this.getEditableBounds();
         
-        // Check if element is completely outside bounds (all corners out on same side)
-        const isCompletelyOutLeft = transformed.right < bounds.x;
-        const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
-        const isCompletelyOutTop = transformed.bottom < bounds.y;
-        const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+        // Check if ANY part of element is outside bounds (same logic as movement)
+        const isOutOfBounds = 
+            transformed.left < bounds.x ||
+            transformed.right > bounds.x + bounds.width ||
+            transformed.top < bounds.y ||
+            transformed.bottom > bounds.y + bounds.height;
         
-        if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
-            // Revert to previous transform - not allowed to escape completely.
+        if (isOutOfBounds) {
+            // Revert to previous transform - not allowed to exceed bounds
             if (previousTransform) {
                 this.selectedElement.element.setAttribute('transform', previousTransform);
             } else {
@@ -1071,13 +1072,14 @@ Object.assign(DesignEditor.prototype, {
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
             
-            // Check if element would be completely outside bounds
-            const isCompletelyOutLeft = transformed.right < bounds.x;
-            const isCompletelyOutRight = transformed.left > bounds.x + bounds.width;
-            const isCompletelyOutTop = transformed.bottom < bounds.y;
-            const isCompletelyOutBottom = transformed.top > bounds.y + bounds.height;
+            // Check if ANY part of element would be outside bounds (same logic as movement)
+            const isOutOfBounds = 
+                transformed.left < bounds.x ||
+                transformed.right > bounds.x + bounds.width ||
+                transformed.top < bounds.y ||
+                transformed.bottom > bounds.y + bounds.height;
             
-            if (isCompletelyOutLeft || isCompletelyOutRight || isCompletelyOutTop || isCompletelyOutBottom) {
+            if (isOutOfBounds) {
                 // Reject this rotation - revert to previous transform.
                 if (previousTransform) {
                     this.selectedElement.element.setAttribute('transform', previousTransform);
