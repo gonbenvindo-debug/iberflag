@@ -662,7 +662,13 @@
                 padding: 0 max(0.75rem, env(safe-area-inset-left, 0px));
             }
 
-            .editor-bottom-bar { display: none; }
+            .editor-bottom-bar { 
+                display: flex !important;
+                justify-content: center;
+                padding: 0.5rem;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+            }
 
             .editor-mobile-tabs {
                 display: grid;
@@ -692,6 +698,19 @@
 
             .grid-cols-2 {
                 gap: 0.5rem !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+            
+            /* Forçar 2 colunas nos botoes de acoes */
+            .grid.grid-cols-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+            }
+            
+            /* Forçar 3 colunas nas formas */
+            .grid.grid-cols-3 {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
             }
 
             #text-properties,
