@@ -9,20 +9,33 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        this.cropMode = true;
-        this.isDragging = false;
-        this.isResizing = false;
-        
-        const bbox = this.selectedElement.element.getBBox();
-        this.cropBounds = {
-            x: bbox.x,
-            y: bbox.y,
-            width: bbox.width,
-            height: bbox.height
-        };
+        // Obter a imagem atual do elemento selecionado
+        const imgElement = this.selectedElement.element.querySelector('image');
+        if (!imgElement) {
+            showToast('Imagem não encontrada', 'error');
+            return;
+        }
 
-        showToast('Modo de corte ativo - arraste os handles para cortar', 'info');
-        this.showCropHandles();
+        const currentSrc = imgElement.getAttribute('href') || imgElement.getAttribute('xlink:href');
+
+        // Abrir o modal de crop em modo edição com a imagem atual
+        this.openUploadCropModal(currentSrc).then((croppedImageData) => {
+            if (croppedImageData) {
+                // Aplicar a imagem cropada ao elemento
+                imgElement.setAttribute('href', croppedImageData.dataUrl);
+                imgElement.setAttribute('xlink:href', croppedImageData.dataUrl);
+
+                // Atualizar as dimensões se necessário
+                if (croppedImageData.width && croppedImageData.height) {
+                    // Manter as dimensões atuais mas ajustar o viewBox se necessário
+                    this.selectedElement.updateTransform();
+                }
+
+                showToast('Imagem cortada com sucesso', 'success');
+                this.hideResizeHandles();
+                this.showResizeHandles(this.selectedElement);
+            }
+        });
     },
 
     showCropHandles() {
@@ -79,12 +92,12 @@ Object.assign(DesignEditor.prototype, {
             handle.style.left = (point.x - 5) + 'px';
             handle.style.top = (point.y - 5) + 'px';
             handle.style.backgroundColor = '#a855f7';
-            
+
             handle.addEventListener('mousedown', (e) => {
                 e.stopPropagation();
                 this.startCropResize(e, pos);
             });
-            
+
             handlesContainer.appendChild(handle);
         });
     },
@@ -152,7 +165,7 @@ Object.assign(DesignEditor.prototype, {
         this.cropBounds = null;
         this.hideResizeHandles();
         this.selectElement(this.selectedElement);
-        
+
         showToast('Imagem cortada com sucesso', 'success');
         this.saveHistory();
     },
@@ -181,7 +194,7 @@ Object.assign(DesignEditor.prototype, {
 
         return maskShape;
     },
-    
+
     getDesignSVG() {
         const vb = this.getCanvasViewBoxSize();
         const exportWidth = Math.max(1, Math.round(vb.width));
@@ -216,7 +229,7 @@ Object.assign(DesignEditor.prototype, {
         exportSvg.appendChild(clippedGroup);
         return new XMLSerializer().serializeToString(exportSvg);
     },
-    
+
     // ===== ADD TO CART =====
     addToCart(designOverride = null) {
         const design = designOverride || this.getDesignSVG();
@@ -225,7 +238,7 @@ Object.assign(DesignEditor.prototype, {
             showToast('Adicione pelo menos um elemento ao design', 'warning');
             return;
         }
-        
+
         const cart = this.getCartData();
         const targetIndex = this.resolveEditingCartIndex(cart);
 
@@ -234,7 +247,7 @@ Object.assign(DesignEditor.prototype, {
         const selectedBase = this.getSelectedBaseOption();
         const selectedBaseExtra = Number(selectedBase?.preco_extra_aplicado || 0);
         const finalPrice = Number(this.currentProduct.preco || 0) + selectedBaseExtra;
-        
+
         const cartItem = {
             id: this.currentProduct.id,
             nome: this.currentProduct.nome,
@@ -250,7 +263,7 @@ Object.assign(DesignEditor.prototype, {
             baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
-        
+
         if (targetIndex >= 0) {
             cart[targetIndex] = cartItem;
             showToast('Design atualizado no carrinho!', 'success');
@@ -258,12 +271,12 @@ Object.assign(DesignEditor.prototype, {
             cart.push(cartItem);
             showToast('Produto adicionado ao carrinho!', 'success');
         }
-        
+
         this.saveCartData(cart);
         localStorage.removeItem(this.getAutosaveKey());
         this.getLegacyAutosaveKeys().forEach((key) => localStorage.removeItem(key));
         this.closeCartStepsModal();
-        
+
         setTimeout(() => {
             window.location.href = '/produtos.html';
         }, 1000);
