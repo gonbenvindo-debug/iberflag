@@ -1,9 +1,12 @@
 // ===== SUPABASE CONFIGURATION =====
 const APP_CONFIG = (typeof window !== 'undefined' && window.APP_CONFIG) ? window.APP_CONFIG : {};
-const SUPABASE_URL = APP_CONFIG.SUPABASE_URL || process.env.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
-const SUPABASE_ANON_KEY = APP_CONFIG.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'fallback-key';
+const SUPABASE_URL = APP_CONFIG.SUPABASE_URL || window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
+const SUPABASE_ANON_KEY = APP_CONFIG.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || 'fallback-key';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+// Disponibilizar globalmente
+window.supabaseClient = supabaseClient;
 
 // ===== CART MANAGEMENT =====
 const CART_STORAGE_KEY = 'iberflag_cart';
