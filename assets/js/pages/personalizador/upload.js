@@ -108,7 +108,11 @@ Object.assign(DesignEditor.prototype, {
                 try {
                     const cropped = await this.openUploadCropModal(src);
                     if (cropped) {
-                        this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName);
+                        this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName, {
+                            cropData: cropped.cropData,
+                            fullWidth: cropped.fullWidth,
+                            fullHeight: cropped.fullHeight
+                        });
                     }
                 } catch (error) {
                     console.error('Erro ao inserir imagem:', error);
@@ -571,16 +575,9 @@ Object.assign(DesignEditor.prototype, {
             return null;
         }
 
-        const sx = normalized.x * naturalWidth;
-        const sy = normalized.y * naturalHeight;
-        const sw = normalized.width * naturalWidth;
-        const sh = normalized.height * naturalHeight;
-
-        const safeW = Math.max(1, Math.round(sw));
-        const safeH = Math.max(1, Math.round(sh));
         const canvas = document.createElement('canvas');
-        canvas.width = safeW;
-        canvas.height = safeH;
+        canvas.width = naturalWidth;
+        canvas.height = naturalHeight;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -589,12 +586,23 @@ Object.assign(DesignEditor.prototype, {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(image, sx, sy, sw, sh, 0, 0, safeW, safeH);
+        ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
+
+        const cropWidth = Math.max(1, Math.round(normalized.width * naturalWidth));
+        const cropHeight = Math.max(1, Math.round(normalized.height * naturalHeight));
 
         return {
             dataUrl: canvas.toDataURL('image/png'),
-            width: safeW,
-            height: safeH
+            width: cropWidth,
+            height: cropHeight,
+            fullWidth: naturalWidth,
+            fullHeight: naturalHeight,
+            cropData: {
+                x: normalized.x,
+                y: normalized.y,
+                width: normalized.width,
+                height: normalized.height
+            }
         };
     },
 
@@ -691,6 +699,9 @@ Object.assign(DesignEditor.prototype, {
         const imageKind = options.imageKind || 'image';
         const qrContent = options.qrContent || '';
         const qrColor = options.qrColor || '#111827';
+        const cropData = options.cropData || null;
+        const fullWidth = options.fullWidth || width;
+        const fullHeight = options.fullHeight || height;
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttribute('x', String(center.x - (fitted.width / 2)));
@@ -698,10 +709,24 @@ Object.assign(DesignEditor.prototype, {
         img.setAttribute('width', String(fitted.width));
         img.setAttribute('height', String(fitted.height));
         img.setAttribute('href', src);
-        img.setAttribute('preserveAspectRatio', 'none');
         img.setAttribute('data-editable', 'true');
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
+
+        if (cropData) {
+            const viewBoxX = cropData.x * fullWidth;
+            const viewBoxY = cropData.y * fullHeight;
+            const viewBoxWidth = cropData.width * fullWidth;
+            const viewBoxHeight = cropData.height * fullHeight;
+            img.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
+            img.setAttribute('preserveAspectRatio', 'none');
+            img.dataset.cropData = JSON.stringify(cropData);
+            img.dataset.fullWidth = String(fullWidth);
+            img.dataset.fullHeight = String(fullHeight);
+        } else {
+            img.setAttribute('preserveAspectRatio', 'none');
+        }
+
         if (qrContent) {
             img.dataset.qrContent = qrContent;
         }
@@ -722,6 +747,9 @@ Object.assign(DesignEditor.prototype, {
             imageKind,
             qrContent,
             qrColor,
+            cropData,
+            fullWidth,
+            fullHeight,
             opacity: 1,
             rotation: 0
         };

@@ -22,18 +22,30 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        // Guardar referência ao elemento selecionado
         const elementToUpdate = this.selectedElement;
 
-        // Abrir o modal de crop em modo edição com a imagem atual
         this.openUploadCropModal(currentSrc).then((croppedImageData) => {
             if (croppedImageData && elementToUpdate) {
-                // Aplicar a imagem cropada ao elemento
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
-                // Atualizar as dimensões se necessário
-                if (croppedImageData.width && croppedImageData.height && elementToUpdate.updateTransform) {
-                    elementToUpdate.updateTransform();
+                if (croppedImageData.cropData) {
+                    const fullWidth = croppedImageData.fullWidth;
+                    const fullHeight = croppedImageData.fullHeight;
+                    const cropData = croppedImageData.cropData;
+
+                    const viewBoxX = cropData.x * fullWidth;
+                    const viewBoxY = cropData.y * fullHeight;
+                    const viewBoxWidth = cropData.width * fullWidth;
+                    const viewBoxHeight = cropData.height * fullHeight;
+
+                    imgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
+                    imgElement.dataset.cropData = JSON.stringify(cropData);
+                    imgElement.dataset.fullWidth = String(fullWidth);
+                    imgElement.dataset.fullHeight = String(fullHeight);
+
+                    elementToUpdate.cropData = cropData;
+                    elementToUpdate.fullWidth = fullWidth;
+                    elementToUpdate.fullHeight = fullHeight;
                 }
 
                 showToast('Imagem cortada com sucesso', 'success');
