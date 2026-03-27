@@ -1,28 +1,28 @@
 ﻿{
-    "name":  "iberflag",
-    "version":  "1.0.0",
-    "description":  "Editor de produtos estilo Canva/Figma - IberFlag",
-    "main":  "pages/index.html",
-    "scripts":  {
-                    "populate":  "node scripts/populate-products.js",
-                    "build:css":  "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
-                    "build":  "npm run build:css"
-                },
-    "dependencies":  {
-                         "@supabase/supabase-js":  "^2.39.0",
-                         "dotenv":  "^16.3.1"
-                     },
-    "devDependencies":  {
-                            "autoprefixer":  "^10.4.20",
-                            "postcss":  "^8.4.49",
-                            "tailwindcss":  "^3.4.17"
-                        },
-    "keywords":  [
-                     "ecommerce",
-                     "publicidade",
-                     "flybanners",
-                     "rollups"
-                 ],
-    "author":  "IberFlag",
-    "license":  "ISC"
+    "name": "iberflag",
+    "version": "1.0.0",
+    "description": "Editor de produtos estilo Canva/Figma - IberFlag",
+    "main": "pages/index.html",
+    "scripts": {
+        "populate": "node scripts/populate-products.js",
+        "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
+        "build": "npm run build:css"
+    },
+    "dependencies": {
+        "@supabase/supabase-js": "^2.39.0",
+        "dotenv": "^16.3.1"
+    },
+    "devDependencies": {
+        "autoprefixer": "^10.4.20",
+        "postcss": "^8.4.49",
+        "tailwindcss": "^3.4.17"
+    },
+    "keywords": [
+        "ecommerce",
+        "publicidade",
+        "flybanners",
+        "rollups"
+    ],
+    "author": "IberFlag",
+    "license": "ISC"
 }
