@@ -22,21 +22,24 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        // Guardar referência ao elemento selecionado
+        const elementToUpdate = this.selectedElement;
+
         // Abrir o modal de crop em modo edição com a imagem atual
         this.openUploadCropModal(currentSrc).then((croppedImageData) => {
-            if (croppedImageData) {
+            if (croppedImageData && elementToUpdate) {
                 // Aplicar a imagem cropada ao elemento
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
                 // Atualizar as dimensões se necessário
-                if (croppedImageData.width && croppedImageData.height) {
-                    // Manter as dimensões atuais mas ajustar o viewBox se necessário
-                    this.selectedElement.updateTransform();
+                if (croppedImageData.width && croppedImageData.height && elementToUpdate.updateTransform) {
+                    elementToUpdate.updateTransform();
                 }
 
                 showToast('Imagem cortada com sucesso', 'success');
                 this.hideResizeHandles();
-                this.showResizeHandles(this.selectedElement);
+                this.showResizeHandles(elementToUpdate);
+                this.saveHistory();
             }
         });
     },
