@@ -704,27 +704,54 @@ Object.assign(DesignEditor.prototype, {
         const fullHeight = options.fullHeight || height;
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        img.setAttribute('x', String(center.x - (fitted.width / 2)));
-        img.setAttribute('y', String(center.y - (fitted.height / 2)));
-        img.setAttribute('width', String(fitted.width));
-        img.setAttribute('height', String(fitted.height));
-        img.setAttribute('href', src);
+        const imgX = center.x - (fitted.width / 2);
+        const imgY = center.y - (fitted.height / 2);
+
         img.setAttribute('data-editable', 'true');
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
+        img.setAttribute('preserveAspectRatio', 'none');
 
         if (cropData) {
-            const viewBoxX = cropData.x * fullWidth;
-            const viewBoxY = cropData.y * fullHeight;
-            const viewBoxWidth = cropData.width * fullWidth;
-            const viewBoxHeight = cropData.height * fullHeight;
-            img.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
-            img.setAttribute('preserveAspectRatio', 'none');
+            const scaleX = fitted.width / (cropData.width * fullWidth);
+            const scaleY = fitted.height / (cropData.height * fullHeight);
+            const offsetX = -(cropData.x * fullWidth * scaleX);
+            const offsetY = -(cropData.y * fullHeight * scaleY);
+
+            img.setAttribute('x', String(imgX + offsetX));
+            img.setAttribute('y', String(imgY + offsetY));
+            img.setAttribute('width', String(fullWidth * scaleX));
+            img.setAttribute('height', String(fullHeight * scaleY));
+            img.setAttribute('href', src);
+
+            const clipId = `image-clip-${Date.now()}`;
+            img.setAttribute('clip-path', `url(#${clipId})`);
+            img.dataset.clipId = clipId;
             img.dataset.cropData = JSON.stringify(cropData);
             img.dataset.fullWidth = String(fullWidth);
             img.dataset.fullHeight = String(fullHeight);
+
+            let defs = this.canvas.querySelector('defs');
+            if (!defs) {
+                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
+                this.canvas.insertBefore(defs, this.canvas.firstChild);
+            }
+
+            const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
+            clipPath.setAttribute('id', clipId);
+            const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            clipRect.setAttribute('x', String(imgX));
+            clipRect.setAttribute('y', String(imgY));
+            clipRect.setAttribute('width', String(fitted.width));
+            clipRect.setAttribute('height', String(fitted.height));
+            clipPath.appendChild(clipRect);
+            defs.appendChild(clipPath);
         } else {
-            img.setAttribute('preserveAspectRatio', 'none');
+            img.setAttribute('x', String(imgX));
+            img.setAttribute('y', String(imgY));
+            img.setAttribute('width', String(fitted.width));
+            img.setAttribute('height', String(fitted.height));
+            img.setAttribute('href', src);
         }
 
         if (qrContent) {
