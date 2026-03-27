@@ -384,43 +384,6 @@ Object.assign(DesignEditor.prototype, {
         document.addEventListener('touchend', endTouchPointer);
         document.addEventListener('touchcancel', endTouchPointer);
 
-        // Configurar event listeners dos handles UMA VEZ
-        const handles = selection.querySelectorAll('.upload-crop-handle');
-        handles.forEach(handle => {
-            const handleName = handle.dataset.handle;
-
-            handle.addEventListener('mousedown', (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-
-                if (!this.uploadCropState) return;
-
-                this.uploadCropState.dragging = {
-                    mode: 'resize',
-                    handle: handleName,
-                    startX: event.clientX,
-                    startY: event.clientY,
-                    rect: { ...this.uploadCropState.selectionRect }
-                };
-            });
-
-            handle.addEventListener('touchstart', (event) => {
-                event.stopPropagation();
-                event.preventDefault();
-
-                if (!this.uploadCropState || event.touches.length !== 1) return;
-
-                const touch = event.touches[0];
-                this.uploadCropState.dragging = {
-                    mode: 'resize',
-                    handle: handleName,
-                    startX: touch.clientX,
-                    startY: touch.clientY,
-                    rect: { ...this.uploadCropState.selectionRect }
-                };
-            }, { passive: false });
-        });
-
         document.addEventListener('mousemove', (event) => {
             movePointer({ ...event, pointerSource: 'mouse' });
         });
@@ -480,6 +443,50 @@ Object.assign(DesignEditor.prototype, {
                 state.naturalWidth = image.naturalWidth;
                 state.naturalHeight = image.naturalHeight;
                 this.layoutUploadCropModal(true);
+
+                // Configurar event listeners dos handles DEPOIS que tudo está carregado
+                const handles = selection.querySelectorAll('.upload-crop-handle');
+                console.log('🔧 Configurando handles:', handles.length);
+
+                handles.forEach(handle => {
+                    const handleName = handle.dataset.handle;
+                    console.log('🔧 Handle:', handleName);
+
+                    handle.addEventListener('mousedown', (event) => {
+                        console.log('✅ MOUSEDOWN handle:', handleName);
+                        event.stopPropagation();
+                        event.preventDefault();
+
+                        if (!this.uploadCropState) return;
+
+                        this.uploadCropState.dragging = {
+                            mode: 'resize',
+                            handle: handleName,
+                            startX: event.clientX,
+                            startY: event.clientY,
+                            rect: { ...this.uploadCropState.selectionRect }
+                        };
+                        console.log('✅ Dragging definido:', this.uploadCropState.dragging);
+                    });
+
+                    handle.addEventListener('touchstart', (event) => {
+                        console.log('✅ TOUCHSTART handle:', handleName);
+                        event.stopPropagation();
+                        event.preventDefault();
+
+                        if (!this.uploadCropState || event.touches.length !== 1) return;
+
+                        const touch = event.touches[0];
+                        this.uploadCropState.dragging = {
+                            mode: 'resize',
+                            handle: handleName,
+                            startX: touch.clientX,
+                            startY: touch.clientY,
+                            rect: { ...this.uploadCropState.selectionRect }
+                        };
+                        console.log('✅ Dragging definido (touch):', this.uploadCropState.dragging);
+                    }, { passive: false });
+                });
             };
 
             image.src = imageSrc;
