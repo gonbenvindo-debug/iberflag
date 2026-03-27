@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -26,20 +27,20 @@
 
         .canvas-container {
             background: #f8f9fa;
-            background-image: 
-                linear-gradient(rgba(0,0,0,.05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0,0,0,.05) 1px, transparent 1px);
+            background-image:
+                linear-gradient(rgba(0, 0, 0, .05) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(0, 0, 0, .05) 1px, transparent 1px);
             background-size: 20px 20px;
             border-radius: 16px;
             border: 1px solid var(--panel-border);
             box-shadow: var(--panel-shadow);
         }
-        
+
         .element-selected {
             outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
-        
+
         .resize-handle {
             width: 12px;
             height: 12px;
@@ -54,14 +55,14 @@
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             pointer-events: auto;
         }
-        
+
         .resize-handle::before {
             content: '';
             position: absolute;
             inset: -8px;
             cursor: inherit;
         }
-        
+
         .resize-handle:hover {
             background: #2563eb;
             transform: scale(1.4);
@@ -123,7 +124,7 @@
             padding: 1rem;
         }
 
-        .sidebar-section + .sidebar-section {
+        .sidebar-section+.sidebar-section {
             border-top: 1px solid #e2e8f0;
         }
 
@@ -193,7 +194,7 @@
         #canvas-wrapper.drop-target {
             outline: 3px dashed #3b82f6;
             outline-offset: 4px;
-            box-shadow: 0 0 0 6px rgba(59,130,246,0.15), 0 25px 60px rgba(0,0,0,0.15);
+            box-shadow: 0 0 0 6px rgba(59, 130, 246, 0.15), 0 25px 60px rgba(0, 0, 0, 0.15);
         }
 
         .upload-crop-panel {
@@ -264,10 +265,29 @@
             touch-action: none;
         }
 
-        .upload-crop-handle.nw { left: -8px; top: -8px; cursor: nwse-resize; }
-        .upload-crop-handle.ne { right: -8px; top: -8px; cursor: nesw-resize; }
-        .upload-crop-handle.sw { left: -8px; bottom: -8px; cursor: nesw-resize; }
-        .upload-crop-handle.se { right: -8px; bottom: -8px; cursor: nwse-resize; }
+        .upload-crop-handle.nw {
+            left: -8px;
+            top: -8px;
+            cursor: nwse-resize;
+        }
+
+        .upload-crop-handle.ne {
+            right: -8px;
+            top: -8px;
+            cursor: nesw-resize;
+        }
+
+        .upload-crop-handle.sw {
+            left: -8px;
+            bottom: -8px;
+            cursor: nesw-resize;
+        }
+
+        .upload-crop-handle.se {
+            right: -8px;
+            bottom: -8px;
+            cursor: nwse-resize;
+        }
 
         .cart-steps-modal {
             position: fixed;
@@ -435,6 +455,7 @@
             background: #111827;
             color: #ffffff;
         }
+
         #cart-steps-next:hover {
             background: #1f2937;
         }
@@ -448,14 +469,19 @@
         /* ----- Componentes UI (desktop e mobile) ----- */
         .drawer-grip {
             display: none;
-            width: 40px; height: 4px;
+            width: 40px;
+            height: 4px;
             background: #cbd5e1;
             border-radius: 9999px;
             margin: 10px auto 8px;
             flex-shrink: 0;
             cursor: grab;
         }
-        .editor-mobile-tabs { display: none; }
+
+        .editor-mobile-tabs {
+            display: none;
+        }
+
         .editor-mobile-tab {
             display: flex;
             flex-direction: column;
@@ -475,7 +501,12 @@
             letter-spacing: 0.04em;
             text-transform: uppercase;
         }
-        .editor-mobile-tab.active { color: #2563eb; border-top-color: #2563eb; }
+
+        .editor-mobile-tab.active {
+            color: #2563eb;
+            border-top-color: #2563eb;
+        }
+
         .editor-mobile-backdrop {
             display: none;
             position: fixed;
@@ -486,6 +517,7 @@
             -webkit-backdrop-filter: blur(1px);
             pointer-events: none;
         }
+
         .editor-mobile-backdrop.active {
             display: block;
             pointer-events: auto;
@@ -502,13 +534,15 @@
             flex-shrink: 0;
             box-sizing: border-box;
         }
+
         /* Logo: altura fixa do nav para imunidade a reflow dos ícones */
-        #editor-nav > a:first-child {
+        #editor-nav>a:first-child {
             display: flex;
             align-items: center;
             height: 100%;
             flex-shrink: 0;
         }
+
         #editor-info-bar {
             display: flex;
             align-items: center;
@@ -522,25 +556,35 @@
             background: #f8fafc;
             overflow: hidden;
         }
+
         .editor-info-name {
             font-size: 0.82rem;
             font-weight: 600;
             color: #1e293b;
             min-width: 0;
         }
+
         .editor-info-price {
             font-size: 0.9rem;
             font-weight: 700;
             color: #2563eb;
             flex-shrink: 0;
         }
+
         .editor-body-layout {
             display: flex;
             height: calc(100vh - 4rem - 2.25rem);
             overflow: hidden;
         }
-        .editor-sidebar-left  { padding: 1rem 0.5rem 1rem 1rem; }
-        .editor-sidebar-right { padding: 1rem 1rem 1rem 0.5rem; }
+
+        .editor-sidebar-left {
+            padding: 1rem 0.5rem 1rem 1rem;
+        }
+
+        .editor-sidebar-right {
+            padding: 1rem 1rem 1rem 0.5rem;
+        }
+
         .editor-main {
             flex: 1;
             display: flex;
@@ -551,6 +595,7 @@
             position: relative;
             z-index: 1;
         }
+
         #canvas-stage {
             flex: 1;
             display: flex;
@@ -562,6 +607,7 @@
             position: relative;
             z-index: 1;
         }
+
         .editor-bottom-bar {
             display: flex;
             align-items: center;
@@ -598,12 +644,16 @@
                 overflow: hidden;
             }
 
-            .drawer-grip { display: block; }
+            .drawer-grip {
+                display: block;
+            }
 
             .editor-sidebar-left,
             .editor-sidebar-right {
                 position: fixed;
-                bottom: 0; left: 0; right: 0;
+                bottom: 0;
+                left: 0;
+                right: 0;
                 width: 100%;
                 max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
                 z-index: 120;
@@ -620,6 +670,7 @@
                 overflow: hidden;
                 pointer-events: none;
             }
+
             .editor-sidebar-left.panel-open,
             .editor-sidebar-right.panel-open {
                 transform: translateY(0);
@@ -656,14 +707,20 @@
                 min-height: 0;
                 overflow: hidden;
             }
-            #add-to-cart-btn  { padding: 0.4rem 0.7rem; }
-            .editor-undo-redo { display: none; }
+
+            #add-to-cart-btn {
+                padding: 0.4rem 0.7rem;
+            }
+
+            .editor-undo-redo {
+                display: none;
+            }
 
             #editor-info-bar {
                 padding: 0 max(0.75rem, env(safe-area-inset-left, 0px));
             }
 
-            .editor-bottom-bar { 
+            .editor-bottom-bar {
                 display: flex !important;
                 justify-content: center;
                 padding: 0.5rem;
@@ -686,7 +743,7 @@
             .sidebar-section {
                 padding: 0.75rem 0.75rem;
             }
-            
+
             /* Garantir inputs funcionem no mobile */
             .sidebar-shell input,
             .sidebar-shell select,
@@ -711,24 +768,24 @@
                 gap: 0.5rem !important;
                 grid-template-columns: repeat(2, 1fr) !important;
             }
-            
+
             /* Forçar 2 colunas nos botoes de acoes */
             .grid.grid-cols-2 {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
             }
-            
+
             /* Forçar 3 colunas nas formas */
             .grid.grid-cols-3 {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
             }
-            
+
             /* Esconder botao propriedades quando nao ha selecao */
             #mobile-tab-properties {
                 display: none !important;
             }
-            
+
             /* Mostrar botao propriedades quando ha elemento selecionado */
             body.has-element-selected #mobile-tab-properties {
                 display: flex !important;
@@ -772,7 +829,7 @@
                 position: relative;
                 z-index: 1;
             }
-            
+
             /* Melhorar thumb do range no mobile */
             #text-properties input[type="range"]::-webkit-slider-thumb,
             #image-properties input[type="range"]::-webkit-slider-thumb,
@@ -785,9 +842,9 @@
                 cursor: pointer;
                 border-radius: 50%;
                 border: 2px solid white;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
-            
+
             #text-properties input[type="range"]::-moz-range-thumb,
             #image-properties input[type="range"]::-moz-range-thumb,
             #shape-properties input[type="range"]::-moz-range-thumb {
@@ -797,9 +854,9 @@
                 cursor: pointer;
                 border-radius: 50%;
                 border: 2px solid white;
-                box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
-            
+
             /* Estilizar track do range */
             #text-properties input[type="range"]::-webkit-slider-runnable-track,
             #image-properties input[type="range"]::-webkit-slider-runnable-track,
@@ -809,7 +866,7 @@
                 background: #e2e8f0;
                 border-radius: 3px;
             }
-            
+
             #text-properties input[type="range"]::-moz-range-track,
             #image-properties input[type="range"]::-moz-range-track,
             #shape-properties input[type="range"]::-moz-range-track {
@@ -819,7 +876,8 @@
                 border-radius: 3px;
             }
 
-            #add-text-btn, .upload-image-btn-mobile {
+            #add-text-btn,
+            .upload-image-btn-mobile {
                 width: 100%;
                 padding: 0.5rem !important;
                 font-size: 0.8rem;
@@ -862,8 +920,9 @@
         }
     </style>
 </head>
+
 <body class="app-page" style="overflow: hidden;">
-    
+
     <!-- Top Navigation -->
     <nav class="panel-clean border-0 border-b" id="editor-nav">
         <a href="/" aria-label="IberFlag" class="flex-shrink-0">
@@ -879,7 +938,9 @@
                 </button>
             </div>
             <div class="w-px h-6 bg-gray-300 editor-undo-redo"></div>
-            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold" style="display:flex;align-items:center;gap:0.5rem;">
+            <button id="add-to-cart-btn"
+                class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
+                style="display:flex;align-items:center;gap:0.5rem;">
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 <span class="editor-cart-text">Adicionar ao Carrinho</span>
             </button>
@@ -895,206 +956,243 @@
     </div>
 
     <div class="editor-body-layout" id="editor-body-layout">
-        
+
         <!-- Left Sidebar - Tools -->
         <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
             <div class="sidebar-shell">
-            <span class="drawer-grip"></span>
-            <div id="elements-panel" class="sidebar-section overflow-y-auto">
-                <p class="section-title">Elementos</p>
-                <div class="space-y-3 mb-4">
-                    <button id="add-text-btn" class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2">
-                        <i data-lucide="type" class="w-5 h-5"></i>
-                        Adicionar Texto
-                    </button>
-                    
-                    <button id="add-image-btn" class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold flex items-center justify-center gap-2">
-                        <i data-lucide="image" class="w-5 h-5"></i>
-                        Adicionar Imagem
-                    </button>
-                    <input type="file" id="image-upload" accept="image/*" class="hidden">
+                <span class="drawer-grip"></span>
+                <div id="elements-panel" class="sidebar-section overflow-y-auto">
+                    <p class="section-title">Elementos</p>
+                    <div class="space-y-3 mb-4">
+                        <button id="add-text-btn"
+                            class="w-full bg-blue-600 text-white py-3 rounded-lg hover:bg-blue-700 transition font-semibold flex items-center justify-center gap-2">
+                            <i data-lucide="type" class="w-5 h-5"></i>
+                            Adicionar Texto
+                        </button>
 
-                    <div class="pt-4 border-t border-gray-100">
-                        <p class="text-sm font-semibold text-gray-700 mb-2">QR Code</p>
-                        <button id="add-qr-btn" class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition">
-                            <span class="flex items-center gap-3 font-semibold">
-                                <span class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-900 text-white">
-                                    <i data-lucide="qr-code" class="w-4 h-4"></i>
+                        <button id="add-image-btn"
+                            class="w-full bg-green-600 text-white py-3 rounded-lg hover:bg-green-700 transition font-semibold flex items-center justify-center gap-2">
+                            <i data-lucide="image" class="w-5 h-5"></i>
+                            Adicionar Imagem
+                        </button>
+                        <input type="file" id="image-upload" accept="image/*" class="hidden">
+
+                        <div class="pt-4 border-t border-gray-100">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">QR Code</p>
+                            <button id="add-qr-btn"
+                                class="w-full flex items-center justify-between rounded-xl border border-gray-200 bg-white px-4 py-3 text-gray-900 hover:border-gray-300 hover:bg-gray-50 transition">
+                                <span class="flex items-center gap-3 font-semibold">
+                                    <span
+                                        class="inline-flex h-9 w-9 items-center justify-center rounded-lg bg-gray-900 text-white">
+                                        <i data-lucide="qr-code" class="w-4 h-4"></i>
+                                    </span>
+                                    <span>Adicionar QR Code</span>
                                 </span>
-                                <span>Adicionar QR Code</span>
-                            </span>
-                            <i data-lucide="plus" class="w-4 h-4 text-gray-400"></i>
+                                <i data-lucide="plus" class="w-4 h-4 text-gray-400"></i>
+                            </button>
+                        </div>
+
+                        <div class="pt-4">
+                            <p class="text-sm font-semibold text-gray-700 mb-2">Formas</p>
+                            <div class="grid grid-cols-3 gap-2">
+                                <button
+                                    class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition"
+                                    data-shape="rectangle">
+                                    <i data-lucide="square" class="w-6 h-6 mx-auto"></i>
+                                </button>
+                                <button
+                                    class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition"
+                                    data-shape="circle">
+                                    <i data-lucide="circle" class="w-6 h-6 mx-auto"></i>
+                                </button>
+                                <button
+                                    class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition"
+                                    data-shape="triangle">
+                                    <i data-lucide="triangle" class="w-6 h-6 mx-auto"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
+                    <p class="section-title">Propriedades</p>
+
+                    <div class="mb-4 flex items-center gap-3">
+                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
+                            <span class="slide-button-toggle"></span>
+                        </button>
+                        <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
+                            Manter proporcoes
+                        </label>
+                    </div>
+
+                    <p class="section-title">Acoes Rapidas</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            Duplicar
+                        </button>
+                        <button id="delete-element-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            Apagar
+                        </button>
+                        <button id="center-h-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
+                            Centrar H
+                        </button>
+                        <button id="center-v-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
+                            Centrar V
                         </button>
                     </div>
-                    
-                    <div class="pt-4">
-                        <p class="text-sm font-semibold text-gray-700 mb-2">Formas</p>
-                        <div class="grid grid-cols-3 gap-2">
-                            <button class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition" data-shape="rectangle">
-                                <i data-lucide="square" class="w-6 h-6 mx-auto"></i>
-                            </button>
-                            <button class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition" data-shape="circle">
-                                <i data-lucide="circle" class="w-6 h-6 mx-auto"></i>
-                            </button>
-                            <button class="shape-btn p-3 border-2 border-gray-300 rounded-lg hover:border-blue-600 hover:bg-blue-50 transition" data-shape="triangle">
-                                <i data-lucide="triangle" class="w-6 h-6 mx-auto"></i>
-                            </button>
+
+                    <div id="no-selection" class="text-center text-gray-400 py-12">
+                        <i data-lucide="mouse-pointer" class="w-12 h-12 mx-auto mb-2"></i>
+                        <p>Selecione um elemento para editar</p>
+                    </div>
+
+                    <div id="text-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades do Texto</h3>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Texto</label>
+                            <input type="text" id="prop-text-content" class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Fonte</label>
+                            <select id="prop-text-font" class="w-full border rounded-lg px-3 py-2">
+                                <option value="Arial" style="font-family: Arial;">Arial</option>
+                                <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+                                <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+                                <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman
+                                </option>
+                                <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+                                <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+                                <option value="Impact" style="font-family: Impact;">Impact</option>
+                                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS
+                                </option>
+                                <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+                                <option value="Palatino Linotype" style="font-family: 'Palatino Linotype';">Palatino
+                                    Linotype</option>
+                                <option value="Garamond" style="font-family: Garamond;">Garamond</option>
+                                <option value="Bookman" style="font-family: Bookman;">Bookman</option>
+                                <option value="Lucida Console" style="font-family: 'Lucida Console';">Lucida Console
+                                </option>
+                                <option value="Tahoma" style="font-family: Tahoma;">Tahoma</option>
+                                <option value="Gill Sans" style="font-family: 'Gill Sans';">Gill Sans</option>
+                                <option value="Calibri" style="font-family: Calibri;">Calibri</option>
+                                <option value="Consolas" style="font-family: Consolas;">Consolas</option>
+                                <option value="Century Gothic" style="font-family: 'Century Gothic';">Century Gothic
+                                </option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span
+                                    id="prop-text-size-val">24</span>px</label>
+                            <input type="range" id="prop-text-size" min="12" max="120" value="24" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor</label>
+                            <input type="color" id="prop-text-color" value="#000000"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="prop-text-bold"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
+                            <button id="prop-text-italic"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
+                                    id="prop-text-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
+                        </div>
+                    </div>
+
+                    <div id="image-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
+                        <div id="qr-properties" class="hidden">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
+                            <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2"
+                                placeholder="https://site.pt ou texto livre">
+                            <div class="mt-3">
+                                <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
+                                <input type="color" id="prop-qr-color" value="#111827"
+                                    class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera
+                                atualizado no canvas.</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span
+                                    id="prop-image-opacity-val">100</span>%</label>
+                            <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
+                                    id="prop-image-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
+                        </div>
+                        <button id="crop-image-btn"
+                            class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 mt-4">
+                            <i data-lucide="crop" class="w-4 h-4"></i>
+                            Cortar Imagem
+                        </button>
+                    </div>
+
+                    <div id="shape-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades da Forma</h3>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor de Preenchimento</label>
+                            <input type="color" id="prop-shape-fill" value="#3b82f6"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do Contorno</label>
+                            <input type="color" id="prop-shape-stroke" value="#000000"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span
+                                    id="prop-shape-stroke-val">0</span>px</label>
+                            <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
+                                    id="prop-shape-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
                         </div>
                     </div>
                 </div>
-            </div>
-
-            <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
-                <p class="section-title">Propriedades</p>
-
-                <div class="mb-4 flex items-center gap-3">
-                    <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
-                        <span class="slide-button-toggle"></span>
-                    </button>
-                    <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
-                        Manter proporcoes
-                    </label>
-                </div>
-
-                <p class="section-title">Acoes Rapidas</p>
-                <div class="grid grid-cols-2 gap-2">
-                    <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
-                        <i data-lucide="copy" class="w-4 h-4"></i>
-                        Duplicar
-                    </button>
-                    <button id="delete-element-btn" class="action-btn flex items-center justify-center gap-2">
-                        <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        Apagar
-                    </button>
-                    <button id="center-h-btn" class="action-btn flex items-center justify-center gap-2">
-                        <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
-                        Centrar H
-                    </button>
-                    <button id="center-v-btn" class="action-btn flex items-center justify-center gap-2">
-                        <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
-                        Centrar V
-                    </button>
-                </div>
-
-                <div id="no-selection" class="text-center text-gray-400 py-12">
-                    <i data-lucide="mouse-pointer" class="w-12 h-12 mx-auto mb-2"></i>
-                    <p>Selecione um elemento para editar</p>
-                </div>
-                
-                <div id="text-properties" class="space-y-4 hidden">
-                    <h3 class="font-bold text-lg mb-4">Propriedades do Texto</h3>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Texto</label>
-                        <input type="text" id="prop-text-content" class="w-full border rounded-lg px-3 py-2">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Fonte</label>
-                        <select id="prop-text-font" class="w-full border rounded-lg px-3 py-2">
-                            <option value="Arial" style="font-family: Arial;">Arial</option>
-                            <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
-                            <option value="Georgia" style="font-family: Georgia;">Georgia</option>
-                            <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman</option>
-                            <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
-                            <option value="Verdana" style="font-family: Verdana;">Verdana</option>
-                            <option value="Impact" style="font-family: Impact;">Impact</option>
-                            <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS</option>
-                            <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
-                            <option value="Palatino Linotype" style="font-family: 'Palatino Linotype';">Palatino Linotype</option>
-                            <option value="Garamond" style="font-family: Garamond;">Garamond</option>
-                            <option value="Bookman" style="font-family: Bookman;">Bookman</option>
-                            <option value="Lucida Console" style="font-family: 'Lucida Console';">Lucida Console</option>
-                            <option value="Tahoma" style="font-family: Tahoma;">Tahoma</option>
-                            <option value="Gill Sans" style="font-family: 'Gill Sans';">Gill Sans</option>
-                            <option value="Calibri" style="font-family: Calibri;">Calibri</option>
-                            <option value="Consolas" style="font-family: Consolas;">Consolas</option>
-                            <option value="Century Gothic" style="font-family: 'Century Gothic';">Century Gothic</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span id="prop-text-size-val">24</span>px</label>
-                        <input type="range" id="prop-text-size" min="12" max="120" value="24" class="w-full">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Cor</label>
-                        <input type="color" id="prop-text-color" value="#000000" class="w-full h-10 rounded cursor-pointer">
-                    </div>
-                    <div class="flex gap-2">
-                        <button id="prop-text-bold" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
-                        <button id="prop-text-italic" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-text-rotation-val">0</span>°</label>
-                        <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
-                    </div>
-                </div>
-                
-                <div id="image-properties" class="space-y-4 hidden">
-                    <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
-                    <div id="qr-properties" class="hidden">
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
-                        <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2" placeholder="https://site.pt ou texto livre">
-                        <div class="mt-3">
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
-                            <input type="color" id="prop-qr-color" value="#111827" class="w-full h-10 rounded cursor-pointer">
-                        </div>
-                        <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera atualizado no canvas.</p>
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span id="prop-image-opacity-val">100</span>%</label>
-                        <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-image-rotation-val">0</span>°</label>
-                        <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
-                    </div>
-                    <button id="crop-image-btn" class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 mt-4">
-                        <i data-lucide="crop" class="w-4 h-4"></i>
-                        Cortar Imagem
-                    </button>
-                </div>
-                
-                <div id="shape-properties" class="space-y-4 hidden">
-                    <h3 class="font-bold text-lg mb-4">Propriedades da Forma</h3>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Cor de Preenchimento</label>
-                        <input type="color" id="prop-shape-fill" value="#3b82f6" class="w-full h-10 rounded cursor-pointer">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do Contorno</label>
-                        <input type="color" id="prop-shape-stroke" value="#000000" class="w-full h-10 rounded cursor-pointer">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span id="prop-shape-stroke-val">0</span>px</label>
-                        <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
-                    </div>
-                    <div>
-                        <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-shape-rotation-val">0</span>°</label>
-                        <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
-                    </div>
-                </div>
-            </div>
             </div>
         </aside>
 
         <!-- Canvas Area -->
         <main class="editor-main">
             <div id="canvas-stage" class="canvas-container">
-                <div id="canvas-wrapper" class="relative bg-white shadow-2xl" style="width: 800px; height: 600px; position: relative; z-index: 1;">
-                    <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 w-full h-full">
-                        <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"/>
+                <div id="canvas-wrapper" class="relative bg-white shadow-2xl"
+                    style="width: 800px; height: 600px; position: relative; z-index: 1;">
+                    <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet"
+                        class="absolute inset-0 w-full h-full">
+                        <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none"
+                            opacity="0" pointer-events="none" />
                         <!-- Template will be loaded here -->
                     </svg>
 
                 </div>
             </div>
-            
+
             <!-- Bottom Toolbar (desktop apenas — em mobile está escondido) -->
             <div class="panel-clean editor-bottom-bar">
                 <div style="display:flex;align-items:center;gap:0.25rem;">
                     <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
                         <i data-lucide="zoom-out" class="w-4 h-4"></i>
                     </button>
-                    <span id="zoom-level" class="text-sm font-semibold" style="min-width:3rem;text-align:center;">100%</span>
+                    <span id="zoom-level" class="text-sm font-semibold"
+                        style="min-width:3rem;text-align:center;">100%</span>
                     <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded" title="Aumentar zoom">
                         <i data-lucide="zoom-in" class="w-4 h-4"></i>
                     </button>
@@ -1103,11 +1201,13 @@
 
             <!-- Mobile Tab Bar -->
             <nav class="editor-mobile-tabs" aria-label="Ferramentas do editor">
-                <button class="editor-mobile-tab active" id="mobile-tab-elements" data-sidebar="editor-sidebar-left" data-panel="elements-panel">
+                <button class="editor-mobile-tab active" id="mobile-tab-elements" data-sidebar="editor-sidebar-left"
+                    data-panel="elements-panel">
                     <i data-lucide="plus-square" class="w-5 h-5 mx-auto"></i>
                     <span>Adicionar</span>
                 </button>
-                <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left" data-panel="properties-panel">
+                <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left"
+                    data-panel="properties-panel">
                     <i data-lucide="sliders-horizontal" class="w-5 h-5 mx-auto"></i>
                     <span>Propriedades</span>
                 </button>
@@ -1121,13 +1221,13 @@
         <!-- Right Sidebar - Layers -->
         <aside class="w-64 editor-sidebar-right" id="editor-sidebar-right">
             <div class="sidebar-shell">
-            <span class="drawer-grip"></span>
-            <div class="p-4 border-b border-gray-100">
-                <h3 class="font-bold text-lg">Camadas</h3>
-            </div>
-            <div id="layers-list" class="flex-1 overflow-y-auto p-4">
-                <p class="text-sm text-gray-400 text-center py-8">Nenhuma camada ainda</p>
-            </div>
+                <span class="drawer-grip"></span>
+                <div class="p-4 border-b border-gray-100">
+                    <h3 class="font-bold text-lg">Camadas</h3>
+                </div>
+                <div id="layers-list" class="flex-1 overflow-y-auto p-4">
+                    <p class="text-sm text-gray-400 text-center py-8">Nenhuma camada ainda</p>
+                </div>
             </div>
         </aside>
 
@@ -1140,9 +1240,11 @@
             <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Recortar Imagem</h2>
-                    <p class="text-sm text-slate-500">A imagem so sera adicionada ao canvas depois de confirmar o recorte.</p>
+                    <p class="text-sm text-slate-500">A imagem so sera adicionada ao canvas depois de confirmar o
+                        recorte.</p>
                 </div>
-                <button id="upload-crop-cancel-top" class="p-2 rounded-lg hover:bg-slate-100" type="button" aria-label="Fechar recorte">
+                <button id="upload-crop-cancel-top" class="p-2 rounded-lg hover:bg-slate-100" type="button"
+                    aria-label="Fechar recorte">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1160,10 +1262,12 @@
             </div>
 
             <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
-                <button id="upload-crop-cancel" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100">
+                <button id="upload-crop-cancel" type="button"
+                    class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100">
                     Cancelar
                 </button>
-                <button id="upload-crop-apply" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                <button id="upload-crop-apply" type="button"
+                    class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
                     Inserir imagem
                 </button>
             </div>
@@ -1182,7 +1286,8 @@
                     <span class="checkout-step-dot">2</span>
                     <span>Escolher base</span>
                 </div>
-                <button id="close-cart-steps" type="button" class="ml-auto p-2 rounded-lg hover:bg-slate-100" aria-label="Fechar popup">
+                <button id="close-cart-steps" type="button" class="ml-auto p-2 rounded-lg hover:bg-slate-100"
+                    aria-label="Fechar popup">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -1190,7 +1295,8 @@
             <div class="cart-step-content">
                 <section id="cart-step-pane-1" class="cart-step-pane active">
                     <h3 class="text-lg font-bold text-slate-900 mb-1">Confirmar design antes de adicionar</h3>
-                    <p class="text-sm text-slate-500 mb-4">Revê o resultado final para garantir que está tudo correto.</p>
+                    <p class="text-sm text-slate-500 mb-4">Revê o resultado final para garantir que está tudo correto.
+                    </p>
                     <img id="cart-design-preview" class="cart-design-preview" alt="Preview do design">
                 </section>
 
@@ -1198,7 +1304,8 @@
                     <h3 class="text-lg font-bold text-slate-900 mb-1">Escolher base de fixação</h3>
                     <p class="text-sm text-slate-500 mb-4">Seleciona uma base para este design.</p>
                     <div id="cart-base-options" class="cart-base-grid"></div>
-                    <p id="cart-base-empty" class="hidden text-sm text-slate-500">Este produto não tem bases configuradas. O design será adicionado sem base.</p>
+                    <p id="cart-base-empty" class="hidden text-sm text-slate-500">Este produto não tem bases
+                        configuradas. O design será adicionado sem base.</p>
                 </section>
             </div>
 
@@ -1208,18 +1315,23 @@
                     <p id="cart-steps-total" class="text-lg font-bold text-slate-900"></p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="cart-steps-back" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hidden">Voltar</button>
-                    <button id="cart-steps-next" type="button" class="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-slate-900">Continuar</button>
-                    <button id="cart-steps-confirm" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar ao carrinho</button>
+                    <button id="cart-steps-back" type="button"
+                        class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hidden">Voltar</button>
+                    <button id="cart-steps-next" type="button"
+                        class="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-slate-900">Continuar</button>
+                    <button id="cart-steps-confirm" type="button"
+                        class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar
+                        ao carrinho</button>
                 </div>
             </div>
         </div>
     </div>
 
-    <div id="resize-handles" class="hidden" style="position: fixed; inset: 0; z-index: 100; pointer-events: none;"></div>
+    <div id="resize-handles" class="hidden" style="position: fixed; inset: 0; z-index: 100; pointer-events: none;">
+    </div>
     <script>
-        window.SUPABASE_URL = 'httpsormalized...';
-        window.SUPABASE_ANON_KEY = 'eyJormalized...';
+        window.SUPABASE_URL = 'https://nzwfquivulxkmxrwqalz.supabase.co';
+        window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
     </script>
     <script src="/assets/js/core/logic.js"></script>
     <!-- DesignEditor modules — load order matters -->
@@ -1238,5 +1350,5 @@
         lucide.createIcons();
     </script>
 </body>
-</html>
 
+</html>
