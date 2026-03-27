@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -14,12 +15,16 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/logic.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260319a">
 </head>
+
 <body class="app-page bg-gray-50">
 
     <!-- ═══ ADMIN LOGIN OVERLAY ═══════════════════════════════════════════ -->
-    <div id="admin-login-overlay" class="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center backdrop-blur-sm">
+    <div id="admin-login-overlay"
+        class="fixed inset-0 z-50 bg-gray-900/95 flex items-center justify-center backdrop-blur-sm">
         <div class="bg-white rounded-2xl shadow-2xl p-8 w-full max-w-sm mx-4">
             <div class="flex items-center gap-3 mb-8">
                 <div class="w-12 h-12 bg-blue-600 rounded-xl flex items-center justify-center flex-shrink-0">
@@ -44,8 +49,10 @@
                         placeholder="••••••••••••••">
                 </div>
                 <p class="text-xs text-gray-500">Acesso com utilizador e password. O email não é pedido no login.</p>
-                <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Modo teste ativo: utilizador <strong>admin</strong> e password <strong>admin</strong>.</p>
-                <div id="admin-login-error" class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3"></div>
+                <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Modo teste
+                    ativo: utilizador <strong>admin</strong> e password <strong>admin</strong>.</p>
+                <div id="admin-login-error"
+                    class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3"></div>
                 <button type="submit" id="admin-login-btn"
                     class="w-full bg-blue-600 hover:bg-blue-700 disabled:opacity-60 text-white font-bold py-3 rounded-xl transition-colors flex items-center justify-center gap-2 mt-2">
                     <i data-lucide="log-in" class="w-4 h-4"></i>
@@ -84,37 +91,49 @@
             <nav class="p-4">
                 <ul class="space-y-2">
                     <li>
-                        <button class="nav-tab active w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="dashboard">
+                        <button
+                            class="nav-tab active w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="dashboard">
                             <i data-lucide="layout-dashboard" class="w-5 h-5"></i>
                             Dashboard
                         </button>
                     </li>
                     <li>
-                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="produtos">
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="produtos">
                             <i data-lucide="package" class="w-5 h-5"></i>
                             Produtos
                         </button>
                     </li>
                     <li>
-                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="bases">
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="bases">
                             <i data-lucide="grip" class="w-5 h-5"></i>
                             Bases
                         </button>
                     </li>
                     <li>
-                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="encomendas">
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="encomendas">
                             <i data-lucide="shopping-bag" class="w-5 h-5"></i>
                             Encomendas
                         </button>
                     </li>
                     <li>
-                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="clientes">
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="clientes">
                             <i data-lucide="users" class="w-5 h-5"></i>
                             Clientes
                         </button>
                     </li>
                     <li>
-                        <button class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3" data-tab="contactos">
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="contactos">
                             <i data-lucide="mail" class="w-5 h-5"></i>
                             Contactos
                         </button>
@@ -125,11 +144,11 @@
 
         <!-- Main Content -->
         <main class="flex-1 p-8">
-            
+
             <!-- Dashboard Tab -->
             <div id="dashboard-tab" class="tab-panel">
                 <h1 class="text-3xl font-bold mb-8">Dashboard</h1>
-                
+
                 <!-- Stats Grid -->
                 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                     <div class="admin-card">
@@ -140,7 +159,7 @@
                         <div class="stat-number" id="stat-produtos">0</div>
                         <p class="text-sm text-gray-500 mt-2">Produtos ativos</p>
                     </div>
-                    
+
                     <div class="admin-card">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-600 font-semibold">Encomendas</h3>
@@ -149,7 +168,7 @@
                         <div class="stat-number" id="stat-encomendas">0</div>
                         <p class="text-sm text-gray-500 mt-2">Total de encomendas</p>
                     </div>
-                    
+
                     <div class="admin-card">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-600 font-semibold">Clientes</h3>
@@ -158,7 +177,7 @@
                         <div class="stat-number" id="stat-clientes">0</div>
                         <p class="text-sm text-gray-500 mt-2">Clientes registados</p>
                     </div>
-                    
+
                     <div class="admin-card">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-600 font-semibold">Contactos</h3>
@@ -180,7 +199,7 @@
                             </div>
                         </div>
                     </div>
-                    
+
                     <div class="admin-card">
                         <h3 class="font-bold text-lg mb-4">Contactos Recentes</h3>
                         <div id="recent-contacts" class="space-y-3">
@@ -197,7 +216,8 @@
             <div id="bases-tab" class="tab-panel hidden">
                 <div class="flex justify-between items-center mb-8">
                     <h1 class="text-3xl font-bold">Bases de Fixação</h1>
-                    <button id="add-base-btn" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                    <button id="add-base-btn"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
                         <i data-lucide="plus" class="w-5 h-5"></i>
                         Adicionar Base
                     </button>
@@ -233,7 +253,8 @@
             <div id="produtos-tab" class="tab-panel hidden">
                 <div class="flex justify-between items-center mb-8">
                     <h1 class="text-3xl font-bold">Gestão de Produtos</h1>
-                    <button id="add-product-btn" class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                    <button id="add-product-btn"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
                         <i data-lucide="plus" class="w-5 h-5"></i>
                         Adicionar Produto
                     </button>
@@ -272,7 +293,7 @@
             <!-- Encomendas Tab -->
             <div id="encomendas-tab" class="tab-panel hidden">
                 <h1 class="text-3xl font-bold mb-8">Gestão de Encomendas</h1>
-                
+
                 <div class="admin-card">
                     <div class="table-container">
                         <table id="orders-table">
@@ -301,7 +322,7 @@
             <!-- Clientes Tab -->
             <div id="clientes-tab" class="tab-panel hidden">
                 <h1 class="text-3xl font-bold mb-8">Gestão de Clientes</h1>
-                
+
                 <div class="admin-card">
                     <div class="table-container">
                         <table id="clients-table">
@@ -330,7 +351,7 @@
             <!-- Contactos Tab -->
             <div id="contactos-tab" class="tab-panel hidden">
                 <h1 class="text-3xl font-bold mb-8">Mensagens de Contacto</h1>
-                
+
                 <div class="admin-card">
                     <div class="table-container">
                         <table id="contacts-table">
@@ -369,10 +390,10 @@
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            
+
             <form id="product-form" class="space-y-4">
                 <input type="hidden" id="product-id">
-                
+
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Nome do Produto *</label>
@@ -426,7 +447,8 @@
                                 <p class="text-xs font-semibold text-gray-700">Template carregado</p>
                                 <p id="svg-preview-status" class="text-xs text-gray-500 mt-1">Pronto para gravar</p>
                             </div>
-                            <button type="button" id="open-svg-preview" class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition">
+                            <button type="button" id="open-svg-preview"
+                                class="px-4 py-2 bg-white border border-gray-300 text-gray-700 rounded-lg font-semibold hover:bg-gray-100 transition">
                                 Ver Preview
                             </button>
                         </div>
@@ -435,8 +457,10 @@
 
                 <div>
                     <label class="form-label">Bases de Fixação Disponíveis</label>
-                    <p class="text-xs text-gray-500 mb-2">Selecione as bases que podem ser escolhidas neste produto e marque uma como predefinida.</p>
-                    <div id="product-bases-assignments" class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 max-h-48 overflow-y-auto">
+                    <p class="text-xs text-gray-500 mb-2">Selecione as bases que podem ser escolhidas neste produto e
+                        marque uma como predefinida.</p>
+                    <div id="product-bases-assignments"
+                        class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 max-h-48 overflow-y-auto">
                         <p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>
                     </div>
                 </div>
@@ -447,10 +471,12 @@
                 </div>
 
                 <div class="flex gap-3 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                         Guardar Produto
                     </button>
-                    <button type="button" id="cancel-modal" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                    <button type="button" id="cancel-modal"
+                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
                         Cancelar
                     </button>
                 </div>
@@ -475,7 +501,8 @@
                 </div>
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="base-descricao" rows="2" class="form-input" placeholder="Descrição curta da base"></textarea>
+                    <textarea id="base-descricao" rows="2" class="form-input"
+                        placeholder="Descrição curta da base"></textarea>
                 </div>
                 <div>
                     <label class="form-label">URL da Imagem *</label>
@@ -484,7 +511,8 @@
                 <div class="grid grid-cols-2 gap-4">
                     <div>
                         <label class="form-label">Preço Extra (€) *</label>
-                        <input type="number" id="base-preco-extra" step="0.01" min="0" value="0" required class="form-input">
+                        <input type="number" id="base-preco-extra" step="0.01" min="0" value="0" required
+                            class="form-input">
                     </div>
                     <div>
                         <label class="form-label">Ordem</label>
@@ -496,10 +524,12 @@
                     <label class="text-sm font-semibold">Base Ativa</label>
                 </div>
                 <div class="flex gap-3 pt-4">
-                    <button type="submit" class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                         Guardar Base
                     </button>
-                    <button type="button" id="cancel-base-modal" class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                    <button type="button" id="cancel-base-modal"
+                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
                         Cancelar
                     </button>
                 </div>
@@ -516,16 +546,18 @@
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
-            
+
             <div id="contact-details" class="space-y-4">
                 <!-- Contact details will be loaded here -->
             </div>
 
             <div class="flex gap-3 pt-6">
-                <button id="mark-responded" class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
+                <button id="mark-responded"
+                    class="flex-1 bg-green-600 text-white py-3 rounded-lg font-bold hover:bg-green-700 transition">
                     Marcar como Respondido
                 </button>
-                <button class="close-contact-modal px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                <button
+                    class="close-contact-modal px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
                     Fechar
                 </button>
             </div>
@@ -533,26 +565,34 @@
     </div>
 
     <div id="order-modal" class="modal-overlay hidden">
-        <div class="modal-content w-full max-w-5xl" style="padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 92vh;">
+        <div class="modal-content w-full max-w-5xl"
+            style="padding: 0; overflow: hidden; display: flex; flex-direction: column; max-height: 92vh;">
 
             <!-- Header -->
-            <div style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;">
+            <div
+                style="display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;">
                 <div style="display: flex; align-items: center; gap: 0.75rem;">
-                    <div style="width: 2.25rem; height: 2.25rem; background: #eff6ff; border-radius: 0.625rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
+                    <div
+                        style="width: 2.25rem; height: 2.25rem; background: #eff6ff; border-radius: 0.625rem; display: flex; align-items: center; justify-content: center; flex-shrink: 0;">
                         <i data-lucide="package" style="width: 1.125rem; height: 1.125rem; color: #2563eb;"></i>
                     </div>
                     <div>
-                        <h2 style="font-size: 0.9375rem; font-weight: 700; color: #111827; margin: 0;">Detalhe da Encomenda</h2>
+                        <h2 style="font-size: 0.9375rem; font-weight: 700; color: #111827; margin: 0;">Detalhe da
+                            Encomenda</h2>
                         <p style="font-size: 0.6875rem; color: #9ca3af; margin: 0.1rem 0 0;" id="order-modal-meta"></p>
                     </div>
                 </div>
-                <button type="button" class="close-order-modal" style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;" onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
+                <button type="button" class="close-order-modal"
+                    style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;"
+                    onmouseover="this.style.background='#f9fafb'" onmouseout="this.style.background='transparent'">
                     <i data-lucide="x" style="width: 1.125rem; height: 1.125rem;"></i>
                 </button>
             </div>
 
             <!-- Summary strip -->
-            <div id="order-summary-block" style="padding: 0.75rem 1.5rem; background: #f9fafb; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;"></div>
+            <div id="order-summary-block"
+                style="padding: 0.75rem 1.5rem; background: #f9fafb; border-bottom: 1px solid #f3f4f6; flex-shrink: 0;">
+            </div>
 
             <!-- Body: main + sidebar -->
             <div style="display: flex; flex: 1; overflow: hidden; min-height: 0;">
@@ -560,11 +600,15 @@
                 <!-- Main content -->
                 <div style="flex: 1; overflow-y: auto; min-width: 0; border-right: 1px solid #f3f4f6;">
                     <section style="padding: 1.25rem 1.5rem; border-bottom: 1px solid #f3f4f6;">
-                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.875rem;">Itens &amp; Design</p>
+                        <p
+                            style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.875rem;">
+                            Itens &amp; Design</p>
                         <div id="order-items-list"></div>
                     </section>
                     <section style="padding: 1.25rem 1.5rem;">
-                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.75rem;">Histórico de Estado</p>
+                        <p
+                            style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0 0 0.75rem;">
+                            Histórico de Estado</p>
                         <div id="order-history-list"></div>
                     </section>
                 </div>
@@ -573,22 +617,32 @@
                 <div style="width: 17rem; flex-shrink: 0; overflow-y: auto; display: flex; flex-direction: column;">
                     <div id="order-customer-block" style="padding: 1.25rem; border-bottom: 1px solid #f3f4f6;"></div>
                     <div style="padding: 1.25rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                        <p style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0;">Atualizar</p>
+                        <p
+                            style="font-size: 0.625rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: #9ca3af; margin: 0;">
+                            Atualizar</p>
                         <div>
                             <label class="form-label">Estado</label>
                             <select id="order-status-select" class="form-input" style="font-size: 0.8125rem;"></select>
                         </div>
                         <div>
                             <label class="form-label">Código de Tracking</label>
-                            <input id="order-tracking-code" type="text" class="form-input" style="font-size: 0.8125rem;" placeholder="Ex: CTT123456789PT">
+                            <input id="order-tracking-code" type="text" class="form-input" style="font-size: 0.8125rem;"
+                                placeholder="Ex: CTT123456789PT">
                         </div>
                         <div>
                             <label class="form-label">Notas Internas</label>
-                            <textarea id="order-public-notes" rows="3" class="form-input" style="font-size: 0.8125rem;" placeholder="Notas para equipa"></textarea>
+                            <textarea id="order-public-notes" rows="3" class="form-input" style="font-size: 0.8125rem;"
+                                placeholder="Notas para equipa"></textarea>
                         </div>
                         <div style="display: flex; gap: 0.5rem; padding-top: 0.25rem;">
-                            <button type="button" id="save-order-btn" style="flex: 1; background: #2563eb; color: white; padding: 0.5rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.8125rem; border: none; cursor: pointer; transition: background 0.15s;" onmouseover="this.style.background='#1d4ed8'" onmouseout="this.style.background='#2563eb'">Guardar</button>
-                            <button type="button" class="close-order-modal" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: none; cursor: pointer;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">Fechar</button>
+                            <button type="button" id="save-order-btn"
+                                style="flex: 1; background: #2563eb; color: white; padding: 0.5rem; border-radius: 0.5rem; font-weight: 700; font-size: 0.8125rem; border: none; cursor: pointer; transition: background 0.15s;"
+                                onmouseover="this.style.background='#1d4ed8'"
+                                onmouseout="this.style.background='#2563eb'">Guardar</button>
+                            <button type="button" class="close-order-modal"
+                                style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; font-weight: 500; border: none; cursor: pointer;"
+                                onmouseover="this.style.background='#e5e7eb'"
+                                onmouseout="this.style.background='#f3f4f6'">Fechar</button>
                         </div>
                     </div>
                 </div>
@@ -601,20 +655,29 @@
     <div id="design-viewer-modal" class="modal-overlay hidden" style="z-index: 200;">
         <div class="modal-content w-full max-w-lg" style="padding: 1.5rem;">
             <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem;">
-                <h3 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0;" id="design-viewer-title">Design do Cliente</h3>
-                <button type="button" id="close-design-viewer" style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;" onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
+                <h3 style="font-size: 1rem; font-weight: 700; color: #111827; margin: 0;" id="design-viewer-title">
+                    Design do Cliente</h3>
+                <button type="button" id="close-design-viewer"
+                    style="width: 2rem; height: 2rem; border-radius: 9999px; border: none; background: transparent; display: flex; align-items: center; justify-content: center; color: #9ca3af; cursor: pointer;"
+                    onmouseover="this.style.background='#f3f4f6'" onmouseout="this.style.background='transparent'">
                     <i data-lucide="x" style="width: 1.125rem; height: 1.125rem;"></i>
                 </button>
             </div>
-            <div style="display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%) 0 0 / 16px 16px; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; min-height: 200px;">
-                <img id="design-viewer-img" src="" alt="Design do cliente" style="max-height: 320px; max-width: 100%; object-fit: contain;">
+            <div
+                style="display: flex; align-items: center; justify-content: center; background: repeating-conic-gradient(#e5e7eb 0% 25%, white 0% 50%) 0 0 / 16px 16px; border-radius: 0.75rem; border: 1px solid #e5e7eb; padding: 1rem; min-height: 200px;">
+                <img id="design-viewer-img" src="" alt="Design do cliente"
+                    style="max-height: 320px; max-width: 100%; object-fit: contain;">
             </div>
             <div style="display: flex; gap: 0.5rem; margin-top: 1rem;">
-                <a id="design-viewer-download" href="#" download="design.svg" style="display: none; align-items: center; gap: 0.5rem; font-size: 0.8125rem; padding: 0.5rem 1rem; background: #2563eb; color: white; border-radius: 0.5rem; font-weight: 500; text-decoration: none;">
+                <a id="design-viewer-download" href="#" download="design.svg"
+                    style="display: none; align-items: center; gap: 0.5rem; font-size: 0.8125rem; padding: 0.5rem 1rem; background: #2563eb; color: white; border-radius: 0.5rem; font-weight: 500; text-decoration: none;">
                     <i data-lucide="download" style="width: 0.875rem; height: 0.875rem;"></i>
                     Download SVG
                 </a>
-                <button type="button" id="close-design-viewer-2" style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; border: none; cursor: pointer;" onmouseover="this.style.background='#e5e7eb'" onmouseout="this.style.background='#f3f4f6'">Fechar</button>
+                <button type="button" id="close-design-viewer-2"
+                    style="padding: 0.5rem 1rem; background: #f3f4f6; color: #374151; border-radius: 0.5rem; font-size: 0.8125rem; border: none; cursor: pointer;"
+                    onmouseover="this.style.background='#e5e7eb'"
+                    onmouseout="this.style.background='#f3f4f6'">Fechar</button>
             </div>
         </div>
     </div>
@@ -624,21 +687,25 @@
             <div class="flex justify-between items-center mb-6">
                 <div>
                     <h2 class="text-2xl font-bold">Preview do Template SVG</h2>
-                    <p class="text-sm text-gray-500 mt-1">Vista aproximada da area de trabalho que o cliente vera no personalizador.</p>
+                    <p class="text-sm text-gray-500 mt-1">Vista aproximada da area de trabalho que o cliente vera no
+                        personalizador.</p>
                 </div>
                 <button type="button" class="close-svg-preview text-gray-500 hover:text-gray-700">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 p-6 bg-slate-100" style="background-image: linear-gradient(rgba(15,23,42,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.06) 1px, transparent 1px); background-size: 20px 20px;">
-                <div class="mx-auto relative bg-white shadow-2xl overflow-hidden" style="width: min(100%, 800px); aspect-ratio: 4 / 3;">
+            <div class="rounded-2xl border border-gray-200 p-6 bg-slate-100"
+                style="background-image: linear-gradient(rgba(15,23,42,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.06) 1px, transparent 1px); background-size: 20px 20px;">
+                <div class="mx-auto relative bg-white shadow-2xl overflow-hidden"
+                    style="width: min(100%, 800px); aspect-ratio: 4 / 3;">
                     <div id="svg-preview-canvas" class="absolute inset-0"></div>
                 </div>
             </div>
 
             <div class="flex justify-end pt-6">
-                <button type="button" class="close-svg-preview px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                <button type="button"
+                    class="close-svg-preview px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
                     Fechar
                 </button>
             </div>
@@ -650,5 +717,5 @@
     <script src="/assets/js/pages/admin.js?v=20260323m"></script>
     <script>lucide.createIcons();</script>
 </body>
-</html>
 
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,7 +11,10 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/logic.js"></script>
 </head>
+
 <body class="app-page bg-gray-50 min-h-screen">
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -18,7 +22,8 @@
                 <a href="/" aria-label="IberFlag">
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
-                <a href="/produtos.html" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
+                <a href="/produtos.html"
+                    class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
                     <i data-lucide="arrow-left" class="w-4 h-4"></i>
                     Voltar aos produtos
                 </a>
@@ -30,17 +35,23 @@
         <section class="w-full">
             <div class="rounded-2xl border border-gray-200 bg-white shadow-sm">
                 <div class="p-6 md:p-8 max-w-2xl mx-auto text-center">
-                    <div class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold">
+                    <div
+                        class="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-gray-100 border border-gray-200 text-gray-700 text-xs font-semibold">
                         <i data-lucide="package-search" class="w-3 h-3"></i>
                         Tracking de encomendas
                     </div>
 
-                    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-4 leading-tight">Acompanhe a sua encomenda</h1>
-                    <p class="text-gray-600 text-sm md:text-base mt-3">Insira o codigo identificador para ver estado, tracking e produtos associados.</p>
+                    <h1 class="text-3xl md:text-4xl font-extrabold text-gray-900 mt-4 leading-tight">Acompanhe a sua
+                        encomenda</h1>
+                    <p class="text-gray-600 text-sm md:text-base mt-3">Insira o codigo identificador para ver estado,
+                        tracking e produtos associados.</p>
 
                     <form id="orders-search-form" class="mt-6 flex flex-col md:flex-row items-stretch gap-2.5">
-                        <input id="orders-identifier" name="identifier" type="text" required class="form-input h-12 text-base font-semibold tracking-wide md:flex-1" placeholder="IBF1234567890" autocomplete="off">
-                        <button id="orders-search-btn" type="submit" class="h-12 px-6 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition inline-flex items-center justify-center gap-2 whitespace-nowrap">
+                        <input id="orders-identifier" name="identifier" type="text" required
+                            class="form-input h-12 text-base font-semibold tracking-wide md:flex-1"
+                            placeholder="IBF1234567890" autocomplete="off">
+                        <button id="orders-search-btn" type="submit"
+                            class="h-12 px-6 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition inline-flex items-center justify-center gap-2 whitespace-nowrap">
                             <i data-lucide="search" class="w-4 h-4"></i>
                             Consultar
                         </button>
@@ -56,5 +67,5 @@
     <script src="/assets/js/pages/encomendas.js"></script>
     <script>lucide.createIcons();</script>
 </body>
-</html>
 
+</html>

@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,10 +10,13 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/logic.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
+
 <body class="app-page checkout-page bg-slate-50">
-    
+
     <!-- Navigation -->
     <nav class="checkout-nav">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -56,10 +60,10 @@
     <section class="py-10 md:py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                
+
                 <!-- Checkout Form -->
                 <div class="lg:col-span-2 space-y-6">
-                    
+
                     <!-- Customer Info -->
                     <div class="app-surface checkout-surface-card p-6 md:p-7">
                         <div class="mb-6">
@@ -77,7 +81,7 @@
                                     <input type="email" name="email" required class="form-input">
                                 </div>
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Telefone *</label>
@@ -93,16 +97,17 @@
                                 <label class="form-label">Empresa (opcional)</label>
                                 <input type="text" name="empresa" class="form-input">
                             </div>
-                            
+
                             <div>
                                 <label class="form-label">Morada *</label>
                                 <input type="text" name="morada" required class="form-input">
                             </div>
-                            
+
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Código Postal *</label>
-                                    <input type="text" name="codigo_postal" required class="form-input" placeholder="0000-000">
+                                    <input type="text" name="codigo_postal" required class="form-input"
+                                        placeholder="0000-000">
                                 </div>
                                 <div>
                                     <label class="form-label">Cidade *</label>
@@ -112,7 +117,8 @@
 
                             <div>
                                 <label class="form-label">Notas da Encomenda (opcional)</label>
-                                <textarea name="notas" rows="3" class="form-input" placeholder="Informações adicionais sobre a entrega..."></textarea>
+                                <textarea name="notas" rows="3" class="form-input"
+                                    placeholder="Informações adicionais sobre a entrega..."></textarea>
                             </div>
                         </form>
                     </div>
@@ -123,7 +129,7 @@
                             <h2 class="app-section-title">Método de Pagamento</h2>
                             <p class="app-section-subtitle mt-1">Checkout seguro com cartão.</p>
                         </div>
-                        
+
                         <div class="space-y-4">
                             <label class="checkout-payment-option flex items-center p-4 rounded-xl cursor-pointer">
                                 <input type="radio" name="payment" value="stripe" checked class="custom-radio">
@@ -143,10 +149,11 @@
                                     <i data-lucide="info" class="w-5 h-5 text-slate-900 flex-shrink-0 mt-0.5"></i>
                                     <div class="text-sm text-slate-700">
                                         <p class="font-semibold mb-2">Integração Stripe em Desenvolvimento</p>
-                                        <p>O sistema de pagamento via Stripe será integrado em breve. Por enquanto, este é um placeholder para demonstração.</p>
+                                        <p>O sistema de pagamento via Stripe será integrado em breve. Por enquanto, este
+                                            é um placeholder para demonstração.</p>
                                     </div>
                                 </div>
-                                
+
                                 <!-- Stripe Placeholder -->
                                 <div class="space-y-3">
                                     <div>
@@ -176,13 +183,16 @@
                         <label class="flex items-start gap-3 cursor-pointer">
                             <input type="checkbox" id="terms-checkbox" required class="custom-checkbox mt-1">
                             <span class="text-sm text-gray-700">
-                                Li e aceito os <a href="/termos.html" class="text-blue-600 hover:underline">Termos e Condições</a> e a 
-                                <a href="/privacidade.html" class="text-blue-600 hover:underline">Política de Privacidade</a>
+                                Li e aceito os <a href="/termos.html" class="text-blue-600 hover:underline">Termos e
+                                    Condições</a> e a
+                                <a href="/privacidade.html" class="text-blue-600 hover:underline">Política de
+                                    Privacidade</a>
                             </span>
                         </label>
                     </div>
 
-                    <button id="place-order-btn" class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
+                    <button id="place-order-btn"
+                        class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
                         <i data-lucide="lock" class="w-5 h-5"></i>
                         Finalizar Encomenda
                     </button>
@@ -193,7 +203,7 @@
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da Encomenda</h2>
                         <p class="app-section-subtitle mb-6">Revise os itens e os totais antes de finalizar.</p>
-                        
+
                         <div id="order-items" class="space-y-4 mb-6">
                             <!-- Items will be loaded here -->
                         </div>
@@ -218,7 +228,8 @@
                                 <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
                                 <div class="text-sm text-emerald-900">
                                     <p class="font-semibold">Envio Grátis</p>
-                                    <p id="free-shipping-msg">Faltam <span id="remaining">0.00€</span> para envio grátis</p>
+                                    <p id="free-shipping-msg">Faltam <span id="remaining">0.00€</span> para envio grátis
+                                    </p>
                                 </div>
                             </div>
                         </div>
@@ -255,5 +266,5 @@
     <script src="/assets/js/pages/checkout.js"></script>
     <script>lucide.createIcons();</script>
 </body>
-</html>
 
+</html>

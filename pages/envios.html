@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -9,8 +10,11 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/logic.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css">
 </head>
+
 <body class="app-page bg-gray-50">
     <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
@@ -25,10 +29,12 @@
                     <a href="/sobre.html" class="nav-link">Sobre Nós</a>
                     <a href="/faq.html" class="nav-link">FAQ</a>
                     <a href="/contacto.html" class="nav-link">Contacto</a>
-                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                    <button id="cart-btn"
+                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Carrinho</span>
-                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
                 <button id="mobile-menu-btn" class="md:hidden text-gray-700">
@@ -49,7 +55,7 @@
     <!-- Content -->
     <section class="py-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-            
+
             <!-- Shipping Options -->
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
                 <div class="bg-white rounded-xl p-6 border-2 border-blue-600">
@@ -153,7 +159,8 @@
                 <ul class="space-y-3 text-gray-700">
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Os prazos de entrega começam a contar após aprovação do design e confirmação de pagamento</span>
+                        <span>Os prazos de entrega começam a contar após aprovação do design e confirmação de
+                            pagamento</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
@@ -165,11 +172,13 @@
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Para entregas urgentes ao fim de semana, contacte-nos para verificar disponibilidade</span>
+                        <span>Para entregas urgentes ao fim de semana, contacte-nos para verificar
+                            disponibilidade</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Todos os produtos são cuidadosamente embalados para garantir que chegam em perfeitas condições</span>
+                        <span>Todos os produtos são cuidadosamente embalados para garantir que chegam em perfeitas
+                            condições</span>
                     </li>
                 </ul>
             </div>
@@ -187,11 +196,29 @@
                             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
+                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
                     <div class="flex gap-4">
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="20" height="20" x="2" y="2" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><line x1="17.5" x2="17.51" y1="6.5" y2="6.5"/></svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"/><rect width="4" height="12" x="2" y="9"/><circle cx="4" cy="4" r="2"/></svg></a>
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                            </svg></a>
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="20" x="2" y="2" rx="5" />
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                            </svg></a>
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+                                <rect width="4" height="12" x="2" y="9" />
+                                <circle cx="4" cy="4" r="2" />
+                            </svg></a>
                     </div>
                 </div>
                 <div>
@@ -209,7 +236,8 @@
                     <ul class="space-y-3">
                         <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
                         <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a>
+                        </li>
                         <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
                     </ul>
                 </div>
@@ -227,7 +255,8 @@
     </footer>
 
     <!-- Cart Sidebar -->
-    <div id="cart-sidebar" class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
+    <div id="cart-sidebar"
+        class="fixed top-0 right-0 h-full w-full md:w-96 bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-6 border-b">
                 <h3 class="text-xl font-bold">Carrinho de Compras</h3>
@@ -246,7 +275,8 @@
                     <span>Total:</span>
                     <span id="cart-total">0.00€</span>
                 </div>
-                <a href="/checkout.html" class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                <a href="/checkout.html"
+                    class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                     Finalizar Encomenda
                 </a>
             </div>
@@ -257,5 +287,5 @@
     <script src="/assets/js/core/logic.js"></script>
     <script>lucide.createIcons();</script>
 </body>
-</html>
 
+</html>
