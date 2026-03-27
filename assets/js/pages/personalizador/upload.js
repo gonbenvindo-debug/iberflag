@@ -211,16 +211,11 @@ Object.assign(DesignEditor.prototype, {
         };
 
         const movePointer = (event) => {
-            if (!this.uploadCropState?.dragging) {
-                console.log('❌ movePointer - sem dragging');
-                return;
-            }
+            if (!this.uploadCropState?.dragging) return;
             if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
 
             const state = this.uploadCropState;
             const drag = state.dragging;
-            console.log('🔄 movePointer - mode:', drag.mode, 'handle:', drag.handle);
-
             const dx = event.clientX - drag.startX;
             const dy = event.clientY - drag.startY;
             const minSize = 36;
@@ -233,7 +228,6 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            console.log('✏️ RESIZE - handle:', drag.handle, 'dx:', dx, 'dy:', dy);
             let next = { ...drag.rect };
 
             {
@@ -448,16 +442,11 @@ Object.assign(DesignEditor.prototype, {
                 state.naturalHeight = image.naturalHeight;
                 this.layoutUploadCropModal(true);
 
-                // Configurar event listeners dos handles DEPOIS que tudo está carregado
                 const handles = selection.querySelectorAll('.upload-crop-handle');
-                console.log('🔧 Configurando handles:', handles.length);
-
                 handles.forEach(handle => {
                     const handleName = handle.dataset.handle;
-                    console.log('🔧 Handle:', handleName);
 
                     handle.addEventListener('mousedown', (event) => {
-                        console.log('✅ MOUSEDOWN handle:', handleName);
                         event.stopPropagation();
                         event.preventDefault();
 
@@ -470,11 +459,9 @@ Object.assign(DesignEditor.prototype, {
                             startY: event.clientY,
                             rect: { ...this.uploadCropState.selectionRect }
                         };
-                        console.log('✅ Dragging definido:', this.uploadCropState.dragging);
                     });
 
                     handle.addEventListener('touchstart', (event) => {
-                        console.log('✅ TOUCHSTART handle:', handleName);
                         event.stopPropagation();
                         event.preventDefault();
 
@@ -488,7 +475,6 @@ Object.assign(DesignEditor.prototype, {
                             startY: touch.clientY,
                             rect: { ...this.uploadCropState.selectionRect }
                         };
-                        console.log('✅ Dragging definido (touch):', this.uploadCropState.dragging);
                     }, { passive: false });
                 });
             };

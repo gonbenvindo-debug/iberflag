@@ -10,8 +10,6 @@ Object.assign(DesignEditor.prototype, {
         this.editDesignId = urlParams.get('design');
         this.productId = productId;
 
-        console.log('1. loadProduct iniciado - productId:', productId);
-
         if (!productId) {
             window.location.href = '/produtos.html';
             return;
@@ -22,7 +20,6 @@ Object.assign(DesignEditor.prototype, {
 
         if (typeof supabaseClient !== 'undefined' && Number.isFinite(numericProductId)) {
             try {
-                console.log('2. Carregando produto do Supabase...');
                 const { data, error } = await supabaseClient
                     .from('produtos')
                     .select('*')
@@ -31,9 +28,6 @@ Object.assign(DesignEditor.prototype, {
 
                 if (!error && data) {
                     dbProduct = data;
-                    console.log('3. Produto carregado do Supabase:', data.nome, 'svg_template:', !!data.svg_template);
-                } else {
-                    console.log('3. Erro ao carregar produto ou produto não encontrado:', error);
                 }
             } catch (error) {
                 console.warn('Falha ao carregar produto da base de dados:', error);
@@ -41,8 +35,6 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.currentProduct = dbProduct || initialProducts.find(p => p.id == productId);
-
-        console.log('4. currentProduct definido:', this.currentProduct?.nome);
 
         if (!this.currentProduct) {
             showToast('Produto não encontrado', 'error');
@@ -53,13 +45,9 @@ Object.assign(DesignEditor.prototype, {
         document.getElementById('product-name').textContent = this.currentProduct.nome;
         await this.loadProductBases();
 
-        // Load SVG template if exists
-        console.log('5. Verificando svg_template:', !!this.currentProduct.svg_template);
         if (this.currentProduct.svg_template) {
-            console.log('6. Carregando SVG template...');
             this.loadSVGTemplate(this.currentProduct.svg_template);
         } else {
-            console.log('6. Sem SVG template, usando área padrão');
             this.setDefaultPrintArea();
         }
 
