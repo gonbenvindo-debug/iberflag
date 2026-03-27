@@ -141,6 +141,44 @@ docs: atualizar documentação
 - Usar HTTPS sempre
 - Sanitizar dados de usuário
 
+### **PERMISSÕES E COMANDOS**
+✅ **100% DE PERMISSÃO** para executar comandos necessários
+✅ **SEGURANÇA GARANTIDA** - Sempre verificar segurança antes
+✅ **COMANDOS NECESSÁRIOS** - Executar apenas o que for essencial
+
+### **GESTÃO DE TOKENS E SECRETS**
+✅ **SALVAR TOKENS** em `.local` para uso futuro:
+   - Supabase CLI tokens
+   - Vercel tokens
+   - Cloudflare tokens
+   - Outros tokens CLI relevantes
+✅ **NUNCA EXPOR** tokens no código
+✅ **USAR VARIÁVEIS** de ambiente sempre
+
+### **LIMPEZA DE ARQUIVOS**
+❌ **NUNCA DEIXAR** arquivos temporários:
+   - Sem `.bak`, `.old`, `.tmp`
+   - Sem arquivos de teste
+   - Sem arquivos de exemplo
+✅ **APAGAR IMEDIATAMENTE** após testes
+✅ **ARQUIVAR SE NECESSÁRIO** em pasta própria:
+   ```
+   /_archive
+     /testes
+     /temp
+     /old-versions
+   ```
+✅ **MANTER RAIZ LIMPA** - apenas arquivos do projeto
+
+### **AUTOMAÇÃO E EXECUÇÃO**
+✅ **EXECUTAR SCRIPTS DIRETAMENTE** - Nunca criar arquivos para o usuário executar
+✅ **USAR POWERSHELL DIRECTAMENTE** - Executar comandos sem criar scripts
+✅ **MÍNIMA INTERAÇÃO** - Pedir apenas o essencial (ex: abrir URL e colar código)
+✅ **PEDIR CHAVES CLI** - Se precisar de acesso, pedir diretamente a chave
+❌ **NUNCA CRIAR** arquivos de instruções
+❌ **NUNCA CRIAR** scripts para o usuário executar
+❌ **NUNCA CRIAR** arquivos .md com passos manuais
+
 ---
 
 **ESTAS REGRAS SÃO OBRIGATÓRIAS E DEVEM SER SEGUIDAS RIGIDOSAMENTE!**
