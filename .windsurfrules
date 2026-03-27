@@ -3,7 +3,7 @@
 ## 📋 PRINCÍPIOS FUNDAMENTAIS
 
 ### 1. **MOBILE-FIRST SEMPRE**
-- Todo CSS deve ser desenvolvido primeiro para mobile
+- Todo CSS deve ser desenvolvido para computador e mobile
 - Use `@media (min-width: 1024px)` para desktop
 - Buttons touch-friendly: mínimo 44px
 - Teste layouts mobile antes de desktop
@@ -175,6 +175,8 @@ docs: atualizar documentação
 ✅ **USAR POWERSHELL DIRECTAMENTE** - Executar comandos sem criar scripts
 ✅ **MÍNIMA INTERAÇÃO** - Pedir apenas o essencial (ex: abrir URL e colar código)
 ✅ **PEDIR CHAVES CLI** - Se precisar de acesso, pedir diretamente a chave
+✅ **EXECUTAR COMANDOS NECESSÁRIOS** - Executar comandos necessários sem pedir permissão ao usuário
+✅ **COMPLETAR AUTOMATICAMENTE** - Sempre fornecer os valores necessários quando comandos pedirem input
 ❌ **NUNCA CRIAR** arquivos de instruções
 ❌ **NUNCA CRIAR** scripts para o usuário executar
 ❌ **NUNCA CRIAR** arquivos .md com passos manuais

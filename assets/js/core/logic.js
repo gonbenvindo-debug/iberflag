@@ -1,7 +1,7 @@
 // ===== SUPABASE CONFIGURATION =====
 const APP_CONFIG = (typeof window !== 'undefined' && window.APP_CONFIG) ? window.APP_CONFIG : {};
-const SUPABASE_URL = APP_CONFIG.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
-const SUPABASE_ANON_KEY = APP_CONFIG.SUPABASE_ANON_KEY || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
+const SUPABASE_URL = APP_CONFIG.SUPABASE_URL || process.env.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
+const SUPABASE_ANON_KEY = APP_CONFIG.SUPABASE_ANON_KEY || process.env.SUPABASE_ANON_KEY || 'fallback-key';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
@@ -270,7 +270,7 @@ cart = normalizeCartItems(getStoredCart());
 // ===== RENDER PRODUCTS =====
 function renderProducts(products) {
     if (!productsContainer) return; // Safety check for pages without products container
-    
+
     if (!products || products.length === 0) {
         productsContainer.innerHTML = '<p class="text-center col-span-full py-10 text-gray-500">Nenhum produto encontrado.</p>';
         return;
@@ -298,7 +298,7 @@ function renderProducts(products) {
             </div>
         </div>
     `).join('');
-    
+
     // Reinitialize Lucide icons
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
@@ -334,10 +334,10 @@ function updateCart() {
     LEGACY_CART_STORAGE_KEYS.forEach((key) => {
         localStorage.setItem(key, JSON.stringify(cart));
     });
-    
+
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
-    
+
     if (cartCount) {
         if (totalItems > 0) {
             cartCount.textContent = totalItems;
@@ -346,7 +346,7 @@ function updateCart() {
             cartCount.classList.add('hidden');
         }
     }
-    
+
     // Update mobile cart count
     const cartCountMobile = document.getElementById('cart-count-mobile');
     if (cartCountMobile) {
@@ -388,7 +388,7 @@ function updateCart() {
                 </div>
             `).join('');
         }
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
@@ -404,14 +404,14 @@ function updateCart() {
 function addToCart(productId) {
     // Find product in initial products or fetch from Supabase
     const product = initialProducts.find(p => p.id === productId);
-    
+
     if (!product) {
         showToast('Produto não encontrado', 'error');
         return;
     }
 
     const existingItem = cart.find(item => item.id === productId);
-    
+
     if (existingItem) {
         existingItem.quantity += 1;
     } else {
@@ -484,20 +484,20 @@ function injectOrdersTrackingLink() {
 function showToast(message, type = 'info') {
     const toast = document.createElement('div');
     toast.className = `toast toast-${type}`;
-    
+
     const icon = type === 'success' ? 'check-circle' : type === 'error' ? 'x-circle' : 'info';
-    
+
     toast.innerHTML = `
         <i data-lucide="${icon}" class="w-5 h-5"></i>
         <span>${message}</span>
     `;
-    
+
     document.body.appendChild(toast);
-    
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
-    
+
     setTimeout(() => {
         toast.style.opacity = '0';
         setTimeout(() => toast.remove(), 300);
@@ -508,7 +508,7 @@ function showToast(message, type = 'info') {
 function quickView(productId) {
     const product = initialProducts.find(p => p.id === productId);
     if (!product) return;
-    
+
     showToast('Funcionalidade de visualização rápida em desenvolvimento', 'info');
 }
 
@@ -575,7 +575,7 @@ document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
     updateCart();
     injectOrdersTrackingLink();
-    
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
