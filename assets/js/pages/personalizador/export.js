@@ -10,20 +10,23 @@ Object.assign(DesignEditor.prototype, {
         }
 
         // Obter a imagem atual do elemento selecionado
-        const imgElement = this.selectedElement.element.querySelector('image');
-        if (!imgElement) {
+        const imgElement = this.selectedElement.element;
+        if (!imgElement || imgElement.tagName !== 'image') {
             showToast('Imagem não encontrada', 'error');
             return;
         }
 
-        const currentSrc = imgElement.getAttribute('href') || imgElement.getAttribute('xlink:href');
+        const currentSrc = imgElement.getAttribute('href');
+        if (!currentSrc) {
+            showToast('Fonte da imagem não encontrada', 'error');
+            return;
+        }
 
         // Abrir o modal de crop em modo edição com a imagem atual
         this.openUploadCropModal(currentSrc).then((croppedImageData) => {
             if (croppedImageData) {
                 // Aplicar a imagem cropada ao elemento
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
-                imgElement.setAttribute('xlink:href', croppedImageData.dataUrl);
 
                 // Atualizar as dimensões se necessário
                 if (croppedImageData.width && croppedImageData.height) {
