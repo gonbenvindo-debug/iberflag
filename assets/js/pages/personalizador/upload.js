@@ -378,6 +378,43 @@ Object.assign(DesignEditor.prototype, {
         document.addEventListener('touchend', endTouchPointer);
         document.addEventListener('touchcancel', endTouchPointer);
 
+        // Configurar event listeners dos handles UMA VEZ
+        const handles = selection.querySelectorAll('.upload-crop-handle');
+        handles.forEach(handle => {
+            const handleName = handle.dataset.handle;
+
+            handle.addEventListener('mousedown', (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+
+                if (!this.uploadCropState) return;
+
+                this.uploadCropState.dragging = {
+                    mode: 'resize',
+                    handle: handleName,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    rect: { ...this.uploadCropState.selectionRect }
+                };
+            });
+
+            handle.addEventListener('touchstart', (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+
+                if (!this.uploadCropState || event.touches.length !== 1) return;
+
+                const touch = event.touches[0];
+                this.uploadCropState.dragging = {
+                    mode: 'resize',
+                    handle: handleName,
+                    startX: touch.clientX,
+                    startY: touch.clientY,
+                    rect: { ...this.uploadCropState.selectionRect }
+                };
+            }, { passive: false });
+        });
+
         document.addEventListener('mousemove', (event) => {
             movePointer({ ...event, pointerSource: 'mouse' });
         });
@@ -517,71 +554,6 @@ Object.assign(DesignEditor.prototype, {
         selection.style.width = `${rect.width}px`;
         selection.style.height = `${rect.height}px`;
         selection.classList.remove('hidden');
-
-        // Adicionar event listeners aos handles
-        const handles = selection.querySelectorAll('.upload-crop-handle');
-        console.log('🔧 renderUploadCropSelection - Handles encontrados:', handles.length);
-
-        handles.forEach((handle, index) => {
-            const handleName = handle.dataset.handle;
-            console.log(`🔧 Configurando handle ${index}: ${handleName}`);
-
-            // Remover listeners antigos se existirem
-            if (handle._handleMouseDown) {
-                handle.removeEventListener('mousedown', handle._handleMouseDown);
-            }
-            if (handle._handleTouchStart) {
-                handle.removeEventListener('touchstart', handle._handleTouchStart);
-            }
-
-            // Criar novos listeners
-            handle._handleMouseDown = (event) => {
-                console.log('✅ HANDLE MOUSEDOWN -', handleName, 'clientX:', event.clientX, 'clientY:', event.clientY);
-                event.stopPropagation();
-                event.preventDefault();
-
-                if (!this.uploadCropState) {
-                    console.log('❌ uploadCropState não existe');
-                    return;
-                }
-
-                this.uploadCropState.dragging = {
-                    mode: 'resize',
-                    handle: handleName,
-                    startX: event.clientX,
-                    startY: event.clientY,
-                    rect: { ...this.uploadCropState.selectionRect }
-                };
-
-                console.log('✅ Dragging definido:', this.uploadCropState.dragging);
-            };
-
-            handle._handleTouchStart = (event) => {
-                console.log('✅ HANDLE TOUCHSTART -', handleName);
-                event.stopPropagation();
-                event.preventDefault();
-
-                if (!this.uploadCropState || event.touches.length !== 1) return;
-
-                const touch = event.touches[0];
-                this.uploadCropState.dragging = {
-                    mode: 'resize',
-                    handle: handleName,
-                    startX: touch.clientX,
-                    startY: touch.clientY,
-                    rect: { ...this.uploadCropState.selectionRect }
-                };
-
-                console.log('✅ Dragging definido (touch):', this.uploadCropState.dragging);
-            };
-
-            // Adicionar event listeners
-            handle.addEventListener('mousedown', handle._handleMouseDown);
-            handle.addEventListener('touchstart', handle._handleTouchStart, { passive: false });
-            console.log(`✅ Listeners adicionados ao handle ${handleName}`);
-        });
-
-        console.log('🔧 renderUploadCropSelection concluído');
     },
 
     exportUploadCropSelection() {
