@@ -385,10 +385,14 @@ Object.assign(DesignEditor.prototype, {
         document.addEventListener('touchcancel', endTouchPointer);
 
         document.addEventListener('mousemove', (event) => {
-            movePointer({ ...event, pointerSource: 'mouse' });
+            movePointer({
+                clientX: event.clientX,
+                clientY: event.clientY,
+                pointerSource: 'mouse'
+            });
         });
         document.addEventListener('mouseup', (event) => {
-            endPointer({ ...event, pointerSource: 'mouse' });
+            endPointer({ pointerSource: 'mouse' });
         });
         stage.addEventListener('wheel', handleWheel, { passive: false });
 
