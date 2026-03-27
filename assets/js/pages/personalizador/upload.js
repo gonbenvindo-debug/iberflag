@@ -211,11 +211,16 @@ Object.assign(DesignEditor.prototype, {
         };
 
         const movePointer = (event) => {
-            if (!this.uploadCropState?.dragging) return;
+            if (!this.uploadCropState?.dragging) {
+                console.log('❌ movePointer - sem dragging');
+                return;
+            }
             if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
 
             const state = this.uploadCropState;
             const drag = state.dragging;
+            console.log('🔄 movePointer - mode:', drag.mode, 'handle:', drag.handle);
+
             const dx = event.clientX - drag.startX;
             const dy = event.clientY - drag.startY;
             const minSize = 36;
@@ -228,6 +233,7 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
+            console.log('✏️ RESIZE - handle:', drag.handle, 'dx:', dx, 'dy:', dy);
             let next = { ...drag.rect };
 
             {
