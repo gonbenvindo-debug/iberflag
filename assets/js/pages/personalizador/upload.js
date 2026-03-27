@@ -37,12 +37,12 @@ Object.assign(DesignEditor.prototype, {
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
         this.clearPropertiesSections();
         this.updateSidebarMode();
-        
+
         // Remove class from body to hide properties tab on mobile
         document.body.classList.remove('has-element-selected');
         this.updateLayers();
     },
-    
+
     // ===== ADD ELEMENTS =====
     addText() {
         this.preventSidebarClose();
@@ -59,13 +59,13 @@ Object.assign(DesignEditor.prototype, {
         text.setAttribute('data-editable', 'true');
         text.textContent = 'Clique para editar';
         text.style.cursor = 'move';
-        
+
         this.canvas.appendChild(text);
         this.bringPrintAreaOverlaysToFront();
-        
+
         // Get actual bounding box after adding to DOM
         const bbox = text.getBBox();
-        
+
         const elementData = {
             id: Date.now(),
             element: text,
@@ -82,14 +82,14 @@ Object.assign(DesignEditor.prototype, {
             baseX: parseFloat(text.getAttribute('x')),
             baseY: parseFloat(text.getAttribute('y'))
         };
-        
+
         this.elements.push(elementData);
         this.makeElementInteractive(elementData);
         this.selectElement(elementData);
         this.updateLayers();
         this.saveHistory();
     },
-    
+
     handleImageUpload(e) {
         this.preventSidebarClose();
         const file = e.target.files[0];
@@ -342,7 +342,7 @@ Object.assign(DesignEditor.prototype, {
         stage.addEventListener('mousedown', (event) => {
             startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
         });
-        
+
         // Touch events for mobile
         const startTouchPointer = (event) => {
             if (event.touches.length !== 1) return;
@@ -355,10 +355,10 @@ Object.assign(DesignEditor.prototype, {
                 button: 0,
                 target: event.target,
                 pointerSource: 'touch',
-                preventDefault: () => {}
+                preventDefault: () => { }
             });
         };
-        
+
         const moveTouchPointer = (event) => {
             if (event.touches.length !== 1) return;
             cropLastTouchAt = Date.now();
@@ -371,13 +371,13 @@ Object.assign(DesignEditor.prototype, {
             cropLastTouchAt = Date.now();
             endPointer({ pointerSource: 'touch' });
         };
-        
+
         selection.addEventListener('touchstart', startTouchPointer, { passive: false });
         stage.addEventListener('touchstart', startTouchPointer, { passive: false });
         document.addEventListener('touchmove', moveTouchPointer, { passive: false });
         document.addEventListener('touchend', endTouchPointer);
         document.addEventListener('touchcancel', endTouchPointer);
-        
+
         document.addEventListener('mousemove', (event) => {
             movePointer({ ...event, pointerSource: 'mouse' });
         });
@@ -517,6 +517,56 @@ Object.assign(DesignEditor.prototype, {
         selection.style.width = `${rect.width}px`;
         selection.style.height = `${rect.height}px`;
         selection.classList.remove('hidden');
+
+        // Adicionar event listeners aos handles
+        const handles = selection.querySelectorAll('.upload-crop-handle');
+        handles.forEach(handle => {
+            // Remover listeners antigos se existirem
+            if (handle._handleMouseDown) {
+                handle.removeEventListener('mousedown', handle._handleMouseDown);
+            }
+            if (handle._handleTouchStart) {
+                handle.removeEventListener('touchstart', handle._handleTouchStart);
+            }
+
+            // Criar novos listeners
+            handle._handleMouseDown = (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+
+                if (!this.uploadCropState) return;
+
+                const handleName = handle.dataset.handle;
+                this.uploadCropState.dragging = {
+                    mode: 'resize',
+                    handle: handleName,
+                    startX: event.clientX,
+                    startY: event.clientY,
+                    rect: { ...this.uploadCropState.selectionRect }
+                };
+            };
+
+            handle._handleTouchStart = (event) => {
+                event.stopPropagation();
+                event.preventDefault();
+
+                if (!this.uploadCropState || event.touches.length !== 1) return;
+
+                const touch = event.touches[0];
+                const handleName = handle.dataset.handle;
+                this.uploadCropState.dragging = {
+                    mode: 'resize',
+                    handle: handleName,
+                    startX: touch.clientX,
+                    startY: touch.clientY,
+                    rect: { ...this.uploadCropState.selectionRect }
+                };
+            };
+
+            // Adicionar event listeners
+            handle.addEventListener('mousedown', handle._handleMouseDown);
+            handle.addEventListener('touchstart', handle._handleTouchStart, { passive: false });
+        });
     },
 
     exportUploadCropSelection() {
@@ -692,14 +742,14 @@ Object.assign(DesignEditor.prototype, {
         this.updateLayers();
         this.saveHistory();
     },
-    
+
     addShape(shapeType) {
         this.preventSidebarClose();
         const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
         const baseSize = Math.max(48, Math.min(180, scale.shortSide * 0.28));
         let shape;
-        
+
         if (shapeType === 'rectangle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
             const rectWidth = baseSize * 1.25;
@@ -721,16 +771,16 @@ Object.assign(DesignEditor.prototype, {
             const p3 = `${center.x - half},${center.y + (half * 0.75)}`;
             shape.setAttribute('points', `${p1} ${p2} ${p3}`);
         }
-        
+
         shape.setAttribute('fill', '#3b82f6');
         shape.setAttribute('stroke', 'none');
         shape.setAttribute('stroke-width', '0');
         shape.setAttribute('data-editable', 'true');
         shape.style.cursor = 'move';
-        
+
         this.canvas.appendChild(shape);
         this.bringPrintAreaOverlaysToFront();
-        
+
         const elementData = {
             id: Date.now(),
             element: shape,
@@ -741,14 +791,14 @@ Object.assign(DesignEditor.prototype, {
             stroke: '#000000',
             strokeWidth: 0
         };
-        
+
         this.elements.push(elementData);
         this.makeElementInteractive(elementData);
         this.selectElement(elementData);
         this.updateLayers();
         this.saveHistory();
     },
-    
+
     // ===== ELEMENT INTERACTION =====
 
 });
