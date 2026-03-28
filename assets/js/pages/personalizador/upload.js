@@ -469,7 +469,7 @@ Object.assign(DesignEditor.prototype, {
         this.uploadCropListenersReady = true;
     },
 
-    openUploadCropModal(imageSrc) {
+    openUploadCropModal(imageSrc, initialCropData = null) {
         this.setupUploadCropModalListeners();
 
         const modal = document.getElementById('upload-crop-modal');
@@ -485,6 +485,7 @@ Object.assign(DesignEditor.prototype, {
             const state = {
                 resolve,
                 imageSrc,
+                initialCropData,
                 naturalWidth: 0,
                 naturalHeight: 0,
                 imageRect: { x: 0, y: 0, width: 0, height: 0 },
@@ -586,12 +587,22 @@ Object.assign(DesignEditor.prototype, {
         viewport.style.transform = `scale(${scale})`;
 
         if (resetSelection || !this.uploadCropState.selectionNormalized) {
-            this.uploadCropState.selectionNormalized = {
-                x: 0,
-                y: 0,
-                width: 1,
-                height: 1
-            };
+            // Se ha cropData inicial (imagem ja cortada), usar ele
+            if (this.uploadCropState.initialCropData) {
+                this.uploadCropState.selectionNormalized = {
+                    x: this.uploadCropState.initialCropData.x,
+                    y: this.uploadCropState.initialCropData.y,
+                    width: this.uploadCropState.initialCropData.width,
+                    height: this.uploadCropState.initialCropData.height
+                };
+            } else {
+                this.uploadCropState.selectionNormalized = {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1
+                };
+            }
         }
 
         this.renderUploadCropSelection();

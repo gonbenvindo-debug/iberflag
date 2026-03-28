@@ -21,6 +21,11 @@ Object.assign(DesignEditor.prototype, {
         const currentSrc = imgElement.getAttribute('href');
         const srcToCrop = originalSrc || currentSrc;
 
+        // Obter cropData atual da imagem para mostrar no modal
+        const existingCropData = imgElement.dataset.cropData
+            ? JSON.parse(imgElement.dataset.cropData)
+            : null;
+
         if (!srcToCrop) {
             showToast('Fonte da imagem não encontrada', 'error');
             return;
@@ -28,7 +33,7 @@ Object.assign(DesignEditor.prototype, {
 
         const elementToUpdate = this.selectedElement;
 
-        this.openUploadCropModal(srcToCrop).then((croppedImageData) => {
+        this.openUploadCropModal(srcToCrop, existingCropData).then((croppedImageData) => {
             if (croppedImageData && elementToUpdate) {
                 // Salvar imagem original na primeira vez que cortar
                 if (!imgElement.dataset.originalSrc && currentSrc) {
