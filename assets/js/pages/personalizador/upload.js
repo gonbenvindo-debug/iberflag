@@ -227,8 +227,10 @@ Object.assign(DesignEditor.prototype, {
                 const newOffsetY = drag.offsetY + dy;
 
                 // Limitar pan para nao afastar demasiado da imagem
-                // Permitir mover ate 80% do tamanho da imagem para fora do stage
-                const maxOffsetX = imageRect.width * 0.8;
+                // Desktop: 80% para todos os lados
+                // Mobile: 150% horizontal (mais scroll lateral), 80% vertical
+                const isTouch = event.pointerSource === 'touch';
+                const maxOffsetX = imageRect.width * (isTouch ? 1.5 : 0.8);
                 const maxOffsetY = imageRect.height * 0.8;
                 const minOffsetX = -maxOffsetX;
                 const minOffsetY = -maxOffsetY;
