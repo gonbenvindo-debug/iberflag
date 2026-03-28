@@ -327,7 +327,21 @@ function renderTemplates(templates) {
 
     emptyState.classList.add('hidden');
 
-    grid.innerHTML = templates.map(template => `
+    // Card 'Comecar em Branco' no inicio
+    const blankCard = `
+        <div class="template-card cursor-pointer group" onclick="startBlank()">
+            <div class="aspect-square rounded-xl overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-blue-500 transition-all bg-gray-50 flex flex-col items-center justify-center">
+                <i data-lucide="plus" class="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors mb-2"></i>
+                <span class="text-sm font-medium text-gray-500 group-hover:text-blue-600">Comecar em Branco</span>
+            </div>
+            <div class="mt-2">
+                <p class="font-semibold text-sm text-gray-900">Design Personalizado</p>
+                <p class="text-xs text-gray-500">Criar do zero</p>
+            </div>
+        </div>
+    `;
+
+    grid.innerHTML = blankCard + templates.map(template => `
         <div class="template-card cursor-pointer group" onclick="selectTemplate('${template.id}')">
             <div class="aspect-square rounded-xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all bg-gray-50">
                 <img src="${template.thumbnail_url || template.preview_url || '/favicon.svg'}" 
