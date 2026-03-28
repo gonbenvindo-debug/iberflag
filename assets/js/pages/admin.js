@@ -1938,3 +1938,253 @@ window.deleteBase = deleteBase;
 window.viewContact = viewContact;
 window.viewOrder = viewOrder;
 window.viewClient = viewClient;
+window.editTemplate = editTemplate;
+window.deleteTemplate = deleteTemplate;
+
+// ===== TEMPLATES =====
+let currentTemplateId = null;
+let templateElements = [];
+
+const templateModal = document.getElementById('template-modal');
+const templateForm = document.getElementById('template-form');
+const addTemplateBtn = document.getElementById('add-template-btn');
+const closeTemplateModalBtn = document.getElementById('close-template-modal');
+const cancelTemplateModalBtn = document.getElementById('cancel-template-modal');
+const addElementBtn = document.getElementById('add-element-btn');
+const templateElementsList = document.getElementById('template-elements-list');
+
+// Template category names for display
+const templateCategoryNames = {
+    'promocoes': 'Promoções',
+    'eventos': 'Eventos',
+    'corporativo': 'Corporativo',
+    'festas': 'Festas',
+    'varejo': 'Varejo'
+};
+
+function loadTemplates() {
+    const tbody = document.getElementById('templates-tbody');
+    const templates = window.DesignTemplates?.templates || [];
+
+    if (templates.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhum template encontrado</td></tr>';
+        return;
+    }
+
+    tbody.innerHTML = templates.map(t => `
+        <tr>
+            <td class="font-mono text-xs">${t.id}</td>
+            <td class="font-semibold">${escapeHtml(t.name)}</td>
+            <td><span class="badge badge-info">${templateCategoryNames[t.category] || t.category}</span></td>
+            <td class="text-sm text-gray-600 max-w-xs truncate">${escapeHtml(t.description)}</td>
+            <td class="text-center">${t.elements?.length || 0}</td>
+            <td>
+                <div class="flex gap-2">
+                    <button onclick="editTemplate('${t.id}')" class="text-blue-600 hover:text-blue-800" title="Editar">
+                        <i data-lucide="edit" class="w-4 h-4"></i>
+                    </button>
+                    <button onclick="deleteTemplate('${t.id}')" class="text-red-600 hover:text-red-800" title="Eliminar">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                    </button>
+                </div>
+            </td>
+        </tr>
+    `).join('');
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function openTemplateModal() {
+    document.getElementById('template-modal-title').textContent = currentTemplateId ? 'Editar Template' : 'Adicionar Template';
+    templateForm.reset();
+    templateElements = [];
+    renderTemplateElements();
+    openModal(templateModal);
+}
+
+function closeTemplateModalFn() {
+    closeModal(templateModal);
+    currentTemplateId = null;
+    templateElements = [];
+}
+
+function renderTemplateElements() {
+    if (!templateElementsList) return;
+
+    if (templateElements.length === 0) {
+        templateElementsList.innerHTML = '<p class="text-sm text-gray-500">Nenhum elemento adicionado. Clique em "Adicionar Elemento" para começar.</p>';
+        return;
+    }
+
+    templateElementsList.innerHTML = templateElements.map((el, index) => `
+        <div class="border rounded-lg p-3 bg-gray-50">
+            <div class="flex justify-between items-start mb-2">
+                <span class="font-semibold text-sm">${el.type === 'text' ? 'Texto' : el.type === 'shape' ? 'Forma' : 'Imagem'} #${index + 1}</span>
+                <button type="button" onclick="removeTemplateElement(${index})" class="text-red-600 hover:text-red-800 text-xs">
+                    <i data-lucide="trash-2" class="w-3 h-3"></i>
+                </button>
+            </div>
+            ${el.type === 'text' ? `
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-500">Texto:</span> ${escapeHtml(el.content)}</div>
+                    <div><span class="text-gray-500">Fonte:</span> ${el.font}</div>
+                    <div><span class="text-gray-500">Tamanho:</span> ${el.size}px</div>
+                    <div><span class="text-gray-500">Cor:</span> ${el.color}</div>
+                </div>
+            ` : el.type === 'shape' ? `
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div><span class="text-gray-500">Tipo:</span> ${el.shapeType}</div>
+                    <div><span class="text-gray-500">Pos:</span> ${el.x},${el.y}</div>
+                    <div><span class="text-gray-500">Tamanho:</span> ${el.width}x${el.height}</div>
+                    <div><span class="text-gray-500">Cor:</span> ${el.fill}</div>
+                </div>
+            ` : ''}
+        </div>
+    `).join('');
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function addTemplateElement() {
+    const type = prompt('Tipo de elemento (text/shape):', 'text');
+    if (!type || !['text', 'shape'].includes(type)) return;
+
+    if (type === 'text') {
+        const content = prompt('Texto:', 'Novo Texto');
+        if (!content) return;
+        templateElements.push({
+            type: 'text',
+            content: content,
+            x: 400,
+            y: 300,
+            font: 'Arial',
+            size: 24,
+            color: '#000000',
+            bold: false,
+            italic: false,
+            rotation: 0,
+            textAnchor: 'middle'
+        });
+    } else if (type === 'shape') {
+        const shapeType = prompt('Tipo de forma (rectangle/circle/triangle):', 'rectangle');
+        if (!shapeType) return;
+        templateElements.push({
+            type: 'shape',
+            shapeType: shapeType,
+            x: 350,
+            y: 250,
+            width: 100,
+            height: 100,
+            fill: '#3b82f6',
+            stroke: 'none',
+            strokeWidth: 0,
+            rotation: 0
+        });
+    }
+
+    renderTemplateElements();
+}
+
+function removeTemplateElement(index) {
+    templateElements.splice(index, 1);
+    renderTemplateElements();
+}
+
+function editTemplate(id) {
+    const template = window.DesignTemplates?.getById?.(id);
+    if (!template) {
+        showToast('Template nao encontrado', 'error');
+        return;
+    }
+
+    currentTemplateId = id;
+    document.getElementById('template-id').value = id;
+    document.getElementById('template-nome').value = template.name;
+    document.getElementById('template-categoria').value = template.category;
+    document.getElementById('template-descricao').value = template.description || '';
+    document.getElementById('template-tags').value = template.tags?.join(', ') || '';
+    templateElements = JSON.parse(JSON.stringify(template.elements || []));
+
+    openTemplateModal();
+}
+
+function deleteTemplate(id) {
+    if (!confirm('Tem certeza que deseja eliminar este template?')) return;
+
+    const templates = window.DesignTemplates?.templates;
+    if (!templates) return;
+
+    const index = templates.findIndex(t => t.id === id);
+    if (index > -1) {
+        templates.splice(index, 1);
+        loadTemplates();
+        showToast('Template eliminado com sucesso', 'success');
+    }
+}
+
+// Template event listeners
+if (addTemplateBtn) {
+    addTemplateBtn.addEventListener('click', () => {
+        currentTemplateId = null;
+        openTemplateModal();
+    });
+}
+
+if (closeTemplateModalBtn) {
+    closeTemplateModalBtn.addEventListener('click', closeTemplateModalFn);
+}
+
+if (cancelTemplateModalBtn) {
+    cancelTemplateModalBtn.addEventListener('click', closeTemplateModalFn);
+}
+
+if (addElementBtn) {
+    addElementBtn.addEventListener('click', addTemplateElement);
+}
+
+if (templateForm) {
+    templateForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const id = currentTemplateId || 'template-' + Date.now();
+        const templateData = {
+            id: id,
+            name: document.getElementById('template-nome').value,
+            category: document.getElementById('template-categoria').value,
+            description: document.getElementById('template-descricao').value,
+            tags: document.getElementById('template-tags').value.split(',').map(t => t.trim()).filter(Boolean),
+            thumbnail: '/assets/templates/default-thumb.jpg',
+            elements: templateElements
+        };
+
+        const templates = window.DesignTemplates?.templates;
+        if (!templates) return;
+
+        if (currentTemplateId) {
+            const index = templates.findIndex(t => t.id === currentTemplateId);
+            if (index > -1) {
+                templates[index] = templateData;
+            }
+        } else {
+            templates.push(templateData);
+        }
+
+        closeTemplateModalFn();
+        loadTemplates();
+        showToast(currentTemplateId ? 'Template atualizado com sucesso!' : 'Template adicionado com sucesso!', 'success');
+    });
+}
+
+// Add templates tab to loadTabData
+const originalLoadTabData = loadTabData;
+loadTabData = async function (tabName) {
+    if (tabName === 'templates') {
+        loadTemplates();
+    } else {
+        await originalLoadTabData(tabName);
+    }
+};

@@ -133,6 +133,14 @@
                     <li>
                         <button
                             class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="templates">
+                            <i data-lucide="layout-template" class="w-5 h-5"></i>
+                            Templates
+                        </button>
+                    </li>
+                    <li>
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
                             data-tab="contactos">
                             <i data-lucide="mail" class="w-5 h-5"></i>
                             Contactos
@@ -340,6 +348,43 @@
                                 <tr>
                                     <td colspan="6" class="text-center py-8 text-gray-400">
                                         Nenhum cliente encontrado
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Templates Tab -->
+            <div id="templates-tab" class="tab-panel hidden">
+                <div class="flex justify-between items-center mb-8">
+                    <h1 class="text-3xl font-bold">Gestão de Templates</h1>
+                    <button id="add-template-btn"
+                        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2">
+                        <i data-lucide="plus" class="w-5 h-5"></i>
+                        Adicionar Template
+                    </button>
+                </div>
+
+                <div class="admin-card">
+                    <div class="table-container">
+                        <table id="templates-table">
+                            <thead>
+                                <tr>
+                                    <th>ID</th>
+                                    <th>Nome</th>
+                                    <th>Categoria</th>
+                                    <th>Descrição</th>
+                                    <th>Elementos</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody id="templates-tbody">
+                                <tr>
+                                    <td colspan="6" class="text-center py-8 text-gray-400">
+                                        <div class="spinner mx-auto mb-2"></div>
+                                        A carregar templates...
                                     </td>
                                 </tr>
                             </tbody>
@@ -712,6 +757,7 @@
         </div>
     </div>
 
+    <script src="/assets/js/templates-data.js"></script>
     <script src="/assets/js/core/logic.js?v=20260319b"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260319b"></script>
     <script src="/assets/js/pages/admin.js?v=20260323m"></script>
