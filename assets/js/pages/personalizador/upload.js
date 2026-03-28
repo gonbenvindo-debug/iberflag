@@ -227,9 +227,9 @@ Object.assign(DesignEditor.prototype, {
                 const newOffsetY = drag.offsetY + dy;
 
                 // Limitar pan para nao afastar demasiado da imagem
-                // Permitir mover ate 50% do tamanho da imagem para fora do stage
-                const maxOffsetX = imageRect.width * 0.5;
-                const maxOffsetY = imageRect.height * 0.5;
+                // Permitir mover ate 80% do tamanho da imagem para fora do stage
+                const maxOffsetX = imageRect.width * 0.8;
+                const maxOffsetY = imageRect.height * 0.8;
                 const minOffsetX = -maxOffsetX;
                 const minOffsetY = -maxOffsetY;
 
