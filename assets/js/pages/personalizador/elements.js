@@ -90,7 +90,7 @@ Object.assign(DesignEditor.prototype, {
             }
         }
     },
-    
+
     loadExistingDesign(index) {
         const cart = this.getCartData();
         let targetIndex = Number.isInteger(index) ? index : -1;
@@ -107,17 +107,17 @@ Object.assign(DesignEditor.prototype, {
                 const parser = new DOMParser();
                 const svgDoc = parser.parseFromString(cart[targetIndex].design, 'image/svg+xml');
                 const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
-                
+
                 designElements.forEach(el => {
                     const imported = document.importNode(el, true);
                     this.canvas.appendChild(imported);
                     const elementData = this.buildElementDataFromNode(imported);
-                    
+
                     this.elements.push(elementData);
                     this.makeElementInteractive(elementData);
                 });
                 this.bringPrintAreaOverlaysToFront();
-                
+
                 this.updateLayers();
                 this.saveHistory();
 
@@ -159,7 +159,7 @@ Object.assign(DesignEditor.prototype, {
             console.warn('Falha ao recuperar autosave:', error);
         }
     },
-    
+
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         // Add elements
@@ -172,23 +172,23 @@ Object.assign(DesignEditor.prototype, {
         if (addQrBtn) {
             addQrBtn.addEventListener('click', () => this.handleAddQRCode());
         }
-        
+
         // Shapes
         document.querySelectorAll('.shape-btn').forEach(btn => {
             btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
         });
-        
+
         // Zoom
         document.getElementById('zoom-in').addEventListener('click', () => this.setZoom(this.zoom + 0.1));
         document.getElementById('zoom-out').addEventListener('click', () => this.setZoom(this.zoom - 0.1));
-        
+
         // Undo/Redo
         document.getElementById('undo-btn').addEventListener('click', () => this.undo());
         document.getElementById('redo-btn').addEventListener('click', () => this.redo());
-        
+
         // Add to cart
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.openCartStepsModal());
-        
+
         // Delete element
         document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
 
@@ -209,7 +209,7 @@ Object.assign(DesignEditor.prototype, {
                 this.keepAspectRatio = keepAspectBtn.classList.contains('active');
             });
         }
-        
+
         // Canvas interactions
         this._lastTouchInteractionAt = 0;
         const isRecentTouch = () => (Date.now() - (this._lastTouchInteractionAt || 0)) < 700;
@@ -276,48 +276,48 @@ Object.assign(DesignEditor.prototype, {
             }, { passive: true });
         }
 
-            // ===== TOUCH SUPPORT =====
-            this.canvas.addEventListener('touchstart', (e) => {
-                if (e.touches.length !== 1) return;
-                this._lastTouchInteractionAt = Date.now();
-                this._touchGestureActive = true;
-                this._activeGestureTouchId = e.touches[0].identifier;
+        // ===== TOUCH SUPPORT =====
+        this.canvas.addEventListener('touchstart', (e) => {
+            if (e.touches.length !== 1) return;
+            this._lastTouchInteractionAt = Date.now();
+            this._touchGestureActive = true;
+            this._activeGestureTouchId = e.touches[0].identifier;
+            e.preventDefault();
+            const t = e.touches[0];
+            this.handleCanvasMouseDown({ target: e.target, clientX: t.clientX, clientY: t.clientY, preventDefault: () => { } });
+        }, { passive: false });
+
+        document.addEventListener('touchmove', (e) => {
+            this._lastTouchInteractionAt = Date.now();
+            if (this.isDragging || this.isResizing || this.isRotating) {
+                const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
+                    || (e.touches.length > 0 ? e.touches[0] : null);
+                if (!trackedTouch) return;
                 e.preventDefault();
-                const t = e.touches[0];
-                this.handleCanvasMouseDown({ target: e.target, clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} });
-            }, { passive: false });
+                this._touchGestureActive = true;
+                this.handleMouseMove({ clientX: trackedTouch.clientX, clientY: trackedTouch.clientY, shiftKey: false });
+            }
+        }, { passive: false });
 
-            document.addEventListener('touchmove', (e) => {
-                this._lastTouchInteractionAt = Date.now();
-                if (this.isDragging || this.isResizing || this.isRotating) {
-                    const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
-                        || (e.touches.length > 0 ? e.touches[0] : null);
-                    if (!trackedTouch) return;
-                    e.preventDefault();
-                    this._touchGestureActive = true;
-                    this.handleMouseMove({ clientX: trackedTouch.clientX, clientY: trackedTouch.clientY, shiftKey: false });
-                }
-            }, { passive: false });
+        document.addEventListener('touchend', (e) => {
+            this._lastTouchInteractionAt = Date.now();
+            if (this.isDragging || this.isResizing || this.isRotating) {
+                const releasedTrackedTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this._activeGestureTouchId);
+                if (!releasedTrackedTouch) return;
+                this.handleMouseUp('touch', { clientX: releasedTrackedTouch.clientX, clientY: releasedTrackedTouch.clientY });
+            }
+            this._touchGestureActive = false;
+            this._activeGestureTouchId = null;
+        }, { passive: false });
 
-            document.addEventListener('touchend', (e) => {
-                this._lastTouchInteractionAt = Date.now();
-                if (this.isDragging || this.isResizing || this.isRotating) {
-                    const releasedTrackedTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this._activeGestureTouchId);
-                    if (!releasedTrackedTouch) return;
-                    this.handleMouseUp('touch', { clientX: releasedTrackedTouch.clientX, clientY: releasedTrackedTouch.clientY });
-                }
-                this._touchGestureActive = false;
-                this._activeGestureTouchId = null;
-            }, { passive: false });
-
-            document.addEventListener('touchcancel', () => {
-                this._lastTouchInteractionAt = Date.now();
-                if (this.isDragging || this.isResizing || this.isRotating) {
-                    this.handleMouseUp('touch');
-                }
-                this._touchGestureActive = false;
-                this._activeGestureTouchId = null;
-            }, { passive: false });
+        document.addEventListener('touchcancel', () => {
+            this._lastTouchInteractionAt = Date.now();
+            if (this.isDragging || this.isResizing || this.isRotating) {
+                this.handleMouseUp('touch');
+            }
+            this._touchGestureActive = false;
+            this._activeGestureTouchId = null;
+        }, { passive: false });
 
         // Paste image (Ctrl+V)
         document.addEventListener('paste', (e) => this.handlePaste(e));
@@ -329,13 +329,19 @@ Object.assign(DesignEditor.prototype, {
             canvasStage.addEventListener('dragleave', (e) => this.handleDragLeave(e));
             canvasStage.addEventListener('drop', (e) => this.handleDrop(e));
         }
-        
+
+        // Templates button
+        const templatesBtn = document.getElementById('templates-btn');
+        if (templatesBtn) {
+            templatesBtn.addEventListener('click', () => this.openTemplateModal());
+        }
+
         // Property controls
         this.setupPropertyControls();
         this.setupUploadCropModalListeners();
         this.setupCartStepsModalListeners();
     },
-    
+
     setupPropertyControls() {
         // Text properties
         const textContent = document.getElementById('prop-text-content');
@@ -344,7 +350,7 @@ Object.assign(DesignEditor.prototype, {
         const textColor = document.getElementById('prop-text-color');
         const textBold = document.getElementById('prop-text-bold');
         const textItalic = document.getElementById('prop-text-italic');
-        
+
         if (textContent) textContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (textFont) textFont.addEventListener('change', (e) => this.updateTextFont(e.target.value));
         if (textSize) textSize.addEventListener('input', (e) => {
@@ -354,13 +360,13 @@ Object.assign(DesignEditor.prototype, {
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
-        
+
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {
             this.updateRotation(e.target.value);
             document.getElementById('prop-text-rotation-val').textContent = e.target.value;
         });
-        
+
         // Image properties
         const imageOpacity = document.getElementById('prop-image-opacity');
         if (imageOpacity) imageOpacity.addEventListener('input', (e) => {
@@ -373,25 +379,25 @@ Object.assign(DesignEditor.prototype, {
 
         const qrColor = document.getElementById('prop-qr-color');
         if (qrColor) qrColor.addEventListener('input', (e) => this.updateQRCodeColor(e.target.value));
-        
+
         const imageRotation = document.getElementById('prop-image-rotation');
         if (imageRotation) imageRotation.addEventListener('input', (e) => {
             this.updateRotation(e.target.value);
             document.getElementById('prop-image-rotation-val').textContent = e.target.value;
         });
-        
+
         // Shape properties
         const shapeFill = document.getElementById('prop-shape-fill');
         const shapeStroke = document.getElementById('prop-shape-stroke');
         const shapeStrokeWidth = document.getElementById('prop-shape-stroke-width');
-        
+
         if (shapeFill) shapeFill.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
         if (shapeStroke) shapeStroke.addEventListener('input', (e) => this.updateShapeStroke(e.target.value));
         if (shapeStrokeWidth) shapeStrokeWidth.addEventListener('input', (e) => {
             this.updateShapeStrokeWidth(e.target.value);
             document.getElementById('prop-shape-stroke-val').textContent = e.target.value;
         });
-        
+
         const shapeRotation = document.getElementById('prop-shape-rotation');
         if (shapeRotation) shapeRotation.addEventListener('input', (e) => {
             this.updateRotation(e.target.value);
@@ -404,6 +410,6 @@ Object.assign(DesignEditor.prototype, {
             cropBtn.addEventListener('click', () => this.startCropMode());
         }
     }
-    
+
 
 });
