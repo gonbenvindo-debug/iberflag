@@ -188,18 +188,31 @@ Object.assign(DesignEditor.prototype, {
         const cropIsRecentTouch = () => (Date.now() - cropLastTouchAt) < 700;
 
         const startPointer = (event) => {
-            if (!this.uploadCropState) return;
-            if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
-            if (event.button !== undefined && event.button !== 0) return;
+            console.log('[DEBUG] startPointer chamado', event.target?.className, event.target?.id);
+            if (!this.uploadCropState) {
+                console.log('[DEBUG] Sem uploadCropState');
+                return;
+            }
+            if (cropIsRecentTouch() && event.pointerSource === 'mouse') {
+                console.log('[DEBUG] Ignorando mouse apos touch');
+                return;
+            }
+            if (event.button !== undefined && event.button !== 0) {
+                console.log('[DEBUG] Botao diferente de 0:', event.button);
+                return;
+            }
 
             // Verificar se o clique foi em um handle de resize
             const isHandle = event.target?.closest?.('.upload-crop-handle') !== null;
+            console.log('[DEBUG] isHandle:', isHandle);
             if (isHandle) {
                 // Não iniciar pan se clicou em um handle - o handle tem seu próprio listener
+                console.log('[DEBUG] Clicou em handle, retornando');
                 return;
             }
 
             // Iniciar pan em qualquer outro lugar do stage
+            console.log('[DEBUG] Iniciando PAN');
             this.uploadCropState.dragging = {
                 mode: 'pan',
                 startX: event.clientX,
