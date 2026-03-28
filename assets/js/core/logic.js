@@ -1,6 +1,7 @@
 // ===== SUPABASE CONFIGURATION =====
-const SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
-const SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || 'fallback-key';
+// Usar var para evitar erro se ja declarado noutro script
+var SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
+var SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || 'fallback-key';
 
 const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
