@@ -51,8 +51,11 @@ Object.assign(DesignEditor.prototype, {
             this.setDefaultPrintArea();
         }
 
-        // Load existing design if editing
-        if (this.editIndex !== null || this.editDesignId) {
+        // Verificar se veio da galeria de templates
+        const templateId = urlParams.get('template');
+        if (templateId) {
+            await this.loadTemplate(templateId);
+        } else if (this.editIndex !== null || this.editDesignId) {
             this.loadExistingDesign(parseInt(this.editIndex, 10));
         } else {
             this.loadAutosaveDesign();
@@ -84,6 +87,54 @@ Object.assign(DesignEditor.prototype, {
         } catch (error) {
             this.availableBases = [];
             console.warn('Falha ao carregar bases do produto:', error?.message || error);
+        }
+    },
+
+    // Carregar template do Supabase
+    async loadTemplate(templateId) {
+        if (!templateId || typeof supabaseClient === 'undefined') return;
+
+        try {
+            const { data, error } = await supabaseClient
+                .from('templates')
+                .select('*')
+                .eq('id', templateId)
+                .eq('ativo', true)
+                .maybeSingle();
+
+            if (error) throw error;
+            if (!data) {
+                console.warn('Template nao encontrado:', templateId);
+                return;
+            }
+
+            // Aplicar elementos do template ao canvas
+            if (data.elementos && Array.isArray(data.elementos)) {
+                this.elements = data.elementos.map(el => ({
+                    ...el,
+                    id: el.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
+                }));
+                this.renderLayers?.();
+                this.saveHistory?.();
+            }
+
+            showToast(`Template "${data.nome}" carregado!`, 'success');
+        } catch (err) {
+            console.error('Erro ao carregar template:', err);
+            // Fallback: tentar carregar de TEMPLATES_DATA local
+            if (typeof TEMPLATES_DATA !== 'undefined') {
+                const allTemplates = Object.values(TEMPLATES_DATA).flat();
+                const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
+                if (template && template.elements) {
+                    this.elements = template.elements.map(el => ({
+                        ...el,
+                        id: el.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
+                    }));
+                    this.renderLayers?.();
+                    this.saveHistory?.();
+                    showToast(`Template "${template.name}" carregado!`, 'success');
+                }
+            }
         }
     },
 
