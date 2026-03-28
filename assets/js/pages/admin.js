@@ -867,15 +867,33 @@ async function editProduct(id) {
         if (error) throw error;
 
         currentProductId = id;
-        document.getElementById('modal-title').textContent = 'Editar Produto';
-        document.getElementById('product-nome').value = data.nome;
-        document.getElementById('product-descricao').value = data.descricao;
-        document.getElementById('product-preco').value = data.preco;
-        document.getElementById('product-categoria').value = data.categoria;
-        document.getElementById('product-imagem').value = data.imagem;
-        document.getElementById('product-stock').value = data.stock || 0;
-        document.getElementById('product-destaque').checked = data.destaque;
-        document.getElementById('product-ativo').checked = data.ativo;
+
+        const modalTitle = document.getElementById('modal-title');
+        if (modalTitle) modalTitle.textContent = 'Editar Produto';
+
+        const productNome = document.getElementById('product-nome');
+        if (productNome) productNome.value = data.nome || '';
+
+        const productDescricao = document.getElementById('product-descricao');
+        if (productDescricao) productDescricao.value = data.descricao || '';
+
+        const productPreco = document.getElementById('product-preco');
+        if (productPreco) productPreco.value = data.preco || '';
+
+        const productCategoria = document.getElementById('product-categoria');
+        if (productCategoria) productCategoria.value = data.categoria || '';
+
+        const productImagem = document.getElementById('product-imagem');
+        if (productImagem) productImagem.value = data.imagem || '';
+
+        const productStock = document.getElementById('product-stock');
+        if (productStock) productStock.value = data.stock || 0;
+
+        const productDestaque = document.getElementById('product-destaque');
+        if (productDestaque) productDestaque.checked = data.destaque || false;
+
+        const productAtivo = document.getElementById('product-ativo');
+        if (productAtivo) productAtivo.checked = data.ativo !== false;
 
         // Load existing SVG template
         if (data.svg_template) {
