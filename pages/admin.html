@@ -511,6 +511,25 @@
                     </div>
                 </div>
 
+                <div>
+                    <label class="form-label">Templates Disponíveis</label>
+                    <p class="text-xs text-gray-500 mb-2">Selecione os designs prontos que o cliente pode escolher para
+                        este produto.</p>
+                    <div id="product-templates-assignments"
+                        class="space-y-2 rounded-lg border border-gray-200 bg-gray-50 p-3 max-h-48 overflow-y-auto">
+                        <p class="text-sm text-gray-500">A carregar templates...</p>
+                    </div>
+                    <div class="mt-2 flex gap-2">
+                        <select id="available-templates-select" class="form-input flex-1 text-sm">
+                            <option value="">Selecione um template...</option>
+                        </select>
+                        <button type="button" id="add-template-to-product"
+                            class="bg-blue-600 text-white px-4 py-2 rounded-lg text-sm font-semibold hover:bg-blue-700 transition">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </div>
+
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="product-ativo" checked class="custom-checkbox">
                     <label class="text-sm font-semibold">Produto Ativo</label>

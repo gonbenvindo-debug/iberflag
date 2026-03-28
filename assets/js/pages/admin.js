@@ -2175,16 +2175,6 @@ if (templateForm) {
 
         closeTemplateModalFn();
         loadTemplates();
-        showToast(currentTemplateId ? 'Template atualizado com sucesso!' : 'Template adicionado com sucesso!', 'success');
+        showToast(currentTemplateId ? 'Template atualizado!' : 'Template criado!', 'success');
     });
 }
-
-// Add templates tab to loadTabData
-const originalLoadTabData = loadTabData;
-loadTabData = async function (tabName) {
-    if (tabName === 'templates') {
-        loadTemplates();
-    } else {
-        await originalLoadTabData(tabName);
-    }
-};
