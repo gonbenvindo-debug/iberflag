@@ -223,8 +223,18 @@ Object.assign(DesignEditor.prototype, {
             const imageRect = state.imageRect;
 
             if (drag.mode === 'pan') {
-                state.viewport.offsetX = drag.offsetX + dx;
-                state.viewport.offsetY = drag.offsetY + dy;
+                const newOffsetX = drag.offsetX + dx;
+                const newOffsetY = drag.offsetY + dy;
+
+                // Limitar pan para nao afastar demasiado da imagem
+                // Permitir mover ate 50% do tamanho da imagem para fora do stage
+                const maxOffsetX = imageRect.width * 0.5;
+                const maxOffsetY = imageRect.height * 0.5;
+                const minOffsetX = -maxOffsetX;
+                const minOffsetY = -maxOffsetY;
+
+                state.viewport.offsetX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
+                state.viewport.offsetY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
                 this.layoutUploadCropModal(false);
                 return;
             }
