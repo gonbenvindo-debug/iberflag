@@ -89,7 +89,9 @@
                                 </div>
                                 <div>
                                     <label class="form-label">NIF (opcional)</label>
-                                    <input type="text" name="nif" class="form-input">
+                                    <input type="text" name="nif" id="nif-input" class="form-input" maxlength="9"
+                                        placeholder="123456789">
+                                    <p class="text-xs text-gray-500 mt-1">9 dígitos para fatura com NIF</p>
                                 </div>
                             </div>
 
@@ -257,14 +259,54 @@
     <!-- Footer -->
     <footer class="checkout-footer py-8 mt-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
-            <p class="text-sm">© 2024 IberFlag. Todos os direitos reservados.</p>
+            <p class="text-sm"> 2024 IberFlag. Todos os direitos reservados.</p>
         </div>
     </footer>
 
     <script src="/assets/js/core/logic.js"></script>
     <script src="/assets/js/core/order-workflow.js"></script>
     <script src="/assets/js/pages/checkout.js"></script>
-    <script>lucide.createIcons();</script>
+    <script>
+        lucide.createIcons();
+
+        // Validacao do NIF portugues
+        const nifInput = document.getElementById('nif-input');
+        if (nifInput) {
+            nifInput.addEventListener('input', (e) => {
+                // Permitir apenas numeros
+                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
+            });
+
+            nifInput.addEventListener('blur', (e) => {
+                const nif = e.target.value;
+                if (nif && !validarNIF(nif)) {
+                    e.target.style.borderColor = '#ef4444';
+                    showToast('NIF inválido. Digite 9 dígitos numéricos.', 'error');
+                } else {
+                    e.target.style.borderColor = '';
+                }
+            });
+        }
+
+        function validarNIF(nif) {
+            if (!nif || nif.length !== 9) return false;
+            if (!/^\d{9}$/.test(nif)) return false;
+
+            // Validacao do algoritmo do NIF portugues
+            const digitos = nif.split('').map(Number);
+            const multiplicadores = [9, 8, 7, 6, 5, 4, 3, 2];
+            let soma = 0;
+
+            for (let i = 0; i < 8; i++) {
+                soma += digitos[i] * multiplicadores[i];
+            }
+
+            const resto = soma % 11;
+            const digitoControlo = resto < 2 ? 0 : 11 - resto;
+
+            return digitos[8] === digitoControlo;
+        }
+    </script>
 </body>
 
 </html>
