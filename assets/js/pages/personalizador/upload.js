@@ -340,9 +340,6 @@ Object.assign(DesignEditor.prototype, {
             this.layoutUploadCropModal(false);
         };
 
-        selection.addEventListener('mousedown', (event) => {
-            startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
-        });
         stage.addEventListener('mousedown', (event) => {
             startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
         });
@@ -432,7 +429,6 @@ Object.assign(DesignEditor.prototype, {
             endPointer({ pointerSource: 'touch' });
         };
 
-        selection.addEventListener('touchstart', startTouchPointer, { passive: false });
         stage.addEventListener('touchstart', startTouchPointer, { passive: false });
         document.addEventListener('touchmove', moveTouchPointer, { passive: false });
         document.addEventListener('touchend', endTouchPointer);
