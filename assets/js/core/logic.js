@@ -9,8 +9,8 @@ var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 window.supabaseClient = supabaseClient;
 
 // ===== CART MANAGEMENT =====
-const CART_STORAGE_KEY = 'iberflag_cart';
-const LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
+var CART_STORAGE_KEY = 'iberflag_cart';
+var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
 
 function getStoredCart() {
     const storageKeys = [CART_STORAGE_KEY, ...LEGACY_CART_STORAGE_KEYS];
@@ -32,17 +32,17 @@ function getStoredCart() {
 let cart = [];
 
 // ===== DOM ELEMENTS =====
-const productsContainer = document.getElementById('products-container');
-const cartBtn = document.getElementById('cart-btn');
-const cartSidebar = document.getElementById('cart-sidebar');
-const cartOverlay = document.getElementById('cart-overlay');
-const closeCartBtn = document.getElementById('close-cart');
-const cartItemsContainer = document.getElementById('cart-items');
-const cartTotal = document.getElementById('cart-total');
-const cartCount = document.getElementById('cart-count');
+var productsContainer = document.getElementById('products-container');
+var cartBtn = document.getElementById('cart-btn');
+var cartSidebar = document.getElementById('cart-sidebar');
+var cartOverlay = document.getElementById('cart-overlay');
+var closeCartBtn = document.getElementById('close-cart');
+var cartItemsContainer = document.getElementById('cart-items');
+var cartTotal = document.getElementById('cart-total');
+var cartCount = document.getElementById('cart-count');
 
 // ===== INITIAL PRODUCTS (FALLBACK) =====
-const initialProducts = [
+var initialProducts = [
     {
         id: 1,
         nome: "Flybanner Gota 2.5m",
@@ -536,9 +536,9 @@ if (cartOverlay) {
 }
 
 // ===== MOBILE MENU =====
-const mobileMenuBtn = document.getElementById('mobile-menu-btn');
-const mobileMenu = document.getElementById('mobile-menu');
-const cartBtnMobile = document.getElementById('cart-btn-mobile');
+var mobileMenuBtn = document.getElementById('mobile-menu-btn');
+var mobileMenu = document.getElementById('mobile-menu');
+var cartBtnMobile = document.getElementById('cart-btn-mobile');
 
 if (mobileMenuBtn && mobileMenu) {
     mobileMenuBtn.addEventListener('click', () => {
