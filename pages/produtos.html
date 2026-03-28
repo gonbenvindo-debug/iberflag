@@ -285,11 +285,68 @@
     </div>
     <div id="cart-overlay" class="fixed inset-0 bg-black/50 hidden z-40"></div>
 
-    <script src="/assets/js/core/logic.js"></script>
-    <script src="/assets/js/pages/produtos.js"></script>
-    <script>
-        lucide.createIcons();
-    </script>
-</body>
+    <!-- Modal de Templates -->
+    <div id="templates-modal" class="fixed inset-0 bg-black/60 hidden z-50 flex items-center justify-center p-4">
+        <div class="bg-white rounded-2xl w-full max-w-5xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b border-gray-200">
+                <div>
+                    <h2 class="text-2xl font-bold text-gray-900">Escolher Template</h2>
+                    <p class="text-sm text-gray-500 mt-1" id="modal-product-name">Selecione um design para comecar</p>
+                </div>
+                <button onclick="closeTemplatesModal()"
+                    class="w-10 h-10 flex items-center justify-center rounded-full hover:bg-gray-100 transition">
+                    <i data-lucide="x" class="w-6 h-6 text-gray-500"></i>
+                </button>
+            </div>
+
+            <!-- Filtros -->
+            <div class="flex flex-wrap gap-2 p-4 border-b border-gray-100 bg-gray-50">
+                <button class="filter-btn active px-4 py-2 rounded-full text-sm font-medium bg-blue-600 text-white"
+                    data-category="all">Todos</button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-blue-400"
+                    data-category="promocoes">Promocoes</button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-blue-400"
+                    data-category="eventos">Eventos</button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-blue-400"
+                    data-category="corporativo">Corporativo</button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-blue-400"
+                    data-category="festas">Festas</button>
+                <button
+                    class="filter-btn px-4 py-2 rounded-full text-sm font-medium bg-white text-gray-600 border border-gray-200 hover:border-blue-400"
+                    data-category="varejo">Varejo</button>
+            </div>
+
+            <!-- Grid de Templates -->
+            <div class="flex-1 overflow-y-auto p-6">
+                <div id="templates-modal-grid" class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    <!-- Templates serao carregados aqui -->
+                </div>
+
+                <!-- Estado vazio -->
+                <div id="templates-empty" class="hidden text-center py-12">
+                    <i data-lucide="image-off" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                    <p class="text-gray-500">Nenhum template disponivel para este produto</p>
+                </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="flex items-center justify-between p-4 border-t border-gray-200 bg-gray-50">
+                <button onclick="startBlank()"
+                    class="flex items-center gap-2 px-6 py-3 bg-white border-2 border-gray-300 text-gray-700 rounded-xl font-semibold hover:border-gray-400 transition">
+                    <i data-lucide="plus" class="w-5 h-5"></i>
+                    Comecar em Branco
+                </button>
+                <button onclick="closeTemplatesModal()"
+                    class="px-6 py-3 bg-gray-200 text-gray-700 rounded-xl font-semibold hover:bg-gray-300 transition">
+                    Cancelar
+                </button>
+            </div>
+        </div>
+    </div>
 
 </html>
