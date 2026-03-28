@@ -1949,7 +1949,7 @@ const templateModal = document.getElementById('template-modal');
 const templateForm = document.getElementById('template-form');
 const addTemplateBtn = document.getElementById('add-template-btn');
 const closeTemplateModalBtn = document.getElementById('close-template-modal');
-const cancelTemplateModalBtn = document.getElementById('cancel-template-modal');
+const cancelTemplateModalBtn = document.getElementById('cancel-template-modal-btn');
 const addElementBtn = document.getElementById('add-element-btn');
 const templateElementsList = document.getElementById('template-elements-list');
 

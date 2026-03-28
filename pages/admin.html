@@ -727,6 +727,78 @@
         </div>
     </div>
 
+    <!-- Template Modal -->
+    <div id="template-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-4xl p-8" style="max-height: 90vh; overflow-y: auto;">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="template-modal-title">Adicionar Template</h2>
+                <button id="close-template-modal" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <form id="template-form" class="space-y-4">
+                <input type="hidden" id="template-id">
+
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nome do Template *</label>
+                        <input type="text" id="template-nome" required class="form-input"
+                            placeholder="Ex: Promoção Verão">
+                    </div>
+                    <div>
+                        <label class="form-label">Categoria *</label>
+                        <select id="template-categoria" required class="form-input">
+                            <option value="">Selecione</option>
+                            <option value="promocoes">Promoções</option>
+                            <option value="eventos">Eventos</option>
+                            <option value="corporativo">Corporativo</option>
+                            <option value="festas">Festas</option>
+                            <option value="varejo">Varejo</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">Descrição</label>
+                    <textarea id="template-descricao" rows="2" class="form-input"
+                        placeholder="Descrição breve do template..."></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label">Tags (separadas por vírgula)</label>
+                    <input type="text" id="template-tags" class="form-input" placeholder="promoção, desconto, verão">
+                </div>
+
+                <div class="border-t pt-4">
+                    <div class="flex justify-between items-center mb-4">
+                        <h3 class="font-bold text-lg">Elementos do Template</h3>
+                        <button type="button" id="add-element-btn"
+                            class="bg-green-600 text-white px-4 py-2 rounded-lg font-semibold hover:bg-green-700 transition flex items-center gap-2">
+                            <i data-lucide="plus" class="w-4 h-4"></i>
+                            Adicionar Elemento
+                        </button>
+                    </div>
+
+                    <div id="template-elements-list" class="space-y-3">
+                        <!-- Elements will be added here -->
+                    </div>
+                </div>
+
+                <div class="flex gap-3 pt-4 border-t">
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Guardar Template
+                    </button>
+                    <button type="button" id="cancel-template-modal-btn"
+                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <div id="svg-preview-modal" class="modal-overlay hidden">
         <div class="modal-content w-full max-w-6xl p-8">
             <div class="flex justify-between items-center mb-6">
