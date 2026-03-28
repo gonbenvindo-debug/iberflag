@@ -192,25 +192,22 @@ Object.assign(DesignEditor.prototype, {
             if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
             if (event.button !== undefined && event.button !== 0) return;
 
-            const handle = event.target?.dataset?.handle || null;
-            if (handle) {
-                this.uploadCropState.dragging = {
-                    mode: 'resize',
-                    handle,
-                    startX: event.clientX,
-                    startY: event.clientY,
-                    rect: { ...this.uploadCropState.selectionRect }
-                };
-            } else {
-                this.uploadCropState.dragging = {
-                    mode: 'pan',
-                    startX: event.clientX,
-                    startY: event.clientY,
-                    offsetX: this.uploadCropState.viewport.offsetX,
-                    offsetY: this.uploadCropState.viewport.offsetY
-                };
-                stage.classList.add('is-panning');
+            // Verificar se o clique foi em um handle de resize
+            const isHandle = event.target?.closest?.('.upload-crop-handle') !== null;
+            if (isHandle) {
+                // Não iniciar pan se clicou em um handle - o handle tem seu próprio listener
+                return;
             }
+
+            // Iniciar pan em qualquer outro lugar do stage
+            this.uploadCropState.dragging = {
+                mode: 'pan',
+                startX: event.clientX,
+                startY: event.clientY,
+                offsetX: this.uploadCropState.viewport.offsetX,
+                offsetY: this.uploadCropState.viewport.offsetY
+            };
+            stage.classList.add('is-panning');
             event.preventDefault();
         };
 
@@ -499,40 +496,31 @@ Object.assign(DesignEditor.prototype, {
                 state.naturalHeight = image.naturalHeight;
                 this.layoutUploadCropModal(true);
 
+                // Configurar event listeners nos handles de resize
                 const handles = selection.querySelectorAll('.upload-crop-handle');
                 handles.forEach(handle => {
                     const handleName = handle.dataset.handle;
 
-                    handle.addEventListener('mousedown', (event) => {
+                    const startResize = (event) => {
                         event.stopPropagation();
                         event.preventDefault();
 
                         if (!this.uploadCropState) return;
 
+                        const clientX = event.clientX || event.touches?.[0]?.clientX;
+                        const clientY = event.clientY || event.touches?.[0]?.clientY;
+
                         this.uploadCropState.dragging = {
                             mode: 'resize',
                             handle: handleName,
-                            startX: event.clientX,
-                            startY: event.clientY,
+                            startX: clientX,
+                            startY: clientY,
                             rect: { ...this.uploadCropState.selectionRect }
                         };
-                    });
+                    };
 
-                    handle.addEventListener('touchstart', (event) => {
-                        event.stopPropagation();
-                        event.preventDefault();
-
-                        if (!this.uploadCropState || event.touches.length !== 1) return;
-
-                        const touch = event.touches[0];
-                        this.uploadCropState.dragging = {
-                            mode: 'resize',
-                            handle: handleName,
-                            startX: touch.clientX,
-                            startY: touch.clientY,
-                            rect: { ...this.uploadCropState.selectionRect }
-                        };
-                    }, { passive: false });
+                    handle.addEventListener('mousedown', startResize);
+                    handle.addEventListener('touchstart', startResize, { passive: false });
                 });
             };
 
