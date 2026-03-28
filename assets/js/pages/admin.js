@@ -72,9 +72,9 @@ document.addEventListener('DOMContentLoaded', () => {
             e.preventDefault();
             const username = document.getElementById('admin-username').value.trim().toLowerCase();
             const password = document.getElementById('admin-password').value;
-            const btn      = document.getElementById('admin-login-btn');
-            const btnText  = document.getElementById('admin-login-btn-text');
-            const errorEl  = document.getElementById('admin-login-error');
+            const btn = document.getElementById('admin-login-btn');
+            const btnText = document.getElementById('admin-login-btn-text');
+            const errorEl = document.getElementById('admin-login-error');
 
             if (adminTestingEnabled && username === testAdminUsername && password === testAdminPassword) {
                 sessionStorage.setItem(ADMIN_TEST_SESSION_KEY, '1');
@@ -236,7 +236,7 @@ navTabs.forEach(tab => {
 function switchTab(tabName) {
     currentTab = tabName;
     closeAllModals();
-    
+
     // Update active tab
     navTabs.forEach(tab => {
         if (tab.dataset.tab === tabName) {
@@ -245,7 +245,7 @@ function switchTab(tabName) {
             tab.classList.remove('active', 'bg-blue-50', 'text-blue-600');
         }
     });
-    
+
     // Show/hide panels
     tabPanels.forEach(panel => {
         if (panel.id === `${tabName}-tab`) {
@@ -254,14 +254,14 @@ function switchTab(tabName) {
             panel.classList.add('hidden');
         }
     });
-    
+
     // Load data for the tab
     loadTabData(tabName);
 }
 
 // ===== LOAD TAB DATA =====
 async function loadTabData(tabName) {
-    switch(tabName) {
+    switch (tabName) {
         case 'dashboard':
             await loadDashboard();
             break;
@@ -466,19 +466,19 @@ async function loadDashboard() {
             supabaseClient.from('clientes').select('*', { count: 'exact' }),
             supabaseClient.from('contactos').select('*', { count: 'exact' })
         ]);
-        
+
         document.getElementById('stat-produtos').textContent = produtos.count || 0;
         document.getElementById('stat-encomendas').textContent = encomendas.count || 0;
         document.getElementById('stat-clientes').textContent = clientes.count || 0;
         document.getElementById('stat-contactos').textContent = contactos.count || 0;
-        
+
         // Load featured products
         const { data: featured } = await supabaseClient
             .from('produtos')
             .select('*')
             .eq('destaque', true)
             .limit(5);
-        
+
         const featuredContainer = document.getElementById('featured-products');
         if (featured && featured.length > 0) {
             featuredContainer.innerHTML = featured.map(p => `
@@ -494,14 +494,14 @@ async function loadDashboard() {
         } else {
             featuredContainer.innerHTML = '<p class="text-center text-gray-400 py-4">Nenhum produto em destaque</p>';
         }
-        
+
         // Load recent contacts
         const { data: contacts } = await supabaseClient
             .from('contactos')
             .select('*')
             .order('created_at', { ascending: false })
             .limit(5);
-        
+
         const contactsContainer = document.getElementById('recent-contacts');
         if (contacts && contacts.length > 0) {
             contactsContainer.innerHTML = contacts.map(c => `
@@ -517,7 +517,7 @@ async function loadDashboard() {
         } else {
             contactsContainer.innerHTML = '<p class="text-center text-gray-400 py-4">Nenhum contacto recente</p>';
         }
-        
+
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
         showToast('Erro ao carregar dashboard', 'error');
@@ -531,11 +531,11 @@ async function loadProducts() {
             .from('produtos')
             .select('*')
             .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         const tbody = document.getElementById('products-tbody');
-        
+
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(p => `
                 <tr>
@@ -562,11 +562,11 @@ async function loadProducts() {
         } else {
             tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-400">Nenhum produto encontrado</td></tr>';
         }
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
     } catch (error) {
         console.error('Erro ao carregar produtos:', error);
         showToast('Erro ao carregar produtos', 'error');
@@ -755,19 +755,19 @@ if (svgUpload) {
         if (!file) {
             return;
         }
-        
+
         if (!file.name.toLowerCase().endsWith('.svg')) {
             showToast('Por favor selecione um ficheiro SVG', 'error');
             svgUpload.value = '';
             return;
         }
-        
+
         try {
             setProductSubmitLoadingState(true);
             const text = await file.text();
             parseSvgTemplate(text);
             setSvgTemplateContent(text, file.name);
-            
+
             showToast('SVG carregado com sucesso', 'success');
         } catch (error) {
             console.error('Erro ao ler ficheiro SVG:', error);
@@ -795,7 +795,7 @@ if (productForm) {
             showToast('Aguarde o carregamento do SVG terminar', 'warning');
             return;
         }
-        
+
         const productData = {
             nome: document.getElementById('product-nome').value,
             descricao: document.getElementById('product-descricao').value,
@@ -807,10 +807,10 @@ if (productForm) {
             destaque: document.getElementById('product-destaque').checked,
             ativo: document.getElementById('product-ativo').checked
         };
-        
+
         try {
             let result;
-            
+
             if (currentProductId) {
                 // Update
                 result = await supabaseClient
@@ -823,7 +823,7 @@ if (productForm) {
                     .from('produtos')
                     .insert([productData]);
             }
-            
+
             if (result.error) throw result.error;
 
             if (currentProductId) {
@@ -836,12 +836,12 @@ if (productForm) {
                     await saveProductBaseAssignments(insertedProductId);
                 }
             }
-            
+
             showToast(currentProductId ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
             closeModal(productModal);
             resetSvgTemplateState();
             loadProducts();
-            
+
         } catch (error) {
             console.error('Erro ao guardar produto:', error);
             if (isMissingBasesSchema(error)) {
@@ -861,9 +861,9 @@ async function editProduct(id) {
             .select('*')
             .eq('id', id)
             .single();
-        
+
         if (error) throw error;
-        
+
         currentProductId = id;
         document.getElementById('modal-title').textContent = 'Editar Produto';
         document.getElementById('product-nome').value = data.nome;
@@ -874,7 +874,7 @@ async function editProduct(id) {
         document.getElementById('product-stock').value = data.stock || 0;
         document.getElementById('product-destaque').checked = data.destaque;
         document.getElementById('product-ativo').checked = data.ativo;
-        
+
         // Load existing SVG template
         if (data.svg_template) {
             setSvgTemplateContent(data.svg_template, 'Template SVG atual');
@@ -885,9 +885,9 @@ async function editProduct(id) {
         await loadBaseCatalog(true);
         const baseAssignments = await loadProductBaseAssignments(id);
         renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
-        
+
         openModal(productModal);
-        
+
     } catch (error) {
         console.error('Erro ao carregar produto:', error);
         showToast('Erro ao carregar produto', 'error');
@@ -1054,18 +1054,18 @@ async function deleteBase(id) {
 // ===== DELETE PRODUCT =====
 async function deleteProduct(id) {
     if (!confirm('Tem a certeza que deseja eliminar este produto?')) return;
-    
+
     try {
         const { error } = await supabaseClient
             .from('produtos')
             .delete()
             .eq('id', id);
-        
+
         if (error) throw error;
-        
+
         showToast('Produto eliminado com sucesso!', 'success');
         loadProducts();
-        
+
     } catch (error) {
         console.error('Erro ao eliminar produto:', error);
         showToast('Erro ao eliminar produto', 'error');
@@ -1286,12 +1286,12 @@ async function loadOrders() {
             .from('encomendas')
             .select('*, clientes(*)')
             .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         const tbody = document.getElementById('orders-tbody');
         ordersCache = new Map((data || []).map((order) => [String(order.id), order]));
-        
+
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(o => `
                 <tr>
@@ -1327,11 +1327,11 @@ async function loadOrders() {
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
         }
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
     } catch (error) {
         console.error('Erro ao carregar encomendas:', error);
     }
@@ -1424,6 +1424,7 @@ async function viewOrder(id) {
             const nome = escapeHtml(order.clientes?.nome || 'N/A');
             const email = escapeHtml(order.clientes?.email || '—');
             const tel = escapeHtml(order.clientes?.telefone || '—');
+            const nif = escapeHtml(order.clientes?.nif || '—');
             const morada = escapeHtml(order.morada_envio || '');
             customerBlock.innerHTML = `
                 <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.75rem;">Cliente</p>
@@ -1439,6 +1440,10 @@ async function viewOrder(id) {
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
                         <span style="color:#9ca3af;flex-shrink:0;">Tel.</span>
                         <span style="color:#374151;text-align:right;">${tel}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">NIF</span>
+                        <span style="color:#374151;text-align:right;font-family:monospace;">${nif}</span>
                     </div>
                     ${morada ? `<div style="padding-top:0.5rem;border-top:1px solid #f3f4f6;margin-top:0.125rem;">
                         <p style="font-size:0.6875rem;color:#9ca3af;margin:0 0 0.2rem;">Morada de envio</p>
@@ -1582,11 +1587,11 @@ async function loadClients() {
             .from('clientes')
             .select('*')
             .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         const tbody = document.getElementById('clients-tbody');
-        
+
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(c => `
                 <tr>
@@ -1605,11 +1610,11 @@ async function loadClients() {
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhum cliente encontrado</td></tr>';
         }
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
     } catch (error) {
         console.error('Erro ao carregar clientes:', error);
     }
@@ -1622,11 +1627,11 @@ async function loadContacts() {
             .from('contactos')
             .select('*')
             .order('created_at', { ascending: false });
-        
+
         if (error) throw error;
-        
+
         const tbody = document.getElementById('contacts-tbody');
-        
+
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(c => `
                 <tr>
@@ -1645,11 +1650,11 @@ async function loadContacts() {
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhum contacto encontrado</td></tr>';
         }
-        
+
         if (typeof lucide !== 'undefined') {
             lucide.createIcons();
         }
-        
+
     } catch (error) {
         console.error('Erro ao carregar contactos:', error);
     }
@@ -1663,11 +1668,11 @@ async function viewContact(id) {
             .select('*')
             .eq('id', id)
             .single();
-        
+
         if (error) throw error;
-        
+
         currentContactId = id;
-        
+
         const detailsContainer = document.getElementById('contact-details');
         detailsContainer.innerHTML = `
             <div>
@@ -1701,9 +1706,9 @@ async function viewContact(id) {
                 <p><span class="badge ${data.respondido ? 'badge-success' : 'badge-warning'}">${data.respondido ? 'Respondido' : 'Pendente'}</span></p>
             </div>
         `;
-        
+
         openModal(contactModal);
-        
+
     } catch (error) {
         console.error('Erro ao carregar contacto:', error);
         showToast('Erro ao carregar contacto', 'error');
@@ -1714,19 +1719,19 @@ async function viewContact(id) {
 if (markRespondedBtn) {
     markRespondedBtn.addEventListener('click', async () => {
         if (!currentContactId) return;
-        
+
         try {
             const { error } = await supabaseClient
                 .from('contactos')
                 .update({ respondido: true })
                 .eq('id', currentContactId);
-            
+
             if (error) throw error;
-            
+
             showToast('Contacto marcado como respondido!', 'success');
             closeModal(contactModal);
             loadContacts();
-            
+
         } catch (error) {
             console.error('Erro ao atualizar contacto:', error);
             showToast('Erro ao atualizar contacto', 'error');

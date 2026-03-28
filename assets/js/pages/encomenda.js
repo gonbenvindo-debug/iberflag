@@ -308,6 +308,7 @@ function renderOrderSidebar(order, splitMeta) {
     const trackingLinkEl = document.getElementById('order-tracking-link');
     const shippingEl = document.getElementById('order-shipping');
     const notesEl = document.getElementById('order-notes');
+    const nifEl = document.getElementById('order-nif');
 
     trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
 
@@ -321,6 +322,11 @@ function renderOrderSidebar(order, splitMeta) {
 
     shippingEl.textContent = order.morada_envio || 'Morada nao disponivel';
     notesEl.textContent = splitMeta.publicNotes || 'Sem notas adicionais.';
+
+    // Preencher NIF se disponivel
+    if (nifEl) {
+        nifEl.textContent = order.clientes?.nif || 'Nao fornecido';
+    }
 }
 
 function renderStatusTable(order, workflowStatus, splitMeta) {
