@@ -73,7 +73,7 @@ function renderProductsGrid(products) {
                     <div class="price-tag">${product.preco.toFixed(2)}€</div>
                     <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>
                 </div>
-                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                <a href="/pages/templates-gallery.html?produto=${product.id}&nome=${encodeURIComponent(product.nome)}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </a>
@@ -144,7 +144,7 @@ function getCategoryName(categoria) {
 function viewProductDetails(productId) {
     const product = allProducts.find(p => p.id === productId);
     if (!product) return;
-    
+
     // For now, show toast - can be expanded to modal
     showToast(`Visualizar detalhes de: ${product.nome}`, 'info');
 }
@@ -171,13 +171,13 @@ if (priceCheckboxes) {
         checkbox.addEventListener('change', (e) => {
             const min = parseFloat(e.target.dataset.min);
             const max = parseFloat(e.target.dataset.max);
-            
+
             if (e.target.checked) {
                 priceFilters.push({ min, max });
             } else {
                 priceFilters = priceFilters.filter(f => f.min !== min || f.max !== max);
             }
-            
+
             applyFilters();
         });
     });
@@ -189,15 +189,15 @@ if (clearFiltersBtn) {
         currentCategory = 'all';
         const allRadio = document.querySelector('input[name="category"][value="all"]');
         if (allRadio) allRadio.checked = true;
-        
+
         // Reset price filters
         priceFilters = [];
         priceCheckboxes.forEach(checkbox => checkbox.checked = false);
-        
+
         // Reset sort
         currentSort = 'default';
         if (sortSelect) sortSelect.value = 'default';
-        
+
         applyFilters();
         showToast('Filtros limpos', 'info');
     });
@@ -207,7 +207,7 @@ if (clearFiltersBtn) {
 function checkUrlParams() {
     const urlParams = new URLSearchParams(window.location.search);
     const categoria = urlParams.get('categoria');
-    
+
     if (categoria) {
         currentCategory = categoria;
         const radio = document.querySelector(`input[name="category"][value="${categoria}"]`);
