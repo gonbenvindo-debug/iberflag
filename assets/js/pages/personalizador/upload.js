@@ -233,8 +233,21 @@ Object.assign(DesignEditor.prototype, {
                 const minOffsetX = -maxOffsetX;
                 const minOffsetY = -maxOffsetY;
 
-                state.viewport.offsetX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
-                state.viewport.offsetY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
+                const clampedOffsetX = Math.max(minOffsetX, Math.min(maxOffsetX, newOffsetX));
+                const clampedOffsetY = Math.max(minOffsetY, Math.min(maxOffsetY, newOffsetY));
+
+                state.viewport.offsetX = clampedOffsetX;
+                state.viewport.offsetY = clampedOffsetY;
+
+                // Se atingiu o limite, atualizar startX/startY para evitar acumulacao
+                // e dead zone quando inverter direcao
+                if (clampedOffsetX !== newOffsetX) {
+                    drag.startX = event.clientX - (clampedOffsetX - drag.offsetX);
+                }
+                if (clampedOffsetY !== newOffsetY) {
+                    drag.startY = event.clientY - (clampedOffsetY - drag.offsetY);
+                }
+
                 this.layoutUploadCropModal(false);
                 return;
             }
