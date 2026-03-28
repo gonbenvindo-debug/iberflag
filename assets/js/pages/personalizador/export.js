@@ -16,21 +16,24 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        // Usar imagem original se disponivel, senao usar a atual
+        const originalSrc = imgElement.dataset.originalSrc;
         const currentSrc = imgElement.getAttribute('href');
-        if (!currentSrc) {
+        const srcToCrop = originalSrc || currentSrc;
+
+        if (!srcToCrop) {
             showToast('Fonte da imagem não encontrada', 'error');
             return;
         }
 
         const elementToUpdate = this.selectedElement;
 
-        this.openUploadCropModal(currentSrc).then((croppedImageData) => {
+        this.openUploadCropModal(srcToCrop).then((croppedImageData) => {
             if (croppedImageData && elementToUpdate) {
-                const bbox = imgElement.getBBox();
-                const currentWidth = parseFloat(imgElement.getAttribute('width')) || bbox.width;
-                const currentHeight = parseFloat(imgElement.getAttribute('height')) || bbox.height;
-                const currentX = parseFloat(imgElement.getAttribute('x')) || bbox.x;
-                const currentY = parseFloat(imgElement.getAttribute('y')) || bbox.y;
+                // Salvar imagem original na primeira vez que cortar
+                if (!imgElement.dataset.originalSrc && currentSrc) {
+                    imgElement.dataset.originalSrc = currentSrc;
+                }
 
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
@@ -39,44 +42,15 @@ Object.assign(DesignEditor.prototype, {
                     const fullHeight = croppedImageData.fullHeight;
                     const cropData = croppedImageData.cropData;
 
-                    const scaleX = currentWidth / (cropData.width * fullWidth);
-                    const scaleY = currentHeight / (cropData.height * fullHeight);
-                    const offsetX = -(cropData.x * fullWidth * scaleX);
-                    const offsetY = -(cropData.y * fullHeight * scaleY);
+                    const viewBoxX = cropData.x * fullWidth;
+                    const viewBoxY = cropData.y * fullHeight;
+                    const viewBoxWidth = cropData.width * fullWidth;
+                    const viewBoxHeight = cropData.height * fullHeight;
 
-                    imgElement.setAttribute('x', String(currentX + offsetX));
-                    imgElement.setAttribute('y', String(currentY + offsetY));
-                    imgElement.setAttribute('width', String(fullWidth * scaleX));
-                    imgElement.setAttribute('height', String(fullHeight * scaleY));
-
-                    const oldClipId = imgElement.dataset.clipId;
-                    if (oldClipId) {
-                        const oldClip = this.canvas.querySelector(`#${oldClipId}`);
-                        if (oldClip) oldClip.remove();
-                    }
-
-                    const clipId = `image-clip-${Date.now()}`;
-                    imgElement.setAttribute('clip-path', `url(#${clipId})`);
-                    imgElement.dataset.clipId = clipId;
+                    imgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
-
-                    let defs = this.canvas.querySelector('defs');
-                    if (!defs) {
-                        defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                        this.canvas.insertBefore(defs, this.canvas.firstChild);
-                    }
-
-                    const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-                    clipPath.setAttribute('id', clipId);
-                    const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-                    clipRect.setAttribute('x', String(currentX));
-                    clipRect.setAttribute('y', String(currentY));
-                    clipRect.setAttribute('width', String(currentWidth));
-                    clipRect.setAttribute('height', String(currentHeight));
-                    clipPath.appendChild(clipRect);
-                    defs.appendChild(clipPath);
 
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;

@@ -348,7 +348,35 @@ Object.assign(DesignEditor.prototype, {
         });
 
         // Touch events for mobile
+        let pinchStartDistance = 0;
+        let pinchStartScale = 1;
+        let pinchCenter = { x: 0, y: 0 };
+
+        const getPinchDistance = (touches) => {
+            const dx = touches[0].clientX - touches[1].clientX;
+            const dy = touches[0].clientY - touches[1].clientY;
+            return Math.sqrt(dx * dx + dy * dy);
+        };
+
+        const getPinchCenter = (touches) => {
+            return {
+                x: (touches[0].clientX + touches[1].clientX) / 2,
+                y: (touches[0].clientY + touches[1].clientY) / 2
+            };
+        };
+
         const startTouchPointer = (event) => {
+            if (event.touches.length === 2) {
+                // Iniciar pinch zoom
+                event.preventDefault();
+                pinchStartDistance = getPinchDistance(event.touches);
+                pinchStartScale = this.uploadCropState?.viewport?.scale || 1;
+                pinchCenter = getPinchCenter(event.touches);
+                const stageRect = stage.getBoundingClientRect();
+                pinchCenter.x -= stageRect.left;
+                pinchCenter.y -= stageRect.top;
+                return;
+            }
             if (event.touches.length !== 1) return;
             cropLastTouchAt = Date.now();
             event.preventDefault();
@@ -364,6 +392,33 @@ Object.assign(DesignEditor.prototype, {
         };
 
         const moveTouchPointer = (event) => {
+            if (event.touches.length === 2 && this.uploadCropState) {
+                // Pinch zoom
+                event.preventDefault();
+                const currentDistance = getPinchDistance(event.touches);
+                if (pinchStartDistance > 0) {
+                    const scaleRatio = currentDistance / pinchStartDistance;
+                    const state = this.uploadCropState;
+                    const minScale = 1;
+                    const maxScale = 6;
+                    const newScale = Math.min(maxScale, Math.max(minScale, pinchStartScale * scaleRatio));
+
+                    if (newScale !== state.viewport.scale) {
+                        const prevRect = state.imageRect;
+                        const relX = prevRect.width ? (pinchCenter.x - prevRect.x) / prevRect.width : 0.5;
+                        const relY = prevRect.height ? (pinchCenter.y - prevRect.y) / prevRect.height : 0.5;
+
+                        state.viewport.scale = newScale;
+                        this.layoutUploadCropModal(false);
+
+                        const nextRect = state.imageRect;
+                        state.viewport.offsetX += pinchCenter.x - (nextRect.x + nextRect.width * relX);
+                        state.viewport.offsetY += pinchCenter.y - (nextRect.y + nextRect.height * relY);
+                        this.layoutUploadCropModal(false);
+                    }
+                }
+                return;
+            }
             if (event.touches.length !== 1) return;
             cropLastTouchAt = Date.now();
             event.preventDefault();
@@ -373,6 +428,7 @@ Object.assign(DesignEditor.prototype, {
 
         const endTouchPointer = () => {
             cropLastTouchAt = Date.now();
+            pinchStartDistance = 0;
             endPointer({ pointerSource: 'touch' });
         };
 
@@ -576,8 +632,13 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const canvas = document.createElement('canvas');
-        canvas.width = naturalWidth;
-        canvas.height = naturalHeight;
+        const cropWidth = Math.max(1, Math.round(normalized.width * naturalWidth));
+        const cropHeight = Math.max(1, Math.round(normalized.height * naturalHeight));
+        const sourceX = Math.round(normalized.x * naturalWidth);
+        const sourceY = Math.round(normalized.y * naturalHeight);
+
+        canvas.width = cropWidth;
+        canvas.height = cropHeight;
 
         const ctx = canvas.getContext('2d');
         if (!ctx) {
@@ -586,10 +647,7 @@ Object.assign(DesignEditor.prototype, {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.drawImage(image, 0, 0, naturalWidth, naturalHeight);
-
-        const cropWidth = Math.max(1, Math.round(normalized.width * naturalWidth));
-        const cropHeight = Math.max(1, Math.round(normalized.height * naturalHeight));
+        ctx.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
         return {
             dataUrl: canvas.toDataURL('image/png'),
@@ -704,54 +762,27 @@ Object.assign(DesignEditor.prototype, {
         const fullHeight = options.fullHeight || height;
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        const imgX = center.x - (fitted.width / 2);
-        const imgY = center.y - (fitted.height / 2);
-
+        img.setAttribute('x', String(center.x - (fitted.width / 2)));
+        img.setAttribute('y', String(center.y - (fitted.height / 2)));
+        img.setAttribute('width', String(fitted.width));
+        img.setAttribute('height', String(fitted.height));
+        img.setAttribute('href', src);
         img.setAttribute('data-editable', 'true');
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
-        img.setAttribute('preserveAspectRatio', 'none');
 
         if (cropData) {
-            const scaleX = fitted.width / (cropData.width * fullWidth);
-            const scaleY = fitted.height / (cropData.height * fullHeight);
-            const offsetX = -(cropData.x * fullWidth * scaleX);
-            const offsetY = -(cropData.y * fullHeight * scaleY);
-
-            img.setAttribute('x', String(imgX + offsetX));
-            img.setAttribute('y', String(imgY + offsetY));
-            img.setAttribute('width', String(fullWidth * scaleX));
-            img.setAttribute('height', String(fullHeight * scaleY));
-            img.setAttribute('href', src);
-
-            const clipId = `image-clip-${Date.now()}`;
-            img.setAttribute('clip-path', `url(#${clipId})`);
-            img.dataset.clipId = clipId;
+            const viewBoxX = cropData.x * fullWidth;
+            const viewBoxY = cropData.y * fullHeight;
+            const viewBoxWidth = cropData.width * fullWidth;
+            const viewBoxHeight = cropData.height * fullHeight;
+            img.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
+            img.setAttribute('preserveAspectRatio', 'none');
             img.dataset.cropData = JSON.stringify(cropData);
             img.dataset.fullWidth = String(fullWidth);
             img.dataset.fullHeight = String(fullHeight);
-
-            let defs = this.canvas.querySelector('defs');
-            if (!defs) {
-                defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-                this.canvas.insertBefore(defs, this.canvas.firstChild);
-            }
-
-            const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-            clipPath.setAttribute('id', clipId);
-            const clipRect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            clipRect.setAttribute('x', String(imgX));
-            clipRect.setAttribute('y', String(imgY));
-            clipRect.setAttribute('width', String(fitted.width));
-            clipRect.setAttribute('height', String(fitted.height));
-            clipPath.appendChild(clipRect);
-            defs.appendChild(clipPath);
         } else {
-            img.setAttribute('x', String(imgX));
-            img.setAttribute('y', String(imgY));
-            img.setAttribute('width', String(fitted.width));
-            img.setAttribute('height', String(fitted.height));
-            img.setAttribute('href', src);
+            img.setAttribute('preserveAspectRatio', 'none');
         }
 
         if (qrContent) {

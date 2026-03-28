@@ -2,7 +2,7 @@
 
 ## 📋 PRINCÍPIOS FUNDAMENTAIS
 
-### 1. **MOBILE-FIRST SEMPRE**
+### 1. **MOBILE E COMPUTADOR RESPONSIVE**
 - Todo CSS deve ser desenvolvido para computador e mobile
 - Use `@media (min-width: 1024px)` para desktop
 - Buttons touch-friendly: mínimo 44px
