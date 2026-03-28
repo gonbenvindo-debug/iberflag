@@ -228,9 +228,9 @@ Object.assign(DesignEditor.prototype, {
 
                 // Limitar pan para nao afastar demasiado da imagem
                 // Desktop: 80% para todos os lados
-                // Mobile: 150% horizontal (mais scroll lateral), 80% vertical
+                // Mobile: 100% horizontal, 80% vertical
                 const isTouch = event.pointerSource === 'touch';
-                const maxOffsetX = imageRect.width * (isTouch ? 1.5 : 0.8);
+                const maxOffsetX = imageRect.width * (isTouch ? 1.0 : 0.8);
                 const maxOffsetY = imageRect.height * 0.8;
                 const minOffsetX = -maxOffsetX;
                 const minOffsetY = -maxOffsetY;
