@@ -828,12 +828,14 @@ if (productForm) {
 
             if (currentProductId) {
                 await saveProductBaseAssignments(currentProductId);
+                await saveProductTemplates(currentProductId);
             } else {
                 const insertedProductId = Array.isArray(result.data) && result.data[0]?.id
                     ? Number(result.data[0].id)
                     : null;
                 if (insertedProductId) {
                     await saveProductBaseAssignments(insertedProductId);
+                    await saveProductTemplates(insertedProductId);
                 }
             }
 
@@ -885,6 +887,12 @@ async function editProduct(id) {
         await loadBaseCatalog(true);
         const baseAssignments = await loadProductBaseAssignments(id);
         renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
+
+        // Carregar templates associados
+        await loadTemplatesCatalog();
+        currentProductTemplates = await loadProductTemplates(id);
+        renderProductTemplatesAssignments();
+        renderAvailableTemplatesSelect();
 
         openModal(productModal);
 
@@ -2176,5 +2184,151 @@ if (templateForm) {
         closeTemplateModalFn();
         loadTemplates();
         showToast(currentTemplateId ? 'Template atualizado!' : 'Template criado!', 'success');
+    });
+}
+
+// ===== TEMPLATES MANAGEMENT FOR PRODUCTS =====
+const productTemplatesAssignments = document.getElementById('product-templates-assignments');
+const availableTemplatesSelect = document.getElementById('available-templates-select');
+const addTemplateToProductBtn = document.getElementById('add-template-to-product');
+let templatesCatalogCache = [];
+let currentProductTemplates = [];
+
+async function loadTemplatesCatalog(force = false) {
+    if (!force && Array.isArray(templatesCatalogCache) && templatesCatalogCache.length > 0) {
+        return templatesCatalogCache;
+    }
+
+    const { data, error } = await supabaseClient
+        .from('templates')
+        .select('*')
+        .eq('ativo', true)
+        .order('nome', { ascending: true });
+
+    if (error) {
+        console.warn('Erro ao carregar templates:', error.message);
+        templatesCatalogCache = [];
+        return [];
+    }
+
+    templatesCatalogCache = data || [];
+    return templatesCatalogCache;
+}
+
+function renderAvailableTemplatesSelect() {
+    if (!availableTemplatesSelect) return;
+
+    const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
+    const assignedIds = new Set(currentProductTemplates.map(pt => pt.template_id));
+
+    const availableTemplates = allTemplates.filter(t => !assignedIds.has(t.id));
+
+    availableTemplatesSelect.innerHTML = '<option value="">Selecione um template...</option>' +
+        availableTemplates.map(t => `<option value="${t.id}">${escapeHtml(t.nome)} (${t.categoria})</option>`).join('');
+}
+
+function renderProductTemplatesAssignments() {
+    if (!productTemplatesAssignments) return;
+
+    if (currentProductTemplates.length === 0) {
+        productTemplatesAssignments.innerHTML = '<p class="text-sm text-gray-500">Nenhum template associado. Selecione templates disponiveis acima.</p>';
+        return;
+    }
+
+    productTemplatesAssignments.innerHTML = currentProductTemplates.map((pt) => {
+        const template = templatesCatalogCache.find(t => t.id === pt.template_id) || { nome: 'Template nao encontrado', categoria: '-' };
+        return `
+            <div class="rounded-lg border border-gray-200 bg-white p-3 flex items-center justify-between">
+                <div class="flex items-center gap-3">
+                    <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
+                        <img src="${template.thumbnail_url || template.preview_url || '/assets/images/template-placeholder.svg'}" 
+                            alt="${escapeHtml(template.nome)}" 
+                            class="w-full h-full object-cover"
+                            onerror="this.src='/assets/images/template-placeholder.svg'">
+                    </div>
+                    <div>
+                        <p class="text-sm font-semibold text-gray-900">${escapeHtml(template.nome)}</p>
+                        <p class="text-xs text-gray-500">${template.categoria}</p>
+                    </div>
+                </div>
+                <button type="button" class="remove-template-btn text-red-500 hover:text-red-700 p-2" data-template-id="${pt.template_id}">
+                    <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
+            </div>
+        `;
+    }).join('');
+
+    productTemplatesAssignments.querySelectorAll('.remove-template-btn').forEach(btn => {
+        btn.addEventListener('click', () => {
+            const templateId = btn.dataset.templateId;
+            currentProductTemplates = currentProductTemplates.filter(pt => pt.template_id !== templateId);
+            renderProductTemplatesAssignments();
+            renderAvailableTemplatesSelect();
+        });
+    });
+
+    lucide.createIcons();
+}
+
+async function loadProductTemplates(productId) {
+    const { data, error } = await supabaseClient
+        .from('produto_templates')
+        .select('*, templates(*)')
+        .eq('produto_id', productId)
+        .order('ordem', { ascending: true });
+
+    if (error) {
+        console.warn('Erro ao carregar templates do produto:', error.message);
+        return [];
+    }
+
+    return (data || []).map(d => ({ template_id: d.template_id, ordem: d.ordem }));
+}
+
+async function saveProductTemplates(productId) {
+    const { error: deleteError } = await supabaseClient
+        .from('produto_templates')
+        .delete()
+        .eq('produto_id', productId);
+
+    if (deleteError) {
+        console.warn('Erro ao remover templates antigos:', deleteError.message);
+    }
+
+    if (currentProductTemplates.length === 0) {
+        return;
+    }
+
+    const rows = currentProductTemplates.map((pt, index) => ({
+        produto_id: productId,
+        template_id: pt.template_id,
+        ordem: index + 1
+    }));
+
+    const { error: insertError } = await supabaseClient
+        .from('produto_templates')
+        .insert(rows);
+
+    if (insertError) {
+        console.warn('Erro ao guardar templates:', insertError.message);
+    }
+}
+
+if (addTemplateToProductBtn) {
+    addTemplateToProductBtn.addEventListener('click', async () => {
+        const templateId = availableTemplatesSelect?.value;
+        if (!templateId) return;
+
+        await loadTemplatesCatalog();
+
+        if (!currentProductTemplates.some(pt => pt.template_id === templateId)) {
+            currentProductTemplates.push({
+                template_id: templateId,
+                ordem: currentProductTemplates.length + 1
+            });
+            renderProductTemplatesAssignments();
+            renderAvailableTemplatesSelect();
+            availableTemplatesSelect.value = '';
+        }
     });
 }
