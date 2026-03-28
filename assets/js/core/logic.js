@@ -29,7 +29,7 @@ function getStoredCart() {
     return [];
 }
 
-let cart = [];
+var cart = [];
 
 // ===== DOM ELEMENTS =====
 var productsContainer = document.getElementById('products-container');
