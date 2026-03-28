@@ -188,31 +188,18 @@ Object.assign(DesignEditor.prototype, {
         const cropIsRecentTouch = () => (Date.now() - cropLastTouchAt) < 700;
 
         const startPointer = (event) => {
-            console.log('[DEBUG] startPointer chamado', event.target?.className, event.target?.id);
-            if (!this.uploadCropState) {
-                console.log('[DEBUG] Sem uploadCropState');
-                return;
-            }
-            if (cropIsRecentTouch() && event.pointerSource === 'mouse') {
-                console.log('[DEBUG] Ignorando mouse apos touch');
-                return;
-            }
-            if (event.button !== undefined && event.button !== 0) {
-                console.log('[DEBUG] Botao diferente de 0:', event.button);
-                return;
-            }
+            if (!this.uploadCropState) return;
+            if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
+            if (event.button !== undefined && event.button !== 0) return;
 
             // Verificar se o clique foi em um handle de resize
             const isHandle = event.target?.closest?.('.upload-crop-handle') !== null;
-            console.log('[DEBUG] isHandle:', isHandle);
             if (isHandle) {
                 // Não iniciar pan se clicou em um handle - o handle tem seu próprio listener
-                console.log('[DEBUG] Clicou em handle, retornando');
                 return;
             }
 
             // Iniciar pan em qualquer outro lugar do stage
-            console.log('[DEBUG] Iniciando PAN');
             this.uploadCropState.dragging = {
                 mode: 'pan',
                 startX: event.clientX,
@@ -351,7 +338,14 @@ Object.assign(DesignEditor.prototype, {
         };
 
         stage.addEventListener('mousedown', (event) => {
-            startPointer({ ...event, pointerSource: 'mouse', preventDefault: () => event.preventDefault() });
+            startPointer({
+                clientX: event.clientX,
+                clientY: event.clientY,
+                button: event.button,
+                target: event.target,
+                pointerSource: 'mouse',
+                preventDefault: () => event.preventDefault()
+            });
         });
 
         // Touch events for mobile
