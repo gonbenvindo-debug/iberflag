@@ -88,10 +88,10 @@
                                     <input type="tel" name="telefone" required class="form-input">
                                 </div>
                                 <div>
-                                    <label class="form-label">NIF (opcional)</label>
+                                    <label class="form-label">NIF / NIE (opcional)</label>
                                     <input type="text" name="nif" id="nif-input" class="form-input" maxlength="9"
-                                        placeholder="123456789">
-                                    <p class="text-xs text-gray-500 mt-1">9 dígitos para fatura com NIF</p>
+                                        placeholder="PT: 123456789 | ES: 12345678A">
+                                    <p class="text-xs text-gray-500 mt-1">9 dígitos (PT) ou 8 dígitos + letra (ES)</p>
                                 </div>
                             </div>
 
@@ -269,19 +269,19 @@
     <script>
         lucide.createIcons();
 
-        // Validacao do NIF portugues
+        // Validacao do NIF portugues e espanhol
         const nifInput = document.getElementById('nif-input');
         if (nifInput) {
             nifInput.addEventListener('input', (e) => {
-                // Permitir apenas numeros
-                e.target.value = e.target.value.replace(/\D/g, '').slice(0, 9);
+                // Permitir numeros e letras, converter para uppercase
+                e.target.value = e.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
             });
 
             nifInput.addEventListener('blur', (e) => {
                 const nif = e.target.value;
                 if (nif && !validarNIF(nif)) {
                     e.target.style.borderColor = '#ef4444';
-                    showToast('NIF inválido. Digite 9 dígitos numéricos.', 'error');
+                    showToast('NIF/NIE inválido. Use 9 dígitos (PT) ou 8 dígitos + letra (ES).', 'error');
                 } else {
                     e.target.style.borderColor = '';
                 }
@@ -289,10 +289,24 @@
         }
 
         function validarNIF(nif) {
-            if (!nif || nif.length !== 9) return false;
-            if (!/^\d{9}$/.test(nif)) return false;
+            if (!nif) return false;
 
-            // Validacao do algoritmo do NIF portugues
+            // Verificar se e NIF portugues (9 digitos)
+            if (/^\d{9}$/.test(nif)) {
+                return validarNIFPortugues(nif);
+            }
+
+            // Verificar se e NIF espanhol (formato: 12345678A ou A12345678)
+            if (/^\d{8}[A-Z]$/.test(nif) || /^[A-Z]\d{8}$/.test(nif)) {
+                return validarNIFEspanhol(nif);
+            }
+
+            return false;
+        }
+
+        function validarNIFPortugues(nif) {
+            if (!nif || nif.length !== 9) return false;
+
             const digitos = nif.split('').map(Number);
             const multiplicadores = [9, 8, 7, 6, 5, 4, 3, 2];
             let soma = 0;
@@ -305,6 +319,33 @@
             const digitoControlo = resto < 2 ? 0 : 11 - resto;
 
             return digitos[8] === digitoControlo;
+        }
+
+        function validarNIFEspanhol(nif) {
+            if (!nif || nif.length !== 9) return false;
+
+            // Formato para pessoas fisicas: 8 digitos + letra (ex: 12345678A)
+            if (/^\d{8}[A-Z]$/.test(nif)) {
+                const numeros = nif.substring(0, 8);
+                const letra = nif.charAt(8);
+                const indice = parseInt(numeros, 10) % 23;
+                const letrasValidas = 'TRWAGMYFPDXBNJZSQVHLCKE';
+                return letrasValidas.charAt(indice) === letra;
+            }
+
+            // Formato para empresas/entidades: letra + 8 digitos (ex: A12345678)
+            if (/^[A-Z]\d{8}$/.test(nif)) {
+                // Validacao simplificada para empresas - verificar se a letra inicial e valida
+                const letraInicial = nif.charAt(0);
+                const letrasEmpresaValidas = 'ABCDEFGHJKLMNPQRSUVW';
+                if (!letrasEmpresaValidas.includes(letraInicial)) return false;
+
+                // Os 8 digitos devem ser numericos
+                const digitos = nif.substring(1);
+                return /^\d{8}$/.test(digitos);
+            }
+
+            return false;
         }
     </script>
 </body>
