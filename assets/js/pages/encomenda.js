@@ -393,7 +393,7 @@ function renderOrderItems(order, items, splitMeta) {
         return;
     }
 
-    const rowsHtml = listSource.map((item, index) => {
+    const rowsHtml = listSource.filter(item => item != null).map((item, index) => {
         const snapshot = resolveOrderItemSnapshot(splitMeta.meta, item, index);
         const visuals = resolveOrderItemVisual(item, snapshot);
         const productName = item?.produtos?.nome || snapshot?.nome || `Produto #${item.produto_id || index + 1}`;
