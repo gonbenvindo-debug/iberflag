@@ -1,5 +1,14 @@
 // ===== PRODUCTS PAGE LOGIC =====
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 let allProducts = [];
 let filteredProducts = [];
 let currentCategory = 'all';
@@ -263,12 +272,12 @@ function closeTemplatesModal() {
 
 function startBlank() {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto_id=${currentProductId}&produto_nome=${encodeURIComponent(currentProductName)}`;
+    window.location.href = `/pages/personalizar.html?produto=${currentProductId}`;
 }
 
 function selectTemplate(templateId) {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto_id=${currentProductId}&produto_nome=${encodeURIComponent(currentProductName)}&template_id=${templateId}`;
+    window.location.href = `/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`;
 }
 
 async function loadTemplates() {
@@ -327,34 +336,46 @@ function renderTemplates(templates) {
 
     emptyState.classList.add('hidden');
 
-    // Card 'Comecar em Branco' no inicio
     const blankCard = `
-        <div class="template-card cursor-pointer group" onclick="startBlank()">
-            <div class="aspect-square rounded-xl overflow-hidden border-2 border-dashed border-gray-300 group-hover:border-blue-500 transition-all bg-gray-50 flex flex-col items-center justify-center">
-                <i data-lucide="plus" class="w-12 h-12 text-gray-400 group-hover:text-blue-500 transition-colors mb-2"></i>
-                <span class="text-sm font-medium text-gray-500 group-hover:text-blue-600">Comecar em Branco</span>
-            </div>
-            <div class="mt-2">
-                <p class="font-semibold text-sm text-gray-900">Design Personalizado</p>
-                <p class="text-xs text-gray-500">Criar do zero</p>
+        <div class="group cursor-pointer" onclick="startBlank()">
+            <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50/50 transition-all duration-300 bg-gray-50/80 flex flex-col items-center justify-center gap-3">
+                <div class="w-14 h-14 rounded-2xl bg-white shadow-sm border border-gray-200 group-hover:shadow-md group-hover:border-blue-300 flex items-center justify-center transition-all duration-300">
+                    <i data-lucide="plus" class="w-7 h-7 text-gray-400 group-hover:text-blue-500 transition-colors"></i>
+                </div>
+                <div class="text-center">
+                    <p class="text-sm font-semibold text-gray-600 group-hover:text-blue-700 transition-colors">Em Branco</p>
+                    <p class="text-[11px] text-gray-400">Criar do zero</p>
+                </div>
             </div>
         </div>
     `;
 
-    grid.innerHTML = blankCard + templates.map(template => `
-        <div class="template-card cursor-pointer group" onclick="selectTemplate('${template.id}')">
-            <div class="aspect-square rounded-xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all bg-gray-50">
-                <img src="${template.thumbnail_url || template.preview_url || '/favicon.svg'}" 
-                     alt="${template.nome}" 
-                     class="w-full h-full object-cover"
-                     onerror="this.src='/favicon.svg'">
+    grid.innerHTML = blankCard + templates.map(template => {
+        const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
+        return `
+        <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
+            <div class="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-100 relative shadow-sm group-hover:shadow-lg">
+                <img src="${previewUrl}" 
+                     alt="${escapeHtml(template.nome)}" 
+                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                     onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
+                <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <span class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+                        <i data-lucide="mouse-pointer-click" class="w-3 h-3"></i>
+                        Usar este design
+                    </span>
+                </div>
             </div>
-            <div class="mt-2">
-                <p class="font-semibold text-sm text-gray-900">${template.nome}</p>
-                <p class="text-xs text-gray-500">${template.categoria || 'Geral'}</p>
+            <div class="mt-2.5 px-1">
+                <p class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</p>
+                <p class="text-xs text-gray-500 mt-0.5">${template.categoria || 'Geral'}</p>
             </div>
         </div>
-    `).join('');
+    `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
 // Filter buttons event listeners
