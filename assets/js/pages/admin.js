@@ -2222,7 +2222,7 @@ function renderProductTemplatesGrid() {
         return `
             <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 data-template-id="${t.id}">
-                <div class="template-toggle-preview relative bg-gray-50 overflow-hidden">
+                <div class="template-toggle-preview relative bg-gray-50">
                     <img src="${previewUrl}" 
                         alt="${safeName}" 
                         class="w-full h-full object-contain transition-transform duration-300 group-hover:scale-[1.02]"
