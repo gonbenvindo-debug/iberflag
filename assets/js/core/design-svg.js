@@ -633,7 +633,7 @@
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
         const ratio = safeWidth / safeHeight;
-        const margin = 50;
+        const margin = 0;
         const contentLongestSide = 700;
 
         let contentWidth = contentLongestSide;
@@ -921,9 +921,6 @@
             image.setAttribute('mask', `url(#${maskId})`);
             wrapper.appendChild(image);
         }
-
-        const outlineNode = buildPreviewOutlineNode(maskNode, previewGeometry.transform);
-        wrapper.appendChild(outlineNode);
 
         const serialized = new XMLSerializer().serializeToString(wrapper);
         cachePreviewMarkup(cacheKey, serialized);
