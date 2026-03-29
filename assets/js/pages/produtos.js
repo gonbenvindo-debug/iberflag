@@ -505,11 +505,10 @@ function renderTemplates(templates) {
     emptyState.classList.add('hidden');
 
     grid.innerHTML = blankCard + templates.map(template => {
-        const isBannerHorizontal = Number(currentProduct?.id) === 24 || String(currentProduct?.nome || '').toLowerCase() === 'banner horizontal 3x1m';
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
             template.preview_url || template.thumbnail_url,
             currentProduct?.svg_template || null,
-            { backgroundColor: '#f8fafc', debug: isBannerHorizontal }
+            { backgroundColor: '#f8fafc' }
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewAspectRatio = Math.max(
