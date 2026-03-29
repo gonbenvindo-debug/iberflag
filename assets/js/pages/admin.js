@@ -2305,21 +2305,20 @@ function renderProductTemplatesGrid() {
         const selected = isTemplateSelected(t.id);
         const previewUrl = t.preview_url || t.thumbnail_url || '/assets/images/template-placeholder.svg';
         return `
-            <div class="template-toggle-card group relative rounded-xl border-2 overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
+            <div class="template-toggle-card group relative rounded-lg border-2 overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
                 data-template-id="${t.id}">
-                <div class="aspect-[4/3] bg-gray-50 relative overflow-hidden">
+                <div class="aspect-square bg-gray-50 relative overflow-hidden p-1">
                     <img src="${previewUrl}" 
                         alt="${escapeHtml(t.nome)}" 
-                        class="w-full h-full object-cover transition-transform duration-300 ${selected ? 'scale-100' : 'group-hover:scale-105'}"
+                        class="w-full h-full object-contain transition-transform duration-300"
                         onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
-                    <div class="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${selected ? 'bg-blue-500 scale-100' : 'bg-white/80 border border-gray-300 scale-90 opacity-0 group-hover:opacity-100'}">
-                        ${selected ? '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>' : ''}
+                    <div class="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${selected ? 'bg-blue-500 scale-100' : 'bg-white/80 border border-gray-300 scale-90 opacity-0 group-hover:opacity-100'}">
+                        ${selected ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
                     </div>
                     ${selected ? '<div class="absolute inset-0 bg-blue-500/10"></div>' : ''}
                 </div>
-                <div class="p-2.5">
-                    <h4 class="font-semibold text-xs text-gray-900 truncate">${escapeHtml(t.nome)}</h4>
-                    <span class="text-[10px] text-gray-500">${t.categoria || ''}</span>
+                <div class="p-1.5">
+                    <h4 class="font-semibold text-[10px] text-gray-900 truncate leading-tight">${escapeHtml(t.nome)}</h4>
                 </div>
             </div>`;
     }).join('');
