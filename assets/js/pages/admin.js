@@ -2071,23 +2071,112 @@ function updateTemplatesCounter() {
     }
 }
 
-function openTemplateEditorFromCard(templateId) {
+function openTemplateInCustomizerFromCard(templateId) {
+    const numericTemplateId = Number(templateId);
+    if (!Number.isFinite(numericTemplateId)) return;
+
+    if (!currentProductId) {
+        showToast('Guarde o produto primeiro para continuar a editar o design', 'warning');
+        return;
+    }
+
+    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(currentProductId))}&admin=true&editTemplate=${encodeURIComponent(String(numericTemplateId))}`;
+    window.open(customizerUrl, '_blank', 'noopener,noreferrer');
+}
+
+function confirmTemplateDeleteCard(templateName = '') {
+    return new Promise((resolve) => {
+        const overlay = document.createElement('div');
+        overlay.className = 'fixed inset-0 z-[120] bg-black/60 flex items-center justify-center p-4';
+        overlay.innerHTML = `
+            <div class="w-full max-w-md rounded-2xl bg-white border border-gray-200 shadow-2xl p-6">
+                <div class="flex items-start gap-3">
+                    <div class="w-10 h-10 rounded-full bg-red-100 text-red-600 flex items-center justify-center flex-shrink-0">
+                        <i data-lucide="trash-2" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 class="text-lg font-bold text-gray-900">Apagar template</h3>
+                        <p class="text-sm text-gray-600 mt-1">Esta ação remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e não pode ser desfeita.</p>
+                    </div>
+                </div>
+                <div class="mt-5 flex flex-col-reverse sm:flex-row gap-3 justify-end">
+                    <button type="button" data-action="cancel" class="px-4 py-2.5 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition min-h-[44px]">Cancelar</button>
+                    <button type="button" data-action="confirm" class="px-4 py-2.5 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 transition min-h-[44px] inline-flex items-center justify-center gap-2">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        Apagar Template
+                    </button>
+                </div>
+            </div>
+        `;
+
+        const cleanup = (result) => {
+            overlay.remove();
+            document.removeEventListener('keydown', onEsc);
+            resolve(result);
+        };
+
+        const onEsc = (event) => {
+            if (event.key === 'Escape') {
+                cleanup(false);
+            }
+        };
+
+        overlay.addEventListener('click', (event) => {
+            const target = event.target;
+            if (!(target instanceof Element)) return;
+
+            if (target === overlay) {
+                cleanup(false);
+                return;
+            }
+
+            const button = target.closest('[data-action]');
+            if (!button) return;
+
+            const action = button.getAttribute('data-action');
+            cleanup(action === 'confirm');
+        });
+
+        document.addEventListener('keydown', onEsc);
+        document.body.appendChild(overlay);
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    });
+}
+
+async function deleteTemplateFromCard(templateId) {
     const numericTemplateId = Number(templateId);
     if (!Number.isFinite(numericTemplateId)) return;
 
     const template = templatesCatalogCache.find((item) => Number(item.id) === numericTemplateId) || null;
-    if (template) {
-        const payload = {
-            id: template.id,
-            nome: template.nome || '',
-            categoria: template.categoria || 'promocoes',
-            elementos: Array.isArray(template.elementos) ? template.elementos : []
-        };
-        window.localStorage.setItem('iberflag_editor_template_payload', JSON.stringify(payload));
-    }
+    const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
+    if (!confirmed) return;
 
-    const editorUrl = `/pages/admin-template-editor.html?templateId=${encodeURIComponent(String(numericTemplateId))}`;
-    window.open(editorUrl, '_blank', 'noopener,noreferrer');
+    try {
+        const { error: deleteLinksError } = await supabaseClient
+            .from('produto_templates')
+            .delete()
+            .eq('template_id', numericTemplateId);
+
+        if (deleteLinksError) {
+            console.warn('Erro ao remover vínculos do template:', deleteLinksError.message);
+        }
+
+        const { error: deleteTemplateError } = await supabaseClient
+            .from('templates')
+            .delete()
+            .eq('id', numericTemplateId);
+
+        if (deleteTemplateError) throw deleteTemplateError;
+
+        showToast('Template apagado com sucesso', 'success');
+        await loadTemplatesCatalog(true);
+        renderProductTemplatesGrid();
+    } catch (error) {
+        console.error('Erro ao apagar template:', error);
+        showToast('Erro ao apagar template', 'error');
+    }
 }
 
 function renderProductTemplatesGrid() {
@@ -2128,11 +2217,17 @@ function renderProductTemplatesGrid() {
             </div>`;
     }).join('');
 
+    grid.querySelectorAll('.template-toggle-card').forEach((card) => {
+        card.addEventListener('click', () => {
+            openTemplateInCustomizerFromCard(card.dataset.templateId);
+        });
+    });
+
     grid.querySelectorAll('.template-edit-btn').forEach((button) => {
         button.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            openTemplateEditorFromCard(button.dataset.templateId);
+            deleteTemplateFromCard(button.dataset.templateId);
         });
     });
 
