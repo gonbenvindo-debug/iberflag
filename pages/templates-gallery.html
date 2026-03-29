@@ -375,22 +375,15 @@
             div.className = 'template-card';
             div.onclick = () => selectTemplate(template);
 
-            const previewSource = template.design_svg || template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
-            const hasExactSvgPreview = (
-                (typeof template.design_svg === 'string' && template.design_svg.trim()) ||
-                (typeof template.preview_url === 'string' && (
-                    template.preview_url.includes('<svg') ||
-                    template.preview_url.startsWith('data:image/svg+xml')
-                ))
-            );
+            const previewUrl = template.thumbnail_url || template.preview_url || '/assets/images/template-placeholder.svg';
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
-                previewSource,
-                hasExactSvgPreview ? null : (template.mask_svg || null),
+                previewUrl,
+                null,
                 { backgroundColor: '#f8fafc' }
             );
             const previewAspectRatio = Math.max(
                 0.2,
-                Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewSource, 4 / 3)) || (4 / 3)
+                Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewUrl, 4 / 3)) || (4 / 3)
             );
             const categoryLabels = {
                 'promocoes': 'Promocoes',
@@ -404,7 +397,7 @@
                 <div class="template-preview" style="--preview-ratio:${previewAspectRatio};">
                     ${previewMarkup
                         ? previewMarkup
-                        : `<img src="${previewSource}" alt="${template.nome}" loading="lazy"
+                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
                             onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>
                 <div class="template-info">

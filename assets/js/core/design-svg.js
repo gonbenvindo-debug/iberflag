@@ -5,13 +5,10 @@
     const SVG_NS = 'http://www.w3.org/2000/svg';
     const DEFAULT_SIZE = { width: 800, height: 600 };
     const EXCLUDED_IDS = new Set([
-        'print-area-background',
         'print-area-outline',
         'print-area-shape-outline',
         'print-area-outside-overlay',
-        'print-area-outside-mask',
         'print-area-outside-grid',
-        'print-area-outside-grid-pattern',
         'resize-handles'
     ]);
     const EXCLUDED_CLASSES = new Set([
@@ -42,71 +39,6 @@
             .filter(([, value]) => value !== null && value !== undefined && value !== '')
             .map(([key, value]) => `${key}:${value}`)
             .join(';');
-    }
-
-    function buildSvgDataUrl(svgMarkup) {
-        if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
-            return '';
-        }
-
-        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup.trim())}`;
-    }
-
-    function inlineComputedStyles(sourceNode, targetNode) {
-        if (!sourceNode || !targetNode || sourceNode.nodeType !== 1 || targetNode.nodeType !== 1) {
-            return;
-        }
-
-        if (typeof window === 'undefined' || typeof window.getComputedStyle !== 'function') {
-            return;
-        }
-
-        try {
-            const computedStyle = window.getComputedStyle(sourceNode);
-            if (!computedStyle) return;
-
-            const style = targetNode.style;
-            for (let index = 0; index < computedStyle.length; index += 1) {
-                const propertyName = computedStyle[index];
-                const propertyValue = computedStyle.getPropertyValue(propertyName);
-                if (propertyValue === undefined || propertyValue === null || propertyValue === '') {
-                    continue;
-                }
-                style.setProperty(propertyName, propertyValue, computedStyle.getPropertyPriority(propertyName));
-            }
-        } catch (error) {
-            // If computed styles are not available, fall back to the attributes already present.
-        }
-    }
-
-    function cloneNodeWithInlineStyles(sourceNode, options = {}) {
-        if (!sourceNode) {
-            return null;
-        }
-
-        if (sourceNode.nodeType === 3 || sourceNode.nodeType === 4) {
-            return sourceNode.cloneNode(true);
-        }
-
-        if (sourceNode.nodeType !== 1) {
-            return null;
-        }
-
-        if (!options.keepHelperNodes && shouldSkipNode(sourceNode)) {
-            return null;
-        }
-
-        const clone = sourceNode.cloneNode(false);
-        inlineComputedStyles(sourceNode, clone);
-
-        Array.from(sourceNode.childNodes || []).forEach((childNode) => {
-            const childClone = cloneNodeWithInlineStyles(childNode, options);
-            if (childClone) {
-                clone.appendChild(childClone);
-            }
-        });
-
-        return clone;
     }
 
     function normalizeTemplateElement(data = {}) {
@@ -460,76 +392,22 @@
         svg.setAttribute('width', String(width));
         svg.setAttribute('height', String(height));
         svg.setAttribute('preserveAspectRatio', 'none');
-        svg.setAttribute('style', buildStyleString({
-            'background-color': options.backgroundColor || 'transparent'
-        }));
 
         const rootDefs = canvas.querySelector?.('defs');
-        const printAreaOutline = canvas.querySelector?.('#print-area-shape-outline');
-        const defs = document.createElementNS(SVG_NS, 'defs');
-        let clipPathId = '';
-
         if (rootDefs) {
-            Array.from(rootDefs.childNodes || []).forEach((node) => {
-                const clonedNode = cloneNodeWithInlineStyles(node, { keepHelperNodes: true });
-                if (clonedNode) {
-                    defs.appendChild(clonedNode);
-                }
-            });
+            svg.appendChild(document.importNode(rootDefs, true));
         }
 
-        if (printAreaOutline) {
-            clipPathId = `design-export-clip-${Math.random().toString(36).slice(2, 10)}`;
-            const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-            clipPath.setAttribute('id', clipPathId);
-            clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-
-            const clipNode = cloneNodeWithInlineStyles(printAreaOutline, { keepHelperNodes: true });
-            if (clipNode) {
-                clipNode.removeAttribute?.('id');
-                clipNode.removeAttribute?.('pointer-events');
-                clipNode.removeAttribute?.('opacity');
-                clipNode.removeAttribute?.('stroke');
-                clipNode.removeAttribute?.('stroke-width');
-                clipNode.removeAttribute?.('stroke-dasharray');
-                clipNode.removeAttribute?.('fill');
-                clipNode.removeAttribute?.('style');
-                clipNode.setAttribute('fill', '#ffffff');
-                clipNode.setAttribute('stroke', 'none');
-                clipNode.setAttribute('pointer-events', 'none');
-                clipPath.appendChild(clipNode);
-                defs.appendChild(clipPath);
-            }
-        }
-
-        if (defs.childNodes.length > 0) {
-            svg.appendChild(defs);
-        }
-
-        const clippedGroup = document.createElementNS(SVG_NS, 'g');
-        if (clipPathId) {
-            clippedGroup.setAttribute('clip-path', `url(#${clipPathId})`);
-        }
-
-        Array.from(canvas.childNodes || [])
+        Array.from(canvas.children || [])
+            .filter((node) => !shouldSkipNode(node))
             .forEach((node) => {
-                if (node.nodeType === 1 && String(node.tagName || '').toLowerCase() === 'defs') {
-                    return;
-                }
-                const clone = cloneNodeWithInlineStyles(node, { keepHelperNodes: false });
-                if (!clone) {
-                    return;
-                }
-
+                const clone = node.cloneNode(true);
                 if (clone.nodeType === 1) {
                     clone.classList?.remove('element-selected');
                     clone.removeAttribute?.('data-lucide');
                 }
-
-                clippedGroup.appendChild(clone);
+                svg.appendChild(clone);
             });
-
-        svg.appendChild(clippedGroup);
 
         return new XMLSerializer().serializeToString(svg);
     }
@@ -1201,7 +1079,6 @@
     window.DesignSvgStore = {
         DEFAULT_SIZE,
         escapeXml,
-        buildSvgDataUrl,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
         getSvgAspectRatio,

@@ -114,10 +114,10 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            const svgMarkup = window.DesignSvgStore?.extractTemplateSvg(data.design_svg, {
+            const svgMarkup = window.DesignSvgStore?.extractTemplateSvg(data.elementos, {
                 width: this.baseCanvasSize?.width || 800,
                 height: this.baseCanvasSize?.height || 600
-            }) || window.DesignSvgStore?.extractTemplateSvg(data.elementos, {
+            }) || window.DesignSvgStore?.extractTemplateSvg(data.design_svg, {
                 width: this.baseCanvasSize?.width || 800,
                 height: this.baseCanvasSize?.height || 600
             });

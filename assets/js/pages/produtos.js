@@ -506,20 +506,12 @@ function renderTemplates(templates) {
 
     grid.innerHTML = blankCard + templates.map(template => {
         const isBannerHorizontal = Number(currentProduct?.id) === 24 || String(currentProduct?.nome || '').toLowerCase() === 'banner horizontal 3x1m';
-        const previewSource = template.design_svg || template.preview_url || template.thumbnail_url || '';
-        const hasExactSvgPreview = (
-            (typeof template.design_svg === 'string' && template.design_svg.trim()) ||
-            (typeof template.preview_url === 'string' && (
-                template.preview_url.includes('<svg') ||
-                template.preview_url.startsWith('data:image/svg+xml')
-            ))
-        );
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
-            previewSource,
-            hasExactSvgPreview ? null : (currentProduct?.svg_template || null),
-            { backgroundColor: '#f8fafc', debug: isBannerHorizontal && !hasExactSvgPreview }
+            template.preview_url || template.thumbnail_url,
+            currentProduct?.svg_template || null,
+            { backgroundColor: '#f8fafc', debug: isBannerHorizontal }
         );
-        const previewUrl = previewSource || '/assets/images/template-placeholder.svg';
+        const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewAspectRatio = Math.max(
             0.2,
             Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
