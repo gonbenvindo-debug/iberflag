@@ -269,10 +269,39 @@
         // Estado
         let allTemplates = [];
         let currentCategory = 'all';
+        const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
+
+        function isDesignSvgDebugEnabled() {
+            return Boolean(
+                window.DESIGN_SVG_DEBUG
+                || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
+            );
+        }
+
+        function logGalleryDebug(channel, details) {
+            if (!isDesignSvgDebugEnabled()) {
+                return;
+            }
+
+            const prefix = `[templates-gallery] ${channel}`;
+            if (typeof console.groupCollapsed === 'function') {
+                console.groupCollapsed(prefix);
+                console.log(details);
+                console.groupEnd();
+                return;
+            }
+
+            console.log(prefix, details);
+        }
 
         // Carregar templates
         async function loadTemplates() {
             const grid = document.getElementById('templates-grid');
+            logGalleryDebug('loadTemplates', {
+                productId,
+                productName,
+                currentCategory
+            });
             
             // Mostrar skeletons
             for (let i = 0; i < 6; i++) {
@@ -377,12 +406,24 @@
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewUrl,
                 null,
-                { backgroundColor: '#f8fafc' }
+                {
+                    backgroundColor: '#f8fafc',
+                    debug: isDesignSvgDebugEnabled(),
+                    debugLabel: 'templates-gallery-preview'
+                }
             );
             const previewAspectRatio = Math.max(
                 0.2,
                 Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewUrl, 4 / 3)) || (4 / 3)
             );
+            logGalleryDebug('createTemplateCard', {
+                templateId: template.id,
+                templateName: template.nome,
+                previewUrl,
+                hasPreviewMarkup: Boolean(previewMarkup),
+                previewAspectRatio,
+                currentCategory
+            });
             const categoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',

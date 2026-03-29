@@ -284,11 +284,41 @@ let templatesCatalogCache = null;
 let templatesCatalogPromise = null;
 let templatesByProductCache = new Map();
 let templatesLoadToken = 0;
+const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
+
+function isDesignSvgDebugEnabled() {
+    return Boolean(
+        window.DESIGN_SVG_DEBUG
+        || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
+    );
+}
+
+function logTemplatesDebug(channel, details) {
+    if (!isDesignSvgDebugEnabled()) {
+        return;
+    }
+
+    const prefix = `[produtos] ${channel}`;
+    if (typeof console.groupCollapsed === 'function') {
+        console.groupCollapsed(prefix);
+        console.log(details);
+        console.groupEnd();
+        return;
+    }
+
+    console.log(prefix, details);
+}
 
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProductName = productName;
     currentProduct = allProducts.find((product) => Number(product?.id) === Number(productId)) || null;
+    logTemplatesDebug('openTemplatesModal', {
+        productId,
+        productName,
+        svgTemplatePresent: Boolean(currentProduct?.svg_template),
+        svgTemplateLength: String(currentProduct?.svg_template || '').length
+    });
     const modalProductName = document.getElementById('modal-product-name');
     const modal = document.getElementById('templates-modal');
 
@@ -504,17 +534,37 @@ function renderTemplates(templates) {
 
     emptyState.classList.add('hidden');
 
+    logTemplatesDebug('renderTemplates', {
+        currentProductId,
+        currentProductName,
+        templatesCount: templates.length,
+        svgTemplatePresent: Boolean(currentProduct?.svg_template),
+        productAspectRatio
+    });
+
     grid.innerHTML = blankCard + templates.map(template => {
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
             template.preview_url || template.thumbnail_url,
             currentProduct?.svg_template || null,
-            { backgroundColor: '#f8fafc' }
+            {
+                backgroundColor: '#f8fafc',
+                debug: isDesignSvgDebugEnabled(),
+                debugLabel: 'produtos-template-preview'
+            }
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewAspectRatio = Math.max(
             0.2,
             Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
         );
+        logTemplatesDebug('createTemplateCard', {
+            templateId: template.id,
+            templateName: template.nome,
+            previewUrl,
+            hasPreviewMarkup: Boolean(previewMarkup),
+            previewAspectRatio,
+            productMaskPresent: Boolean(currentProduct?.svg_template)
+        });
         const previewContent = previewMarkup
             ? previewMarkup
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;

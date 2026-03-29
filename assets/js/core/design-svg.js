@@ -19,6 +19,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
+    const DEBUG_QUERY_PARAM_PATTERN = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
 
     function toNumber(value, fallback = 0) {
         const parsed = Number(value);
@@ -39,6 +40,60 @@
             .filter(([, value]) => value !== null && value !== undefined && value !== '')
             .map(([key, value]) => `${key}:${value}`)
             .join(';');
+    }
+
+    function isDesignDebugEnabled(options = {}) {
+        if (options?.debug) {
+            return true;
+        }
+
+        if (typeof window !== 'undefined' && window.DESIGN_SVG_DEBUG) {
+            return true;
+        }
+
+        if (typeof window !== 'undefined' && window.location && DEBUG_QUERY_PARAM_PATTERN.test(window.location.search || '')) {
+            return true;
+        }
+
+        return false;
+    }
+
+    function summarizeSvgNode(node) {
+        if (!node) {
+            return null;
+        }
+
+        const attrs = ['id', 'class', 'x', 'y', 'width', 'height', 'viewBox', 'transform', 'd', 'points', 'fill', 'stroke', 'mask', 'clip-path']
+            .reduce((accumulator, attributeName) => {
+                const value = node.getAttribute?.(attributeName);
+                if (value !== null && value !== undefined && value !== '') {
+                    accumulator[attributeName] = value;
+                }
+                return accumulator;
+            }, {});
+
+        return {
+            tag: String(node.tagName || '').toLowerCase(),
+            ...attrs
+        };
+    }
+
+    function logDesignDebug(channel, details, options = {}) {
+        if (!isDesignDebugEnabled(options)) {
+            return;
+        }
+
+        const label = options.debugLabel || 'design-svg';
+        const prefix = `[${label}] ${channel}`;
+
+        if (typeof console.groupCollapsed === 'function') {
+            console.groupCollapsed(prefix);
+            console.log(details);
+            console.groupEnd();
+            return;
+        }
+
+        console.log(prefix, details);
     }
 
     function normalizeTemplateElement(data = {}) {
@@ -865,6 +920,13 @@
         const maskBox = getSvgBox(maskRoot, options);
         const maskNode = pickMaskNode(maskRoot);
         if (!maskNode) {
+            logDesignDebug('preview-missing-mask-node', {
+                previewValue: previewValue || null,
+                maskValue: maskValue || null,
+                previewMarkup: Boolean(previewMarkup),
+                maskBox
+            }, options);
+
             if (previewMarkup) {
                 cachePreviewMarkup(cacheKey, previewMarkup);
                 return previewMarkup;
@@ -885,6 +947,15 @@
         };
         const maskTransform = buildContainTransform(maskBox, previewTargetBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
+        logDesignDebug('preview-geometry', {
+            previewBox,
+            maskBox,
+            previewGeometry,
+            previewTargetBounds,
+            maskTransform,
+            previewRoot: summarizeSvgNode(previewRoot),
+            maskNode: summarizeSvgNode(maskNode)
+        }, options);
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', wrapperViewBox);

@@ -1,6 +1,31 @@
 // ============================================================
 // SVG TEMPLATE & PRINT AREA
 // ============================================================
+const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
+
+function isDesignSvgDebugEnabled() {
+    return Boolean(
+        window.DESIGN_SVG_DEBUG
+        || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
+    );
+}
+
+function logTemplateDebug(channel, details) {
+    if (!isDesignSvgDebugEnabled()) {
+        return;
+    }
+
+    const prefix = `[personalizador] ${channel}`;
+    if (typeof console.groupCollapsed === 'function') {
+        console.groupCollapsed(prefix);
+        console.log(details);
+        console.groupEnd();
+        return;
+    }
+
+    console.log(prefix, details);
+}
+
 Object.assign(DesignEditor.prototype, {
 
     setDefaultPrintArea() {
@@ -264,6 +289,10 @@ Object.assign(DesignEditor.prototype, {
         this.setDefaultPrintArea();
 
         if (!areaElement || !sourceBounds || !sourceBounds.width || !sourceBounds.height) {
+            logTemplateDebug('updatePrintAreaFromElement:invalid-input', {
+                hasAreaElement: Boolean(areaElement),
+                sourceBounds
+            });
             return;
         }
 
@@ -282,6 +311,33 @@ Object.assign(DesignEditor.prototype, {
         const renderedHeight = sourceBounds.height * uniformScale;
         const offsetX = contentBounds.x + ((contentBounds.width - renderedWidth) / 2) - (sourceBounds.x * uniformScale);
         const offsetY = contentBounds.y + ((contentBounds.height - renderedHeight) / 2) - (sourceBounds.y * uniformScale);
+
+        logTemplateDebug('print-area-geometry', {
+            sourceBounds,
+            contentBounds,
+            uniformScale,
+            renderedWidth,
+            renderedHeight,
+            offsetX,
+            offsetY,
+            areaElement: {
+                tag: String(areaElement.tagName || '').toLowerCase(),
+                id: areaElement.getAttribute?.('id') || '',
+                class: areaElement.getAttribute?.('class') || '',
+                x: areaElement.getAttribute?.('x'),
+                y: areaElement.getAttribute?.('y'),
+                width: areaElement.getAttribute?.('width'),
+                height: areaElement.getAttribute?.('height'),
+                viewBox: areaElement.getAttribute?.('viewBox'),
+                transform: areaElement.getAttribute?.('transform'),
+                d: areaElement.getAttribute?.('d'),
+                points: areaElement.getAttribute?.('points'),
+                fill: areaElement.getAttribute?.('fill'),
+                stroke: areaElement.getAttribute?.('stroke')
+            },
+            canvasViewBox: this.canvas?.getAttribute?.('viewBox') || '',
+            printAreaBounds: this.printAreaBounds
+        });
 
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
@@ -432,6 +488,25 @@ Object.assign(DesignEditor.prototype, {
             }
 
             const areaElement = this.findTemplateOutlineElement(root, sourceBounds);
+
+            logTemplateDebug('loadSVGTemplate', {
+                sourceBounds,
+                rootViewBox: root.getAttribute('viewBox') || '',
+                outline: areaElement ? {
+                    tag: String(areaElement.tagName || '').toLowerCase(),
+                    id: areaElement.getAttribute?.('id') || '',
+                    class: areaElement.getAttribute?.('class') || '',
+                    x: areaElement.getAttribute?.('x'),
+                    y: areaElement.getAttribute?.('y'),
+                    width: areaElement.getAttribute?.('width'),
+                    height: areaElement.getAttribute?.('height'),
+                    transform: areaElement.getAttribute?.('transform'),
+                    d: areaElement.getAttribute?.('d'),
+                    points: areaElement.getAttribute?.('points'),
+                    fill: areaElement.getAttribute?.('fill'),
+                    stroke: areaElement.getAttribute?.('stroke')
+                } : null
+            });
 
             if (!areaElement) {
                 this.setDefaultPrintArea();
