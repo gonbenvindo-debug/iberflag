@@ -6,9 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="iberflag-admin-testing" content="true">
     <meta name="iberflag-admin-test-username" content="admin">
-    <meta name="iberflag-admin-test-password" content="admin">
-    <meta name="iberflag-admin-username" content="admin">
-    <meta name="iberflag-admin-email" content="admin@iberflag.pt">
+    <meta name="iberflag-admin-test-password" content="admin123">
+    <meta name="iberflag-admin-username" content="admin123">
+    <meta name="iberflag-admin-email" content="admin123@iberflag.pt">
     <title>Admin Panel - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260319a">
@@ -16,6 +16,16 @@
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
+    <script>
+        // Ignorar erros de extensões do browser que não afetam a aplicação
+        window.addEventListener('error', (event) => {
+            if (event.message && event.message.includes('Could not establish connection')) {
+                event.preventDefault();
+                event.stopPropagation();
+                return true;
+            }
+        }, true);
+    </script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260319a">
 </head>
 
