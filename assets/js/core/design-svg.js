@@ -766,7 +766,7 @@
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
         const ratio = safeWidth / safeHeight;
-        const margin = 16;
+        const margin = 50;
         const contentLongestSide = 700;
 
         let contentWidth = contentLongestSide;
@@ -1024,11 +1024,10 @@
         }
 
         const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
-        const previewGeometry = buildPreviewCanvasGeometry(previewBox);
-        const debugMaskOffsetY = isDesignDebugEnabled(options) ? 5 : 0;
+        const previewGeometry = buildPreviewCanvasGeometry(maskBox);
         const previewTargetBounds = {
             x: previewGeometry.x,
-            y: previewGeometry.y + debugMaskOffsetY,
+            y: previewGeometry.y,
             width: previewGeometry.width,
             height: previewGeometry.height
         };
@@ -1041,7 +1040,6 @@
             maskRootViewBox: maskRoot?.getAttribute?.('viewBox') || '',
             previewGeometry,
             previewTargetBounds,
-            debugMaskOffsetY,
             maskTransform,
             maskNodeBounds: getSvgNodeBounds(maskNode, maskBox),
             previewRoot: summarizeSvgNode(previewRoot),
