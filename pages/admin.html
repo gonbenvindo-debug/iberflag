@@ -533,14 +533,15 @@
                                 <option value="">Selecione um template...</option>
                             </select>
                             <button type="button" id="add-template-to-product-btn"
-                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition flex items-center gap-2">
                                 <i data-lucide="plus" class="w-5 h-5"></i>
+                                <span>Adicionar</span>
                             </button>
                         </div>
                     </div>
 
-                    <div id="product-templates-list" class="space-y-2">
-                        <p class="text-gray-400 text-sm">Nenhum template associado</p>
+                    <div id="product-templates-assignments" class="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        <p class="text-gray-400 text-sm col-span-full">Nenhum template associado</p>
                     </div>
                 </div>
 

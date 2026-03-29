@@ -2222,7 +2222,7 @@ if (templateForm) {
 // ===== TEMPLATES MANAGEMENT FOR PRODUCTS =====
 const productTemplatesAssignments = document.getElementById('product-templates-assignments');
 const availableTemplatesSelect = document.getElementById('available-templates-select');
-const addTemplateToProductBtn = document.getElementById('add-template-to-product');
+const addTemplateToProductBtn = document.getElementById('add-template-to-product-btn');
 let templatesCatalogCache = [];
 let currentProductTemplates = [];
 
@@ -2263,35 +2263,39 @@ function renderProductTemplatesAssignments() {
     if (!productTemplatesAssignments) return;
 
     if (currentProductTemplates.length === 0) {
-        productTemplatesAssignments.innerHTML = '<p class="text-sm text-gray-500">Nenhum template associado. Selecione templates disponiveis acima.</p>';
+        productTemplatesAssignments.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-4">Nenhum template associado. Selecione templates disponiveis acima.</p>';
         return;
     }
 
-    productTemplatesAssignments.innerHTML = currentProductTemplates.map((pt) => {
-        const template = templatesCatalogCache.find(t => t.id === pt.template_id) || { nome: 'Template nao encontrado', categoria: '-' };
+    productTemplatesAssignments.innerHTML = currentProductTemplates.map((pt, index) => {
+        const template = templatesCatalogCache.find(t => t.id === pt.template_id) || { nome: 'Template nao encontrado', categoria: '-', preview_url: null };
+        const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         return `
-            <div class="rounded-lg border border-gray-200 bg-white p-3 flex items-center justify-between">
-                <div class="flex items-center gap-3">
-                    <div class="w-12 h-12 bg-gray-100 rounded-lg overflow-hidden flex-shrink-0">
-                        <img src="${template.thumbnail_url || template.preview_url || '/assets/images/template-placeholder.svg'}" 
-                            alt="${escapeHtml(template.nome)}" 
-                            class="w-full h-full object-cover"
-                            onerror="this.src='/assets/images/template-placeholder.svg'">
-                    </div>
-                    <div>
-                        <p class="text-sm font-semibold text-gray-900">${escapeHtml(template.nome)}</p>
-                        <p class="text-xs text-gray-500">${template.categoria}</p>
+            <div class="template-card group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer" data-template-id="${pt.template_id}">
+                <div class="aspect-video bg-gray-100 relative overflow-hidden">
+                    <img src="${previewUrl}" 
+                        alt="${escapeHtml(template.nome)}" 
+                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
+                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                    <button type="button" class="remove-template-btn absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm" data-template-id="${pt.template_id}" title="Remover template">
+                        <i data-lucide="x" class="w-4 h-4"></i>
+                    </button>
+                </div>
+                <div class="p-3">
+                    <h4 class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</h4>
+                    <div class="flex items-center justify-between mt-1">
+                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${template.categoria}</span>
+                        <span class="text-xs text-gray-400">#${index + 1}</span>
                     </div>
                 </div>
-                <button type="button" class="remove-template-btn text-red-500 hover:text-red-700 p-2" data-template-id="${pt.template_id}">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                </button>
             </div>
         `;
     }).join('');
 
     productTemplatesAssignments.querySelectorAll('.remove-template-btn').forEach(btn => {
-        btn.addEventListener('click', () => {
+        btn.addEventListener('click', (e) => {
+            e.stopPropagation();
             const templateId = btn.dataset.templateId;
             currentProductTemplates = currentProductTemplates.filter(pt => pt.template_id !== templateId);
             renderProductTemplatesAssignments();
