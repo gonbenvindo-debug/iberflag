@@ -335,7 +335,7 @@ Object.assign(DesignEditor.prototype, {
         this.elements = [];
         this.selectedElement = null;
         this.hideResizeHandles();
-        this.updateLayerList();
+        this.updateLayers();
         this.updateSidebarMode();
     }
 });
