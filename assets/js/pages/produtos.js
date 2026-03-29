@@ -387,7 +387,6 @@ function renderTemplates(templates) {
             </div>
             <div class="mt-2.5 px-1">
                 <p class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</p>
-                <p class="text-xs text-gray-500 mt-0.5">${template.categoria || 'Geral'}</p>
             </div>
         </div>
     `;
@@ -395,32 +394,6 @@ function renderTemplates(templates) {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
-
-// Filter buttons event listeners
-document.addEventListener('DOMContentLoaded', () => {
-    const filterBtns = document.querySelectorAll('.filter-btn');
-    filterBtns.forEach(btn => {
-        btn.addEventListener('click', () => {
-            // Remove active class from all
-            filterBtns.forEach(b => {
-                b.classList.remove('active', 'bg-blue-600', 'text-white');
-                b.classList.add('bg-white', 'text-gray-600');
-            });
-            // Add active class to clicked
-            btn.classList.add('active', 'bg-blue-600', 'text-white');
-            btn.classList.remove('bg-white', 'text-gray-600');
-
-            // Filter templates
-            const category = btn.dataset.category;
-            if (category === 'all') {
-                renderTemplates(allTemplates);
-            } else {
-                const filtered = allTemplates.filter(t => t.categoria === category);
-                renderTemplates(filtered);
-            }
-        });
-    });
-});
 
 // Make modal functions globally available
 window.openTemplatesModal = openTemplatesModal;

@@ -493,12 +493,9 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const categoria = prompt('Categoria (promocoes, eventos, corporativo, festas, varejo):', 'promocoes') || 'promocoes';
-
         const templateData = {
             nome: nome.trim(),
-            categoria: categoria.trim(),
-            descricao: `Design pre-feito para ${this.currentProduct?.nome || 'produto'}`,
+            descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
             elementos: this.elements.map(el => ({ ...el })),
             preview_url: designPreview,
             ativo: true
@@ -518,30 +515,22 @@ Object.assign(DesignEditor.prototype, {
                     .insert(templateData)
                     .select('id')
                     .single();
-                if (error) throw error;
+
+                if (error) {
+                    if (error.code === '42501' || error.message?.includes('policy') || error.code === 'PGRST301') {
+                        throw new Error('Sem permissao. Ativa INSERT na tabela templates no Supabase (RLS policies).');
+                    }
+                    throw error;
+                }
 
                 if (data?.id && this.productId) {
-                    const existing = await supabaseClient
+                    await supabaseClient
                         .from('produto_templates')
-                        .select('id')
-                        .eq('produto_id', Number(this.productId))
-                        .eq('template_id', data.id)
-                        .maybeSingle();
-
-                    if (!existing?.data) {
-                        const { data: countData } = await supabaseClient
-                            .from('produto_templates')
-                            .select('id', { count: 'exact', head: true })
-                            .eq('produto_id', Number(this.productId));
-
-                        await supabaseClient
-                            .from('produto_templates')
-                            .insert({
-                                produto_id: Number(this.productId),
-                                template_id: data.id,
-                                ordem: (countData?.length || 0) + 1
-                            });
-                    }
+                        .insert({
+                            produto_id: Number(this.productId),
+                            template_id: data.id,
+                            ordem: 1
+                        });
                 }
                 showToast('Design criado e associado ao produto!', 'success');
             }
@@ -551,7 +540,7 @@ Object.assign(DesignEditor.prototype, {
             }, 1200);
         } catch (err) {
             console.error('Erro ao guardar design:', err);
-            showToast('Erro ao guardar design: ' + (err.message || err), 'error');
+            showToast(err.message || 'Erro ao guardar design', 'error');
         }
     }
 
