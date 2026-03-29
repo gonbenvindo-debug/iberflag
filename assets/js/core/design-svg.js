@@ -875,7 +875,6 @@
             return fallbackMarkup;
         }
 
-        const maskBounds = getSvgSourceBounds(maskRoot, maskBox);
         const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
         const previewGeometry = buildPreviewCanvasGeometry(previewBox);
         const previewTargetBounds = {
@@ -884,7 +883,7 @@
             width: previewGeometry.width,
             height: previewGeometry.height
         };
-        const maskTransform = buildContainTransform(maskBounds, previewTargetBounds);
+        const maskTransform = buildContainTransform(maskBox, previewTargetBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
