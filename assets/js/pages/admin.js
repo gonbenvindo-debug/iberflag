@@ -2075,12 +2075,16 @@ function openTemplateInCustomizerFromCard(templateId) {
     const numericTemplateId = Number(templateId);
     if (!Number.isFinite(numericTemplateId)) return;
 
-    if (!currentProductId) {
-        showToast('Guarde o produto primeiro para continuar a editar o design', 'warning');
+    // Tentar obter o ID do produto do select ou do currentProductId
+    const produtoSelect = document.getElementById('produto-select');
+    const productId = produtoSelect?.value || currentProductId;
+
+    if (!productId) {
+        showToast('Selecione um produto primeiro para continuar a editar o design', 'warning');
         return;
     }
 
-    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(currentProductId))}&admin=true&editTemplate=${encodeURIComponent(String(numericTemplateId))}`;
+    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(numericTemplateId))}`;
     window.open(customizerUrl, '_blank', 'noopener,noreferrer');
 }
 
@@ -2147,11 +2151,18 @@ function confirmTemplateDeleteCard(templateName = '') {
 
 async function deleteTemplateFromCard(templateId) {
     const numericTemplateId = Number(templateId);
-    if (!Number.isFinite(numericTemplateId)) return;
+    if (!Number.isFinite(numericTemplateId)) {
+        console.error('ID de template inválido:', templateId);
+        return;
+    }
 
+    console.log('A apagar template:', numericTemplateId);
     const template = templatesCatalogCache.find((item) => Number(item.id) === numericTemplateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
-    if (!confirmed) return;
+    if (!confirmed) {
+        console.log('Usuário cancelou a exclusão');
+        return;
+    }
 
     try {
         const { error: deleteLinksError } = await supabaseClient
@@ -2181,7 +2192,13 @@ async function deleteTemplateFromCard(templateId) {
 
 function renderProductTemplatesGrid() {
     const grid = document.getElementById('product-templates-grid');
-    if (!grid) return;
+    if (!grid) {
+        console.error('Grid de templates não encontrado');
+        return;
+    }
+
+    console.log('Renderizando grid de templates...');
+    console.log('Templates disponíveis:', templatesCatalogCache.length);
 
     const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
 
@@ -2229,6 +2246,7 @@ function renderProductTemplatesGrid() {
         if (deleteBtn) {
             event.preventDefault();
             event.stopPropagation();
+            console.log('Botão apagar clicado:', deleteBtn.dataset.templateId);
             deleteTemplateFromCard(deleteBtn.dataset.templateId);
             return;
         }
@@ -2236,6 +2254,7 @@ function renderProductTemplatesGrid() {
         // Clique no card (mas não no botão)
         const card = target.closest('.template-toggle-card');
         if (card) {
+            console.log('Card clicado:', card.dataset.templateId);
             openTemplateInCustomizerFromCard(card.dataset.templateId);
         }
     });
