@@ -578,15 +578,63 @@
     function pickMaskNode(root) {
         if (!root) return null;
 
-        const candidates = Array.from(root.children || []).filter((node) => {
-            const tagName = String(node.tagName || '').toLowerCase();
-            return tagName !== 'defs' && tagName !== 'title' && tagName !== 'desc';
-        });
+        const geometryTags = new Set(['path', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'line']);
+        const collectNodes = (node) => {
+            if (!node || !node.children) {
+                return [];
+            }
 
-        return candidates.find((node) => {
-            const tagName = String(node.tagName || '').toLowerCase();
-            return ['path', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'line'].includes(tagName);
-        }) || candidates[0] || null;
+            return Array.from(node.children).flatMap((child) => {
+                const tagName = String(child.tagName || '').toLowerCase();
+                if (tagName === 'defs' || tagName === 'title' || tagName === 'desc' || tagName === 'style') {
+                    return [];
+                }
+
+                return [
+                    child,
+                    ...collectNodes(child)
+                ];
+            });
+        };
+
+        const candidates = collectNodes(root).filter(Boolean);
+        const scored = candidates
+            .filter((node) => {
+                const tagName = String(node.tagName || '').toLowerCase();
+                return geometryTags.has(tagName);
+            })
+            .map((node) => {
+                const tagName = String(node.tagName || '').toLowerCase();
+                const id = String(node.getAttribute?.('id') || '').toLowerCase();
+                const className = String(node.getAttribute?.('class') || '').toLowerCase();
+                const d = String(node.getAttribute?.('d') || '').trim();
+                const points = String(node.getAttribute?.('points') || '').trim();
+                const stroke = String(node.getAttribute?.('stroke') || '').trim().toLowerCase();
+                const fill = String(node.getAttribute?.('fill') || '').trim().toLowerCase();
+                const areaLike = tagName === 'path' ? Math.max(1, d.length) : Math.max(1, points.length);
+                let score = areaLike;
+
+                if (id.includes('print') || id.includes('shape') || id.includes('outline') || id.includes('mask')) {
+                    score += 1000000;
+                }
+
+                if (className.includes('cls-1') || className.includes('outline') || className.includes('shape')) {
+                    score += 500000;
+                }
+
+                if (stroke && stroke !== 'none') {
+                    score += 200000;
+                }
+
+                if (fill === 'none') {
+                    score += 50000;
+                }
+
+                return { node, score };
+            })
+            .sort((left, right) => right.score - left.score);
+
+        return scored.length > 0 ? scored[0].node : candidates[0] || null;
     }
 
     function getSvgNodeBounds(node, fallback = DEFAULT_SIZE) {
