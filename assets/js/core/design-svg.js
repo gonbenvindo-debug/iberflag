@@ -98,6 +98,16 @@
         };
     }
 
+    function summarizeSvgChildren(node, limit = 6) {
+        if (!node || !node.children) {
+            return [];
+        }
+
+        return Array.from(node.children)
+            .slice(0, limit)
+            .map((child) => summarizeSvgNode(child));
+    }
+
     function logDesignDebug(channel, details, options = {}) {
         if (!isDesignDebugEnabled(options)) {
             return;
@@ -979,11 +989,16 @@
         logDesignDebug('preview-geometry', {
             previewBox,
             maskBox,
+            previewRootViewBox: previewRoot?.getAttribute?.('viewBox') || '',
+            maskRootViewBox: maskRoot?.getAttribute?.('viewBox') || '',
             previewGeometry,
             previewTargetBounds,
             debugMaskOffsetY,
             maskTransform,
+            maskNodeBounds: getSvgNodeBounds(maskNode, maskBox),
             previewRoot: summarizeSvgNode(previewRoot),
+            previewRootChildren: summarizeSvgChildren(previewRoot),
+            maskRootChildren: summarizeSvgChildren(maskRoot),
             maskNode: summarizeSvgNode(maskNode)
         }, options);
         const wrapper = document.createElementNS(SVG_NS, 'svg');
