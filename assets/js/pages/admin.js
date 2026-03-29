@@ -2211,9 +2211,6 @@ if (templateForm) {
 }
 
 // ===== TEMPLATES MANAGEMENT FOR PRODUCTS =====
-function getProductTemplatesAssignments() { return document.getElementById('product-templates-assignments'); }
-function getAvailableTemplatesSelect() { return document.getElementById('available-templates-select'); }
-function getAddTemplateToProductBtn() { return document.getElementById('add-template-to-product-btn'); }
 let templatesCatalogCache = [];
 let currentProductTemplates = [];
 
@@ -2238,65 +2235,90 @@ async function loadTemplatesCatalog(force = false) {
     return templatesCatalogCache;
 }
 
-function renderAvailableTemplatesSelect() {
-    const select = getAvailableTemplatesSelect();
-    if (!select) return;
-
-    const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
-    const assignedIds = new Set(currentProductTemplates.map(pt => pt.template_id));
-
-    const availableTemplates = allTemplates.filter(t => !assignedIds.has(t.id));
-
-    select.innerHTML = '<option value="">Selecione um template...</option>' +
-        availableTemplates.map(t => `<option value="${t.id}">${escapeHtml(t.nome)} (${t.categoria})</option>`).join('');
+function isTemplateSelected(templateId) {
+    return currentProductTemplates.some(pt => Number(pt.template_id) === Number(templateId));
 }
 
-function renderProductTemplatesAssignments() {
-    const container = getProductTemplatesAssignments();
-    if (!container) return;
+function toggleProductTemplate(templateId) {
+    const numId = Number(templateId);
+    if (isTemplateSelected(numId)) {
+        currentProductTemplates = currentProductTemplates.filter(pt => Number(pt.template_id) !== numId);
+    } else {
+        currentProductTemplates.push({
+            template_id: numId,
+            ordem: currentProductTemplates.length + 1
+        });
+    }
+    renderProductTemplatesGrid();
+}
 
-    if (currentProductTemplates.length === 0) {
-        container.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-4">Nenhum template associado. Selecione templates disponiveis acima.</p>';
+function updateTemplatesCounter() {
+    const counter = document.getElementById('templates-counter');
+    if (counter) {
+        const count = currentProductTemplates.length;
+        counter.textContent = `${count} selecionado${count !== 1 ? 's' : ''}`;
+        counter.className = count > 0
+            ? 'text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full'
+            : 'text-xs font-semibold bg-gray-100 text-gray-500 px-2.5 py-1 rounded-full';
+    }
+}
+
+function renderProductTemplatesGrid() {
+    const grid = document.getElementById('product-templates-grid');
+    if (!grid) return;
+
+    const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
+
+    if (allTemplates.length === 0) {
+        grid.innerHTML = `
+            <div class="col-span-full text-center py-8">
+                <i data-lucide="layout-template" class="w-10 h-10 mx-auto text-gray-300 mb-2"></i>
+                <p class="text-sm text-gray-400">Nenhum template disponivel</p>
+            </div>`;
+        updateTemplatesCounter();
+        lucide.createIcons();
         return;
     }
 
-    container.innerHTML = currentProductTemplates.map((pt, index) => {
-        const template = templatesCatalogCache.find(t => t.id === pt.template_id) || { nome: 'Template nao encontrado', categoria: '-', preview_url: null };
-        const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
+    grid.innerHTML = allTemplates.map(t => {
+        const selected = isTemplateSelected(t.id);
+        const previewUrl = t.preview_url || t.thumbnail_url || '/assets/images/template-placeholder.svg';
         return `
-            <div class="template-card group relative bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all cursor-pointer" data-template-id="${pt.template_id}">
-                <div class="aspect-video bg-gray-100 relative overflow-hidden">
+            <div class="template-toggle-card group relative rounded-xl border-2 overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
+                data-template-id="${t.id}">
+                <div class="aspect-[4/3] bg-gray-50 relative overflow-hidden">
                     <img src="${previewUrl}" 
-                        alt="${escapeHtml(template.nome)}" 
-                        class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                        alt="${escapeHtml(t.nome)}" 
+                        class="w-full h-full object-cover transition-transform duration-300 ${selected ? 'scale-100' : 'group-hover:scale-105'}"
                         onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
-                    <div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity"></div>
-                    <button type="button" class="remove-template-btn absolute top-2 right-2 bg-red-500 text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity hover:bg-red-600 shadow-sm" data-template-id="${pt.template_id}" title="Remover template">
-                        <i data-lucide="x" class="w-4 h-4"></i>
-                    </button>
-                </div>
-                <div class="p-3">
-                    <h4 class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</h4>
-                    <div class="flex items-center justify-between mt-1">
-                        <span class="text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full">${template.categoria}</span>
-                        <span class="text-xs text-gray-400">#${index + 1}</span>
+                    <div class="absolute top-2 right-2 w-6 h-6 rounded-full flex items-center justify-center transition-all duration-200 ${selected ? 'bg-blue-500 scale-100' : 'bg-white/80 border border-gray-300 scale-90 opacity-0 group-hover:opacity-100'}">
+                        ${selected ? '<i data-lucide="check" class="w-3.5 h-3.5 text-white"></i>' : ''}
                     </div>
+                    ${selected ? '<div class="absolute inset-0 bg-blue-500/10"></div>' : ''}
                 </div>
-            </div>
-        `;
+                <div class="p-2.5">
+                    <h4 class="font-semibold text-xs text-gray-900 truncate">${escapeHtml(t.nome)}</h4>
+                    <span class="text-[10px] text-gray-500">${t.categoria || ''}</span>
+                </div>
+            </div>`;
     }).join('');
 
-    container.querySelectorAll('.remove-template-btn').forEach(btn => {
-        btn.addEventListener('click', (e) => {
-            e.stopPropagation();
-            const templateId = btn.dataset.templateId;
-            currentProductTemplates = currentProductTemplates.filter(pt => pt.template_id !== templateId);
-            renderProductTemplatesAssignments();
-            renderAvailableTemplatesSelect();
+    grid.querySelectorAll('.template-toggle-card').forEach(card => {
+        card.addEventListener('click', () => {
+            toggleProductTemplate(card.dataset.templateId);
         });
     });
 
+    updateTemplatesCounter();
     lucide.createIcons();
+}
+
+function renderAvailableTemplatesSelect() {
+    renderProductTemplatesGrid();
+}
+
+function renderProductTemplatesAssignments() {
+    renderProductTemplatesGrid();
 }
 
 async function loadProductTemplates(productId) {
@@ -2311,7 +2333,7 @@ async function loadProductTemplates(productId) {
         return [];
     }
 
-    return (data || []).map(d => ({ template_id: d.template_id, ordem: d.ordem }));
+    return (data || []).map(d => ({ template_id: Number(d.template_id), ordem: d.ordem }));
 }
 
 async function saveProductTemplates(productId) {
@@ -2330,7 +2352,7 @@ async function saveProductTemplates(productId) {
 
     const rows = currentProductTemplates.map((pt, index) => ({
         produto_id: productId,
-        template_id: pt.template_id,
+        template_id: Number(pt.template_id),
         ordem: index + 1
     }));
 
@@ -2342,27 +2364,6 @@ async function saveProductTemplates(productId) {
         console.warn('Erro ao guardar templates:', insertError.message);
     }
 }
-
-document.addEventListener('click', async (e) => {
-    const btn = e.target.closest('#add-template-to-product-btn');
-    if (!btn) return;
-
-    const select = getAvailableTemplatesSelect();
-    const templateId = select?.value;
-    if (!templateId) return;
-
-    await loadTemplatesCatalog();
-
-    if (!currentProductTemplates.some(pt => pt.template_id === templateId)) {
-        currentProductTemplates.push({
-            template_id: templateId,
-            ordem: currentProductTemplates.length + 1
-        });
-        renderProductTemplatesAssignments();
-        renderAvailableTemplatesSelect();
-        select.value = '';
-    }
-});
 
 // Expor funcoes necessarias ao escopo global para botoes onclick
 window.editProduct = editProduct;
