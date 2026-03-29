@@ -959,9 +959,10 @@
 
         const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
         const previewGeometry = buildPreviewCanvasGeometry(previewBox);
+        const debugMaskOffsetY = isDesignDebugEnabled(options) ? 5 : 0;
         const previewTargetBounds = {
             x: previewGeometry.x,
-            y: previewGeometry.y,
+            y: previewGeometry.y + debugMaskOffsetY,
             width: previewGeometry.width,
             height: previewGeometry.height
         };
@@ -972,6 +973,7 @@
             maskBox,
             previewGeometry,
             previewTargetBounds,
+            debugMaskOffsetY,
             maskTransform,
             previewRoot: summarizeSvgNode(previewRoot),
             maskNode: summarizeSvgNode(maskNode)
