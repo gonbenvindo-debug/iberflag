@@ -56,27 +56,19 @@ async function ensureAdminWriteSession() {
             adminWriteSessionLastError = [error?.message, error?.status, error?.code]
                 .filter(Boolean)
                 .join(' | ');
+        }
 
-            // In testing mode, if the user does not exist yet, try creating it once.
-            const { error: signUpError } = await supabaseClient.auth.signUp({
+        const manualPassword = prompt(`Para apagar/guardar templates, introduza a password real do Supabase para ${allowedAdminEmail}:`) || '';
+        if (manualPassword.trim()) {
+            sessionStorage.setItem(ADMIN_LAST_PASSWORD_KEY, manualPassword.trim());
+            const { error } = await supabaseClient.auth.signInWithPassword({
                 email: allowedAdminEmail,
-                password
+                password: manualPassword.trim()
             });
-
-            if (!signUpError) {
-                const { error: retryError } = await supabaseClient.auth.signInWithPassword({
-                    email: allowedAdminEmail,
-                    password
-                });
-                if (!retryError) return true;
-                adminWriteSessionLastError = [retryError?.message, retryError?.status, retryError?.code]
-                    .filter(Boolean)
-                    .join(' | ');
-            } else {
-                adminWriteSessionLastError = [signUpError?.message, signUpError?.status, signUpError?.code]
-                    .filter(Boolean)
-                    .join(' | ');
-            }
+            if (!error) return true;
+            adminWriteSessionLastError = [error?.message, error?.status, error?.code]
+                .filter(Boolean)
+                .join(' | ');
         }
 
         return false;
