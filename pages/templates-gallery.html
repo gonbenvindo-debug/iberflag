@@ -264,7 +264,7 @@
         // Inicializar Supabase
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
-        const supabase = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Estado
         let allTemplates = [];
@@ -274,8 +274,17 @@
         function isDesignSvgDebugEnabled() {
             return Boolean(
                 window.DESIGN_SVG_DEBUG
+                || window.localStorage?.getItem('iberflag_design_debug') === '1'
                 || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
             );
+        }
+
+        function appendDebugParam(url) {
+            if (!isDesignSvgDebugEnabled()) {
+                return url;
+            }
+
+            return `${url}${url.includes('?') ? '&' : '?'}debug=1`;
         }
 
         function logGalleryDebug(channel, details) {
@@ -318,7 +327,7 @@
             }
 
             try {
-                const { data, error } = await supabase
+                const { data, error } = await supabaseClient
                     .from('templates')
                     .select('*')
                     .eq('ativo', true)
@@ -462,7 +471,7 @@
                 params.set('template', template.id);
             }
 
-            window.location.href = `/pages/personalizar.html?${params.toString()}`;
+            window.location.href = appendDebugParam(`/pages/personalizar.html?${params.toString()}`);
         }
 
         // Filtrar por categoria

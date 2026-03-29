@@ -289,8 +289,18 @@ const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
 function isDesignSvgDebugEnabled() {
     return Boolean(
         window.DESIGN_SVG_DEBUG
+        || window.localStorage?.getItem('iberflag_design_debug') === '1'
         || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
     );
+}
+
+function appendDebugParam(url) {
+    if (!isDesignSvgDebugEnabled()) {
+        return url;
+    }
+
+    const hasQuery = url.includes('?');
+    return `${url}${hasQuery ? '&' : '?'}debug=1`;
 }
 
 function logTemplatesDebug(channel, details) {
@@ -323,7 +333,7 @@ async function openTemplatesModal(productId, productName) {
     const modal = document.getElementById('templates-modal');
 
     if (!modalProductName || !modal) {
-        window.location.href = `/pages/personalizar.html?produto=${productId}`;
+        window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${productId}`);
         return;
     }
 
@@ -346,12 +356,12 @@ function closeTemplatesModal() {
 
 function startBlank() {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto=${currentProductId}`;
+    window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${currentProductId}`);
 }
 
 function selectTemplate(templateId) {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`;
+    window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`);
 }
 
 function renderTemplatesLoading(message = 'A carregar templates...') {

@@ -6,6 +6,7 @@ const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
 function isDesignSvgDebugEnabled() {
     return Boolean(
         window.DESIGN_SVG_DEBUG
+        || window.localStorage?.getItem('iberflag_design_debug') === '1'
         || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
     );
 }

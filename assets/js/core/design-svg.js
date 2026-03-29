@@ -51,12 +51,32 @@
             return true;
         }
 
+        if (typeof window !== 'undefined' && window.localStorage?.getItem('iberflag_design_debug') === '1') {
+            return true;
+        }
+
         if (typeof window !== 'undefined' && window.location && DEBUG_QUERY_PARAM_PATTERN.test(window.location.search || '')) {
             return true;
         }
 
         return false;
     }
+
+    function persistDesignDebugFlagFromUrl() {
+        try {
+            if (typeof window === 'undefined' || !window.location?.search) {
+                return;
+            }
+
+            if (DEBUG_QUERY_PARAM_PATTERN.test(window.location.search || '')) {
+                window.localStorage?.setItem('iberflag_design_debug', '1');
+            }
+        } catch (error) {
+            // Ignore storage failures in debug bootstrap.
+        }
+    }
+
+    persistDesignDebugFlagFromUrl();
 
     function summarizeSvgNode(node) {
         if (!node) {
