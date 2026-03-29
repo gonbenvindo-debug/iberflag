@@ -681,7 +681,7 @@
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
         const ratio = safeWidth / safeHeight;
-        const margin = 24;
+        const margin = 50;
         const contentLongestSide = 700;
 
         let contentWidth = contentLongestSide;
