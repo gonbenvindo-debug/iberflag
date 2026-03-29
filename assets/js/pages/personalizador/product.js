@@ -522,6 +522,7 @@ Object.assign(DesignEditor.prototype, {
         const templateData = {
             nome: nome.trim(),
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
+            design_svg: designSvg,
             elementos: {
                 format: 'svg-inline-v1',
                 svg: designSvg,

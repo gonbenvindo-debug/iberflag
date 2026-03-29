@@ -10,8 +10,8 @@ const adminTestPasswordMeta = document.querySelector('meta[name="iberflag-admin-
 const allowedAdminUsername = (adminUsernameMeta?.content || '').trim().toLowerCase();
 const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
 const adminTestingEnabled = (adminTestingMeta?.content || '').trim().toLowerCase() === 'true';
-const testAdminUsername = (adminTestUsernameMeta?.content || '').trim().toLowerCase();
-const testAdminPassword = (adminTestPasswordMeta?.content || '').trim();
+const testAdminUsername = (adminTestUsernameMeta?.content || (adminTestingEnabled ? 'admin' : '')).trim().toLowerCase();
+const testAdminPassword = (adminTestPasswordMeta?.content || (adminTestingEnabled ? 'admin' : '')).trim();
 const ADMIN_TEST_SESSION_KEY = 'iberflag_admin_test_auth';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
