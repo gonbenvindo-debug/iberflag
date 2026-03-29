@@ -57,6 +57,26 @@
             display: block;
         }
 
+        .template-blank {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            color: #94a3b8;
+        }
+
+        .blank-icon {
+            width: 64px;
+            height: 64px;
+            border: 3px dashed currentColor;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: 12px;
+        }
+
         .category-filter {
             display: flex;
             gap: 8px;
@@ -206,8 +226,13 @@
         <div class="gallery-grid" id="templates-grid">
             <!-- Template em branco (sempre primeiro) -->
             <div class="template-card" onclick="selectTemplate(null)">
-                <div class="template-preview" style="--preview-ratio:1; background:#ffffff;">
-                    <div class="w-full h-full bg-white"></div>
+                <div class="template-preview">
+                    <div class="template-blank">
+                        <div class="blank-icon">
+                            <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                        </div>
+                        <span class="font-medium">Começar em branco</span>
+                    </div>
                 </div>
                 <div class="template-info">
                     <div class="template-name">Design personalizado</div>
@@ -245,26 +270,6 @@
         let allTemplates = [];
         let currentCategory = 'all';
 
-        function createBlankPreviewMarkup() {
-            return '<div class="w-full h-full bg-white"></div>';
-        }
-
-        function createBlankTemplateCard() {
-            return `
-                    <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview" style="--preview-ratio:1; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                            <div class="relative z-20 w-full h-full">
-                                ${createBlankPreviewMarkup()}
-                            </div>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-name">Design personalizado</div>
-                            <div class="template-category">Crie do zero</div>
-                        </div>
-                    </div>
-                `;
-        }
-
         // Carregar templates
         async function loadTemplates() {
             const grid = document.getElementById('templates-grid');
@@ -294,7 +299,20 @@
 
                 // Remover skeletons
                 grid.innerHTML = `
-                    ${createBlankTemplateCard()}
+                    <div class="template-card" onclick="selectTemplate(null)">
+                        <div class="template-preview">
+                            <div class="template-blank">
+                                <div class="blank-icon">
+                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                                </div>
+                                <span class="font-medium">Comecar em branco</span>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <div class="template-name">Design personalizado</div>
+                            <div class="template-category">Crie do zero</div>
+                        </div>
+                    </div>
                 `;
 
                 allTemplates = data || [];
@@ -302,7 +320,20 @@
             } catch (err) {
                 console.error('Erro ao carregar templates:', err);
                 grid.innerHTML = `
-                    ${createBlankTemplateCard()}
+                    <div class="template-card" onclick="selectTemplate(null)">
+                        <div class="template-preview">
+                            <div class="template-blank">
+                                <div class="blank-icon">
+                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                                </div>
+                                <span class="font-medium">Comecar em branco</span>
+                            </div>
+                        </div>
+                        <div class="template-info">
+                            <div class="template-name">Design personalizado</div>
+                            <div class="template-category">Crie do zero</div>
+                        </div>
+                    </div>
                 `;
                 
                 // Fallback: usar templates locais
@@ -348,10 +379,6 @@
                 null,
                 { backgroundColor: '#f8fafc' }
             );
-            const previewAspectRatio = Math.max(
-                0.2,
-                Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewUrl, 4 / 3)) || (4 / 3)
-            );
             const categoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',
@@ -361,13 +388,11 @@
             };
 
             div.innerHTML = `
-                <div class="template-preview" style="--preview-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                    <div class="relative z-20 w-full h-full">
-                        ${previewMarkup
-                            ? previewMarkup
-                            : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
-                                onerror="this.src='/assets/images/template-placeholder.svg'">`}
-                    </div>
+                <div class="template-preview">
+                    ${previewMarkup
+                        ? previewMarkup
+                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
+                            onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>
                 <div class="template-info">
                     <div class="template-name">${template.nome}</div>
