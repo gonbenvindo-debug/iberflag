@@ -47,14 +47,14 @@ class DesignEditor {
         this.baseCanvasSize = { width: 800, height: 600 };
         this.initialCanvasSize = null; // Will store computed base size at 100% zoom
         this.handlesFrameRequest = null;
-        
+
         // ===== GUIDES & SNAP =====
         this.showGuides = false;
         this.guideLines = [];
         this.guideThreshold = 10; // pixels para snap
         this.guideReleaseThreshold = 18;
         this.gridSize = 10; // para snap grid
-        
+
         // ===== CROP =====
         this.cropMode = false;
         this.cropBounds = null;
@@ -68,20 +68,48 @@ class DesignEditor {
         this.cartStepsCurrent = 1;
         this.cartStepsDesignSnapshot = null;
         this.cartStepsDesignPreview = '';
-        
+
         this.init();
     }
-    
+
     async init() {
-        await this.loadProduct();
-        this.setupEventListeners();
-        this.setupMobileUI();
+        // Mostrar loading state
+        this.showLoadingState();
+
+        // Carregar produto e demais inicializações em paralelo
+        const [product] = await Promise.all([
+            this.loadProduct(),
+            this.setupEventListeners(),
+            this.setupMobileUI()
+        ]);
+
         this.setupAutoSave();
         this.saveHistory();
         this.updateSidebarMode();
-        // Garantir que o layout est├í calculado antes de medir o stage
+        this.hideLoadingState();
+
+        // Garantir que o layout está calculado antes de medir o stage
         requestAnimationFrame(() => this.syncCanvasViewport());
-    }
+    },
+
+    showLoadingState() {
+        const loading = document.createElement('div');
+        loading.id = 'editor-loading';
+        loading.className = 'fixed inset-0 bg-white z-50 flex items-center justify-center';
+        loading.innerHTML = `
+            <div class="text-center">
+                <i data-lucide="loader-2" class="w-12 h-12 animate-spin mx-auto mb-4"></i>
+                <p class="text-lg font-semibold">A carregar editor...</p>
+            </div>
+        `;
+        document.body.appendChild(loading);
+        if (window.lucide) window.lucide.createIcons();
+    },
+
+    hideLoadingState() {
+        const loading = document.getElementById('editor-loading');
+        if (loading) loading.remove();
+    },
 
     // ===== MOBILE UI =====
     setupMobileUI() {
@@ -138,6 +166,6 @@ class DesignEditor {
             setTimeout(() => { isClosingProgrammatically = false; }, 100);
         };
     }
-    
+
     // ===== PRODUCT LOADING =====
 }

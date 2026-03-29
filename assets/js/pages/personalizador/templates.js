@@ -78,81 +78,99 @@ Object.assign(DesignEditor.prototype, {
 
         if (!categoriesContainer || !gridContainer) return;
 
-        // Render categories
-        const categories = window.DesignTemplates?.categories || [];
-        categoriesContainer.innerHTML = `
-            <button class="template-category ${!categoryId ? 'active' : ''}" data-category="all">
-                <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                <span>Todos</span>
-            </button>
-            ${categories.map(cat => `
-                <button class="template-category ${categoryId === cat.id ? 'active' : ''}" data-category="${cat.id}">
-                    <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
-                    <span>${cat.name}</span>
-                </button>
-            `).join('')}
+        // Mostrar loading state
+        gridContainer.innerHTML = `
+            <div class="templates-loading">
+                <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
+                <p>A carregar templates...</p>
+            </div>
         `;
 
-        // Add category click handlers
-        categoriesContainer.querySelectorAll('.template-category').forEach(btn => {
-            btn.addEventListener('click', () => {
-                const cat = btn.dataset.category;
-                categoriesContainer.querySelectorAll('.template-category').forEach(b => b.classList.remove('active'));
-                btn.classList.add('active');
-                this.renderTemplateGallery(cat === 'all' ? null : cat, searchQuery);
-            });
-        });
-
-        // Get templates to show
-        let templates = [];
-        if (searchQuery) {
-            templates = window.DesignTemplates?.search?.(searchQuery) || [];
-        } else if (categoryId) {
-            templates = window.DesignTemplates?.getByCategory?.(categoryId) || [];
-        } else {
-            templates = window.DesignTemplates?.templates || [];
-        }
-
-        // Render templates
-        if (templates.length === 0) {
-            gridContainer.innerHTML = `
-                <div class="templates-empty">
-                    <i data-lucide="image-off" class="w-12 h-12"></i>
-                    <p>Nenhum template encontrado</p>
-                </div>
+        // Usar requestAnimationFrame para não bloquear a UI
+        requestAnimationFrame(() => {
+            // Render categories
+            const categories = window.DesignTemplates?.categories || [];
+            categoriesContainer.innerHTML = `
+                <button class="template-category ${!categoryId ? 'active' : ''}" data-category="all">
+                    <i data-lucide="layout-grid" class="w-4 h-4"></i>
+                    <span>Todos</span>
+                </button>
+                ${categories.map(cat => `
+                    <button class="template-category ${categoryId === cat.id ? 'active' : ''}" data-category="${cat.id}">
+                        <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
+                        <span>${cat.name}</span>
+                    </button>
+                `).join('')}
             `;
-        } else {
-            gridContainer.innerHTML = templates.map(t => `
-                <div class="template-card" data-template-id="${t.id}">
-                    <div class="template-preview">
-                        ${this.generateTemplatePreview(t)}
-                    </div>
-                    <div class="template-info">
-                        <h3>${t.name}</h3>
-                        <p>${t.description}</p>
-                        <div class="template-tags">
-                            ${t.tags.slice(0, 3).map(tag => `<span class="template-tag">${tag}</span>`).join('')}
-                        </div>
-                    </div>
-                    <button class="template-use-btn">Usar Template</button>
-                </div>
-            `).join('');
 
-            // Add click handlers
-            gridContainer.querySelectorAll('.template-card').forEach(card => {
-                card.addEventListener('click', (e) => {
-                    if (e.target.closest('.template-use-btn')) {
-                        const templateId = card.dataset.templateId;
-                        this.loadTemplate(templateId);
-                    }
+            // Setup category listeners
+            categoriesContainer.querySelectorAll('.template-category').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const cat = btn.dataset.category;
+                    categoriesContainer.querySelectorAll('.template-category').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    this.renderTemplateGallery(cat === 'all' ? null : cat, searchQuery);
                 });
             });
-        }
 
-        // Refresh icons
-        if (window.lucide) {
-            window.lucide.createIcons();
-        }
+            // Get templates to show
+            let templates = [];
+            if (searchQuery) {
+                templates = window.DesignTemplates?.search?.(searchQuery) || [];
+            } else if (categoryId) {
+                templates = window.DesignTemplates?.getByCategory?.(categoryId) || [];
+            } else {
+                templates = window.DesignTemplates?.templates || [];
+            }
+
+            // Render templates
+            if (templates.length === 0) {
+                gridContainer.innerHTML = `
+                    <div class="templates-empty">
+                        <i data-lucide="image-off" class="w-12 h-12"></i>
+                        <p>Nenhum template encontrado</p>
+                    </div>
+                `;
+            } else {
+                // Renderizar com lazy loading nas imagens
+                gridContainer.innerHTML = templates.map(template => `
+                    <div class="template-card" data-template-id="${template.id}">
+                        <div class="template-thumbnail">
+                            <img src="${template.thumbnail}" alt="${template.name}" loading="lazy">
+                        </div>
+                        <div class="template-info">
+                            <h4>${template.name}</h4>
+                            <p>${template.description || ''}</p>
+                        </div>
+                        <button class="template-use-btn" data-template-id="${template.id}">
+                            <i data-lucide="check" class="w-4 h-4"></i>
+                            Usar
+                        </button>
+                    </div>
+                `).join('');
+
+                // Setup template listeners
+                gridContainer.querySelectorAll('.template-use-btn').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        const templateId = btn.dataset.templateId;
+                        this.loadTemplate(templateId);
+                        this.closeTemplateModal();
+                    });
+                });
+
+                gridContainer.querySelectorAll('.template-card').forEach(card => {
+                    card.addEventListener('dblclick', () => {
+                        const templateId = card.dataset.templateId;
+                        this.loadTemplate(templateId);
+                        this.closeTemplateModal();
+                    });
+                });
+            }
+
+            if (window.lucide) {
+                window.lucide.createIcons();
+            }
+        });
     },
 
     generateTemplatePreview(template) {

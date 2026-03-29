@@ -1344,21 +1344,24 @@
         window.SUPABASE_URL = 'https://nzwfquivulxkmxrwqalz.supabase.co';
         window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
     </script>
-    <script src="/assets/js/templates-data.js"></script>
-    <script src="/assets/js/core/logic.js"></script>
-    <!-- DesignEditor modules — load order matters -->
-    <script src="/assets/js/pages/personalizador/core.js"></script>
-    <script src="/assets/js/pages/personalizador/templates.js"></script>
-    <script src="/assets/js/pages/personalizador/product.js"></script>
-    <script src="/assets/js/pages/personalizador/canvas.js"></script>
-    <script src="/assets/js/pages/personalizador/geometry.js"></script>
-    <script src="/assets/js/pages/personalizador/template.js"></script>
-    <script src="/assets/js/pages/personalizador/elements.js"></script>
-    <script src="/assets/js/pages/personalizador/upload.js"></script>
-    <script src="/assets/js/pages/personalizador/handles.js"></script>
-    <script src="/assets/js/pages/personalizador/properties.js"></script>
-    <script src="/assets/js/pages/personalizador/export.js"></script>
-    <script src="/assets/js/pages/personalizar.js"></script>
+    <script src="/assets/js/templates-data.js" defer></script>
+    <script src="/assets/js/core/logic.js" defer></script>
+
+    <!-- Carregar módulos do personalizador em paralelo com defer -->
+    <script src="/assets/js/pages/personalizador/core.js" defer></script>
+    <script src="/assets/js/pages/personalizador/templates.js" defer></script>
+    <script src="/assets/js/pages/personalizador/product.js" defer></script>
+    <script src="/assets/js/pages/personalizador/canvas.js" defer></script>
+    <script src="/assets/js/pages/personalizador/geometry.js" defer></script>
+    <script src="/assets/js/pages/personalizador/template.js" defer></script>
+    <script src="/assets/js/pages/personalizador/elements.js" defer></script>
+    <script src="/assets/js/pages/personalizador/upload.js" defer></script>
+    <script src="/assets/js/pages/personalizador/handles.js" defer></script>
+    <script src="/assets/js/pages/personalizador/properties.js" defer></script>
+    <script src="/assets/js/pages/personalizador/export.js" defer></script>
+
+    <!-- Entry point - deve carregar por último -->
+    <script src="/assets/js/pages/personalizar.js" defer></script>
     <script>
         lucide.createIcons();
     </script>
