@@ -262,15 +262,15 @@ function createBlankPreviewMarkup() {
 
 function createBlankTemplateCard(productAspectRatio) {
     return `
-        <div class="group cursor-pointer" onclick="startBlank()">
-            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio}; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                <div class="relative z-20 w-full h-full">
+        <div id="template-card-blank" class="group cursor-pointer" onclick="startBlank()">
+            <div id="template-card-blank-frame" class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio}; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                <div id="template-card-blank-preview" class="relative z-20 w-full h-full">
                     ${createBlankPreviewMarkup()}
                 </div>
             </div>
-            <div class="mt-2.5 px-1">
-                <p class="font-semibold text-sm text-gray-900 truncate">Em branco</p>
-                <p class="text-xs text-gray-500 truncate">Sem elementos</p>
+            <div id="template-card-blank-info" class="mt-2.5 px-1">
+                <p id="template-card-blank-title" class="font-semibold text-sm text-gray-900 truncate">Em branco</p>
+                <p id="template-card-blank-subtitle" class="text-xs text-gray-500 truncate">Sem elementos</p>
             </div>
         </div>
     `;
@@ -308,6 +308,15 @@ let templatesCatalogCache = null;
 let templatesCatalogPromise = null;
 let templatesByProductCache = new Map();
 let templatesLoadToken = 0;
+
+function makeDomSafeId(value) {
+    return String(value || '')
+        .trim()
+        .toLowerCase()
+        .replace(/[^a-z0-9_-]+/g, '-')
+        .replace(/-+/g, '-')
+        .replace(/^-|-$/g, '') || 'item';
+}
 
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
@@ -519,18 +528,19 @@ function renderTemplates(templates) {
             0.2,
             Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
         );
-    const previewContent = previewMarkup
+        const previewContent = previewMarkup
             ? previewMarkup
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
+        const templateDomId = makeDomSafeId(template.id || template.nome || 'template');
         return `
-        <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
-            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                <div class="relative z-20 w-full h-full">
+        <div id="template-card-${templateDomId}" class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
+            <div id="template-card-${templateDomId}-frame" class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                <div id="template-card-${templateDomId}-preview" class="relative z-20 w-full h-full">
                     ${previewContent}
                 </div>
             </div>
-            <div class="mt-2.5 px-1">
-                <p class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</p>
+            <div id="template-card-${templateDomId}-info" class="mt-2.5 px-1">
+                <p id="template-card-${templateDomId}-title" class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</p>
             </div>
         </div>
     `;
