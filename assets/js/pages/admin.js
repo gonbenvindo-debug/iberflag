@@ -2350,3 +2350,7 @@ if (addTemplateToProductBtn) {
         }
     });
 }
+
+// Expor funcoes necessarias ao escopo global para botoes onclick
+window.editProduct = editProduct;
+window.deleteProduct = deleteProduct;
