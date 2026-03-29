@@ -448,6 +448,134 @@
         return '';
     }
 
+    function parseSvgMarkup(svgMarkup) {
+        if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
+            return null;
+        }
+
+        const parser = new DOMParser();
+        const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
+        const root = doc.documentElement;
+        if (!root || root.tagName.toLowerCase() !== 'svg') {
+            return null;
+        }
+
+        return root;
+    }
+
+    function getSvgBox(root, fallback = DEFAULT_SIZE) {
+        if (!root) {
+            return {
+                width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
+                height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
+            };
+        }
+
+        const viewBox = String(root.getAttribute('viewBox') || '').trim().split(/\s+/).map(Number);
+        if (viewBox.length === 4 && viewBox.every(Number.isFinite)) {
+            return {
+                width: Math.max(1, viewBox[2]),
+                height: Math.max(1, viewBox[3])
+            };
+        }
+
+        const width = Number.parseFloat(root.getAttribute('width') || '');
+        const height = Number.parseFloat(root.getAttribute('height') || '');
+
+        return {
+            width: Math.max(1, Number.isFinite(width) ? width : Number(fallback.width) || DEFAULT_SIZE.width),
+            height: Math.max(1, Number.isFinite(height) ? height : Number(fallback.height) || DEFAULT_SIZE.height)
+        };
+    }
+
+    function pickMaskNode(root) {
+        if (!root) return null;
+
+        const candidates = Array.from(root.children || []).filter((node) => {
+            const tagName = String(node.tagName || '').toLowerCase();
+            return tagName !== 'defs' && tagName !== 'title' && tagName !== 'desc';
+        });
+
+        return candidates.find((node) => {
+            const tagName = String(node.tagName || '').toLowerCase();
+            return ['path', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'line'].includes(tagName);
+        }) || candidates[0] || null;
+    }
+
+    function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
+        const previewMarkup = extractTemplateSvg(previewValue, options);
+        if (!previewMarkup) {
+            return '';
+        }
+
+        const previewRoot = parseSvgMarkup(previewMarkup);
+        if (!previewRoot) {
+            return '';
+        }
+
+        const maskMarkup = extractTemplateSvg(maskValue, options);
+        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
+        const previewBox = getSvgBox(previewRoot, options);
+        const maskBox = getSvgBox(maskRoot, previewBox);
+
+        const wrapper = document.createElementNS(SVG_NS, 'svg');
+        wrapper.setAttribute('xmlns', SVG_NS);
+        wrapper.setAttribute('viewBox', `0 0 ${maskBox.width} ${maskBox.height}`);
+        wrapper.setAttribute('width', '100%');
+        wrapper.setAttribute('height', '100%');
+        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        wrapper.setAttribute('style', buildStyleString({
+            display: 'block',
+            overflow: 'hidden',
+            'background-color': options.backgroundColor || 'transparent'
+        }));
+
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        const clipPathId = `preview-clip-${Math.random().toString(36).slice(2, 9)}`;
+        let clipApplied = false;
+
+        if (maskRoot) {
+            const maskNode = pickMaskNode(maskRoot);
+            if (maskNode) {
+                const clipPath = document.createElementNS(SVG_NS, 'clipPath');
+                clipPath.setAttribute('id', clipPathId);
+                clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
+                clipPath.appendChild(document.importNode(maskNode, true));
+                defs.appendChild(clipPath);
+                wrapper.appendChild(defs);
+                clipApplied = true;
+            }
+        }
+
+        const contentGroup = document.createElementNS(SVG_NS, 'g');
+        if (clipApplied) {
+            contentGroup.setAttribute('clip-path', `url(#${clipPathId})`);
+        }
+
+        const previewChildren = Array.from(previewRoot.children || []).filter((node) => {
+            const tagName = String(node.tagName || '').toLowerCase();
+            return tagName !== 'defs' && tagName !== 'title' && tagName !== 'desc';
+        });
+
+        if (previewChildren.length > 0) {
+            previewChildren.forEach((child) => {
+                contentGroup.appendChild(document.importNode(child, true));
+            });
+        } else {
+            const clone = previewRoot.cloneNode(true);
+            clone.removeAttribute('xmlns');
+            clone.setAttribute('width', '100%');
+            clone.setAttribute('height', '100%');
+            if (clipApplied) {
+                clone.setAttribute('clip-path', `url(#${clipPathId})`);
+            }
+            return new XMLSerializer().serializeToString(clone);
+        }
+
+        wrapper.appendChild(contentGroup);
+        return new XMLSerializer().serializeToString(wrapper);
+    }
+
     function importSvgIntoEditor(editor, svgMarkup, options = {}) {
         const canvas = editor?.canvas;
         if (!canvas || typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
@@ -513,6 +641,7 @@
         escapeXml,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
+        buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,
         importSvgIntoEditor

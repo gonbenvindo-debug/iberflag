@@ -278,6 +278,7 @@ window.viewProductDetails = viewProductDetails;
 // ===== TEMPLATES MODAL FUNCTIONS =====
 let currentProductId = null;
 let currentProductName = '';
+let currentProduct = null;
 let allTemplates = [];
 let templatesCatalogCache = null;
 let templatesCatalogPromise = null;
@@ -287,6 +288,7 @@ let templatesLoadToken = 0;
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProductName = productName;
+    currentProduct = allProducts.find((product) => Number(product?.id) === Number(productId)) || null;
     const modalProductName = document.getElementById('modal-product-name');
     const modal = document.getElementById('templates-modal');
 
@@ -309,6 +311,7 @@ function closeTemplatesModal() {
     if (modal) modal.classList.add('hidden');
     currentProductId = null;
     currentProductName = '';
+    currentProduct = null;
 }
 
 function startBlank() {
@@ -495,14 +498,19 @@ function renderTemplates(templates) {
     emptyState.classList.add('hidden');
 
     grid.innerHTML = blankCard + templates.map(template => {
+        const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+            template.preview_url || template.thumbnail_url,
+            currentProduct?.svg_template || null,
+            { backgroundColor: '#f8fafc' }
+        );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
+        const previewContent = previewMarkup
+            ? `<div class="template-preview template-preview-svg w-full h-full">${previewMarkup}</div>`
+            : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
             <div class="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-50 relative shadow-sm group-hover:shadow-lg">
-                <img src="${previewUrl}" 
-                     alt="${escapeHtml(template.nome)}" 
-                     class="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500"
-                     onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
+                ${previewContent}
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                     <span class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">

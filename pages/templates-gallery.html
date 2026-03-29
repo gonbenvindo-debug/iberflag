@@ -8,6 +8,7 @@
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260328">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/core/design-svg.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260328">
     <style>
         :root {
@@ -48,6 +49,12 @@
             width: 100%;
             height: 100%;
             object-fit: cover;
+        }
+
+        .template-preview svg {
+            width: 100%;
+            height: 100%;
+            display: block;
         }
 
         .template-blank {
@@ -367,6 +374,11 @@
             div.onclick = () => selectTemplate(template);
 
             const previewUrl = template.thumbnail_url || template.preview_url || '/assets/images/template-placeholder.svg';
+            const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+                previewUrl,
+                null,
+                { backgroundColor: '#f8fafc' }
+            );
             const categoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',
@@ -377,8 +389,10 @@
 
             div.innerHTML = `
                 <div class="template-preview">
-                    <img src="${previewUrl}" alt="${template.nome}" loading="lazy"
-                        onerror="this.src='/assets/images/template-placeholder.svg'">
+                    ${previewMarkup
+                        ? `<div class="w-full h-full">${previewMarkup}</div>`
+                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
+                            onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>
                 <div class="template-info">
                     <div class="template-name">${template.nome}</div>
