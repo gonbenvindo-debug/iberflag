@@ -376,13 +376,8 @@
             div.onclick = () => selectTemplate(template);
 
             const previewSource = template.design_svg || template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
-            const hasExactSvgPreview = (
-                (typeof template.design_svg === 'string' && template.design_svg.trim()) ||
-                (typeof template.preview_url === 'string' && (
-                    template.preview_url.includes('<svg') ||
-                    template.preview_url.startsWith('data:image/svg+xml')
-                ))
-            );
+            const rawPreviewMarkup = window.DesignSvgStore?.extractTemplateSvg?.(previewSource) || '';
+            const hasExactSvgPreview = Boolean(rawPreviewMarkup && window.DesignSvgStore?.isMaskedSvgMarkup?.(rawPreviewMarkup));
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewSource,
                 hasExactSvgPreview ? null : (template.mask_svg || null),
