@@ -629,9 +629,113 @@
         };
     }
 
+    function getTemplateElementArea(element) {
+        const tagName = String(element?.tagName || '').toLowerCase();
+
+        if (tagName === 'rect') {
+            const width = Number.parseFloat(element.getAttribute?.('width') || '0');
+            const height = Number.parseFloat(element.getAttribute?.('height') || '0');
+            return Math.max(0, width * height);
+        }
+
+        if (tagName === 'circle') {
+            const radius = Number.parseFloat(element.getAttribute?.('r') || '0');
+            return Math.max(0, Math.PI * radius * radius);
+        }
+
+        if (tagName === 'ellipse') {
+            const rx = Number.parseFloat(element.getAttribute?.('rx') || '0');
+            const ry = Number.parseFloat(element.getAttribute?.('ry') || '0');
+            return Math.max(0, Math.PI * rx * ry);
+        }
+
+        if (tagName === 'polygon') {
+            const points = (element.getAttribute?.('points') || '')
+                .trim()
+                .split(/\s+/)
+                .map((point) => point.split(',').map(Number))
+                .filter((point) => point.length === 2 && point.every(Number.isFinite));
+
+            if (points.length === 0) {
+                return 0;
+            }
+
+            const xs = points.map((point) => point[0]);
+            const ys = points.map((point) => point[1]);
+            return Math.max(0, (Math.max(...xs) - Math.min(...xs)) * (Math.max(...ys) - Math.min(...ys)));
+        }
+
+        return 0;
+    }
+
+    function isTemplateBackgroundElement(element, sourceBounds) {
+        if (!element || String(element.tagName || '').toLowerCase() !== 'rect') {
+            return false;
+        }
+
+        const x = Number.parseFloat(element.getAttribute?.('x') || '0');
+        const y = Number.parseFloat(element.getAttribute?.('y') || '0');
+        const width = Number.parseFloat(element.getAttribute?.('width') || '0');
+        const height = Number.parseFloat(element.getAttribute?.('height') || '0');
+        const fill = String(element.getAttribute?.('fill') || '').trim();
+        const stroke = String(element.getAttribute?.('stroke') || '').trim();
+        const coversFullViewbox = (
+            Math.abs(x - (sourceBounds?.x || 0)) < 0.01 &&
+            Math.abs(y - (sourceBounds?.y || 0)) < 0.01 &&
+            Math.abs(width - (sourceBounds?.width || 0)) < 0.01 &&
+            Math.abs(height - (sourceBounds?.height || 0)) < 0.01
+        );
+
+        return coversFullViewbox && (!stroke || stroke === 'none') && (fill.startsWith('url(') || fill === '#ffffff' || fill === 'white');
+    }
+
+    function findTemplateOutlineElement(root, sourceBounds) {
+        const candidates = Array.from(root?.querySelectorAll?.('path, polygon, rect, circle, ellipse') || []);
+
+        if (candidates.length === 0) {
+            return null;
+        }
+
+        const scored = candidates
+            .filter((element) => !isTemplateBackgroundElement(element, sourceBounds))
+            .map((element) => {
+                const id = `${element.getAttribute?.('id') || ''} ${element.getAttribute?.('class') || ''}`.toLowerCase();
+                const stroke = String(element.getAttribute?.('stroke') || '').trim().toLowerCase();
+                const fill = String(element.getAttribute?.('fill') || '').trim().toLowerCase();
+                const strokeDasharray = String(element.getAttribute?.('stroke-dasharray') || '').trim();
+                const area = getTemplateElementArea(element);
+                let score = area;
+
+                if (id.includes('print') || id.includes('safe') || id.includes('area') || id.includes('outline')) {
+                    score += 1000000;
+                }
+
+                if (strokeDasharray) {
+                    score += 500000;
+                }
+
+                if (stroke && stroke !== 'none') {
+                    score += 200000;
+                }
+
+                if (fill === 'none') {
+                    score += 50000;
+                }
+
+                if (fill.startsWith('url(')) {
+                    score -= 1000000;
+                }
+
+                return { element, score };
+            })
+            .sort((left, right) => right.score - left.score);
+
+        return scored.length > 0 ? scored[0].element : candidates[0];
+    }
+
     function getSvgVisibleBounds(root, fallback = DEFAULT_SIZE) {
         const box = getSvgBox(root, fallback);
-        const primaryNode = pickMaskNode(root);
+        const primaryNode = findTemplateOutlineElement(root, box) || pickMaskNode(root);
         if (!primaryNode) {
             return box;
         }
@@ -846,6 +950,7 @@
         const previewSource = toPreviewImageSource(previewValue, options);
         const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
         const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
+        const debugEnabled = Boolean(options.debug || (typeof window !== 'undefined' && window.DESIGN_SVG_DEBUG));
 
         if (!maskMarkup) {
             if (previewMarkup) {
@@ -883,7 +988,7 @@
         }
 
         const maskBox = getSvgBox(maskRoot, options);
-        const maskNode = pickMaskNode(maskRoot);
+        const maskNode = findTemplateOutlineElement(maskRoot, maskBox) || pickMaskNode(maskRoot);
         if (!maskNode) {
             if (previewMarkup) {
                 cachePreviewMarkup(cacheKey, previewMarkup);
@@ -947,6 +1052,16 @@
         mask.appendChild(previewMaskNode);
         defs.appendChild(mask);
         wrapper.appendChild(defs);
+
+        if (debugEnabled && typeof console !== 'undefined' && typeof console.debug === 'function') {
+            console.debug('[DesignSvgStore] preview debug', {
+                maskTag: String(maskNode.tagName || '').toLowerCase(),
+                maskBounds,
+                previewBox,
+                previewGeometry,
+                previewTargetBounds
+            });
+        }
 
         if (previewRoot) {
             const nestedSvg = document.createElementNS(SVG_NS, 'svg');
