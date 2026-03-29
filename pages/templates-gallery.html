@@ -39,7 +39,7 @@
         }
 
         .template-preview {
-            aspect-ratio: 4/3;
+            aspect-ratio: var(--preview-ratio, 4/3);
             background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
             position: relative;
             overflow: hidden;
@@ -379,6 +379,10 @@
                 null,
                 { backgroundColor: '#f8fafc' }
             );
+            const previewAspectRatio = Math.max(
+                0.2,
+                Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewUrl, 4 / 3)) || (4 / 3)
+            );
             const categoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',
@@ -388,7 +392,7 @@
             };
 
             div.innerHTML = `
-                <div class="template-preview">
+                <div class="template-preview" style="--preview-ratio:${previewAspectRatio};">
                     ${previewMarkup
                         ? previewMarkup
                         : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"

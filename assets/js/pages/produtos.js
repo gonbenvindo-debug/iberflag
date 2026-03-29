@@ -330,10 +330,15 @@ function renderTemplatesLoading(message = 'A carregar templates...') {
 
     if (!grid || !emptyState) return;
 
+    const productAspectRatio = Math.max(
+        0.2,
+        Number(window.DesignSvgStore?.getSvgAspectRatio?.(currentProduct?.svg_template || '', 4 / 3)) || (4 / 3)
+    );
+
     grid.innerHTML = `
         <div class="col-span-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
             ${Array.from({ length: 4 }).map(() => `
-                <div class="aspect-[4/3] rounded-2xl border border-gray-200 bg-gray-100 overflow-hidden animate-pulse">
+                <div class="rounded-2xl border border-gray-200 bg-gray-100 overflow-hidden animate-pulse" style="aspect-ratio:${productAspectRatio};">
                     <div class="h-full w-full bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200"></div>
                 </div>
             `).join('')}
@@ -463,9 +468,14 @@ function renderTemplates(templates) {
 
     if (!grid || !emptyState) return;
 
+    const productAspectRatio = Math.max(
+        0.2,
+        Number(window.DesignSvgStore?.getSvgAspectRatio?.(currentProduct?.svg_template || '', 4 / 3)) || (4 / 3)
+    );
+
     const blankCard = `
         <div class="group cursor-pointer" onclick="startBlank()">
-            <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50/50 transition-all duration-300 bg-gray-50/80 flex flex-col items-center justify-center gap-3">
+            <div class="rounded-2xl border-2 border-dashed border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50/50 transition-all duration-300 bg-gray-50/80 flex flex-col items-center justify-center gap-3" style="aspect-ratio:${productAspectRatio};">
                 <div class="w-14 h-14 rounded-2xl bg-white shadow-sm border border-gray-200 group-hover:shadow-md group-hover:border-blue-300 flex items-center justify-center transition-all duration-300">
                     <i data-lucide="plus" class="w-7 h-7 text-gray-400 group-hover:text-blue-500 transition-colors"></i>
                 </div>
@@ -480,7 +490,7 @@ function renderTemplates(templates) {
     if (!templates || templates.length === 0) {
         grid.innerHTML = blankCard + `
             <div class="group">
-                <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/60 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                <div class="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/60 flex flex-col items-center justify-center gap-2 px-4 text-center" style="aspect-ratio:${productAspectRatio};">
                     <i data-lucide="image-off" class="w-8 h-8 text-gray-300"></i>
                     <p class="text-sm font-semibold text-gray-600">Nenhum design pronto disponível</p>
                     <p class="text-[11px] text-gray-400">Pode começar com um design em branco</p>
@@ -501,12 +511,16 @@ function renderTemplates(templates) {
             { backgroundColor: '#f8fafc' }
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
+        const previewAspectRatio = Math.max(
+            0.2,
+            Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
+        );
         const previewContent = previewMarkup
             ? previewMarkup
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
-            <div class="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-50 relative shadow-sm group-hover:shadow-lg">
+            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-50 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio};">
                 ${previewContent}
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">

@@ -734,6 +734,20 @@
         return maskNodeClone;
     }
 
+    function getSvgAspectRatio(svgMarkup, fallback = 1) {
+        const root = parseSvgMarkup(typeof svgMarkup === 'string' ? svgMarkup : '');
+        if (!root) {
+            return fallback;
+        }
+
+        const box = getSvgBox(root, DEFAULT_SIZE);
+        if (!box.width || !box.height) {
+            return fallback;
+        }
+
+        return box.width / box.height;
+    }
+
     function toDataUrlFromSvgMarkup(svgMarkup) {
         if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
             return '';
@@ -1022,6 +1036,7 @@
         escapeXml,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
+        getSvgAspectRatio,
         buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,
