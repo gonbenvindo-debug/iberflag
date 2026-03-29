@@ -2072,8 +2072,7 @@ function updateTemplatesCounter() {
 }
 
 function openTemplateInCustomizerFromCard(templateId) {
-    const numericTemplateId = Number(templateId);
-    if (!Number.isFinite(numericTemplateId)) return;
+    if (!templateId) return;
 
     // Tentar obter o ID do produto do select ou do currentProductId
     const produtoSelect = document.getElementById('produto-select');
@@ -2084,7 +2083,7 @@ function openTemplateInCustomizerFromCard(templateId) {
         return;
     }
 
-    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(numericTemplateId))}`;
+    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(templateId))}`;
     window.open(customizerUrl, '_blank', 'noopener,noreferrer');
 }
 
@@ -2150,14 +2149,13 @@ function confirmTemplateDeleteCard(templateName = '') {
 }
 
 async function deleteTemplateFromCard(templateId) {
-    const numericTemplateId = Number(templateId);
-    if (!Number.isFinite(numericTemplateId)) {
+    if (!templateId) {
         console.error('ID de template inválido:', templateId);
         return;
     }
 
-    console.log('A apagar template:', numericTemplateId);
-    const template = templatesCatalogCache.find((item) => Number(item.id) === numericTemplateId) || null;
+    console.log('A apagar template:', templateId);
+    const template = templatesCatalogCache.find((item) => item.id === templateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
     if (!confirmed) {
         console.log('Usuário cancelou a exclusão');
@@ -2168,7 +2166,7 @@ async function deleteTemplateFromCard(templateId) {
         const { error: deleteLinksError } = await supabaseClient
             .from('produto_templates')
             .delete()
-            .eq('template_id', numericTemplateId);
+            .eq('template_id', templateId);
 
         if (deleteLinksError) {
             console.warn('Erro ao remover vínculos do template:', deleteLinksError.message);
@@ -2177,7 +2175,7 @@ async function deleteTemplateFromCard(templateId) {
         const { error: deleteTemplateError } = await supabaseClient
             .from('templates')
             .delete()
-            .eq('id', numericTemplateId);
+            .eq('id', templateId);
 
         if (deleteTemplateError) throw deleteTemplateError;
 
@@ -2199,6 +2197,11 @@ function renderProductTemplatesGrid() {
 
     console.log('Renderizando grid de templates...');
     console.log('Templates disponíveis:', templatesCatalogCache.length);
+
+    // Log para debug dos IDs
+    if (templatesCatalogCache.length > 0) {
+        console.log('Primeiro template ID:', templatesCatalogCache[0].id, typeof templatesCatalogCache[0].id);
+    }
 
     const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
 
