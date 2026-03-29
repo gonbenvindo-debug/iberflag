@@ -1732,6 +1732,32 @@ tbody tr:hover {
     letter-spacing: 0.01em;
 }
 
+#product-templates-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+}
+
+#product-templates-grid .template-toggle-preview {
+    aspect-ratio: 1 / 1;
+}
+
+@media (min-width: 640px) {
+    #product-templates-grid {
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 768px) {
+    #product-templates-grid {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+}
+
+@media (min-width: 1024px) {
+    #product-templates-grid {
+        grid-template-columns: repeat(6, minmax(0, 1fr));
+    }
+}
+
 /* ===== CHECKOUT PAGE ===== */
 .checkout-page {
     background: linear-gradient(180deg, #f8fafc 0%, #f1f5f9 100%);
@@ -2212,6 +2238,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     
     /* Product grid single column */
     .grid { grid-template-columns: 1fr !important; }
+    #product-templates-grid { grid-template-columns: repeat(2, minmax(0, 1fr)) !important; }
     
     /* Buttons full width */
     .flex.gap-2 { flex-direction: column !important; }

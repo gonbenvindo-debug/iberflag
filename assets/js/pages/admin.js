@@ -727,17 +727,30 @@ function renderSvgTemplatePreview() {
         const root = parseSvgTemplate(svgTemplateContent);
         const sourceBounds = getSvgSourceBounds(root);
         const svgNs = 'http://www.w3.org/2000/svg';
+        const canvasWidth = 800;
+        const canvasHeight = 600;
+        const previewPadding = 24;
+        const availableWidth = canvasWidth - (previewPadding * 2);
+        const availableHeight = canvasHeight - (previewPadding * 2);
+        const scale = Math.min(
+            availableWidth / sourceBounds.width,
+            availableHeight / sourceBounds.height
+        );
+        const renderWidth = sourceBounds.width * scale;
+        const renderHeight = sourceBounds.height * scale;
+        const renderX = (canvasWidth - renderWidth) / 2;
+        const renderY = (canvasHeight - renderHeight) / 2;
         const previewSvg = document.createElementNS(svgNs, 'svg');
-        previewSvg.setAttribute('viewBox', '0 0 800 600');
+        previewSvg.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
         previewSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         previewSvg.setAttribute('width', '100%');
         previewSvg.setAttribute('height', '100%');
 
         const printAreaOutline = document.createElementNS(svgNs, 'rect');
-        printAreaOutline.setAttribute('x', '50');
-        printAreaOutline.setAttribute('y', '50');
-        printAreaOutline.setAttribute('width', '700');
-        printAreaOutline.setAttribute('height', '500');
+        printAreaOutline.setAttribute('x', String(renderX));
+        printAreaOutline.setAttribute('y', String(renderY));
+        printAreaOutline.setAttribute('width', String(renderWidth));
+        printAreaOutline.setAttribute('height', String(renderHeight));
         printAreaOutline.setAttribute('fill', 'none');
         printAreaOutline.setAttribute('stroke', '#2563eb');
         printAreaOutline.setAttribute('stroke-width', '2');
@@ -745,10 +758,10 @@ function renderSvgTemplatePreview() {
         printAreaOutline.setAttribute('opacity', '0.55');
 
         const imported = document.importNode(root, true);
-        imported.setAttribute('x', '50');
-        imported.setAttribute('y', '50');
-        imported.setAttribute('width', '700');
-        imported.setAttribute('height', '500');
+        imported.setAttribute('x', String(renderX));
+        imported.setAttribute('y', String(renderY));
+        imported.setAttribute('width', String(renderWidth));
+        imported.setAttribute('height', String(renderHeight));
         imported.setAttribute('viewBox', `${sourceBounds.x} ${sourceBounds.y} ${sourceBounds.width} ${sourceBounds.height}`);
         imported.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
@@ -2304,21 +2317,22 @@ function renderProductTemplatesGrid() {
     grid.innerHTML = allTemplates.map(t => {
         const selected = isTemplateSelected(t.id);
         const previewUrl = t.preview_url || t.thumbnail_url || '/assets/images/template-placeholder.svg';
+        const safeName = escapeHtml(t.nome);
         return `
-            <div class="template-toggle-card group relative rounded-lg border-2 overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
+            <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
                 data-template-id="${t.id}">
-                <div class="aspect-square bg-gray-50 relative overflow-hidden p-1">
+                <div class="template-toggle-preview relative bg-gray-50 overflow-hidden">
                     <img src="${previewUrl}" 
-                        alt="${escapeHtml(t.nome)}" 
-                        class="w-full h-full object-contain transition-transform duration-300"
+                        alt="${safeName}" 
+                        class="w-full h-full object-contain object-center p-2 transition-transform duration-300 group-hover:scale-[1.02]"
                         onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
                     <div class="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${selected ? 'bg-blue-500 scale-100' : 'bg-white/80 border border-gray-300 scale-90 opacity-0 group-hover:opacity-100'}">
                         ${selected ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
                     </div>
                     ${selected ? '<div class="absolute inset-0 bg-blue-500/10"></div>' : ''}
                 </div>
-                <div class="p-1.5">
-                    <h4 class="font-semibold text-[10px] text-gray-900 truncate leading-tight">${escapeHtml(t.nome)}</h4>
+                <div class="px-2 py-2 border-t border-gray-100 bg-white">
+                    <h4 class="font-semibold text-xs text-gray-900 truncate text-center leading-tight" title="${safeName}">${safeName}</h4>
                 </div>
             </div>`;
     }).join('');
