@@ -52,23 +52,11 @@
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup.trim())}`;
     }
 
-    function isMaskedSvgMarkup(svgMarkup) {
-        if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
-            return false;
-        }
-
-        return /<(mask|clipPath)\b/i.test(svgMarkup) || /\b(mask|clip-path)\s*=\s*["'][^"']+/i.test(svgMarkup);
-    }
-
     function normalizeSvgMarkupForPreview(svgMarkup, options = {}) {
         const root = parseSvgMarkup(svgMarkup);
         if (!root) {
             return typeof svgMarkup === 'string' ? svgMarkup : '';
         }
-
-        Array.from(root.querySelectorAll?.('[id^="print-area-"]') || []).forEach((node) => {
-            node.remove();
-        });
 
         const viewBox = root.getAttribute('viewBox');
         if (!viewBox) {
@@ -1031,18 +1019,16 @@
         }
 
         const previewMarkup = extractTemplateSvg(previewValue, options);
-        const sanitizedPreviewMarkup = previewMarkup
-            ? normalizeSvgMarkupForPreview(previewMarkup, options)
-            : '';
         const previewSource = toPreviewImageSource(previewValue, options);
-        const previewRoot = sanitizedPreviewMarkup ? parseSvgMarkup(sanitizedPreviewMarkup) : null;
+        const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
         const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
         const debugEnabled = Boolean(options.debug || (typeof window !== 'undefined' && window.DESIGN_SVG_DEBUG));
 
         if (!maskMarkup) {
-            if (sanitizedPreviewMarkup) {
-                cachePreviewMarkup(cacheKey, sanitizedPreviewMarkup);
-                return sanitizedPreviewMarkup;
+            if (previewMarkup) {
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             if (previewSource) {
@@ -1055,14 +1041,15 @@
         }
 
         const maskRoot = parseSvgMarkup(maskMarkup);
-        const previewHref = sanitizedPreviewMarkup
-            ? toDataUrlFromSvgMarkup(sanitizedPreviewMarkup)
+        const previewHref = previewMarkup
+            ? toDataUrlFromSvgMarkup(previewMarkup)
             : previewSource;
 
         if (!maskRoot || !previewHref) {
-            if (sanitizedPreviewMarkup) {
-                cachePreviewMarkup(cacheKey, sanitizedPreviewMarkup);
-                return sanitizedPreviewMarkup;
+            if (previewMarkup) {
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             if (previewSource) {
@@ -1077,9 +1064,10 @@
         const maskBox = getSvgBox(maskRoot, options);
         const maskNode = findTemplateOutlineElement(maskRoot, maskBox) || pickMaskNode(maskRoot);
         if (!maskNode) {
-            if (sanitizedPreviewMarkup) {
-                cachePreviewMarkup(cacheKey, sanitizedPreviewMarkup);
-                return sanitizedPreviewMarkup;
+            if (previewMarkup) {
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
@@ -1252,7 +1240,6 @@
         DEFAULT_SIZE,
         escapeXml,
         buildSvgDataUrl,
-        isMaskedSvgMarkup,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
         getSvgAspectRatio,
