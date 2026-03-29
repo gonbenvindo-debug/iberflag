@@ -521,12 +521,22 @@ Object.assign(DesignEditor.prototype, {
     getHistorySnapshot() {
         this.elements.forEach((elementData) => this.syncElementMetadata(elementData));
 
+        const serializableElements = this.elements
+            .map((elementData) => {
+                if (!elementData?.element || typeof elementData.element.outerHTML !== 'string') {
+                    return null;
+                }
+
+                return {
+                    id: String(elementData.id),
+                    markup: elementData.element.outerHTML
+                };
+            })
+            .filter(Boolean);
+
         return JSON.stringify({
             selectedElementId: this.selectedElement ? String(this.selectedElement.id) : null,
-            elements: this.elements.map((elementData) => ({
-                id: String(elementData.id),
-                markup: elementData.element.outerHTML
-            }))
+            elements: serializableElements
         });
     },
 

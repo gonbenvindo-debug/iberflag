@@ -114,13 +114,15 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            // Aplicar elementos do template ao canvas
-            if (data.elementos && Array.isArray(data.elementos)) {
-                this.elements = data.elementos.map(el => ({
-                    ...el,
-                    id: el.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
-                }));
-                this.renderLayers?.();
+            const templateElements = Array.isArray(data.elementos) ? data.elementos : [];
+
+            if (templateElements.length > 0) {
+                this.clearCanvas?.();
+                templateElements.forEach((el) => {
+                    this.createElementFromTemplate?.(el);
+                });
+                this.bringPrintAreaOverlaysToFront?.();
+                this.updateLayers?.();
                 this.saveHistory?.();
             }
 
@@ -132,11 +134,12 @@ Object.assign(DesignEditor.prototype, {
                 const allTemplates = Object.values(TEMPLATES_DATA).flat();
                 const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
                 if (template && template.elements) {
-                    this.elements = template.elements.map(el => ({
-                        ...el,
-                        id: el.id || Date.now().toString() + Math.random().toString(36).substr(2, 9)
-                    }));
-                    this.renderLayers?.();
+                    this.clearCanvas?.();
+                    template.elements.forEach((el) => {
+                        this.createElementFromTemplate?.(el);
+                    });
+                    this.bringPrintAreaOverlaysToFront?.();
+                    this.updateLayers?.();
                     this.saveHistory?.();
                     showToast(`Template "${template.name}" carregado!`, 'success');
                 }
