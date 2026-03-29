@@ -2217,18 +2217,27 @@ function renderProductTemplatesGrid() {
             </div>`;
     }).join('');
 
-    grid.querySelectorAll('.template-toggle-card').forEach((card) => {
-        card.addEventListener('click', () => {
-            openTemplateInCustomizerFromCard(card.dataset.templateId);
-        });
-    });
+    // Limpar listeners anteriores se existir
+    const newGrid = grid.cloneNode(true);
+    grid.parentNode.replaceChild(newGrid, grid);
 
-    grid.querySelectorAll('.template-edit-btn').forEach((button) => {
-        button.addEventListener('click', (event) => {
+    newGrid.addEventListener('click', (event) => {
+        const target = event.target;
+
+        // Botão de lixo
+        const deleteBtn = target.closest('.template-edit-btn');
+        if (deleteBtn) {
             event.preventDefault();
             event.stopPropagation();
-            deleteTemplateFromCard(button.dataset.templateId);
-        });
+            deleteTemplateFromCard(deleteBtn.dataset.templateId);
+            return;
+        }
+
+        // Clique no card (mas não no botão)
+        const card = target.closest('.template-toggle-card');
+        if (card) {
+            openTemplateInCustomizerFromCard(card.dataset.templateId);
+        }
     });
 
     updateTemplatesCounter();
