@@ -502,6 +502,102 @@
         }) || candidates[0] || null;
     }
 
+    function getSvgNodeBounds(node, fallback = DEFAULT_SIZE) {
+        if (!node) {
+            return {
+                x: 0,
+                y: 0,
+                width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
+                height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
+            };
+        }
+
+        const tagName = String(node.tagName || '').toLowerCase();
+        const xAttr = Number.parseFloat(node.getAttribute?.('x') || '');
+        const yAttr = Number.parseFloat(node.getAttribute?.('y') || '');
+        const widthAttr = Number.parseFloat(node.getAttribute?.('width') || '');
+        const heightAttr = Number.parseFloat(node.getAttribute?.('height') || '');
+
+        if (tagName === 'rect') {
+            return {
+                x: Number.isFinite(xAttr) ? xAttr : 0,
+                y: Number.isFinite(yAttr) ? yAttr : 0,
+                width: Math.max(1, Number.isFinite(widthAttr) ? widthAttr : Number(fallback.width) || DEFAULT_SIZE.width),
+                height: Math.max(1, Number.isFinite(heightAttr) ? heightAttr : Number(fallback.height) || DEFAULT_SIZE.height)
+            };
+        }
+
+        if (tagName === 'circle') {
+            const cx = Number.parseFloat(node.getAttribute?.('cx') || '');
+            const cy = Number.parseFloat(node.getAttribute?.('cy') || '');
+            const radius = Number.parseFloat(node.getAttribute?.('r') || '');
+            if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(radius)) {
+                return {
+                    x: cx - radius,
+                    y: cy - radius,
+                    width: Math.max(1, radius * 2),
+                    height: Math.max(1, radius * 2)
+                };
+            }
+        }
+
+        if (tagName === 'ellipse') {
+            const cx = Number.parseFloat(node.getAttribute?.('cx') || '');
+            const cy = Number.parseFloat(node.getAttribute?.('cy') || '');
+            const rx = Number.parseFloat(node.getAttribute?.('rx') || '');
+            const ry = Number.parseFloat(node.getAttribute?.('ry') || '');
+            if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(rx) && Number.isFinite(ry)) {
+                return {
+                    x: cx - rx,
+                    y: cy - ry,
+                    width: Math.max(1, rx * 2),
+                    height: Math.max(1, ry * 2)
+                };
+            }
+        }
+
+        if (typeof document !== 'undefined' && document.body && typeof node.cloneNode === 'function') {
+            try {
+                const tempSvg = document.createElementNS(SVG_NS, 'svg');
+                tempSvg.setAttribute('xmlns', SVG_NS);
+                tempSvg.setAttribute('width', '0');
+                tempSvg.setAttribute('height', '0');
+                tempSvg.setAttribute('aria-hidden', 'true');
+                tempSvg.style.position = 'absolute';
+                tempSvg.style.left = '-99999px';
+                tempSvg.style.top = '-99999px';
+                tempSvg.style.width = '0';
+                tempSvg.style.height = '0';
+                tempSvg.style.overflow = 'hidden';
+
+                const clone = node.cloneNode(true);
+                tempSvg.appendChild(clone);
+                document.body.appendChild(tempSvg);
+
+                const box = typeof clone.getBBox === 'function' ? clone.getBBox() : null;
+                tempSvg.remove();
+
+                if (box && Number.isFinite(box.x) && Number.isFinite(box.y) && Number.isFinite(box.width) && Number.isFinite(box.height) && box.width > 0 && box.height > 0) {
+                    return {
+                        x: box.x,
+                        y: box.y,
+                        width: box.width,
+                        height: box.height
+                    };
+                }
+            } catch (error) {
+                // Fallback below.
+            }
+        }
+
+        return {
+            x: 0,
+            y: 0,
+            width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
+            height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
+        };
+    }
+
     function toDataUrlFromSvgMarkup(svgMarkup) {
         if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
             return '';
@@ -535,6 +631,7 @@
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
         const previewMarkup = extractTemplateSvg(previewValue, options);
         const previewSource = toPreviewImageSource(previewValue, options);
+        const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
         const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
 
         if (!maskMarkup) {
@@ -576,6 +673,7 @@
             return `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
         }
 
+        const maskBounds = getSvgNodeBounds(maskNode, maskBox);
         const clipId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
@@ -605,16 +703,44 @@
         defs.appendChild(clipPath);
         wrapper.appendChild(defs);
 
-        const image = document.createElementNS(SVG_NS, 'image');
-        image.setAttribute('href', previewHref);
-        image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
-        image.setAttribute('x', '0');
-        image.setAttribute('y', '0');
-        image.setAttribute('width', String(maskBox.width));
-        image.setAttribute('height', String(maskBox.height));
-        image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        image.setAttribute('clip-path', `url(#${clipId})`);
-        wrapper.appendChild(image);
+        if (previewRoot) {
+            const nestedSvg = document.createElementNS(SVG_NS, 'svg');
+            nestedSvg.setAttribute('xmlns', SVG_NS);
+            nestedSvg.setAttribute('x', String(maskBounds.x));
+            nestedSvg.setAttribute('y', String(maskBounds.y));
+            nestedSvg.setAttribute('width', String(maskBounds.width));
+            nestedSvg.setAttribute('height', String(maskBounds.height));
+            nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || `0 0 ${maskBounds.width} ${maskBounds.height}`);
+            nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            nestedSvg.setAttribute('overflow', 'visible');
+            nestedSvg.setAttribute('clip-path', `url(#${clipId})`);
+
+            const previewDefs = previewRoot.querySelector('defs');
+            if (previewDefs) {
+                nestedSvg.appendChild(document.importNode(previewDefs, true));
+            }
+
+            Array.from(previewRoot.children || []).forEach((child) => {
+                const tagName = String(child.tagName || '').toLowerCase();
+                if (tagName === 'defs' || tagName === 'title' || tagName === 'desc') {
+                    return;
+                }
+                nestedSvg.appendChild(document.importNode(child, true));
+            });
+
+            wrapper.appendChild(nestedSvg);
+        } else {
+            const image = document.createElementNS(SVG_NS, 'image');
+            image.setAttribute('href', previewHref);
+            image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
+            image.setAttribute('x', String(maskBounds.x));
+            image.setAttribute('y', String(maskBounds.y));
+            image.setAttribute('width', String(maskBounds.width));
+            image.setAttribute('height', String(maskBounds.height));
+            image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            image.setAttribute('clip-path', `url(#${clipId})`);
+            wrapper.appendChild(image);
+        }
 
         return new XMLSerializer().serializeToString(wrapper);
     }
