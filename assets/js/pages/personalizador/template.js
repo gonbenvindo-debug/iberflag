@@ -38,6 +38,7 @@ Object.assign(DesignEditor.prototype, {
         defaultMaskShape.setAttribute('y', String(this.printAreaBounds.y));
         defaultMaskShape.setAttribute('width', String(this.printAreaBounds.width));
         defaultMaskShape.setAttribute('height', String(this.printAreaBounds.height));
+        this.upsertPrintAreaBackground(defaultMaskShape);
         this.upsertOutsideAreaOverlay(defaultMaskShape);
 
         this.bringPrintAreaOverlaysToFront();
@@ -214,6 +215,51 @@ Object.assign(DesignEditor.prototype, {
         outsideGrid.setAttribute('mask', 'url(#print-area-outside-mask)');
     },
 
+    upsertPrintAreaBackground(maskShapeNode, transform = '') {
+        if (!this.canvas || !maskShapeNode) return;
+
+        let printAreaBackground = this.canvas.querySelector('#print-area-background');
+        if (!printAreaBackground) {
+            printAreaBackground = document.importNode(maskShapeNode, true);
+            printAreaBackground.setAttribute('id', 'print-area-background');
+            printAreaBackground.setAttribute('pointer-events', 'none');
+            if (this.canvas.firstChild) {
+                this.canvas.insertBefore(printAreaBackground, this.canvas.firstChild);
+            } else {
+                this.canvas.appendChild(printAreaBackground);
+            }
+        }
+
+        const refreshedBackground = document.importNode(maskShapeNode, true);
+        Array.from(refreshedBackground.attributes).forEach((attribute) => {
+            printAreaBackground.setAttribute(attribute.name, attribute.value);
+        });
+
+        while (printAreaBackground.firstChild) {
+            printAreaBackground.removeChild(printAreaBackground.firstChild);
+        }
+
+        Array.from(refreshedBackground.childNodes).forEach((childNode) => {
+            printAreaBackground.appendChild(childNode.cloneNode(true));
+        });
+
+        printAreaBackground.removeAttribute('stroke');
+        printAreaBackground.removeAttribute('stroke-width');
+        printAreaBackground.removeAttribute('stroke-dasharray');
+        printAreaBackground.removeAttribute('opacity');
+        printAreaBackground.setAttribute('fill', '#ffffff');
+        if (transform) {
+            printAreaBackground.setAttribute('transform', transform);
+        } else {
+            printAreaBackground.removeAttribute('transform');
+        }
+        printAreaBackground.setAttribute('pointer-events', 'none');
+
+        if (this.canvas.firstChild !== printAreaBackground) {
+            this.canvas.insertBefore(printAreaBackground, this.canvas.firstChild);
+        }
+    },
+
     updatePrintAreaFromElement(areaElement, sourceBounds) {
         this.setDefaultPrintArea();
 
@@ -252,6 +298,7 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
 
+        this.upsertPrintAreaBackground(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
         this.upsertOutsideAreaOverlay(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
         this.canvas.appendChild(visualArea);
@@ -361,7 +408,7 @@ Object.assign(DesignEditor.prototype, {
 
         return scored.length > 0 ? scored[0].element : candidates[0];
     },
-    
+
     loadSVGTemplate(svgContent) {
         try {
             const parser = new DOMParser();
@@ -373,7 +420,7 @@ Object.assign(DesignEditor.prototype, {
 
             if (viewBoxAttr) {
                 const parts = viewBoxAttr.split(/\s+/).map(Number);
-            if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+                if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
                     sourceBounds = { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
                 }
             } else {
