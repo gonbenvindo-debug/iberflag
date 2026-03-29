@@ -1400,29 +1400,50 @@ async function loadOrders() {
 async function viewOrder(id) {
     try {
         const orderId = String(id);
-        const cached = ordersCache.get(orderId);
+        const cached = ordersCache.get(orderId) || null;
+        let order = cached;
 
-        const { data: orderData, error: orderError } = await supabaseClient
-            .from('encomendas')
-            .select('*, clientes(*)')
-            .eq('id', orderId)
-            .maybeSingle();
+        if (!order) {
+            const { data: orderData, error: orderError } = await supabaseClient
+                .from('encomendas')
+                .select('*, clientes(*)')
+                .eq('id', orderId)
+                .maybeSingle();
 
-        if (orderError) throw orderError;
+            if (orderError) throw orderError;
+            order = orderData || null;
+        } else {
+            supabaseClient
+                .from('encomendas')
+                .select('*, clientes(*)')
+                .eq('id', orderId)
+                .maybeSingle()
+                .then(({ data: freshOrder }) => {
+                    if (!freshOrder) return;
+                    ordersCache.set(orderId, freshOrder);
+                })
+                .catch(() => {
+                    // Sem bloquear a abertura do modal quando o refresh falha
+                });
+        }
 
-        const order = orderData || cached;
         if (!order) {
             showToast('Encomenda nao encontrada', 'warning');
             return;
         }
 
-        const { data: itemsData, error: itemsError } = await supabaseClient
+        let itemsData = [];
+        const { data: fetchedItems, error: itemsError } = await supabaseClient
             .from('itens_encomenda')
             .select('*, produtos(*)')
             .eq('encomenda_id', orderId)
             .order('id', { ascending: true });
 
-        if (itemsError) throw itemsError;
+        if (itemsError) {
+            console.warn('Erro ao carregar itens da encomenda:', itemsError.message);
+        } else {
+            itemsData = Array.isArray(fetchedItems) ? fetchedItems : [];
+        }
 
         const split = typeof splitOrderNotesAndMeta === 'function'
             ? splitOrderNotesAndMeta(order.notas)
