@@ -629,6 +629,26 @@
         };
     }
 
+    function getSvgVisibleBounds(root, fallback = DEFAULT_SIZE) {
+        const box = getSvgBox(root, fallback);
+        const primaryNode = pickMaskNode(root);
+        if (!primaryNode) {
+            return box;
+        }
+
+        const visibleBounds = getSvgNodeBounds(primaryNode, box);
+        if (!visibleBounds || !Number.isFinite(visibleBounds.width) || !Number.isFinite(visibleBounds.height)) {
+            return box;
+        }
+
+        return {
+            x: Number.isFinite(visibleBounds.x) ? visibleBounds.x : box.x || 0,
+            y: Number.isFinite(visibleBounds.y) ? visibleBounds.y : box.y || 0,
+            width: Math.max(1, visibleBounds.width),
+            height: Math.max(1, visibleBounds.height)
+        };
+    }
+
     function buildPreviewCanvasGeometry(sourceBounds) {
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
@@ -740,7 +760,7 @@
             return fallback;
         }
 
-        const box = getSvgBox(root, DEFAULT_SIZE);
+        const box = getSvgVisibleBounds(root, DEFAULT_SIZE);
         if (!box.width || !box.height) {
             return fallback;
         }
@@ -875,9 +895,9 @@
             return fallbackMarkup;
         }
 
-        const maskBounds = getSvgSourceBounds(maskRoot, maskBox);
-        const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
-        const previewGeometry = buildPreviewCanvasGeometry(previewBox);
+        const maskBounds = getSvgVisibleBounds(maskRoot, maskBox);
+        const previewBox = previewRoot ? getSvgVisibleBounds(previewRoot, options) : maskBounds;
+        const previewGeometry = buildPreviewCanvasGeometry(maskBounds);
         const previewTargetBounds = {
             x: previewGeometry.x,
             y: previewGeometry.y,
