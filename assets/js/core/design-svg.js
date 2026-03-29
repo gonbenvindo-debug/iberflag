@@ -660,26 +660,36 @@
         return {
             canvasWidth,
             canvasHeight,
+            x: offsetX,
+            y: offsetY,
+            width: safeWidth * uniformScale,
+            height: safeHeight * uniformScale,
+            scale: uniformScale,
             transform: `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`
         };
     }
 
-    function cloneMaskNodeForClip(maskNode, transform) {
-        const clipNode = maskNode.cloneNode(true);
-        clipNode.removeAttribute?.('id');
-        clipNode.removeAttribute?.('stroke');
-        clipNode.removeAttribute?.('stroke-width');
-        clipNode.removeAttribute?.('stroke-dasharray');
-        clipNode.removeAttribute?.('opacity');
-        clipNode.removeAttribute?.('fill');
-        clipNode.setAttribute?.('fill', '#ffffff');
-        clipNode.setAttribute?.('pointer-events', 'none');
+    function buildPreviewOutlineNode(maskNode, transform) {
+        const outlineNode = maskNode.cloneNode(true);
+        outlineNode.removeAttribute?.('id');
+        outlineNode.removeAttribute?.('pointer-events');
+        outlineNode.removeAttribute?.('opacity');
+        outlineNode.removeAttribute?.('fill');
+        outlineNode.removeAttribute?.('stroke');
+        outlineNode.removeAttribute?.('stroke-width');
+        outlineNode.removeAttribute?.('stroke-dasharray');
+        outlineNode.setAttribute?.('fill', 'none');
+        outlineNode.setAttribute?.('stroke', '#3b82f6');
+        outlineNode.setAttribute?.('stroke-width', '2');
+        outlineNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
+        outlineNode.setAttribute?.('opacity', '0.75');
+        outlineNode.setAttribute?.('pointer-events', 'none');
         if (transform) {
-            clipNode.setAttribute?.('transform', transform);
+            outlineNode.setAttribute?.('transform', transform);
         } else {
-            clipNode.removeAttribute?.('transform');
+            outlineNode.removeAttribute?.('transform');
         }
-        return clipNode;
+        return outlineNode;
     }
 
     function toDataUrlFromSvgMarkup(svgMarkup) {
@@ -812,7 +822,6 @@
         const sourceBounds = getSvgSourceBounds(maskRoot, maskBox);
         const previewGeometry = buildPreviewCanvasGeometry(sourceBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
-        const clipId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', wrapperViewBox);
@@ -827,26 +836,24 @@
             'background-color': options.backgroundColor || 'transparent'
         }));
 
-        const defs = document.createElementNS(SVG_NS, 'defs');
-        const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-        clipPath.setAttribute('id', clipId);
-        clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-        const clipNode = cloneMaskNodeForClip(maskNode, previewGeometry.transform);
-        clipPath.appendChild(clipNode);
-        defs.appendChild(clipPath);
-        wrapper.appendChild(defs);
+        const background = document.createElementNS(SVG_NS, 'rect');
+        background.setAttribute('x', '0');
+        background.setAttribute('y', '0');
+        background.setAttribute('width', String(previewGeometry.canvasWidth));
+        background.setAttribute('height', String(previewGeometry.canvasHeight));
+        background.setAttribute('fill', options.backgroundColor || 'transparent');
+        wrapper.appendChild(background);
 
         if (previewRoot) {
             const nestedSvg = document.createElementNS(SVG_NS, 'svg');
             nestedSvg.setAttribute('xmlns', SVG_NS);
-            nestedSvg.setAttribute('x', '0');
-            nestedSvg.setAttribute('y', '0');
-            nestedSvg.setAttribute('width', String(previewGeometry.canvasWidth));
-            nestedSvg.setAttribute('height', String(previewGeometry.canvasHeight));
+            nestedSvg.setAttribute('x', String(previewGeometry.x));
+            nestedSvg.setAttribute('y', String(previewGeometry.y));
+            nestedSvg.setAttribute('width', String(previewGeometry.width));
+            nestedSvg.setAttribute('height', String(previewGeometry.height));
             nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || wrapperViewBox);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
-            nestedSvg.setAttribute('clip-path', `url(#${clipId})`);
 
             const previewDefs = previewRoot.querySelector('defs');
             if (previewDefs) {
@@ -866,14 +873,16 @@
             const image = document.createElementNS(SVG_NS, 'image');
             image.setAttribute('href', previewHref);
             image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
-            image.setAttribute('x', '0');
-            image.setAttribute('y', '0');
-            image.setAttribute('width', String(previewGeometry.canvasWidth));
-            image.setAttribute('height', String(previewGeometry.canvasHeight));
+            image.setAttribute('x', String(previewGeometry.x));
+            image.setAttribute('y', String(previewGeometry.y));
+            image.setAttribute('width', String(previewGeometry.width));
+            image.setAttribute('height', String(previewGeometry.height));
             image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            image.setAttribute('clip-path', `url(#${clipId})`);
             wrapper.appendChild(image);
         }
+
+        const outlineNode = buildPreviewOutlineNode(maskNode, previewGeometry.transform);
+        wrapper.appendChild(outlineNode);
 
         const serialized = new XMLSerializer().serializeToString(wrapper);
         cachePreviewMarkup(cacheKey, serialized);
