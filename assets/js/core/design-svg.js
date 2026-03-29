@@ -871,7 +871,9 @@
             serialize(previewValue),
             serialize(maskValue),
             serialize({
-                backgroundColor: options.backgroundColor || ''
+                backgroundColor: options.backgroundColor || '',
+                debug: Boolean(options.debug),
+                debugLabel: options.debugLabel || ''
             })
         ].join('||');
     }
@@ -894,6 +896,12 @@
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
         const cacheKey = buildPreviewCacheKey(previewValue, maskValue, options);
         if (PREVIEW_MARKUP_CACHE.has(cacheKey)) {
+            logDesignDebug('preview-cache-hit', {
+                cacheKey,
+                debug: Boolean(options.debug),
+                previewValue: previewValue || null,
+                maskValue: maskValue || null
+            }, options);
             return PREVIEW_MARKUP_CACHE.get(cacheKey);
         }
 
