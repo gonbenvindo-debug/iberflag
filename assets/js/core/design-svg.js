@@ -494,7 +494,7 @@
         const rootDefs = canvas.querySelector?.('defs');
         const printAreaOutline = canvas.querySelector?.('#print-area-shape-outline');
         const defs = document.createElementNS(SVG_NS, 'defs');
-        let clipPathId = '';
+        let maskId = '';
 
         if (rootDefs) {
             Array.from(rootDefs.childNodes || []).forEach((node) => {
@@ -506,26 +506,34 @@
         }
 
         if (printAreaOutline) {
-            clipPathId = `design-export-clip-${Math.random().toString(36).slice(2, 10)}`;
-            const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-            clipPath.setAttribute('id', clipPathId);
-            clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
+            maskId = `design-export-mask-${Math.random().toString(36).slice(2, 10)}`;
+            const mask = document.createElementNS(SVG_NS, 'mask');
+            mask.setAttribute('id', maskId);
+            mask.setAttribute('maskUnits', 'userSpaceOnUse');
+            mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
 
-            const clipNode = cloneNodeWithInlineStyles(printAreaOutline, { keepHelperNodes: true });
-            if (clipNode) {
-                clipNode.removeAttribute?.('id');
-                clipNode.removeAttribute?.('pointer-events');
-                clipNode.removeAttribute?.('opacity');
-                clipNode.removeAttribute?.('stroke');
-                clipNode.removeAttribute?.('stroke-width');
-                clipNode.removeAttribute?.('stroke-dasharray');
-                clipNode.removeAttribute?.('fill');
-                clipNode.removeAttribute?.('style');
-                clipNode.setAttribute('fill', '#ffffff');
-                clipNode.setAttribute('stroke', 'none');
-                clipNode.setAttribute('pointer-events', 'none');
-                clipPath.appendChild(clipNode);
-                defs.appendChild(clipPath);
+            const background = document.createElementNS(SVG_NS, 'rect');
+            background.setAttribute('x', '0');
+            background.setAttribute('y', '0');
+            background.setAttribute('width', String(width));
+            background.setAttribute('height', String(height));
+            background.setAttribute('fill', '#000000');
+            mask.appendChild(background);
+
+            const maskNode = cloneNodeWithInlineStyles(printAreaOutline, { keepHelperNodes: true });
+            if (maskNode) {
+                maskNode.removeAttribute?.('id');
+                maskNode.removeAttribute?.('pointer-events');
+                maskNode.removeAttribute?.('opacity');
+                maskNode.removeAttribute?.('stroke');
+                maskNode.removeAttribute?.('stroke-width');
+                maskNode.removeAttribute?.('stroke-dasharray');
+                maskNode.removeAttribute?.('style');
+                maskNode.setAttribute('fill', '#ffffff');
+                maskNode.setAttribute('stroke', 'none');
+                maskNode.setAttribute('pointer-events', 'none');
+                mask.appendChild(maskNode);
+                defs.appendChild(mask);
             }
         }
 
@@ -534,8 +542,8 @@
         }
 
         const clippedGroup = document.createElementNS(SVG_NS, 'g');
-        if (clipPathId) {
-            clippedGroup.setAttribute('clip-path', `url(#${clipPathId})`);
+        if (maskId) {
+            clippedGroup.setAttribute('mask', `url(#${maskId})`);
         }
 
         Array.from(canvas.childNodes || [])
