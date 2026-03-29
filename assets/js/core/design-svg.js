@@ -582,7 +582,7 @@
         wrapper.setAttribute('viewBox', `0 0 ${maskBox.width} ${maskBox.height}`);
         wrapper.setAttribute('width', '100%');
         wrapper.setAttribute('height', '100%');
-        wrapper.setAttribute('preserveAspectRatio', 'none');
+        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         wrapper.setAttribute('style', buildStyleString({
             display: 'block',
             width: '100%',
