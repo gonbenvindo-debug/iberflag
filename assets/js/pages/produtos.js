@@ -498,10 +498,10 @@ function renderTemplates(templates) {
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
-            <div class="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-100 relative shadow-sm group-hover:shadow-lg">
+            <div class="aspect-[4/3] rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-50 relative shadow-sm group-hover:shadow-lg">
                 <img src="${previewUrl}" 
                      alt="${escapeHtml(template.nome)}" 
-                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                     class="w-full h-full object-contain group-hover:scale-[1.02] transition-transform duration-500"
                      onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
