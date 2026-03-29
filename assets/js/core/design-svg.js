@@ -235,9 +235,9 @@
         const className = node.getAttribute?.('class') || '';
 
         if (tagName === 'defs') return false;
-        if (id.startsWith('print-area-')) return true;
         if (EXCLUDED_IDS.has(id)) return true;
         if (className.split(/\s+/).some((classToken) => EXCLUDED_CLASSES.has(classToken))) return true;
+        if (tagName === 'g' && id && id.startsWith('print-area-')) return true;
         return false;
     }
 
