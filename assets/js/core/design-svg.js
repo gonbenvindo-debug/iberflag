@@ -502,77 +502,120 @@
         }) || candidates[0] || null;
     }
 
+    function toDataUrlFromSvgMarkup(svgMarkup) {
+        if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
+            return '';
+        }
+
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup.trim())}`;
+    }
+
+    function toPreviewImageSource(previewValue, options = {}) {
+        if (typeof previewValue !== 'string') {
+            return '';
+        }
+
+        const trimmed = previewValue.trim();
+        if (!trimmed) {
+            return '';
+        }
+
+        if (trimmed.startsWith('data:image/svg+xml')) {
+            return trimmed;
+        }
+
+        if (trimmed.includes('<svg')) {
+            const svgMarkup = extractTemplateSvg(trimmed, options) || trimmed;
+            return toDataUrlFromSvgMarkup(svgMarkup);
+        }
+
+        return trimmed;
+    }
+
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
         const previewMarkup = extractTemplateSvg(previewValue, options);
-        if (!previewMarkup) {
+        const previewSource = toPreviewImageSource(previewValue, options);
+        const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
+
+        if (!maskMarkup) {
+            if (previewMarkup) {
+                return previewMarkup;
+            }
+
+            if (previewSource) {
+                return `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+            }
+
             return '';
         }
 
-        const previewRoot = parseSvgMarkup(previewMarkup);
-        if (!previewRoot) {
+        const maskRoot = parseSvgMarkup(maskMarkup);
+        const previewHref = previewMarkup
+            ? toDataUrlFromSvgMarkup(previewMarkup)
+            : previewSource;
+
+        if (!maskRoot || !previewHref) {
+            if (previewMarkup) {
+                return previewMarkup;
+            }
+
+            if (previewSource) {
+                return `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+            }
+
             return '';
         }
 
-        const maskMarkup = extractTemplateSvg(maskValue, options);
-        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
-        const previewBox = getSvgBox(previewRoot, options);
-        const maskBox = getSvgBox(maskRoot, previewBox);
+        const maskBox = getSvgBox(maskRoot, options);
+        const maskNode = pickMaskNode(maskRoot);
+        if (!maskNode) {
+            if (previewMarkup) {
+                return previewMarkup;
+            }
 
+            return `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+        }
+
+        const clipId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', `0 0 ${maskBox.width} ${maskBox.height}`);
         wrapper.setAttribute('width', '100%');
         wrapper.setAttribute('height', '100%');
-        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        wrapper.setAttribute('preserveAspectRatio', 'none');
         wrapper.setAttribute('style', buildStyleString({
             display: 'block',
+            width: '100%',
+            height: '100%',
             overflow: 'hidden',
             'background-color': options.backgroundColor || 'transparent'
         }));
 
         const defs = document.createElementNS(SVG_NS, 'defs');
-        const clipPathId = `preview-clip-${Math.random().toString(36).slice(2, 9)}`;
-        let clipApplied = false;
-
-        if (maskRoot) {
-            const maskNode = pickMaskNode(maskRoot);
-            if (maskNode) {
-                const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-                clipPath.setAttribute('id', clipPathId);
-                clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-                clipPath.appendChild(document.importNode(maskNode, true));
-                defs.appendChild(clipPath);
-                wrapper.appendChild(defs);
-                clipApplied = true;
-            }
-        }
-
-        const contentGroup = document.createElementNS(SVG_NS, 'g');
-        if (clipApplied) {
-            contentGroup.setAttribute('clip-path', `url(#${clipPathId})`);
-        }
-
-        const previewChildren = Array.from(previewRoot.children || []).filter((node) => {
-            const tagName = String(node.tagName || '').toLowerCase();
-            return tagName !== 'defs' && tagName !== 'title' && tagName !== 'desc';
-        });
-
-        if (previewChildren.length > 0) {
-            previewChildren.forEach((child) => {
-                contentGroup.appendChild(document.importNode(child, true));
+        const clipPath = document.createElementNS(SVG_NS, 'clipPath');
+        clipPath.setAttribute('id', clipId);
+        clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
+        if (String(maskNode.tagName || '').toLowerCase() === 'g') {
+            Array.from(maskNode.children || []).forEach((child) => {
+                clipPath.appendChild(child.cloneNode(true));
             });
         } else {
-            const clone = previewRoot.cloneNode(true);
-            clone.removeAttribute('xmlns');
-            clone.setAttribute('width', '100%');
-            clone.setAttribute('height', '100%');
-            if (clipApplied) {
-                clone.setAttribute('clip-path', `url(#${clipPathId})`);
-            }
-            return new XMLSerializer().serializeToString(clone);
+            clipPath.appendChild(maskNode.cloneNode(true));
         }
+        defs.appendChild(clipPath);
+        wrapper.appendChild(defs);
 
-        wrapper.appendChild(contentGroup);
+        const image = document.createElementNS(SVG_NS, 'image');
+        image.setAttribute('href', previewHref);
+        image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
+        image.setAttribute('x', '0');
+        image.setAttribute('y', '0');
+        image.setAttribute('width', String(maskBox.width));
+        image.setAttribute('height', String(maskBox.height));
+        image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        image.setAttribute('clip-path', `url(#${clipId})`);
+        wrapper.appendChild(image);
+
         return new XMLSerializer().serializeToString(wrapper);
     }
 
