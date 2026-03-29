@@ -355,7 +355,7 @@ async function getTemplatesCatalog() {
     templatesCatalogPromise = (async () => {
         const { data, error } = await supabaseClient
             .from('templates')
-            .select('*')
+            .select('id, nome, categoria, preview_url, thumbnail_url, ativo, created_at')
             .eq('ativo', true)
             .order('created_at', { ascending: false });
 
@@ -387,28 +387,25 @@ async function getProductTemplates(productId) {
     }
 
     const promise = (async () => {
-        const [associationsResult, catalogResult] = await Promise.all([
-            supabaseClient
-                .from('produto_templates')
-                .select('template_id, templates(*)')
-                .eq('produto_id', numericProductId)
-                .order('ordem', { ascending: true }),
-            getTemplatesCatalog()
-        ]);
+        const associationsResult = await supabaseClient
+            .from('produto_templates')
+            .select('template_id, templates(id, nome, categoria, preview_url, thumbnail_url, ativo)')
+            .eq('produto_id', numericProductId)
+            .order('ordem', { ascending: true });
 
         const { data: associations, error: assocError } = associationsResult;
         if (assocError) throw assocError;
 
-        let templates = [];
         if (associations && associations.length > 0) {
-            templates = associations.map(a => a.templates).filter(t => t && t.ativo);
+            const templates = associations
+                .map((association) => association.templates)
+                .filter((template) => template && template.ativo);
+            if (templates.length > 0) {
+                return templates;
+            }
         }
 
-        if (templates.length === 0) {
-            templates = catalogResult || [];
-        }
-
-        return templates;
+        return getTemplatesCatalog();
     })();
 
     templatesByProductCache.set(numericProductId, promise);
