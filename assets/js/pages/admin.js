@@ -29,6 +29,22 @@ function getRemainingLockSeconds() {
     return Math.max(0, Math.ceil((loginBlockedUntil - Date.now()) / 1000));
 }
 
+async function ensureAdminWriteSession() {
+    try {
+        const { data: { session } } = await supabaseClient.auth.getSession();
+        if (session) return true;
+        if (!adminTestingEnabled || !allowedAdminEmail || !testAdminPassword) return false;
+
+        const { error } = await supabaseClient.auth.signInWithPassword({
+            email: allowedAdminEmail,
+            password: testAdminPassword
+        });
+        return !error;
+    } catch {
+        return false;
+    }
+}
+
 function showLoginOverlay() {
     const overlay = document.getElementById('admin-login-overlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -2162,6 +2178,12 @@ async function deleteTemplateFromCard(templateId) {
         return;
     }
 
+    const hasWriteSession = await ensureAdminWriteSession();
+    if (!hasWriteSession) {
+        showToast('Sem sessão de escrita no Supabase. Inicie sessão admin real para apagar templates.', 'error');
+        return;
+    }
+
     try {
         const { error: deleteLinksError } = await supabaseClient
             .from('produto_templates')
@@ -2184,7 +2206,10 @@ async function deleteTemplateFromCard(templateId) {
         renderProductTemplatesGrid();
     } catch (error) {
         console.error('Erro ao apagar template:', error);
-        showToast('Erro ao apagar template', 'error');
+        const detail = [error?.message, error?.details, error?.hint]
+            .filter(Boolean)
+            .join(' | ');
+        showToast(detail || 'Erro ao apagar template', 'error');
     }
 }
 
