@@ -733,13 +733,138 @@
         return scored.length > 0 ? scored[0].element : candidates[0];
     }
 
+    function getSvgVisibleBounds(root, fallback = DEFAULT_SIZE) {
+        const box = getSvgBox(root, fallback);
+        const primaryNode = findTemplateOutlineElement(root, box) || pickMaskNode(root);
+        if (!primaryNode) {
+            return box;
+        }
+
+        const visibleBounds = getSvgNodeBounds(primaryNode, box);
+        if (!visibleBounds || !Number.isFinite(visibleBounds.width) || !Number.isFinite(visibleBounds.height)) {
+            return box;
+        }
+
+        return {
+            x: Number.isFinite(visibleBounds.x) ? visibleBounds.x : box.x || 0,
+            y: Number.isFinite(visibleBounds.y) ? visibleBounds.y : box.y || 0,
+            width: Math.max(1, visibleBounds.width),
+            height: Math.max(1, visibleBounds.height)
+        };
+    }
+
+    function buildPreviewCanvasGeometry(sourceBounds) {
+        const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
+        const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
+        const ratio = safeWidth / safeHeight;
+        const margin = 16;
+        const contentLongestSide = 700;
+
+        let contentWidth = contentLongestSide;
+        let contentHeight = contentLongestSide;
+
+        if (ratio >= 1) {
+            contentWidth = contentLongestSide;
+            contentHeight = contentLongestSide / ratio;
+        } else {
+            contentHeight = contentLongestSide;
+            contentWidth = contentLongestSide * ratio;
+        }
+
+        const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
+        const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
+        const uniformScale = Math.min(
+            contentWidth / safeWidth,
+            contentHeight / safeHeight
+        );
+
+        const offsetX = margin + ((contentWidth - (safeWidth * uniformScale)) / 2) - ((Number(sourceBounds?.x) || 0) * uniformScale);
+        const offsetY = margin + ((contentHeight - (safeHeight * uniformScale)) / 2) - ((Number(sourceBounds?.y) || 0) * uniformScale);
+
+        return {
+            canvasWidth,
+            canvasHeight,
+            x: offsetX,
+            y: offsetY,
+            width: safeWidth * uniformScale,
+            height: safeHeight * uniformScale,
+            scale: uniformScale,
+            transform: `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`
+        };
+    }
+
+    function buildContainTransform(sourceBounds, targetBounds) {
+        const safeSourceWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
+        const safeSourceHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
+        const safeTargetWidth = Math.max(1, Number(targetBounds?.width) || DEFAULT_SIZE.width);
+        const safeTargetHeight = Math.max(1, Number(targetBounds?.height) || DEFAULT_SIZE.height);
+        const safeTargetX = Number(targetBounds?.x) || 0;
+        const safeTargetY = Number(targetBounds?.y) || 0;
+        const safeSourceX = Number(sourceBounds?.x) || 0;
+        const safeSourceY = Number(sourceBounds?.y) || 0;
+
+        const scale = Math.min(
+            safeTargetWidth / safeSourceWidth,
+            safeTargetHeight / safeSourceHeight
+        );
+
+        const renderedWidth = safeSourceWidth * scale;
+        const renderedHeight = safeSourceHeight * scale;
+        const offsetX = safeTargetX + ((safeTargetWidth - renderedWidth) / 2) - (safeSourceX * scale);
+        const offsetY = safeTargetY + ((safeTargetHeight - renderedHeight) / 2) - (safeSourceY * scale);
+
+        return `translate(${offsetX} ${offsetY}) scale(${scale} ${scale})`;
+    }
+
+    function buildPreviewOutlineNode(maskNode, transform) {
+        const outlineNode = maskNode.cloneNode(true);
+        outlineNode.removeAttribute?.('id');
+        outlineNode.removeAttribute?.('pointer-events');
+        outlineNode.removeAttribute?.('opacity');
+        outlineNode.removeAttribute?.('fill');
+        outlineNode.removeAttribute?.('stroke');
+        outlineNode.removeAttribute?.('stroke-width');
+        outlineNode.removeAttribute?.('stroke-dasharray');
+        outlineNode.setAttribute?.('fill', 'none');
+        outlineNode.setAttribute?.('stroke', '#3b82f6');
+        outlineNode.setAttribute?.('stroke-width', '2');
+        outlineNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
+        outlineNode.setAttribute?.('opacity', '0.75');
+        outlineNode.setAttribute?.('pointer-events', 'none');
+        if (transform) {
+            outlineNode.setAttribute?.('transform', transform);
+        } else {
+            outlineNode.removeAttribute?.('transform');
+        }
+        return outlineNode;
+    }
+
+    function buildPreviewMaskNode(maskNode, transform) {
+        const maskNodeClone = maskNode.cloneNode(true);
+        maskNodeClone.removeAttribute?.('id');
+        maskNodeClone.removeAttribute?.('pointer-events');
+        maskNodeClone.removeAttribute?.('opacity');
+        maskNodeClone.removeAttribute?.('stroke');
+        maskNodeClone.removeAttribute?.('stroke-width');
+        maskNodeClone.removeAttribute?.('stroke-dasharray');
+        maskNodeClone.setAttribute?.('fill', '#ffffff');
+        maskNodeClone.setAttribute?.('stroke', 'none');
+        maskNodeClone.setAttribute?.('pointer-events', 'none');
+        if (transform) {
+            maskNodeClone.setAttribute?.('transform', transform);
+        } else {
+            maskNodeClone.removeAttribute?.('transform');
+        }
+        return maskNodeClone;
+    }
+
     function getSvgAspectRatio(svgMarkup, fallback = 1) {
         const root = parseSvgMarkup(typeof svgMarkup === 'string' ? svgMarkup : '');
         if (!root) {
             return fallback;
         }
 
-        const box = getSvgBox(root, DEFAULT_SIZE);
+        const box = getSvgVisibleBounds(root, DEFAULT_SIZE);
         if (!box.width || !box.height) {
             return fallback;
         }
@@ -875,9 +1000,17 @@
             return fallbackMarkup;
         }
 
-        const sourceBounds = getSvgSourceBounds(maskRoot, maskBox);
-        const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
-        const wrapperViewBox = `${sourceBounds.x} ${sourceBounds.y} ${sourceBounds.width} ${sourceBounds.height}`;
+        const maskBounds = getSvgVisibleBounds(maskRoot, maskBox);
+        const previewBox = previewRoot ? getSvgVisibleBounds(previewRoot, options) : maskBounds;
+        const previewGeometry = buildPreviewCanvasGeometry(maskBounds);
+        const previewTargetBounds = {
+            x: previewGeometry.x,
+            y: previewGeometry.y,
+            width: previewGeometry.width,
+            height: previewGeometry.height
+        };
+        const maskTransform = buildContainTransform(maskBounds, previewTargetBounds);
+        const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', wrapperViewBox);
@@ -892,44 +1025,55 @@
             'background-color': options.backgroundColor || 'transparent'
         }));
 
-        const defs = document.createElementNS(SVG_NS, 'defs');
-        const clipPathId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
-        const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-        clipPath.setAttribute('id', clipPathId);
-        clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
+        const background = document.createElementNS(SVG_NS, 'rect');
+        background.setAttribute('x', '0');
+        background.setAttribute('y', '0');
+        background.setAttribute('width', String(previewGeometry.canvasWidth));
+        background.setAttribute('height', String(previewGeometry.canvasHeight));
+        background.setAttribute('fill', options.backgroundColor || 'transparent');
+        wrapper.appendChild(background);
 
-        const previewOutlineNode = maskNode.cloneNode(true);
-        previewOutlineNode.removeAttribute?.('id');
-        previewOutlineNode.removeAttribute?.('pointer-events');
-        previewOutlineNode.removeAttribute?.('opacity');
-        previewOutlineNode.removeAttribute?.('transform');
-        previewOutlineNode.setAttribute?.('fill', '#ffffff');
-        previewOutlineNode.setAttribute?.('stroke', 'none');
-        previewOutlineNode.setAttribute?.('pointer-events', 'none');
-        clipPath.appendChild(previewOutlineNode);
-        defs.appendChild(clipPath);
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
+        const mask = document.createElementNS(SVG_NS, 'mask');
+        mask.setAttribute('id', maskId);
+        mask.setAttribute('maskUnits', 'userSpaceOnUse');
+        mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+
+        const blackRect = document.createElementNS(SVG_NS, 'rect');
+        blackRect.setAttribute('x', '0');
+        blackRect.setAttribute('y', '0');
+        blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
+        blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
+        blackRect.setAttribute('fill', '#000000');
+        mask.appendChild(blackRect);
+
+        const previewMaskNode = buildPreviewMaskNode(maskNode, maskTransform);
+        mask.appendChild(previewMaskNode);
+        defs.appendChild(mask);
         wrapper.appendChild(defs);
 
         if (debugEnabled && typeof console !== 'undefined' && typeof console.debug === 'function') {
             console.debug('[DesignSvgStore] preview debug', {
                 maskTag: String(maskNode.tagName || '').toLowerCase(),
-                sourceBounds,
+                maskBounds,
                 previewBox,
-                clipPathId
+                previewGeometry,
+                previewTargetBounds
             });
         }
 
         if (previewRoot) {
             const nestedSvg = document.createElementNS(SVG_NS, 'svg');
             nestedSvg.setAttribute('xmlns', SVG_NS);
-            nestedSvg.setAttribute('x', String(sourceBounds.x));
-            nestedSvg.setAttribute('y', String(sourceBounds.y));
-            nestedSvg.setAttribute('width', String(sourceBounds.width));
-            nestedSvg.setAttribute('height', String(sourceBounds.height));
+            nestedSvg.setAttribute('x', String(previewGeometry.x));
+            nestedSvg.setAttribute('y', String(previewGeometry.y));
+            nestedSvg.setAttribute('width', String(previewGeometry.width));
+            nestedSvg.setAttribute('height', String(previewGeometry.height));
             nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || `0 0 ${previewBox.width} ${previewBox.height}`);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
-            nestedSvg.setAttribute('clip-path', `url(#${clipPathId})`);
+            nestedSvg.setAttribute('mask', `url(#${maskId})`);
 
             const previewDefs = previewRoot.querySelector('defs');
             if (previewDefs) {
@@ -949,12 +1093,12 @@
             const image = document.createElementNS(SVG_NS, 'image');
             image.setAttribute('href', previewHref);
             image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
-            image.setAttribute('x', String(sourceBounds.x));
-            image.setAttribute('y', String(sourceBounds.y));
-            image.setAttribute('width', String(sourceBounds.width));
-            image.setAttribute('height', String(sourceBounds.height));
+            image.setAttribute('x', String(previewGeometry.x));
+            image.setAttribute('y', String(previewGeometry.y));
+            image.setAttribute('width', String(previewGeometry.width));
+            image.setAttribute('height', String(previewGeometry.height));
             image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            image.setAttribute('clip-path', `url(#${clipPathId})`);
+            image.setAttribute('mask', `url(#${maskId})`);
             wrapper.appendChild(image);
         }
 
