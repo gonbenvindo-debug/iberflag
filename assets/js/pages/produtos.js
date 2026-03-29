@@ -254,9 +254,27 @@ let currentProductId = null;
 let currentProductName = '';
 let allTemplates = [];
 
-function openTemplatesModal(productId, productName) {
+async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProductName = productName;
+
+    try {
+        const { data: associations, error } = await supabaseClient
+            .from('produto_templates')
+            .select('template_id, templates(*)')
+            .eq('produto_id', productId)
+            .order('ordem', { ascending: true });
+
+        if (!error && associations) {
+            const designs = associations.map(a => a.templates).filter(t => t && t.ativo);
+            if (designs.length === 0) {
+                window.location.href = `/pages/personalizar.html?produto=${productId}`;
+                return;
+            }
+        }
+    } catch (err) {
+        console.warn('Erro ao verificar designs:', err);
+    }
 
     document.getElementById('modal-product-name').textContent = `Escolha um design para: ${productName}`;
     document.getElementById('templates-modal').classList.remove('hidden');

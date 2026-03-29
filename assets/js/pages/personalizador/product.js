@@ -9,6 +9,12 @@ Object.assign(DesignEditor.prototype, {
         this.editIndex = urlParams.get('edit');
         this.editDesignId = urlParams.get('design');
         this.productId = productId;
+        this.isAdminMode = urlParams.get('admin') === 'true';
+        this.editingTemplateId = urlParams.get('editTemplate') || null;
+
+        if (this.isAdminMode) {
+            this.setupAdminMode();
+        }
 
         if (!productId) {
             window.location.href = '/produtos.html';
@@ -447,7 +453,106 @@ Object.assign(DesignEditor.prototype, {
         this.legacyCartStorageKeys.forEach((key) => {
             localStorage.setItem(key, JSON.stringify(cart));
         });
-    }
+    },
 
+    setupAdminMode() {
+        const cartBtn = document.getElementById('add-to-cart-btn');
+        if (cartBtn) {
+            const icon = cartBtn.querySelector('i');
+            if (icon) {
+                icon.setAttribute('data-lucide', 'save');
+            }
+            const text = cartBtn.querySelector('.editor-cart-text');
+            if (text) text.textContent = 'Guardar Design';
+            cartBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
+            cartBtn.classList.add('bg-green-600', 'hover:bg-green-700');
+        }
+
+        const priceEl = document.getElementById('product-price');
+        if (priceEl) priceEl.style.display = 'none';
+
+        const closeLink = document.querySelector('#editor-nav a[href="/produtos.html"]');
+        if (closeLink) {
+            closeLink.href = '/pages/admin.html#produtos';
+            closeLink.title = 'Voltar ao Admin';
+        }
+    },
+
+    async saveDesignAsTemplate() {
+        if (this.elements.length === 0) {
+            showToast('Adicione pelo menos um elemento ao design', 'warning');
+            return;
+        }
+
+        const designSvg = this.getDesignSVG();
+        const designPreview = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`;
+
+        const nome = prompt('Nome do design:');
+        if (!nome || !nome.trim()) {
+            showToast('Nome obrigatorio para guardar o design', 'warning');
+            return;
+        }
+
+        const categoria = prompt('Categoria (promocoes, eventos, corporativo, festas, varejo):', 'promocoes') || 'promocoes';
+
+        const templateData = {
+            nome: nome.trim(),
+            categoria: categoria.trim(),
+            descricao: `Design pre-feito para ${this.currentProduct?.nome || 'produto'}`,
+            elementos: this.elements.map(el => ({ ...el })),
+            preview_url: designPreview,
+            ativo: true
+        };
+
+        try {
+            if (this.editingTemplateId) {
+                const { error } = await supabaseClient
+                    .from('templates')
+                    .update(templateData)
+                    .eq('id', this.editingTemplateId);
+                if (error) throw error;
+                showToast('Design atualizado com sucesso!', 'success');
+            } else {
+                const { data, error } = await supabaseClient
+                    .from('templates')
+                    .insert(templateData)
+                    .select('id')
+                    .single();
+                if (error) throw error;
+
+                if (data?.id && this.productId) {
+                    const existing = await supabaseClient
+                        .from('produto_templates')
+                        .select('id')
+                        .eq('produto_id', Number(this.productId))
+                        .eq('template_id', data.id)
+                        .maybeSingle();
+
+                    if (!existing?.data) {
+                        const { data: countData } = await supabaseClient
+                            .from('produto_templates')
+                            .select('id', { count: 'exact', head: true })
+                            .eq('produto_id', Number(this.productId));
+
+                        await supabaseClient
+                            .from('produto_templates')
+                            .insert({
+                                produto_id: Number(this.productId),
+                                template_id: data.id,
+                                ordem: (countData?.length || 0) + 1
+                            });
+                    }
+                }
+                showToast('Design criado e associado ao produto!', 'success');
+            }
+
+            setTimeout(() => {
+                window.location.href = '/pages/admin.html#produtos';
+            }, 1200);
+        } catch (err) {
+            console.error('Erro ao guardar design:', err);
+            showToast('Erro ao guardar design: ' + (err.message || err), 'error');
+        }
+    }
 
 });

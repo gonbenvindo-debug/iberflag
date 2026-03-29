@@ -581,6 +581,11 @@ if (addProductBtn) {
         productForm.reset();
         document.getElementById('product-ativo').checked = true;
         resetSvgTemplateState();
+        const createDesignBtn = document.getElementById('create-design-btn');
+        if (createDesignBtn) {
+            createDesignBtn.disabled = true;
+            createDesignBtn.title = 'Guarde o produto primeiro para criar designs';
+        }
         try {
             await loadBaseCatalog(true);
             renderProductBaseAssignments([], null);
@@ -605,6 +610,16 @@ if (cancelModalBtn) {
         resetSvgTemplateState();
     });
 }
+
+document.addEventListener('click', (e) => {
+    const btn = e.target.closest('#create-design-btn');
+    if (!btn || btn.disabled) return;
+    if (!currentProductId) {
+        showToast('Guarde o produto primeiro', 'warning');
+        return;
+    }
+    window.open(`/pages/personalizar.html?produto=${currentProductId}&admin=true`, '_blank');
+});
 
 // ===== SVG FILE UPLOAD HANDLER =====
 let svgTemplateContent = null;
@@ -911,6 +926,12 @@ async function editProduct(id) {
         currentProductTemplates = await loadProductTemplates(id);
         renderProductTemplatesAssignments();
         renderAvailableTemplatesSelect();
+
+        const createDesignBtn = el('create-design-btn');
+        if (createDesignBtn) {
+            createDesignBtn.disabled = false;
+            createDesignBtn.title = 'Abrir editor para criar design';
+        }
 
         const modal = el('product-modal');
         if (modal) {

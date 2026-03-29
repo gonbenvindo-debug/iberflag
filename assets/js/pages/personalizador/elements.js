@@ -186,8 +186,14 @@ Object.assign(DesignEditor.prototype, {
         document.getElementById('undo-btn').addEventListener('click', () => this.undo());
         document.getElementById('redo-btn').addEventListener('click', () => this.redo());
 
-        // Add to cart
-        document.getElementById('add-to-cart-btn').addEventListener('click', () => this.openCartStepsModal());
+        // Add to cart / Save design (admin mode)
+        document.getElementById('add-to-cart-btn').addEventListener('click', () => {
+            if (this.isAdminMode) {
+                this.saveDesignAsTemplate();
+            } else {
+                this.openCartStepsModal();
+            }
+        });
 
         // Delete element
         document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
