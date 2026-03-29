@@ -229,17 +229,23 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        // Clear canvas
-        this.clearCanvas();
-
-        // Load elements from template
-        const elements = template.elements || [];
-        elements.forEach(elData => {
-            this.createElementFromTemplate(elData);
+        const svgMarkup = window.DesignSvgStore?.extractTemplateSvg(template.elements || template.elementos, {
+            width: this.baseCanvasSize?.width || 800,
+            height: this.baseCanvasSize?.height || 600
         });
 
+        if (svgMarkup && window.DesignSvgStore?.importSvgIntoEditor) {
+            window.DesignSvgStore.importSvgIntoEditor(this, svgMarkup);
+        } else {
+            this.clearCanvas();
+            const elements = template.elements || [];
+            elements.forEach(elData => {
+                this.createElementFromTemplate(elData);
+            });
+            this.saveHistory();
+        }
+
         this.closeTemplateModal();
-        this.saveHistory();
         showToast(`Template "${template.name}" carregado!`, 'success');
     },
 
@@ -458,6 +464,7 @@ Object.assign(DesignEditor.prototype, {
                 el.element.remove();
             }
         });
+        this.canvas.querySelectorAll('defs').forEach((defsNode) => defsNode.remove());
         this.elements = [];
         this.selectedElement = null;
         this.hideResizeHandles();

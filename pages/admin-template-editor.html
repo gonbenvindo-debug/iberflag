@@ -9,6 +9,7 @@
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260328">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+    <script src="/assets/js/core/design-svg.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260328">
     <style>
@@ -528,8 +529,14 @@
             if (nameInput) nameInput.value = payload.nome || 'Template sem nome';
             if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
 
-            if (Array.isArray(payload.elementos) && payload.elementos.length > 0) {
-                elements = payload.elementos.map((elemento) => ({
+            const payloadElements = Array.isArray(payload.elementos)
+                ? payload.elementos
+                : Array.isArray(payload.elementos?.elements)
+                    ? payload.elementos.elements
+                    : [];
+
+            if (payloadElements.length > 0) {
+                elements = payloadElements.map((elemento) => ({
                     ...elemento,
                     id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
                 }));
@@ -974,13 +981,26 @@
                 return;
             }
 
-            // Gerar preview (simplificado)
+            const designSvg = window.DesignSvgStore?.buildTemplateSvgFromElements(elements, {
+                width: 800,
+                height: 600
+            }) || '';
+            const previewUrl = designSvg
+                ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
+                : '';
+
             const previewData = {
                 nome,
                 categoria,
-                elementos: elements,
+                elementos: {
+                    format: 'svg-inline-v1',
+                    svg: designSvg,
+                    design_svg: designSvg,
+                    elements
+                },
                 largura: 800,
                 altura: 600,
+                preview_url: previewUrl,
                 ativo: true
             };
 

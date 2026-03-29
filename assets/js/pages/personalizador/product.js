@@ -114,20 +114,32 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            const templateElements = Array.isArray(data.elementos)
-                ? data.elementos
-                : Array.isArray(data.elements)
-                    ? data.elements
-                    : [];
+            const svgMarkup = window.DesignSvgStore?.extractTemplateSvg(data.elementos, {
+                width: this.baseCanvasSize?.width || 800,
+                height: this.baseCanvasSize?.height || 600
+            }) || window.DesignSvgStore?.extractTemplateSvg(data.design_svg, {
+                width: this.baseCanvasSize?.width || 800,
+                height: this.baseCanvasSize?.height || 600
+            });
 
-            if (templateElements.length > 0) {
-                this.clearCanvas?.();
-                templateElements.forEach((el) => {
-                    this.createElementFromTemplate?.(el);
-                });
-                this.bringPrintAreaOverlaysToFront?.();
-                this.updateLayers?.();
-                this.saveHistory?.();
+            if (svgMarkup && window.DesignSvgStore?.importSvgIntoEditor) {
+                window.DesignSvgStore.importSvgIntoEditor(this, svgMarkup);
+            } else {
+                const templateElements = Array.isArray(data.elementos)
+                    ? data.elementos
+                    : Array.isArray(data.elements)
+                        ? data.elements
+                        : [];
+
+                if (templateElements.length > 0) {
+                    this.clearCanvas?.();
+                    templateElements.forEach((el) => {
+                        this.createElementFromTemplate?.(el);
+                    });
+                    this.bringPrintAreaOverlaysToFront?.();
+                    this.updateLayers?.();
+                    this.saveHistory?.();
+                }
             }
 
             showToast(`Template "${data.nome}" carregado!`, 'success');
@@ -137,20 +149,16 @@ Object.assign(DesignEditor.prototype, {
             if (typeof TEMPLATES_DATA !== 'undefined') {
                 const allTemplates = Object.values(TEMPLATES_DATA).flat();
                 const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
-                const fallbackElements = Array.isArray(template?.elements)
-                    ? template.elements
-                    : Array.isArray(template?.elementos)
-                        ? template.elementos
-                        : [];
+                const fallbackSvg = window.DesignSvgStore?.extractTemplateSvg(
+                    template?.elementos ?? template?.elements,
+                    {
+                        width: this.baseCanvasSize?.width || 800,
+                        height: this.baseCanvasSize?.height || 600
+                    }
+                );
 
-                if (template && fallbackElements.length > 0) {
-                    this.clearCanvas?.();
-                    fallbackElements.forEach((el) => {
-                        this.createElementFromTemplate?.(el);
-                    });
-                    this.bringPrintAreaOverlaysToFront?.();
-                    this.updateLayers?.();
-                    this.saveHistory?.();
+                if (template && fallbackSvg && window.DesignSvgStore?.importSvgIntoEditor) {
+                    window.DesignSvgStore.importSvgIntoEditor(this, fallbackSvg);
                     showToast(`Template "${template.name}" carregado!`, 'success');
                 }
             }
@@ -514,7 +522,12 @@ Object.assign(DesignEditor.prototype, {
         const templateData = {
             nome: nome.trim(),
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
-            elementos: serializableElements,
+            elementos: {
+                format: 'svg-inline-v1',
+                svg: designSvg,
+                design_svg: designSvg,
+                elements: serializableElements
+            },
             preview_url: designPreview,
             ativo: true
         };

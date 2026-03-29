@@ -228,6 +228,10 @@ Object.assign(DesignEditor.prototype, {
     },
 
     getDesignSVG() {
+        if (window.DesignSvgStore?.serializeEditorToSvg) {
+            return window.DesignSvgStore.serializeEditorToSvg(this);
+        }
+
         const vb = this.getCanvasViewBoxSize();
         const exportWidth = Math.max(1, Math.round(vb.width));
         const exportHeight = Math.max(1, Math.round(vb.height));
@@ -289,6 +293,7 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
+            design_svg: design,
             designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
