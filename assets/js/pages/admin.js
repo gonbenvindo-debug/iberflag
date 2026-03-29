@@ -857,79 +857,70 @@ if (productForm) {
 
 // ===== EDIT PRODUCT =====
 async function editProduct(id) {
-    console.log('[DEBUG] editProduct chamado com id:', id);
     try {
-        console.log('[DEBUG] Buscando produto no Supabase...');
         const { data, error } = await supabaseClient
             .from('produtos')
             .select('*')
             .eq('id', id)
             .single();
 
-        if (error) {
-            console.error('[DEBUG] Erro Supabase:', error);
-            throw error;
-        }
-        console.log('[DEBUG] Produto encontrado:', data);
+        if (error) throw error;
 
         currentProductId = id;
-        console.log('[DEBUG] currentProductId definido:', currentProductId);
 
-        const modalTitle = document.getElementById('modal-title');
-        console.log('[DEBUG] modal-title elemento:', modalTitle);
+        const el = (elId) => document.getElementById(elId);
+
+        const modalTitle = el('modal-title');
         if (modalTitle) modalTitle.textContent = 'Editar Produto';
 
-        const productNome = document.getElementById('product-nome');
-        console.log('[DEBUG] product-nome elemento:', productNome);
+        const productNome = el('product-nome');
         if (productNome) productNome.value = data.nome || '';
 
-        const productDescricao = document.getElementById('product-descricao');
+        const productDescricao = el('product-descricao');
         if (productDescricao) productDescricao.value = data.descricao || '';
 
-        const productPreco = document.getElementById('product-preco');
+        const productPreco = el('product-preco');
         if (productPreco) productPreco.value = data.preco || '';
 
-        const productCategoria = document.getElementById('product-categoria');
+        const productCategoria = el('product-categoria');
         if (productCategoria) productCategoria.value = data.categoria || '';
 
-        const productImagem = document.getElementById('product-imagem');
+        const productImagem = el('product-imagem');
         if (productImagem) productImagem.value = data.imagem || '';
 
-        const productStock = document.getElementById('product-stock');
+        const productStock = el('product-stock');
         if (productStock) productStock.value = data.stock || 0;
 
-        const productDestaque = document.getElementById('product-destaque');
+        const productDestaque = el('product-destaque');
         if (productDestaque) productDestaque.checked = data.destaque || false;
 
-        const productAtivo = document.getElementById('product-ativo');
+        const productAtivo = el('product-ativo');
         if (productAtivo) productAtivo.checked = data.ativo !== false;
 
-        // Load existing SVG template
         if (data.svg_template) {
             setSvgTemplateContent(data.svg_template, 'Template SVG atual');
         } else {
             resetSvgTemplateState();
         }
 
-        console.log('[DEBUG] Carregando catalogo de bases...');
         await loadBaseCatalog(true);
-        console.log('[DEBUG] Carregando associacoes de bases...');
         const baseAssignments = await loadProductBaseAssignments(id);
         renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
 
-        // Carregar templates associados
-        console.log('[DEBUG] Carregando templates...');
         await loadTemplatesCatalog();
         currentProductTemplates = await loadProductTemplates(id);
         renderProductTemplatesAssignments();
         renderAvailableTemplatesSelect();
 
-        console.log('[DEBUG] Abrindo modal, productModal:', productModal);
-        openModal(productModal);
-        console.log('[DEBUG] Modal aberto com sucesso');
+        const modal = el('product-modal');
+        if (modal) {
+            openModal(modal);
+        } else {
+            console.error('Modal product-modal nao encontrado no DOM');
+        }
 
     } catch (error) {
-        console.error('[DEBUG] Erro ao carregar produto:', error);
+        console.error('Erro ao carregar produto:', error);
         showToast('Erro ao carregar produto', 'error');
     }
 }
@@ -2220,9 +2211,9 @@ if (templateForm) {
 }
 
 // ===== TEMPLATES MANAGEMENT FOR PRODUCTS =====
-const productTemplatesAssignments = document.getElementById('product-templates-assignments');
-const availableTemplatesSelect = document.getElementById('available-templates-select');
-const addTemplateToProductBtn = document.getElementById('add-template-to-product-btn');
+function getProductTemplatesAssignments() { return document.getElementById('product-templates-assignments'); }
+function getAvailableTemplatesSelect() { return document.getElementById('available-templates-select'); }
+function getAddTemplateToProductBtn() { return document.getElementById('add-template-to-product-btn'); }
 let templatesCatalogCache = [];
 let currentProductTemplates = [];
 
@@ -2248,26 +2239,28 @@ async function loadTemplatesCatalog(force = false) {
 }
 
 function renderAvailableTemplatesSelect() {
-    if (!availableTemplatesSelect) return;
+    const select = getAvailableTemplatesSelect();
+    if (!select) return;
 
     const allTemplates = Array.isArray(templatesCatalogCache) ? templatesCatalogCache : [];
     const assignedIds = new Set(currentProductTemplates.map(pt => pt.template_id));
 
     const availableTemplates = allTemplates.filter(t => !assignedIds.has(t.id));
 
-    availableTemplatesSelect.innerHTML = '<option value="">Selecione um template...</option>' +
+    select.innerHTML = '<option value="">Selecione um template...</option>' +
         availableTemplates.map(t => `<option value="${t.id}">${escapeHtml(t.nome)} (${t.categoria})</option>`).join('');
 }
 
 function renderProductTemplatesAssignments() {
-    if (!productTemplatesAssignments) return;
+    const container = getProductTemplatesAssignments();
+    if (!container) return;
 
     if (currentProductTemplates.length === 0) {
-        productTemplatesAssignments.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-4">Nenhum template associado. Selecione templates disponiveis acima.</p>';
+        container.innerHTML = '<p class="text-sm text-gray-500 col-span-full text-center py-4">Nenhum template associado. Selecione templates disponiveis acima.</p>';
         return;
     }
 
-    productTemplatesAssignments.innerHTML = currentProductTemplates.map((pt, index) => {
+    container.innerHTML = currentProductTemplates.map((pt, index) => {
         const template = templatesCatalogCache.find(t => t.id === pt.template_id) || { nome: 'Template nao encontrado', categoria: '-', preview_url: null };
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         return `
@@ -2293,7 +2286,7 @@ function renderProductTemplatesAssignments() {
         `;
     }).join('');
 
-    productTemplatesAssignments.querySelectorAll('.remove-template-btn').forEach(btn => {
+    container.querySelectorAll('.remove-template-btn').forEach(btn => {
         btn.addEventListener('click', (e) => {
             e.stopPropagation();
             const templateId = btn.dataset.templateId;
@@ -2350,24 +2343,26 @@ async function saveProductTemplates(productId) {
     }
 }
 
-if (addTemplateToProductBtn) {
-    addTemplateToProductBtn.addEventListener('click', async () => {
-        const templateId = availableTemplatesSelect?.value;
-        if (!templateId) return;
+document.addEventListener('click', async (e) => {
+    const btn = e.target.closest('#add-template-to-product-btn');
+    if (!btn) return;
 
-        await loadTemplatesCatalog();
+    const select = getAvailableTemplatesSelect();
+    const templateId = select?.value;
+    if (!templateId) return;
 
-        if (!currentProductTemplates.some(pt => pt.template_id === templateId)) {
-            currentProductTemplates.push({
-                template_id: templateId,
-                ordem: currentProductTemplates.length + 1
-            });
-            renderProductTemplatesAssignments();
-            renderAvailableTemplatesSelect();
-            availableTemplatesSelect.value = '';
-        }
-    });
-}
+    await loadTemplatesCatalog();
+
+    if (!currentProductTemplates.some(pt => pt.template_id === templateId)) {
+        currentProductTemplates.push({
+            template_id: templateId,
+            ordem: currentProductTemplates.length + 1
+        });
+        renderProductTemplatesAssignments();
+        renderAvailableTemplatesSelect();
+        select.value = '';
+    }
+});
 
 // Expor funcoes necessarias ao escopo global para botoes onclick
 window.editProduct = editProduct;
