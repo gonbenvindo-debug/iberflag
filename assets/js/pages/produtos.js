@@ -517,7 +517,7 @@ function renderTemplates(templates) {
             Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
         );
         const previewContent = previewMarkup
-            ? previewMarkup
+            ? `<div class="template-preview-svg" style="padding:12px;box-sizing:border-box;display:block;">${previewMarkup}</div>`
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
