@@ -493,10 +493,15 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        const serializableElements = this.elements.map(el => {
+            const { element, ...rest } = el;
+            return rest;
+        });
+
         const templateData = {
             nome: nome.trim(),
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
-            elementos: this.elements.map(el => ({ ...el })),
+            elementos: serializableElements,
             preview_url: designPreview,
             ativo: true
         };
