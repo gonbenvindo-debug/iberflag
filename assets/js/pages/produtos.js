@@ -252,6 +252,34 @@ function checkUrlParams() {
 }
 
 // ===== INITIALIZATION =====
+function createBlankPreviewMarkup() {
+    return window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="#ffffff"/></svg>',
+        currentProduct?.svg_template || null,
+        { backgroundColor: '#ffffff' }
+    ) || '<div class="w-full h-full bg-white"></div>';
+}
+
+function createBlankTemplateCard(productAspectRatio) {
+    return `
+        <div class="group cursor-pointer" onclick="startBlank()">
+            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-white relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio};">
+                ${createBlankPreviewMarkup()}
+                <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
+                    <span class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
+                        <i data-lucide="mouse-pointer-click" class="w-3 h-3"></i>
+                        Comecar em branco
+                    </span>
+                </div>
+            </div>
+            <div class="mt-2.5 px-1">
+                <p class="font-semibold text-sm text-gray-900 truncate">Em Branco</p>
+            </div>
+        </div>
+    `;
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     checkUrlParams();
     loadAllProducts();
@@ -284,56 +312,16 @@ let templatesCatalogCache = null;
 let templatesCatalogPromise = null;
 let templatesByProductCache = new Map();
 let templatesLoadToken = 0;
-const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
-
-function isDesignSvgDebugEnabled() {
-    return Boolean(
-        window.DESIGN_SVG_DEBUG
-        || window.localStorage?.getItem('iberflag_design_debug') === '1'
-        || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
-    );
-}
-
-function appendDebugParam(url) {
-    if (!isDesignSvgDebugEnabled()) {
-        return url;
-    }
-
-    const hasQuery = url.includes('?');
-    return `${url}${hasQuery ? '&' : '?'}debug=1`;
-}
-
-function logTemplatesDebug(channel, details) {
-    if (!isDesignSvgDebugEnabled()) {
-        return;
-    }
-
-    const prefix = `[produtos] ${channel}`;
-    if (typeof console.groupCollapsed === 'function') {
-        console.groupCollapsed(prefix);
-        console.log(details);
-        console.groupEnd();
-        return;
-    }
-
-    console.log(prefix, details);
-}
 
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProductName = productName;
     currentProduct = allProducts.find((product) => Number(product?.id) === Number(productId)) || null;
-    logTemplatesDebug('openTemplatesModal', {
-        productId,
-        productName,
-        svgTemplatePresent: Boolean(currentProduct?.svg_template),
-        svgTemplateLength: String(currentProduct?.svg_template || '').length
-    });
     const modalProductName = document.getElementById('modal-product-name');
     const modal = document.getElementById('templates-modal');
 
     if (!modalProductName || !modal) {
-        window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${productId}`);
+        window.location.href = `/pages/personalizar.html?produto=${productId}`;
         return;
     }
 
@@ -356,12 +344,12 @@ function closeTemplatesModal() {
 
 function startBlank() {
     if (!currentProductId) return;
-    window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${currentProductId}`);
+    window.location.href = `/pages/personalizar.html?produto=${currentProductId}`;
 }
 
 function selectTemplate(templateId) {
     if (!currentProductId) return;
-    window.location.href = appendDebugParam(`/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`);
+    window.location.href = `/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`;
 }
 
 function renderTemplatesLoading(message = 'A carregar templates...') {
@@ -513,30 +501,10 @@ function renderTemplates(templates) {
         Number(window.DesignSvgStore?.getSvgAspectRatio?.(currentProduct?.svg_template || '', 4 / 3)) || (4 / 3)
     );
 
-    const blankCard = `
-        <div class="group cursor-pointer" onclick="startBlank()">
-            <div class="rounded-2xl border-2 border-dashed border-gray-300 group-hover:border-blue-500 group-hover:bg-blue-50/50 transition-all duration-300 bg-gray-50/80 flex flex-col items-center justify-center gap-3" style="aspect-ratio:${productAspectRatio};">
-                <div class="w-14 h-14 rounded-2xl bg-white shadow-sm border border-gray-200 group-hover:shadow-md group-hover:border-blue-300 flex items-center justify-center transition-all duration-300">
-                    <i data-lucide="plus" class="w-7 h-7 text-gray-400 group-hover:text-blue-500 transition-colors"></i>
-                </div>
-                <div class="text-center">
-                    <p class="text-sm font-semibold text-gray-600 group-hover:text-blue-700 transition-colors">Em Branco</p>
-                    <p class="text-[11px] text-gray-400">Criar do zero</p>
-                </div>
-            </div>
-        </div>
-    `;
+    const blankCard = createBlankTemplateCard(productAspectRatio);
 
     if (!templates || templates.length === 0) {
-        grid.innerHTML = blankCard + `
-            <div class="group">
-                <div class="rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/60 flex flex-col items-center justify-center gap-2 px-4 text-center" style="aspect-ratio:${productAspectRatio};">
-                    <i data-lucide="image-off" class="w-8 h-8 text-gray-300"></i>
-                    <p class="text-sm font-semibold text-gray-600">Nenhum design pronto disponível</p>
-                    <p class="text-[11px] text-gray-400">Pode começar com um design em branco</p>
-                </div>
-            </div>
-        `;
+        grid.innerHTML = blankCard;
         emptyState.classList.add('hidden');
         if (typeof lucide !== 'undefined') lucide.createIcons();
         return;
@@ -544,37 +512,17 @@ function renderTemplates(templates) {
 
     emptyState.classList.add('hidden');
 
-    logTemplatesDebug('renderTemplates', {
-        currentProductId,
-        currentProductName,
-        templatesCount: templates.length,
-        svgTemplatePresent: Boolean(currentProduct?.svg_template),
-        productAspectRatio
-    });
-
     grid.innerHTML = blankCard + templates.map(template => {
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
             template.preview_url || template.thumbnail_url,
             currentProduct?.svg_template || null,
-            {
-                backgroundColor: '#f8fafc',
-                debug: isDesignSvgDebugEnabled(),
-                debugLabel: 'produtos-template-preview'
-            }
+            { backgroundColor: '#f8fafc' }
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewAspectRatio = Math.max(
             0.2,
             Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
         );
-        logTemplatesDebug('createTemplateCard', {
-            templateId: template.id,
-            templateName: template.nome,
-            previewUrl,
-            hasPreviewMarkup: Boolean(previewMarkup),
-            previewAspectRatio,
-            productMaskPresent: Boolean(currentProduct?.svg_template)
-        });
         const previewContent = previewMarkup
             ? previewMarkup
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;

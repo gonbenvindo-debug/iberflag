@@ -57,26 +57,6 @@
             display: block;
         }
 
-        .template-blank {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100%;
-            color: #94a3b8;
-        }
-
-        .blank-icon {
-            width: 64px;
-            height: 64px;
-            border: 3px dashed currentColor;
-            border-radius: 16px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: 12px;
-        }
-
         .category-filter {
             display: flex;
             gap: 8px;
@@ -226,13 +206,8 @@
         <div class="gallery-grid" id="templates-grid">
             <!-- Template em branco (sempre primeiro) -->
             <div class="template-card" onclick="selectTemplate(null)">
-                <div class="template-preview">
-                    <div class="template-blank">
-                        <div class="blank-icon">
-                            <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
-                        </div>
-                        <span class="font-medium">Começar em branco</span>
-                    </div>
+                <div class="template-preview" style="--preview-ratio:1; background:#ffffff;">
+                    <div class="w-full h-full bg-white"></div>
                 </div>
                 <div class="template-info">
                     <div class="template-name">Design personalizado</div>
@@ -269,48 +244,28 @@
         // Estado
         let allTemplates = [];
         let currentCategory = 'all';
-        const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
 
-        function isDesignSvgDebugEnabled() {
-            return Boolean(
-                window.DESIGN_SVG_DEBUG
-                || window.localStorage?.getItem('iberflag_design_debug') === '1'
-                || (window.location && DESIGN_SVG_DEBUG_PARAM.test(window.location.search || ''))
-            );
+        function createBlankPreviewMarkup() {
+            return '<div class="w-full h-full bg-white"></div>';
         }
 
-        function appendDebugParam(url) {
-            if (!isDesignSvgDebugEnabled()) {
-                return url;
-            }
-
-            return `${url}${url.includes('?') ? '&' : '?'}debug=1`;
-        }
-
-        function logGalleryDebug(channel, details) {
-            if (!isDesignSvgDebugEnabled()) {
-                return;
-            }
-
-            const prefix = `[templates-gallery] ${channel}`;
-            if (typeof console.groupCollapsed === 'function') {
-                console.groupCollapsed(prefix);
-                console.log(details);
-                console.groupEnd();
-                return;
-            }
-
-            console.log(prefix, details);
+        function createBlankTemplateCard() {
+            return `
+                    <div class="template-card" onclick="selectTemplate(null)">
+                        <div class="template-preview" style="--preview-ratio:1; background:#ffffff;">
+                            ${createBlankPreviewMarkup()}
+                        </div>
+                        <div class="template-info">
+                            <div class="template-name">Design personalizado</div>
+                            <div class="template-category">Crie do zero</div>
+                        </div>
+                    </div>
+                `;
         }
 
         // Carregar templates
         async function loadTemplates() {
             const grid = document.getElementById('templates-grid');
-            logGalleryDebug('loadTemplates', {
-                productId,
-                productName,
-                currentCategory
-            });
             
             // Mostrar skeletons
             for (let i = 0; i < 6; i++) {
@@ -337,20 +292,7 @@
 
                 // Remover skeletons
                 grid.innerHTML = `
-                    <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
-                                <div class="blank-icon">
-                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
-                                </div>
-                                <span class="font-medium">Comecar em branco</span>
-                            </div>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-name">Design personalizado</div>
-                            <div class="template-category">Crie do zero</div>
-                        </div>
-                    </div>
+                    ${createBlankTemplateCard()}
                 `;
 
                 allTemplates = data || [];
@@ -358,20 +300,7 @@
             } catch (err) {
                 console.error('Erro ao carregar templates:', err);
                 grid.innerHTML = `
-                    <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
-                                <div class="blank-icon">
-                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
-                                </div>
-                                <span class="font-medium">Comecar em branco</span>
-                            </div>
-                        </div>
-                        <div class="template-info">
-                            <div class="template-name">Design personalizado</div>
-                            <div class="template-category">Crie do zero</div>
-                        </div>
-                    </div>
+                    ${createBlankTemplateCard()}
                 `;
                 
                 // Fallback: usar templates locais
@@ -415,24 +344,12 @@
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewUrl,
                 null,
-                {
-                    backgroundColor: '#f8fafc',
-                    debug: isDesignSvgDebugEnabled(),
-                    debugLabel: 'templates-gallery-preview'
-                }
+                { backgroundColor: '#f8fafc' }
             );
             const previewAspectRatio = Math.max(
                 0.2,
                 Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || previewUrl, 4 / 3)) || (4 / 3)
             );
-            logGalleryDebug('createTemplateCard', {
-                templateId: template.id,
-                templateName: template.nome,
-                previewUrl,
-                hasPreviewMarkup: Boolean(previewMarkup),
-                previewAspectRatio,
-                currentCategory
-            });
             const categoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',
@@ -471,7 +388,7 @@
                 params.set('template', template.id);
             }
 
-            window.location.href = appendDebugParam(`/pages/personalizar.html?${params.toString()}`);
+            window.location.href = `/pages/personalizar.html?${params.toString()}`;
         }
 
         // Filtrar por categoria

@@ -19,7 +19,6 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const DEBUG_QUERY_PARAM_PATTERN = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
 
     function toNumber(value, fallback = 0) {
         const parsed = Number(value);
@@ -40,90 +39,6 @@
             .filter(([, value]) => value !== null && value !== undefined && value !== '')
             .map(([key, value]) => `${key}:${value}`)
             .join(';');
-    }
-
-    function isDesignDebugEnabled(options = {}) {
-        if (options?.debug) {
-            return true;
-        }
-
-        if (typeof window !== 'undefined' && window.DESIGN_SVG_DEBUG) {
-            return true;
-        }
-
-        if (typeof window !== 'undefined' && window.localStorage?.getItem('iberflag_design_debug') === '1') {
-            return true;
-        }
-
-        if (typeof window !== 'undefined' && window.location && DEBUG_QUERY_PARAM_PATTERN.test(window.location.search || '')) {
-            return true;
-        }
-
-        return false;
-    }
-
-    function persistDesignDebugFlagFromUrl() {
-        try {
-            if (typeof window === 'undefined' || !window.location?.search) {
-                return;
-            }
-
-            if (DEBUG_QUERY_PARAM_PATTERN.test(window.location.search || '')) {
-                window.localStorage?.setItem('iberflag_design_debug', '1');
-            }
-        } catch (error) {
-            // Ignore storage failures in debug bootstrap.
-        }
-    }
-
-    persistDesignDebugFlagFromUrl();
-
-    function summarizeSvgNode(node) {
-        if (!node) {
-            return null;
-        }
-
-        const attrs = ['id', 'class', 'x', 'y', 'width', 'height', 'viewBox', 'transform', 'd', 'points', 'fill', 'stroke', 'mask', 'clip-path']
-            .reduce((accumulator, attributeName) => {
-                const value = node.getAttribute?.(attributeName);
-                if (value !== null && value !== undefined && value !== '') {
-                    accumulator[attributeName] = value;
-                }
-                return accumulator;
-            }, {});
-
-        return {
-            tag: String(node.tagName || '').toLowerCase(),
-            ...attrs
-        };
-    }
-
-    function summarizeSvgChildren(node, limit = 6) {
-        if (!node || !node.children) {
-            return [];
-        }
-
-        return Array.from(node.children)
-            .slice(0, limit)
-            .map((child) => summarizeSvgNode(child));
-    }
-
-    function logDesignDebug(channel, details, options = {}) {
-        if (!isDesignDebugEnabled(options)) {
-            return;
-        }
-
-        const label = options.debugLabel || 'design-svg';
-        const prefix = `[${label}] ${channel}`;
-
-        if (typeof console.groupCollapsed === 'function') {
-            console.groupCollapsed(prefix);
-            console.log(details);
-            console.groupEnd();
-            return;
-        }
-
-        console.log(prefix, details);
     }
 
     function normalizeTemplateElement(data = {}) {
@@ -766,7 +681,7 @@
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
         const ratio = safeWidth / safeHeight;
-        const margin = 50;
+        const margin = 24;
         const contentLongestSide = 700;
 
         let contentWidth = contentLongestSide;
@@ -929,9 +844,7 @@
             serialize(previewValue),
             serialize(maskValue),
             serialize({
-                backgroundColor: options.backgroundColor || '',
-                debug: Boolean(options.debug),
-                debugLabel: options.debugLabel || ''
+                backgroundColor: options.backgroundColor || ''
             })
         ].join('||');
     }
@@ -954,12 +867,6 @@
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
         const cacheKey = buildPreviewCacheKey(previewValue, maskValue, options);
         if (PREVIEW_MARKUP_CACHE.has(cacheKey)) {
-            logDesignDebug('preview-cache-hit', {
-                cacheKey,
-                debug: Boolean(options.debug),
-                previewValue: previewValue || null,
-                maskValue: maskValue || null
-            }, options);
             return PREVIEW_MARKUP_CACHE.get(cacheKey);
         }
 
@@ -1006,13 +913,6 @@
         const maskBox = getSvgBox(maskRoot, options);
         const maskNode = pickMaskNode(maskRoot);
         if (!maskNode) {
-            logDesignDebug('preview-missing-mask-node', {
-                previewValue: previewValue || null,
-                maskValue: maskValue || null,
-                previewMarkup: Boolean(previewMarkup),
-                maskBox
-            }, options);
-
             if (previewMarkup) {
                 cachePreviewMarkup(cacheKey, previewMarkup);
                 return previewMarkup;
@@ -1033,20 +933,6 @@
         };
         const maskTransform = buildContainTransform(maskBox, previewTargetBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
-        logDesignDebug('preview-geometry', {
-            previewBox,
-            maskBox,
-            previewRootViewBox: previewRoot?.getAttribute?.('viewBox') || '',
-            maskRootViewBox: maskRoot?.getAttribute?.('viewBox') || '',
-            previewGeometry,
-            previewTargetBounds,
-            maskTransform,
-            maskNodeBounds: getSvgNodeBounds(maskNode, maskBox),
-            previewRoot: summarizeSvgNode(previewRoot),
-            previewRootChildren: summarizeSvgChildren(previewRoot),
-            maskRootChildren: summarizeSvgChildren(maskRoot),
-            maskNode: summarizeSvgNode(maskNode)
-        }, options);
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', wrapperViewBox);
