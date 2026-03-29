@@ -252,8 +252,10 @@
         function createBlankTemplateCard() {
             return `
                     <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview" style="--preview-ratio:1; background:#ffffff;">
-                            ${createBlankPreviewMarkup()}
+                        <div class="template-preview" style="--preview-ratio:1; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                            <div class="relative z-20 w-full h-full">
+                                ${createBlankPreviewMarkup()}
+                            </div>
                         </div>
                         <div class="template-info">
                             <div class="template-name">Design personalizado</div>
@@ -359,11 +361,13 @@
             };
 
             div.innerHTML = `
-                <div class="template-preview" style="--preview-ratio:${previewAspectRatio};">
-                    ${previewMarkup
-                        ? previewMarkup
-                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
-                            onerror="this.src='/assets/images/template-placeholder.svg'">`}
+                <div class="template-preview" style="--preview-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                    <div class="relative z-20 w-full h-full">
+                        ${previewMarkup
+                            ? previewMarkup
+                            : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
+                                onerror="this.src='/assets/images/template-placeholder.svg'">`}
+                    </div>
                 </div>
                 <div class="template-info">
                     <div class="template-name">${template.nome}</div>

@@ -263,8 +263,10 @@ function createBlankPreviewMarkup() {
 function createBlankTemplateCard(productAspectRatio) {
     return `
         <div class="group cursor-pointer" onclick="startBlank()">
-            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-white relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio};">
-                ${createBlankPreviewMarkup()}
+            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio}; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                <div class="relative z-20 w-full h-full">
+                    ${createBlankPreviewMarkup()}
+                </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/35 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                     <span class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
@@ -528,8 +530,10 @@ function renderTemplates(templates) {
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
-            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 bg-gray-50 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio};">
-                ${previewContent}
+            <div class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.18) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.18) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.18) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                <div class="relative z-20 w-full h-full">
+                    ${previewContent}
+                </div>
                 <div class="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
                 <div class="absolute bottom-0 left-0 right-0 p-3 translate-y-full group-hover:translate-y-0 transition-transform duration-300">
                     <span class="inline-flex items-center gap-1.5 bg-white/90 backdrop-blur-sm text-blue-700 text-xs font-semibold px-3 py-1.5 rounded-lg shadow-sm">
