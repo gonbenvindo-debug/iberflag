@@ -692,6 +692,25 @@
         return outlineNode;
     }
 
+    function buildPreviewMaskNode(maskNode, transform) {
+        const maskNodeClone = maskNode.cloneNode(true);
+        maskNodeClone.removeAttribute?.('id');
+        maskNodeClone.removeAttribute?.('pointer-events');
+        maskNodeClone.removeAttribute?.('opacity');
+        maskNodeClone.removeAttribute?.('stroke');
+        maskNodeClone.removeAttribute?.('stroke-width');
+        maskNodeClone.removeAttribute?.('stroke-dasharray');
+        maskNodeClone.setAttribute?.('fill', '#ffffff');
+        maskNodeClone.setAttribute?.('stroke', 'none');
+        maskNodeClone.setAttribute?.('pointer-events', 'none');
+        if (transform) {
+            maskNodeClone.setAttribute?.('transform', transform);
+        } else {
+            maskNodeClone.removeAttribute?.('transform');
+        }
+        return maskNodeClone;
+    }
+
     function toDataUrlFromSvgMarkup(svgMarkup) {
         if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
             return '';
@@ -844,6 +863,26 @@
         background.setAttribute('fill', options.backgroundColor || 'transparent');
         wrapper.appendChild(background);
 
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
+        const mask = document.createElementNS(SVG_NS, 'mask');
+        mask.setAttribute('id', maskId);
+        mask.setAttribute('maskUnits', 'userSpaceOnUse');
+        mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+
+        const blackRect = document.createElementNS(SVG_NS, 'rect');
+        blackRect.setAttribute('x', '0');
+        blackRect.setAttribute('y', '0');
+        blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
+        blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
+        blackRect.setAttribute('fill', '#000000');
+        mask.appendChild(blackRect);
+
+        const previewMaskNode = buildPreviewMaskNode(maskNode, previewGeometry.transform);
+        mask.appendChild(previewMaskNode);
+        defs.appendChild(mask);
+        wrapper.appendChild(defs);
+
         if (previewRoot) {
             const nestedSvg = document.createElementNS(SVG_NS, 'svg');
             nestedSvg.setAttribute('xmlns', SVG_NS);
@@ -854,6 +893,7 @@
             nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || wrapperViewBox);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
+            nestedSvg.setAttribute('mask', `url(#${maskId})`);
 
             const previewDefs = previewRoot.querySelector('defs');
             if (previewDefs) {
@@ -878,6 +918,7 @@
             image.setAttribute('width', String(previewGeometry.width));
             image.setAttribute('height', String(previewGeometry.height));
             image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            image.setAttribute('mask', `url(#${maskId})`);
             wrapper.appendChild(image);
         }
 
