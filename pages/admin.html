@@ -522,13 +522,36 @@
                     </div>
                 </div>
 
-                <!-- Templates Section -->
+                <!-- Formato SVG do Produto (define a zona editavel) -->
+                <div class="border-t pt-6">
+                    <div class="mb-4">
+                        <h3 class="font-bold text-lg">Formato do Produto (SVG)</h3>
+                        <p class="text-sm text-gray-500 mt-0.5">Ficheiro SVG que define a forma e zona editavel do
+                            produto. Igual para todos os designs.</p>
+                    </div>
+
+                    <div class="flex gap-2 items-center">
+                        <input type="file" id="product-svg-upload" accept=".svg" class="form-input flex-1">
+                        <button type="button" id="open-svg-preview"
+                            class="bg-gray-100 text-gray-600 px-3 py-2 rounded-lg hover:bg-gray-200 transition opacity-50 cursor-not-allowed"
+                            disabled>
+                            <i data-lucide="eye" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+
+                    <div id="svg-preview" class="mt-3 hidden">
+                        <p id="svg-preview-status" class="text-sm text-green-600 font-medium">Nenhum template carregado
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Designs Pre-feitos (templates para o cliente escolher) -->
                 <div class="border-t pt-6">
                     <div class="flex items-center justify-between mb-4">
                         <div>
-                            <h3 class="font-bold text-lg">Templates Disponiveis</h3>
-                            <p class="text-sm text-gray-500 mt-0.5">Selecione os templates que o cliente pode usar neste
-                                produto</p>
+                            <h3 class="font-bold text-lg">Designs Pre-feitos</h3>
+                            <p class="text-sm text-gray-500 mt-0.5">Designs prontos que o cliente pode escolher ao
+                                personalizar este produto</p>
                         </div>
                         <span id="templates-counter"
                             class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">0
@@ -541,22 +564,9 @@
                             <div
                                 class="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full">
                             </div>
-                            <span class="ml-2 text-sm text-gray-400">A carregar templates...</span>
+                            <span class="ml-2 text-sm text-gray-400">A carregar designs...</span>
                         </div>
                     </div>
-                </div>
-
-                <!-- SVG Template Upload -->
-                <div class="border-t pt-4">
-                    <h3 class="font-bold text-lg mb-4">Template SVG (Opcional)</h3>
-                    <div class="flex gap-2 items-center">
-                        <input type="file" id="svg-template-file" accept=".svg" class="form-input flex-1">
-                        <button type="button" id="clear-svg-template"
-                            class="text-red-600 hover:text-red-800 px-3 py-2 hidden">
-                            <i data-lucide="trash-2" class="w-5 h-5"></i>
-                        </button>
-                    </div>
-                    <p id="svg-template-filename" class="text-sm text-gray-600 mt-2"></p>
                 </div>
 
                 <!-- Actions -->
@@ -608,7 +618,7 @@
     <script src="/assets/js/templates-data.js"></script>
     <script src="/assets/js/core/logic.js?v=20260319b"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260319b"></script>
-    <script src="/assets/js/pages/admin.js?v=20260329b"></script>
+    <script src="/assets/js/pages/admin.js?v=20260329c"></script>
     <script>lucide.createIcons();</script>
 </body>
 
