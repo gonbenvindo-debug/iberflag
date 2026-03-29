@@ -519,16 +519,27 @@ Object.assign(DesignEditor.prototype, {
             return rest;
         });
 
+        const normalizeTemplateCategory = (value) => {
+            const allowed = new Set(['promocoes', 'eventos', 'corporativo', 'festas', 'varejo']);
+            const candidate = String(value || '').trim().toLowerCase();
+            return allowed.has(candidate) ? candidate : 'promocoes';
+        };
+
+        const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };
+        const templateCategory = normalizeTemplateCategory(this.currentProduct?.categoria);
+
         const templateData = {
             nome: nome.trim(),
+            categoria: templateCategory,
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
-            design_svg: designSvg,
             elementos: {
                 format: 'svg-inline-v1',
                 svg: designSvg,
                 design_svg: designSvg,
                 elements: serializableElements
             },
+            largura: Math.max(1, Math.round(Number(viewBox.width) || 800)),
+            altura: Math.max(1, Math.round(Number(viewBox.height) || 600)),
             preview_url: designPreview,
             ativo: true
         };
