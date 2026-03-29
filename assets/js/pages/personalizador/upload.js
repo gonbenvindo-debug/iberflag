@@ -674,10 +674,12 @@ Object.assign(DesignEditor.prototype, {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
+        ctx.fillStyle = '#ffffff';
+        ctx.fillRect(0, 0, cropWidth, cropHeight);
         ctx.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
         return {
-            dataUrl: canvas.toDataURL('image/png'),
+            dataUrl: canvas.toDataURL('image/jpeg', 1),
             width: cropWidth,
             height: cropHeight,
             fullWidth: naturalWidth,
@@ -795,6 +797,7 @@ Object.assign(DesignEditor.prototype, {
         img.setAttribute('height', String(fitted.height));
         img.setAttribute('href', src);
         img.setAttribute('data-editable', 'true');
+        img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
 
@@ -804,12 +807,9 @@ Object.assign(DesignEditor.prototype, {
             const viewBoxWidth = cropData.width * fullWidth;
             const viewBoxHeight = cropData.height * fullHeight;
             img.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
-            img.setAttribute('preserveAspectRatio', 'none');
             img.dataset.cropData = JSON.stringify(cropData);
             img.dataset.fullWidth = String(fullWidth);
             img.dataset.fullHeight = String(fullHeight);
-        } else {
-            img.setAttribute('preserveAspectRatio', 'none');
         }
 
         if (qrContent) {
