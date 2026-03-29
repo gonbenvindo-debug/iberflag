@@ -14,6 +14,7 @@ const testAdminUsername = (adminTestUsernameMeta?.content || (adminTestingEnable
 const testAdminPassword = (adminTestPasswordMeta?.content || (adminTestingEnabled ? 'admin' : '')).trim();
 const ADMIN_TEST_SESSION_KEY = 'iberflag_admin_test_auth';
 const ADMIN_LAST_PASSWORD_KEY = 'iberflag_admin_last_password';
+let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
 
@@ -32,6 +33,7 @@ function getRemainingLockSeconds() {
 
 async function ensureAdminWriteSession() {
     try {
+        adminWriteSessionLastError = '';
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session) return true;
         if (!adminTestingEnabled || !allowedAdminEmail || !testAdminPassword) return false;
@@ -50,10 +52,36 @@ async function ensureAdminWriteSession() {
                 password
             });
             if (!error) return true;
+
+            adminWriteSessionLastError = [error?.message, error?.status, error?.code]
+                .filter(Boolean)
+                .join(' | ');
+
+            // In testing mode, if the user does not exist yet, try creating it once.
+            const { error: signUpError } = await supabaseClient.auth.signUp({
+                email: allowedAdminEmail,
+                password
+            });
+
+            if (!signUpError) {
+                const { error: retryError } = await supabaseClient.auth.signInWithPassword({
+                    email: allowedAdminEmail,
+                    password
+                });
+                if (!retryError) return true;
+                adminWriteSessionLastError = [retryError?.message, retryError?.status, retryError?.code]
+                    .filter(Boolean)
+                    .join(' | ');
+            } else {
+                adminWriteSessionLastError = [signUpError?.message, signUpError?.status, signUpError?.code]
+                    .filter(Boolean)
+                    .join(' | ');
+            }
         }
 
         return false;
     } catch {
+        adminWriteSessionLastError = 'Falha inesperada ao iniciar sessão de escrita.';
         return false;
     }
 }
@@ -2195,7 +2223,10 @@ async function deleteTemplateFromCard(templateId) {
 
     const hasWriteSession = await ensureAdminWriteSession();
     if (!hasWriteSession) {
-        showToast('Sem sessão de escrita no Supabase. Inicie sessão admin real para apagar templates.', 'error');
+        const authMsg = adminWriteSessionLastError
+            ? `Sem sessão de escrita no Supabase: ${adminWriteSessionLastError}`
+            : 'Sem sessão de escrita no Supabase. Inicie sessão admin real para apagar templates.';
+        showToast(authMsg, 'error');
         return;
     }
 
