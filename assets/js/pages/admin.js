@@ -924,26 +924,41 @@ async function editProduct(id) {
             resetSvgTemplateState();
         }
 
-        await loadBaseCatalog(true);
-        const baseAssignments = await loadProductBaseAssignments(id);
-        renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
-
-        await loadTemplatesCatalog();
-        currentProductTemplates = await loadProductTemplates(id);
-        renderProductTemplatesAssignments();
-        renderAvailableTemplatesSelect();
-
-        const createDesignBtn = el('create-design-btn');
-        if (createDesignBtn) {
-            createDesignBtn.disabled = false;
-            createDesignBtn.title = 'Abrir editor para criar design';
-        }
-
         const modal = el('product-modal');
         if (modal) {
             openModal(modal);
         } else {
             console.error('Modal product-modal nao encontrado no DOM');
+        }
+
+        renderProductBaseAssignments([], null);
+        currentProductTemplates = [];
+        renderProductTemplatesAssignments();
+        renderAvailableTemplatesSelect();
+
+        await loadBaseCatalog(true).then(async () => {
+            const baseAssignments = await loadProductBaseAssignments(id);
+            renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
+        }).catch((error) => {
+            console.error('Erro ao carregar bases do produto:', error);
+            renderProductBaseAssignments([], null);
+        });
+
+        await loadTemplatesCatalog().then(async () => {
+            currentProductTemplates = await loadProductTemplates(id);
+            renderProductTemplatesAssignments();
+            renderAvailableTemplatesSelect();
+        }).catch((error) => {
+            console.error('Erro ao carregar templates do produto:', error);
+            currentProductTemplates = [];
+            renderProductTemplatesAssignments();
+            renderAvailableTemplatesSelect();
+        });
+
+        const createDesignBtn = el('create-design-btn');
+        if (createDesignBtn) {
+            createDesignBtn.disabled = false;
+            createDesignBtn.title = 'Abrir editor para criar design';
         }
 
     } catch (error) {
@@ -1369,19 +1384,6 @@ async function loadOrders() {
                     </td>
                 </tr>
             `).join('');
-
-            const viewButtons = tbody.querySelectorAll('.order-view-btn');
-            viewButtons.forEach((button) => {
-                button.addEventListener('click', () => {
-                    const orderId = button.getAttribute('data-order-id');
-                    if (!orderId) {
-                        showToast('ID da encomenda invalido', 'warning');
-                        return;
-                    }
-
-                    viewOrder(orderId);
-                });
-            });
         } else {
             tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
         }
@@ -1839,6 +1841,19 @@ document.addEventListener('click', (e) => {
     if (btn && btn.dataset.designKey) {
         openAdminDesignViewer(btn.dataset.designKey);
     }
+});
+
+document.addEventListener('click', (event) => {
+    const viewBtn = event.target.closest('.order-view-btn');
+    if (!viewBtn) return;
+
+    const orderId = viewBtn.getAttribute('data-order-id');
+    if (!orderId) {
+        showToast('ID da encomenda invalido', 'warning');
+        return;
+    }
+
+    viewOrder(orderId);
 });
 
 document.getElementById('close-design-viewer')?.addEventListener('click', () => {
