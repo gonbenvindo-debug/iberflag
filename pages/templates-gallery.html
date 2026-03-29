@@ -390,7 +390,7 @@
             div.innerHTML = `
                 <div class="template-preview">
                     ${previewMarkup
-                        ? `<div class="w-full h-full">${previewMarkup}</div>`
+                        ? previewMarkup
                         : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
                             onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>

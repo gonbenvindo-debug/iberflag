@@ -502,7 +502,7 @@ function renderTemplates(templates) {
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewContent = previewMarkup
-            ? `<div class="template-preview template-preview-svg w-full h-full">${previewMarkup}</div>`
+            ? previewMarkup
             : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         return `
         <div class="group cursor-pointer" onclick="selectTemplate('${template.id}')">

@@ -669,6 +669,29 @@
         };
     }
 
+    function buildContainTransform(sourceBounds, targetBounds) {
+        const safeSourceWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
+        const safeSourceHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
+        const safeTargetWidth = Math.max(1, Number(targetBounds?.width) || DEFAULT_SIZE.width);
+        const safeTargetHeight = Math.max(1, Number(targetBounds?.height) || DEFAULT_SIZE.height);
+        const safeTargetX = Number(targetBounds?.x) || 0;
+        const safeTargetY = Number(targetBounds?.y) || 0;
+        const safeSourceX = Number(sourceBounds?.x) || 0;
+        const safeSourceY = Number(sourceBounds?.y) || 0;
+
+        const scale = Math.min(
+            safeTargetWidth / safeSourceWidth,
+            safeTargetHeight / safeSourceHeight
+        );
+
+        const renderedWidth = safeSourceWidth * scale;
+        const renderedHeight = safeSourceHeight * scale;
+        const offsetX = safeTargetX + ((safeTargetWidth - renderedWidth) / 2) - (safeSourceX * scale);
+        const offsetY = safeTargetY + ((safeTargetHeight - renderedHeight) / 2) - (safeSourceY * scale);
+
+        return `translate(${offsetX} ${offsetY}) scale(${scale} ${scale})`;
+    }
+
     function buildPreviewOutlineNode(maskNode, transform) {
         const outlineNode = maskNode.cloneNode(true);
         outlineNode.removeAttribute?.('id');
@@ -838,8 +861,15 @@
             return fallbackMarkup;
         }
 
-        const sourceBounds = getSvgSourceBounds(maskRoot, maskBox);
-        const previewGeometry = buildPreviewCanvasGeometry(sourceBounds);
+        const previewBox = previewRoot ? getSvgBox(previewRoot, options) : maskBox;
+        const previewGeometry = buildPreviewCanvasGeometry(previewBox);
+        const previewTargetBounds = {
+            x: previewGeometry.x,
+            y: previewGeometry.y,
+            width: previewGeometry.width,
+            height: previewGeometry.height
+        };
+        const maskTransform = buildContainTransform(maskBox, previewTargetBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
@@ -878,7 +908,7 @@
         blackRect.setAttribute('fill', '#000000');
         mask.appendChild(blackRect);
 
-        const previewMaskNode = buildPreviewMaskNode(maskNode, previewGeometry.transform);
+        const previewMaskNode = buildPreviewMaskNode(maskNode, maskTransform);
         mask.appendChild(previewMaskNode);
         defs.appendChild(mask);
         wrapper.appendChild(defs);
@@ -890,7 +920,7 @@
             nestedSvg.setAttribute('y', String(previewGeometry.y));
             nestedSvg.setAttribute('width', String(previewGeometry.width));
             nestedSvg.setAttribute('height', String(previewGeometry.height));
-            nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || wrapperViewBox);
+            nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || `0 0 ${previewBox.width} ${previewBox.height}`);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
             nestedSvg.setAttribute('mask', `url(#${maskId})`);
