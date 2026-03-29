@@ -958,6 +958,7 @@
         previewClipNode.setAttribute?.('fill', '#ffffff');
         previewClipNode.setAttribute?.('stroke', 'none');
         previewClipNode.setAttribute?.('pointer-events', 'none');
+        previewClipNode.setAttribute?.('transform', previewGeometry.transform);
         clipPath.appendChild(previewClipNode);
         defs.appendChild(clipPath);
         wrapper.appendChild(defs);
