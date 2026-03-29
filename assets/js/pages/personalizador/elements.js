@@ -136,8 +136,30 @@ Object.assign(DesignEditor.prototype, {
         if (!autosave) return;
 
         try {
+            const trimmed = String(autosave).trim();
+            if (trimmed.startsWith('{')) {
+                const parsed = JSON.parse(trimmed);
+                if (parsed && parsed.format === 'elements-v1' && Array.isArray(parsed.elements)) {
+                    this.clearCanvas?.();
+                    parsed.elements.forEach((savedElement) => {
+                        this.createElementFromTemplate?.(savedElement);
+                    });
+                    if (Number.isFinite(Number(parsed.selectedBaseId))) {
+                        this.selectedBaseId = Number(parsed.selectedBaseId);
+                    }
+                    this.bringPrintAreaOverlaysToFront();
+
+                    if (this.elements.length > 0) {
+                        this.updateLayers();
+                        showToast('Design recuperado automaticamente', 'info');
+                        this.saveHistory();
+                    }
+                    return;
+                }
+            }
+
             const parser = new DOMParser();
-            const svgDoc = parser.parseFromString(autosave, 'image/svg+xml');
+            const svgDoc = parser.parseFromString(trimmed, 'image/svg+xml');
             const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
 
             designElements.forEach(el => {

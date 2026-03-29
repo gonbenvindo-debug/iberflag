@@ -721,11 +721,43 @@ Object.assign(DesignEditor.prototype, {
     },
     
     autoSave() {
-        const design = this.getDesignSVG();
-        localStorage.setItem(this.getAutosaveKey(), design);
-        this.getLegacyAutosaveKeys().forEach((key) => {
-            localStorage.setItem(key, design);
-        });
+        const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
+        const svgDesign = this.getDesignSVG();
+        const payload = {
+            format: 'elements-v1',
+            productId: this.productId || null,
+            selectedBaseId: this.selectedBaseId || null,
+            elements: this.elements.map((elementData) => {
+                const { element, ...serializable } = elementData || {};
+                return serializable;
+            })
+        };
+        const compactDesign = JSON.stringify(payload);
+
+        const candidates = svgDesign && svgDesign.length <= 180000
+            ? [svgDesign, compactDesign]
+            : [compactDesign, svgDesign];
+
+        let stored = false;
+        for (const value of candidates) {
+            if (!value) continue;
+
+            try {
+                saveKeys.forEach((key) => {
+                    localStorage.setItem(key, value);
+                });
+                stored = true;
+                break;
+            } catch (error) {
+                if (error && error.name !== 'QuotaExceededError') {
+                    console.warn('Falha ao gravar autosave:', error);
+                }
+            }
+        }
+
+        if (!stored) {
+            console.warn('Autosave indisponivel: armazenamento cheio.');
+        }
     },
 
     // ===== CROP FUNCTIONALITY =====
