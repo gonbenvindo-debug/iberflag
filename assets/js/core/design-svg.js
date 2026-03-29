@@ -727,11 +727,13 @@
             return fallbackMarkup;
         }
 
-        const maskBounds = getSvgNodeBounds(maskNode, maskBox);
+        const wrapperViewBox = maskRoot.getAttribute('viewBox')
+            || previewRoot?.getAttribute?.('viewBox')
+            || `0 0 ${maskBox.width} ${maskBox.height}`;
         const clipId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
-        wrapper.setAttribute('viewBox', `0 0 ${maskBox.width} ${maskBox.height}`);
+        wrapper.setAttribute('viewBox', wrapperViewBox);
         wrapper.setAttribute('width', '100%');
         wrapper.setAttribute('height', '100%');
         wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
@@ -760,11 +762,11 @@
         if (previewRoot) {
             const nestedSvg = document.createElementNS(SVG_NS, 'svg');
             nestedSvg.setAttribute('xmlns', SVG_NS);
-            nestedSvg.setAttribute('x', String(maskBounds.x));
-            nestedSvg.setAttribute('y', String(maskBounds.y));
-            nestedSvg.setAttribute('width', String(maskBounds.width));
-            nestedSvg.setAttribute('height', String(maskBounds.height));
-            nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || `0 0 ${maskBounds.width} ${maskBounds.height}`);
+            nestedSvg.setAttribute('x', '0');
+            nestedSvg.setAttribute('y', '0');
+            nestedSvg.setAttribute('width', '100%');
+            nestedSvg.setAttribute('height', '100%');
+            nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || wrapperViewBox);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
             nestedSvg.setAttribute('clip-path', `url(#${clipId})`);
@@ -787,10 +789,10 @@
             const image = document.createElementNS(SVG_NS, 'image');
             image.setAttribute('href', previewHref);
             image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
-            image.setAttribute('x', String(maskBounds.x));
-            image.setAttribute('y', String(maskBounds.y));
-            image.setAttribute('width', String(maskBounds.width));
-            image.setAttribute('height', String(maskBounds.height));
+            image.setAttribute('x', '0');
+            image.setAttribute('y', '0');
+            image.setAttribute('width', '100%');
+            image.setAttribute('height', '100%');
             image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             image.setAttribute('clip-path', `url(#${clipId})`);
             wrapper.appendChild(image);
