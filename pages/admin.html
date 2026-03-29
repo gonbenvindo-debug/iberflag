@@ -452,6 +452,126 @@
         </div>
     </div>
 
+    <!-- Product Modal -->
+    <div id="product-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-4xl p-8 max-h-[90vh] overflow-y-auto">
+            <div class="flex justify-between items-center mb-6">
+                <h2 class="text-2xl font-bold" id="modal-title">Adicionar Produto</h2>
+                <button id="close-modal" class="text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <form id="product-form" class="space-y-6">
+                <input type="hidden" id="product-id">
+
+                <!-- Basic Info -->
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Nome do Produto *</label>
+                        <input type="text" id="product-nome" required class="form-input"
+                            placeholder="Ex: Banner Promocional">
+                    </div>
+                    <div>
+                        <label class="form-label">Preço (€) *</label>
+                        <input type="number" id="product-preco" required step="0.01" min="0" class="form-input"
+                            placeholder="29.99">
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Categoria *</label>
+                        <select id="product-categoria" required class="form-input">
+                            <option value="">Selecione</option>
+                            <option value="bandeiras">Bandeiras</option>
+                            <option value="mastros">Mastros</option>
+                            <option value="bases">Bases de Fixação</option>
+                            <option value="lonas">Lonas e Banners</option>
+                            <option value=" Kits">Kits Completos</option>
+                            <option value="acessorios">Acessórios</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="form-label">Stock</label>
+                        <input type="number" id="product-stock" min="0" class="form-input"
+                            placeholder="Quantidade disponível">
+                    </div>
+                </div>
+
+                <div>
+                    <label class="form-label">URL da Imagem *</label>
+                    <input type="url" id="product-imagem" required class="form-input" placeholder="https://...">
+                </div>
+
+                <div>
+                    <label class="form-label">Descrição</label>
+                    <textarea id="product-descricao" rows="3" class="form-input"
+                        placeholder="Descrição detalhada do produto..."></textarea>
+                </div>
+
+                <!-- Checkboxes -->
+                <div class="flex gap-6">
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="product-destaque" class="custom-checkbox">
+                        <label class="text-sm font-semibold">Produto em Destaque</label>
+                    </div>
+                    <div class="flex items-center gap-2">
+                        <input type="checkbox" id="product-ativo" checked class="custom-checkbox">
+                        <label class="text-sm font-semibold">Produto Ativo</label>
+                    </div>
+                </div>
+
+                <!-- Templates Section -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-lg mb-4">Templates Associados</h3>
+
+                    <div class="mb-4">
+                        <label class="form-label">Adicionar Template</label>
+                        <div class="flex gap-2">
+                            <select id="available-templates-select" class="form-input flex-1">
+                                <option value="">Selecione um template...</option>
+                            </select>
+                            <button type="button" id="add-template-to-product-btn"
+                                class="bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition">
+                                <i data-lucide="plus" class="w-5 h-5"></i>
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="product-templates-list" class="space-y-2">
+                        <p class="text-gray-400 text-sm">Nenhum template associado</p>
+                    </div>
+                </div>
+
+                <!-- SVG Template Upload -->
+                <div class="border-t pt-4">
+                    <h3 class="font-bold text-lg mb-4">Template SVG (Opcional)</h3>
+                    <div class="flex gap-2 items-center">
+                        <input type="file" id="svg-template-file" accept=".svg" class="form-input flex-1">
+                        <button type="button" id="clear-svg-template"
+                            class="text-red-600 hover:text-red-800 px-3 py-2 hidden">
+                            <i data-lucide="trash-2" class="w-5 h-5"></i>
+                        </button>
+                    </div>
+                    <p id="svg-template-filename" class="text-sm text-gray-600 mt-2"></p>
+                </div>
+
+                <!-- Actions -->
+                <div class="flex gap-3 pt-4 border-t">
+                    <button type="submit"
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Guardar Produto
+                    </button>
+                    <button type="button" id="cancel-modal-btn"
+                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                        Cancelar
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <!-- SVG Preview Modal -->
     <div id="svg-preview-modal" class="modal-overlay hidden">
         <div class="modal-content w-full max-w-4xl p-8">
