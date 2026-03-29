@@ -3,7 +3,16 @@
 var SUPABASE_URL = window.APP_CONFIG?.SUPABASE_URL || window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
 var SUPABASE_ANON_KEY = window.APP_CONFIG?.SUPABASE_ANON_KEY || window.SUPABASE_ANON_KEY || 'fallback-key';
 
-var supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+var supabaseClient = null;
+
+if (window.supabase && typeof window.supabase.createClient === 'function') {
+    try {
+        supabaseClient = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    } catch (error) {
+        console.warn('Falha ao inicializar Supabase:', error);
+        supabaseClient = null;
+    }
+}
 
 // Disponibilizar globalmente
 window.supabaseClient = supabaseClient;
@@ -310,6 +319,11 @@ function renderProducts(products) {
 
 // ===== FETCH PRODUCTS FROM SUPABASE =====
 async function fetchProducts() {
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+        renderProducts(initialProducts);
+        return;
+    }
+
     try {
         const { data, error } = await supabaseClient
             .from('produtos')

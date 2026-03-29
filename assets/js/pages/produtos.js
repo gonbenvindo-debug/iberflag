@@ -15,6 +15,11 @@ let currentCategory = 'all';
 let currentSort = 'default';
 let priceFilters = [];
 
+function parseProductPrice(product) {
+    const numericPrice = Number(product?.preco);
+    return Number.isFinite(numericPrice) ? numericPrice : 0;
+}
+
 // ===== DOM ELEMENTS =====
 const productsGrid = document.getElementById('products-grid');
 const productCount = document.getElementById('product-count');
@@ -26,42 +31,33 @@ const priceCheckboxes = document.querySelectorAll('.price-filter');
 
 // ===== LOAD PRODUCTS =====
 async function loadAllProducts() {
-    console.log('[DEBUG] Iniciando loadAllProducts');
-    console.log('[DEBUG] supabaseClient:', typeof supabaseClient);
-    console.log('[DEBUG] initialProducts:', typeof initialProducts, initialProducts?.length);
-
     try {
         const { data, error } = await supabaseClient
             .from('produtos')
             .select('*')
             .order('id', { ascending: false });
 
-        console.log('[DEBUG] Query resultado:', { data: data?.length, error });
-
         if (error) {
-            console.error('[DEBUG] Erro Supabase:', error);
             throw error;
         }
 
         if (data && data.length > 0) {
-            console.log('[DEBUG] Produtos carregados do Supabase:', data.length);
             allProducts = data;
         } else {
-            console.log('[DEBUG] Sem produtos no Supabase, usando initialProducts');
             allProducts = initialProducts || [];
         }
     } catch (error) {
-        console.error('[DEBUG] Erro ao carregar produtos:', error.message);
-        console.log('[DEBUG] Usando initialProducts como fallback');
+        console.error('Erro ao carregar produtos:', error?.message || error);
         allProducts = initialProducts || [];
     }
 
-    console.log('[DEBUG] Total de produtos:', allProducts.length);
     applyFilters();
 }
 
 // ===== RENDER PRODUCTS =====
 function renderProductsGrid(products) {
+    if (!productsGrid || !emptyState || !productCount) return;
+
     if (!products || products.length === 0) {
         productsGrid.classList.add('hidden');
         emptyState.classList.remove('hidden');
@@ -77,31 +73,46 @@ function renderProductsGrid(products) {
     productCount.textContent = products.length;
 
     productsGrid.innerHTML = products.map(product => `
+        ${(() => {
+            const safeName = escapeHtml(product?.nome || 'Produto sem nome');
+            const safeCategory = escapeHtml(getCategoryName(product?.categoria || 'outros'));
+            const safeDescription = escapeHtml(product?.descricao || 'Sem descrição disponível');
+            const safeImage = escapeHtml(product?.imagem || '/assets/images/template-placeholder.svg');
+            const safePrice = parseProductPrice(product).toFixed(2);
+            const safeProductId = escapeHtml(String(product?.id || ''));
+            const safeProductNameParam = encodeURIComponent(String(product?.nome || 'Produto sem nome'));
+            return `
         <div class="product-card page-transition" data-product-id="${product.id}">
             <div class="relative h-64 overflow-hidden image-zoom">
-                <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
+                <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover" loading="lazy">
                 <div class="product-badge">
-                    ${product.preco.toFixed(2)}€
+                    ${safePrice}€
                 </div>
                 ${product.destaque ? '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
             </div>
             <div class="p-6 flex flex-col flex-grow">
                 <div class="mb-2">
-                    <span class="inline-block bg-blue-100 text-blue-600 text-xs font-semibold px-2 py-1 rounded">${getCategoryName(product.categoria)}</span>
+                    <span class="inline-block bg-blue-100 text-blue-600 text-xs font-semibold px-2 py-1 rounded">${safeCategory}</span>
                 </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-900">${product.nome}</h3>
-                <p class="text-gray-600 text-sm mb-4 flex-grow">${product.descricao}</p>
+                <h3 class="text-xl font-bold mb-2 text-gray-900">${safeName}</h3>
+                <p class="text-gray-600 text-sm mb-4 flex-grow">${safeDescription}</p>
                 <div class="mb-4">
-                    <div class="price-tag">${product.preco.toFixed(2)}€</div>
+                    <div class="price-tag">${safePrice}€</div>
                     <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>
                 </div>
-                <button onclick="openTemplatesModal('${product.id}', '${product.nome.replace(/'/g, "\\'")}')" 
-                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer">
+                <button
+                    type="button"
+                    data-open-templates="true"
+                    data-product-id="${safeProductId}"
+                    data-product-name="${safeProductNameParam}"
+                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </button>
             </div>
         </div>
+    `;
+        })()}
     `).join('');
 
     if (typeof lucide !== 'undefined') {
@@ -246,6 +257,21 @@ document.addEventListener('DOMContentLoaded', () => {
     loadAllProducts();
 });
 
+document.addEventListener('click', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const trigger = target.closest('[data-open-templates="true"]');
+    if (!trigger) return;
+
+    const productId = Number(trigger.getAttribute('data-product-id'));
+    const productNameParam = trigger.getAttribute('data-product-name') || '';
+    const productName = decodeURIComponent(productNameParam || '');
+    if (!Number.isFinite(productId)) return;
+
+    openTemplatesModal(productId, productName);
+});
+
 // Make functions globally available
 window.viewProductDetails = viewProductDetails;
 
@@ -257,6 +283,13 @@ let allTemplates = [];
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProductName = productName;
+    const modalProductName = document.getElementById('modal-product-name');
+    const modal = document.getElementById('templates-modal');
+
+    if (!modalProductName || !modal) {
+        window.location.href = `/pages/personalizar.html?produto=${productId}`;
+        return;
+    }
 
     try {
         const { data: associations, error } = await supabaseClient
@@ -276,14 +309,15 @@ async function openTemplatesModal(productId, productName) {
         console.warn('Erro ao verificar designs:', err);
     }
 
-    document.getElementById('modal-product-name').textContent = `Escolha um design para: ${productName}`;
-    document.getElementById('templates-modal').classList.remove('hidden');
+    modalProductName.textContent = `Escolha um design para: ${productName}`;
+    modal.classList.remove('hidden');
 
     loadTemplates();
 }
 
 function closeTemplatesModal() {
-    document.getElementById('templates-modal').classList.add('hidden');
+    const modal = document.getElementById('templates-modal');
+    if (modal) modal.classList.add('hidden');
     currentProductId = null;
     currentProductName = '';
 }
@@ -301,6 +335,8 @@ function selectTemplate(templateId) {
 async function loadTemplates() {
     const grid = document.getElementById('templates-modal-grid');
     const emptyState = document.getElementById('templates-empty');
+
+    if (!grid || !emptyState) return;
 
     grid.innerHTML = '<div class="col-span-full text-center py-8"><div class="spinner mx-auto mb-2"></div>A carregar templates...</div>';
     emptyState.classList.add('hidden');
@@ -345,6 +381,8 @@ async function loadTemplates() {
 function renderTemplates(templates) {
     const grid = document.getElementById('templates-modal-grid');
     const emptyState = document.getElementById('templates-empty');
+
+    if (!grid || !emptyState) return;
 
     if (!templates || templates.length === 0) {
         grid.innerHTML = '';
