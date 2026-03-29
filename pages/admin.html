@@ -132,14 +132,6 @@
                     <li>
                         <button
                             class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
-                            data-tab="templates">
-                            <i data-lucide="layout-template" class="w-5 h-5"></i>
-                            Templates
-                        </button>
-                    </li>
-                    <li>
-                        <button
-                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
                             data-tab="contactos">
                             <i data-lucide="mail" class="w-5 h-5"></i>
                             Contactos
@@ -355,37 +347,28 @@
                 </div>
             </div>
 
-            <!-- Templates Tab -->
-            <div id="templates-tab" class="tab-panel hidden">
-                <div class="flex justify-between items-center mb-8">
-                    <h1 class="text-3xl font-bold">Gestão de Templates</h1>
-                    <button id="add-template-btn"
-                        class="bg-blue-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-blue-700 transition flex items-center gap-2"
-                        onclick="window.open('/pages/admin-template-editor.html', '_blank')"
-                        title="Abrir editor visual para criar novo template">
-                        <i data-lucide="plus" class="w-5 h-5"></i>
-                        Criar Template
-                    </button>
-                </div>
+            <!-- Contactos Tab -->
+            <div id="contactos-tab" class="tab-panel hidden">
+                <h1 class="text-3xl font-bold mb-8">Gestão de Contactos</h1>
 
                 <div class="admin-card">
                     <div class="table-container">
-                        <table id="templates-table">
+                        <table id="contacts-table">
                             <thead>
                                 <tr>
                                     <th>ID</th>
                                     <th>Nome</th>
-                                    <th>Categoria</th>
-                                    <th>Descrição</th>
-                                    <th>Elementos</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Mensagem</th>
+                                    <th>Data</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
-                            <tbody id="templates-tbody">
+                            <tbody id="contacts-tbody">
                                 <tr>
-                                    <td colspan="6" class="text-center py-8 text-gray-400">
-                                        <div class="spinner mx-auto mb-2"></div>
-                                        A carregar templates...
+                                    <td colspan="7" class="text-center py-8 text-gray-400">
+                                        Nenhum contacto encontrado
                                     </td>
                                 </tr>
                             </tbody>
@@ -396,58 +379,87 @@
         </main>
     </div>
 
-    <!-- Template Modal - Simplified for metadata editing only -->
-    <div id="template-modal" class="modal-overlay hidden">
-        <div class="modal-content w-full max-w-xl p-8">
+    <!-- Base Modal -->
+    <div id="base-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-2xl p-8">
             <div class="flex justify-between items-center mb-6">
-                <h2 class="text-2xl font-bold" id="template-modal-title">Editar Template</h2>
-                <button id="close-template-modal" class="text-gray-500 hover:text-gray-700">
+                <h2 class="text-2xl font-bold" id="base-modal-title">Adicionar Base</h2>
+                <button id="close-base-modal" class="text-gray-500 hover:text-gray-700">
                     <i data-lucide="x" class="w-6 h-6"></i>
                 </button>
             </div>
 
-            <form id="template-form" class="space-y-4">
-                <input type="hidden" id="template-id">
-
+            <form id="base-form" class="space-y-4">
                 <div>
-                    <label class="form-label">Nome do Template *</label>
-                    <input type="text" id="template-nome" required class="form-input" placeholder="Ex: Promoção Verão">
-                </div>
-
-                <div>
-                    <label class="form-label">Categoria *</label>
-                    <select id="template-categoria" required class="form-input">
-                        <option value="">Selecione</option>
-                        <option value="promocoes">Promoções</option>
-                        <option value="eventos">Eventos</option>
-                        <option value="corporativo">Corporativo</option>
-                        <option value="festas">Festas</option>
-                        <option value="varejo">Varejo</option>
-                    </select>
+                    <label class="form-label">Nome da Base *</label>
+                    <input type="text" id="base-nome" required class="form-input" placeholder="Ex: Base Cruzeta">
                 </div>
 
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="template-descricao" rows="3" class="form-input"
-                        placeholder="Descrição breve do template..."></textarea>
+                    <textarea id="base-descricao" rows="3" class="form-input"
+                        placeholder="Descrição da base"></textarea>
+                </div>
+
+                <div>
+                    <label class="form-label">URL da Imagem *</label>
+                    <input type="url" id="base-imagem" required class="form-input" placeholder="https://...">
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="form-label">Preço Extra (€)</label>
+                        <input type="number" id="base-preco-extra" step="0.01" min="0" class="form-input" value="0">
+                    </div>
+                    <div>
+                        <label class="form-label">Ordem</label>
+                        <input type="number" id="base-ordem" min="0" class="form-input" value="0">
+                    </div>
                 </div>
 
                 <div class="flex items-center gap-2">
-                    <input type="checkbox" id="template-ativo" checked class="custom-checkbox">
-                    <label class="text-sm font-semibold">Template Ativo</label>
+                    <input type="checkbox" id="base-ativo" checked class="custom-checkbox">
+                    <label class="text-sm font-semibold">Base ativa</label>
                 </div>
 
                 <div class="flex gap-3 pt-4 border-t">
                     <button type="submit"
-                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                        Guardar Alterações
+                        class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition min-h-[44px]">
+                        Guardar Base
                     </button>
-                    <button type="button" id="cancel-template-modal-btn"
-                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition">
+                    <button type="button" id="cancel-base-modal"
+                        class="px-6 bg-gray-200 text-gray-700 py-3 rounded-lg font-bold hover:bg-gray-300 transition min-h-[44px]">
                         Cancelar
                     </button>
                 </div>
             </form>
+        </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="modal-overlay hidden">
+        <div class="modal-content w-full max-w-3xl p-0 overflow-hidden">
+            <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
+                <h2 class="text-xl font-bold">Detalhe do Contacto</h2>
+                <button type="button" class="close-contact-modal text-gray-500 hover:text-gray-700">
+                    <i data-lucide="x" class="w-6 h-6"></i>
+                </button>
+            </div>
+
+            <div id="contact-details" class="p-6 md:p-7 bg-gray-50 space-y-4"></div>
+
+            <div
+                class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 px-6 py-4 border-t border-gray-200 bg-white">
+                <button type="button"
+                    class="close-contact-modal px-5 py-3 rounded-lg bg-gray-200 text-gray-700 font-semibold hover:bg-gray-300 transition min-h-[44px]">
+                    Fechar
+                </button>
+                <button type="button" id="mark-responded"
+                    class="px-5 py-3 rounded-lg bg-emerald-600 text-white font-semibold hover:bg-emerald-700 transition min-h-[44px] inline-flex items-center justify-center gap-2">
+                    <i data-lucide="check-circle" class="w-4 h-4"></i>
+                    Marcar como Respondido
+                </button>
+            </div>
         </div>
     </div>
 
@@ -745,7 +757,7 @@
     <script src="/assets/js/templates-data.js"></script>
     <script src="/assets/js/core/logic.js?v=20260319b"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260319b"></script>
-    <script src="/assets/js/pages/admin.js?v=20260329f"></script>
+    <script src="/assets/js/pages/admin.js?v=20260329g"></script>
     <script>lucide.createIcons();</script>
 </body>
 
