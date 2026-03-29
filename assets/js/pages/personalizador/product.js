@@ -114,7 +114,11 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            const templateElements = Array.isArray(data.elementos) ? data.elementos : [];
+            const templateElements = Array.isArray(data.elementos)
+                ? data.elementos
+                : Array.isArray(data.elements)
+                    ? data.elements
+                    : [];
 
             if (templateElements.length > 0) {
                 this.clearCanvas?.();
@@ -133,9 +137,15 @@ Object.assign(DesignEditor.prototype, {
             if (typeof TEMPLATES_DATA !== 'undefined') {
                 const allTemplates = Object.values(TEMPLATES_DATA).flat();
                 const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
-                if (template && template.elements) {
+                const fallbackElements = Array.isArray(template?.elements)
+                    ? template.elements
+                    : Array.isArray(template?.elementos)
+                        ? template.elementos
+                        : [];
+
+                if (template && fallbackElements.length > 0) {
                     this.clearCanvas?.();
-                    template.elements.forEach((el) => {
+                    fallbackElements.forEach((el) => {
                         this.createElementFromTemplate?.(el);
                     });
                     this.bringPrintAreaOverlaysToFront?.();

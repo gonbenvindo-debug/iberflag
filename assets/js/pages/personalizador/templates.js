@@ -243,11 +243,76 @@ Object.assign(DesignEditor.prototype, {
         showToast(`Template "${template.name}" carregado!`, 'success');
     },
 
+    normalizeTemplateElement(data = {}) {
+        const properties = data.properties || {};
+        const normalizedType = data.type
+            || (properties.text !== undefined || properties.fontFamily !== undefined ? 'text' : null)
+            || (properties.shape !== undefined ? 'shape' : null)
+            || (properties.src !== undefined ? 'image' : null)
+            || (properties.content !== undefined ? 'qrcode' : null)
+            || 'shape';
+
+        const normalized = {
+            ...data,
+            type: normalizedType,
+            x: Number(data.x ?? 0),
+            y: Number(data.y ?? 0),
+            width: Number(data.width ?? 0),
+            height: Number(data.height ?? 0),
+            rotation: Number(data.rotation ?? 0)
+        };
+
+        if (normalizedType === 'text') {
+            normalized.content = data.content ?? properties.text ?? 'Texto';
+            normalized.font = data.font ?? properties.fontFamily ?? 'Arial';
+            normalized.size = Number(data.size ?? properties.fontSize ?? 24);
+            normalized.color = data.color ?? properties.color ?? '#000000';
+            normalized.bold = Boolean(data.bold ?? (String(properties.fontWeight || '').toLowerCase() === 'bold'));
+            normalized.italic = Boolean(data.italic ?? (String(properties.fontStyle || '').toLowerCase() === 'italic'));
+            normalized.textAnchor = data.textAnchor
+                ?? (properties.textAlign === 'center' ? 'middle' : properties.textAlign === 'right' ? 'end' : 'start');
+        }
+
+        if (normalizedType === 'shape') {
+            normalized.shapeType = data.shapeType ?? properties.shape ?? 'rectangle';
+            normalized.fill = data.fill ?? properties.fill ?? '#3b82f6';
+            normalized.stroke = data.stroke ?? properties.stroke ?? 'none';
+            normalized.strokeWidth = Number(data.strokeWidth ?? properties.strokeWidth ?? 0);
+        }
+
+        if (normalizedType === 'image') {
+            normalized.src = data.src ?? properties.src ?? '';
+            normalized.name = data.name ?? properties.name ?? 'Imagem';
+            normalized.imageKind = data.imageKind ?? properties.imageKind ?? 'image';
+            normalized.opacity = Number(data.opacity ?? properties.opacity ?? 1);
+            normalized.objectFit = data.objectFit ?? properties.objectFit ?? 'cover';
+            normalized.borderRadius = Number(data.borderRadius ?? properties.borderRadius ?? 0);
+            normalized.qrContent = data.qrContent ?? properties.qrContent ?? '';
+            normalized.qrColor = data.qrColor ?? properties.qrColor ?? '#111827';
+        }
+
+        if (normalizedType === 'qrcode') {
+            normalized.name = data.name ?? properties.name ?? 'QR Code';
+            normalized.qrContent = data.qrContent ?? properties.content ?? '';
+            normalized.qrColor = data.qrColor ?? properties.color ?? '#111827';
+            normalized.bgColor = data.bgColor ?? properties.bgColor ?? '#ffffff';
+            normalized.imageKind = 'qr';
+        }
+
+        return normalized;
+    },
+
     createElementFromTemplate(data) {
-        if (data.type === 'text') {
-            this.addTextFromTemplate(data);
-        } else if (data.type === 'shape') {
-            this.addShapeFromTemplate(data);
+        const normalized = this.normalizeTemplateElement(data);
+
+        if (normalized.type === 'text') {
+            this.addTextFromTemplate(normalized);
+        } else if (normalized.type === 'shape') {
+            this.addShapeFromTemplate(normalized);
+        } else if (normalized.type === 'image') {
+            this.addImageFromTemplate(normalized);
+        } else if (normalized.type === 'qrcode') {
+            this.addQrFromTemplate(normalized);
         }
     },
 
@@ -276,6 +341,7 @@ Object.assign(DesignEditor.prototype, {
 
         const elementData = this.buildElementDataFromNode(textElement);
         this.elements.push(elementData);
+        this.makeElementInteractive(elementData);
         this.selectElement(elementData);
     },
 
@@ -321,8 +387,68 @@ Object.assign(DesignEditor.prototype, {
 
             const elementData = this.buildElementDataFromNode(shapeElement);
             this.elements.push(elementData);
+            this.makeElementInteractive(elementData);
             this.selectElement(elementData);
         }
+    },
+
+    addImageFromTemplate(data) {
+        const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
+
+        imageElement.setAttribute('id', id);
+        imageElement.setAttribute('x', String(data.x || 0));
+        imageElement.setAttribute('y', String(data.y || 0));
+        imageElement.setAttribute('width', String(data.width || 120));
+        imageElement.setAttribute('height', String(data.height || 120));
+        imageElement.setAttribute('data-editable', 'true');
+        imageElement.setAttribute('data-element-id', id);
+        imageElement.setAttribute('href', src);
+        imageElement.setAttribute('opacity', String(data.opacity ?? 1));
+        imageElement.dataset.name = data.name || 'Imagem';
+        imageElement.dataset.imageKind = data.imageKind || 'image';
+
+        if (data.qrContent) {
+            imageElement.dataset.qrContent = data.qrContent;
+        }
+        if (data.qrColor) {
+            imageElement.dataset.qrColor = data.qrColor;
+        }
+
+        const objectFit = String(data.objectFit || 'cover').toLowerCase();
+        imageElement.setAttribute(
+            'preserveAspectRatio',
+            objectFit === 'contain' ? 'xMidYMid meet' : objectFit === 'fill' ? 'none' : 'xMidYMid slice'
+        );
+
+        if (data.borderRadius) {
+            imageElement.dataset.borderRadius = String(data.borderRadius);
+        }
+
+        if (data.rotation) {
+            const cx = (Number(data.x) || 0) + (Number(data.width) || 0) / 2;
+            const cy = (Number(data.y) || 0) + (Number(data.height) || 0) / 2;
+            imageElement.setAttribute('transform', `rotate(${data.rotation} ${cx} ${cy})`);
+        }
+
+        this.canvas.appendChild(imageElement);
+        this.bringPrintAreaOverlaysToFront();
+
+        const elementData = this.buildElementDataFromNode(imageElement);
+        this.elements.push(elementData);
+        this.makeElementInteractive(elementData);
+        this.selectElement(elementData);
+    },
+
+    addQrFromTemplate(data) {
+        const qrDataUrl = this.generateQRCodeDataUrl(data.qrContent || '', data.qrColor || '#111827');
+        this.addImageFromTemplate({
+            ...data,
+            type: 'image',
+            imageKind: 'qr',
+            src: qrDataUrl
+        });
     },
 
     clearCanvas() {
