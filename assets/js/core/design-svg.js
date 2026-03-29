@@ -600,6 +600,88 @@
         };
     }
 
+    function getSvgSourceBounds(root, fallback = DEFAULT_SIZE) {
+        if (!root) {
+            return {
+                x: 0,
+                y: 0,
+                width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
+                height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
+            };
+        }
+
+        const viewBoxAttr = String(root.getAttribute('viewBox') || '').trim();
+        if (viewBoxAttr) {
+            const parts = viewBoxAttr.split(/\s+/).map(Number);
+            if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
+                return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
+            }
+        }
+
+        const width = Number.parseFloat(root.getAttribute('width') || '');
+        const height = Number.parseFloat(root.getAttribute('height') || '');
+
+        return {
+            x: 0,
+            y: 0,
+            width: Math.max(1, Number.isFinite(width) ? width : Number(fallback.width) || DEFAULT_SIZE.width),
+            height: Math.max(1, Number.isFinite(height) ? height : Number(fallback.height) || DEFAULT_SIZE.height)
+        };
+    }
+
+    function buildPreviewCanvasGeometry(sourceBounds) {
+        const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
+        const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
+        const ratio = safeWidth / safeHeight;
+        const margin = 50;
+        const contentLongestSide = 700;
+
+        let contentWidth = contentLongestSide;
+        let contentHeight = contentLongestSide;
+
+        if (ratio >= 1) {
+            contentWidth = contentLongestSide;
+            contentHeight = contentLongestSide / ratio;
+        } else {
+            contentHeight = contentLongestSide;
+            contentWidth = contentLongestSide * ratio;
+        }
+
+        const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
+        const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
+        const uniformScale = Math.min(
+            contentWidth / safeWidth,
+            contentHeight / safeHeight
+        );
+
+        const offsetX = margin + ((contentWidth - (safeWidth * uniformScale)) / 2) - ((Number(sourceBounds?.x) || 0) * uniformScale);
+        const offsetY = margin + ((contentHeight - (safeHeight * uniformScale)) / 2) - ((Number(sourceBounds?.y) || 0) * uniformScale);
+
+        return {
+            canvasWidth,
+            canvasHeight,
+            transform: `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`
+        };
+    }
+
+    function cloneMaskNodeForClip(maskNode, transform) {
+        const clipNode = maskNode.cloneNode(true);
+        clipNode.removeAttribute?.('id');
+        clipNode.removeAttribute?.('stroke');
+        clipNode.removeAttribute?.('stroke-width');
+        clipNode.removeAttribute?.('stroke-dasharray');
+        clipNode.removeAttribute?.('opacity');
+        clipNode.removeAttribute?.('fill');
+        clipNode.setAttribute?.('fill', '#ffffff');
+        clipNode.setAttribute?.('pointer-events', 'none');
+        if (transform) {
+            clipNode.setAttribute?.('transform', transform);
+        } else {
+            clipNode.removeAttribute?.('transform');
+        }
+        return clipNode;
+    }
+
     function toDataUrlFromSvgMarkup(svgMarkup) {
         if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
             return '';
@@ -727,9 +809,9 @@
             return fallbackMarkup;
         }
 
-        const wrapperViewBox = maskRoot.getAttribute('viewBox')
-            || previewRoot?.getAttribute?.('viewBox')
-            || `0 0 ${maskBox.width} ${maskBox.height}`;
+        const sourceBounds = getSvgSourceBounds(maskRoot, maskBox);
+        const previewGeometry = buildPreviewCanvasGeometry(sourceBounds);
+        const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
         const clipId = `design-preview-clip-${Math.random().toString(36).slice(2, 10)}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         wrapper.setAttribute('xmlns', SVG_NS);
@@ -749,13 +831,8 @@
         const clipPath = document.createElementNS(SVG_NS, 'clipPath');
         clipPath.setAttribute('id', clipId);
         clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-        if (String(maskNode.tagName || '').toLowerCase() === 'g') {
-            Array.from(maskNode.children || []).forEach((child) => {
-                clipPath.appendChild(child.cloneNode(true));
-            });
-        } else {
-            clipPath.appendChild(maskNode.cloneNode(true));
-        }
+        const clipNode = cloneMaskNodeForClip(maskNode, previewGeometry.transform);
+        clipPath.appendChild(clipNode);
         defs.appendChild(clipPath);
         wrapper.appendChild(defs);
 
@@ -764,8 +841,8 @@
             nestedSvg.setAttribute('xmlns', SVG_NS);
             nestedSvg.setAttribute('x', '0');
             nestedSvg.setAttribute('y', '0');
-            nestedSvg.setAttribute('width', '100%');
-            nestedSvg.setAttribute('height', '100%');
+            nestedSvg.setAttribute('width', String(previewGeometry.canvasWidth));
+            nestedSvg.setAttribute('height', String(previewGeometry.canvasHeight));
             nestedSvg.setAttribute('viewBox', previewRoot.getAttribute('viewBox') || wrapperViewBox);
             nestedSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             nestedSvg.setAttribute('overflow', 'visible');
@@ -791,8 +868,8 @@
             image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
             image.setAttribute('x', '0');
             image.setAttribute('y', '0');
-            image.setAttribute('width', '100%');
-            image.setAttribute('height', '100%');
+            image.setAttribute('width', String(previewGeometry.canvasWidth));
+            image.setAttribute('height', String(previewGeometry.canvasHeight));
             image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
             image.setAttribute('clip-path', `url(#${clipId})`);
             wrapper.appendChild(image);
