@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="pt-pt">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -372,6 +373,7 @@
         }
     </style>
 </head>
+
 <body>
     <!-- Admin Header -->
     <header class="admin-header">
@@ -458,7 +460,8 @@
 
             <div class="canvas-wrapper">
                 <div class="canvas-container" id="canvas-container" style="width: 800px; height: 600px;">
-                    <div class="print-area" id="print-area" style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
+                    <div class="print-area" id="print-area"
+                        style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
                     <div class="empty-canvas" id="empty-state">
                         <iconify-icon icon="lucide:layout-template"></iconify-icon>
                         <span>Clique nos elementos à esquerda para começar</span>
@@ -501,6 +504,42 @@
             }
         }
         checkAuth();
+
+        function hydrateEditorFromPayload() {
+            const params = new URLSearchParams(window.location.search);
+            const templateIdParam = params.get('templateId');
+            const payloadRaw = window.localStorage.getItem('iberflag_editor_template_payload');
+            if (!payloadRaw) return;
+
+            let payload = null;
+            try {
+                payload = JSON.parse(payloadRaw);
+            } catch (error) {
+                window.localStorage.removeItem('iberflag_editor_template_payload');
+                return;
+            }
+
+            if (!payload || (templateIdParam && String(payload.id) !== String(templateIdParam))) {
+                return;
+            }
+
+            const nameInput = document.getElementById('template-name');
+            const categorySelect = document.getElementById('template-category');
+            if (nameInput) nameInput.value = payload.nome || 'Template sem nome';
+            if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
+
+            if (Array.isArray(payload.elementos) && payload.elementos.length > 0) {
+                elements = payload.elementos.map((elemento) => ({
+                    ...elemento,
+                    id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+                }));
+                selectedElement = null;
+                renderElements();
+                updateEmptyState();
+            }
+
+            window.localStorage.removeItem('iberflag_editor_template_payload');
+        }
 
         // Adicionar elemento
         function addElement(type) {
@@ -562,7 +601,7 @@
         // Renderizar elementos
         function renderElements() {
             const container = document.getElementById('canvas-container');
-            
+
             // Remover elementos antigos (exceto print-area e empty-state)
             container.querySelectorAll('.canvas-element').forEach(el => el.remove());
 
@@ -575,11 +614,11 @@
                 el.style.width = `${element.width}px`;
                 el.style.height = `${element.height}px`;
                 el.style.transform = `rotate(${element.rotation}deg)`;
-                
+
                 renderElementContent(el, element);
-                
+
                 el.addEventListener('mousedown', (e) => startDrag(e, element.id));
-                
+
                 container.appendChild(el);
             });
 
@@ -659,7 +698,7 @@
         // Lista de camadas
         function updateLayersList() {
             const list = document.getElementById('layers-list');
-            
+
             if (elements.length === 0) {
                 list.innerHTML = '<div class="text-center text-gray-400 text-sm py-8">Nenhum elemento adicionado</div>';
                 return;
@@ -707,7 +746,7 @@
         // Painel de propriedades
         function renderPropertiesPanel() {
             const panel = document.getElementById('properties-panel');
-            
+
             if (!selectedElement) {
                 panel.innerHTML = '<div class="text-center text-gray-400 text-sm py-8">Selecione um elemento para editar as propriedades</div>';
                 return;
@@ -804,7 +843,7 @@
         function startDrag(e, id) {
             e.stopPropagation();
             selectElement(id);
-            
+
             const element = elements.find(el => el.id === id);
             isDragging = true;
             dragOffset = {
@@ -954,7 +993,7 @@
                 if (error) throw error;
 
                 alert('Template guardado com sucesso!');
-                
+
                 // Redirecionar para admin ou limpar
                 if (confirm('Deseja criar outro template?')) {
                     elements = [];
@@ -987,8 +1026,10 @@
         });
 
         // Inicializar
+        hydrateEditorFromPayload();
         saveHistory();
         updateEmptyState();
     </script>
 </body>
+
 </html>

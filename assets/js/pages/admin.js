@@ -727,30 +727,23 @@ function renderSvgTemplatePreview() {
         const root = parseSvgTemplate(svgTemplateContent);
         const sourceBounds = getSvgSourceBounds(root);
         const svgNs = 'http://www.w3.org/2000/svg';
-        const canvasWidth = 800;
-        const canvasHeight = 600;
-        const previewPadding = 24;
-        const availableWidth = canvasWidth - (previewPadding * 2);
-        const availableHeight = canvasHeight - (previewPadding * 2);
-        const scale = Math.min(
-            availableWidth / sourceBounds.width,
-            availableHeight / sourceBounds.height
-        );
-        const renderWidth = sourceBounds.width * scale;
-        const renderHeight = sourceBounds.height * scale;
-        const renderX = (canvasWidth - renderWidth) / 2;
-        const renderY = (canvasHeight - renderHeight) / 2;
+        const padX = Math.max(sourceBounds.width * 0.06, 8);
+        const padY = Math.max(sourceBounds.height * 0.06, 8);
+        const viewBoxX = sourceBounds.x - padX;
+        const viewBoxY = sourceBounds.y - padY;
+        const viewBoxWidth = sourceBounds.width + (padX * 2);
+        const viewBoxHeight = sourceBounds.height + (padY * 2);
         const previewSvg = document.createElementNS(svgNs, 'svg');
-        previewSvg.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
+        previewSvg.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
         previewSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         previewSvg.setAttribute('width', '100%');
         previewSvg.setAttribute('height', '100%');
 
         const printAreaOutline = document.createElementNS(svgNs, 'rect');
-        printAreaOutline.setAttribute('x', String(renderX));
-        printAreaOutline.setAttribute('y', String(renderY));
-        printAreaOutline.setAttribute('width', String(renderWidth));
-        printAreaOutline.setAttribute('height', String(renderHeight));
+        printAreaOutline.setAttribute('x', String(sourceBounds.x));
+        printAreaOutline.setAttribute('y', String(sourceBounds.y));
+        printAreaOutline.setAttribute('width', String(sourceBounds.width));
+        printAreaOutline.setAttribute('height', String(sourceBounds.height));
         printAreaOutline.setAttribute('fill', 'none');
         printAreaOutline.setAttribute('stroke', '#2563eb');
         printAreaOutline.setAttribute('stroke-width', '2');
@@ -758,10 +751,10 @@ function renderSvgTemplatePreview() {
         printAreaOutline.setAttribute('opacity', '0.55');
 
         const imported = document.importNode(root, true);
-        imported.setAttribute('x', String(renderX));
-        imported.setAttribute('y', String(renderY));
-        imported.setAttribute('width', String(renderWidth));
-        imported.setAttribute('height', String(renderHeight));
+        imported.setAttribute('x', String(sourceBounds.x));
+        imported.setAttribute('y', String(sourceBounds.y));
+        imported.setAttribute('width', String(sourceBounds.width));
+        imported.setAttribute('height', String(sourceBounds.height));
         imported.setAttribute('viewBox', `${sourceBounds.x} ${sourceBounds.y} ${sourceBounds.width} ${sourceBounds.height}`);
         imported.setAttribute('preserveAspectRatio', 'xMidYMid meet');
 
@@ -2269,32 +2262,34 @@ async function loadTemplatesCatalog(force = false) {
     return templatesCatalogCache;
 }
 
-function isTemplateSelected(templateId) {
-    return currentProductTemplates.some(pt => Number(pt.template_id) === Number(templateId));
-}
-
-function toggleProductTemplate(templateId) {
-    const numId = Number(templateId);
-    if (isTemplateSelected(numId)) {
-        currentProductTemplates = currentProductTemplates.filter(pt => Number(pt.template_id) !== numId);
-    } else {
-        currentProductTemplates.push({
-            template_id: numId,
-            ordem: currentProductTemplates.length + 1
-        });
-    }
-    renderProductTemplatesGrid();
-}
-
 function updateTemplatesCounter() {
     const counter = document.getElementById('templates-counter');
     if (counter) {
-        const count = currentProductTemplates.length;
-        counter.textContent = `${count} selecionado${count !== 1 ? 's' : ''}`;
+        const count = templatesCatalogCache.length;
+        counter.textContent = `${count} design${count !== 1 ? 's' : ''}`;
         counter.className = count > 0
             ? 'text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full'
             : 'text-xs font-semibold bg-gray-100 text-gray-500 px-2.5 py-1 rounded-full';
     }
+}
+
+function openTemplateEditorFromCard(templateId) {
+    const numericTemplateId = Number(templateId);
+    if (!Number.isFinite(numericTemplateId)) return;
+
+    const template = templatesCatalogCache.find((item) => Number(item.id) === numericTemplateId) || null;
+    if (template) {
+        const payload = {
+            id: template.id,
+            nome: template.nome || '',
+            categoria: template.categoria || 'promocoes',
+            elementos: Array.isArray(template.elementos) ? template.elementos : []
+        };
+        window.localStorage.setItem('iberflag_editor_template_payload', JSON.stringify(payload));
+    }
+
+    const editorUrl = `/pages/admin-template-editor.html?templateId=${encodeURIComponent(String(numericTemplateId))}`;
+    window.open(editorUrl, '_blank', 'noopener,noreferrer');
 }
 
 function renderProductTemplatesGrid() {
@@ -2315,21 +2310,19 @@ function renderProductTemplatesGrid() {
     }
 
     grid.innerHTML = allTemplates.map(t => {
-        const selected = isTemplateSelected(t.id);
         const previewUrl = t.preview_url || t.thumbnail_url || '/assets/images/template-placeholder.svg';
         const safeName = escapeHtml(t.nome);
         return `
-            <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden cursor-pointer transition-all duration-200 ${selected ? 'border-blue-500 ring-2 ring-blue-200 shadow-md' : 'border-gray-200 hover:border-gray-300 hover:shadow-sm'}"
+            <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 data-template-id="${t.id}">
                 <div class="template-toggle-preview relative bg-gray-50 overflow-hidden">
                     <img src="${previewUrl}" 
                         alt="${safeName}" 
                         class="w-full h-full object-contain object-center p-2 transition-transform duration-300 group-hover:scale-[1.02]"
                         onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
-                    <div class="absolute top-1 right-1 w-5 h-5 rounded-full flex items-center justify-center transition-all duration-200 ${selected ? 'bg-blue-500 scale-100' : 'bg-white/80 border border-gray-300 scale-90 opacity-0 group-hover:opacity-100'}">
-                        ${selected ? '<i data-lucide="check" class="w-3 h-3 text-white"></i>' : ''}
-                    </div>
-                    ${selected ? '<div class="absolute inset-0 bg-blue-500/10"></div>' : ''}
+                    <button type="button" class="template-edit-btn absolute top-1 right-1 w-7 h-7 rounded-full bg-white/95 border border-gray-300 text-red-600 hover:text-red-700 hover:bg-white flex items-center justify-center transition-all duration-200" data-template-id="${t.id}" title="Continuar a editar template">
+                        <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+                    </button>
                 </div>
                 <div class="px-2 py-2 border-t border-gray-100 bg-white">
                     <h4 class="font-semibold text-xs text-gray-900 truncate text-center leading-tight" title="${safeName}">${safeName}</h4>
@@ -2337,9 +2330,11 @@ function renderProductTemplatesGrid() {
             </div>`;
     }).join('');
 
-    grid.querySelectorAll('.template-toggle-card').forEach(card => {
-        card.addEventListener('click', () => {
-            toggleProductTemplate(card.dataset.templateId);
+    grid.querySelectorAll('.template-edit-btn').forEach((button) => {
+        button.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            openTemplateEditorFromCard(button.dataset.templateId);
         });
     });
 
