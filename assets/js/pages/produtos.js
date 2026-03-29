@@ -279,6 +279,10 @@ window.viewProductDetails = viewProductDetails;
 let currentProductId = null;
 let currentProductName = '';
 let allTemplates = [];
+let templatesCatalogCache = null;
+let templatesCatalogPromise = null;
+let templatesByProductCache = new Map();
+let templatesLoadToken = 0;
 
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
@@ -291,28 +295,13 @@ async function openTemplatesModal(productId, productName) {
         return;
     }
 
-    try {
-        const { data: associations, error } = await supabaseClient
-            .from('produto_templates')
-            .select('template_id, templates(*)')
-            .eq('produto_id', productId)
-            .order('ordem', { ascending: true });
-
-        if (!error && associations) {
-            const designs = associations.map(a => a.templates).filter(t => t && t.ativo);
-            if (designs.length === 0) {
-                window.location.href = `/pages/personalizar.html?produto=${productId}`;
-                return;
-            }
-        }
-    } catch (err) {
-        console.warn('Erro ao verificar designs:', err);
-    }
-
     modalProductName.textContent = `Escolha um design para: ${productName}`;
     modal.classList.remove('hidden');
+    renderTemplatesLoading();
 
-    loadTemplates();
+    requestAnimationFrame(() => {
+        void loadTemplates(productId);
+    });
 }
 
 function closeTemplatesModal() {
@@ -332,50 +321,140 @@ function selectTemplate(templateId) {
     window.location.href = `/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`;
 }
 
-async function loadTemplates() {
+function renderTemplatesLoading(message = 'A carregar templates...') {
     const grid = document.getElementById('templates-modal-grid');
     const emptyState = document.getElementById('templates-empty');
 
     if (!grid || !emptyState) return;
 
-    grid.innerHTML = '<div class="col-span-full text-center py-8"><div class="spinner mx-auto mb-2"></div>A carregar templates...</div>';
+    grid.innerHTML = `
+        <div class="col-span-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
+            ${Array.from({ length: 4 }).map(() => `
+                <div class="aspect-[4/3] rounded-2xl border border-gray-200 bg-gray-100 overflow-hidden animate-pulse">
+                    <div class="h-full w-full bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200"></div>
+                </div>
+            `).join('')}
+        </div>
+        <div class="col-span-full text-center py-4 text-sm text-gray-500">${message}</div>
+    `;
     emptyState.classList.add('hidden');
+}
+
+async function getTemplatesCatalog() {
+    if (Array.isArray(templatesCatalogCache) && templatesCatalogCache.length > 0) {
+        return templatesCatalogCache;
+    }
+
+    if (templatesCatalogPromise) {
+        return templatesCatalogPromise;
+    }
+
+    templatesCatalogPromise = (async () => {
+        const { data, error } = await supabaseClient
+            .from('templates')
+            .select('*')
+            .eq('ativo', true)
+            .order('created_at', { ascending: false });
+
+        if (error) throw error;
+        templatesCatalogCache = data || [];
+        return templatesCatalogCache;
+    })();
 
     try {
-        // Carregar templates especificos do produto
-        const { data: associations, error: assocError } = await supabaseClient
-            .from('produto_templates')
-            .select('template_id, templates(*)')
-            .eq('produto_id', currentProductId)
-            .order('ordem', { ascending: true });
+        return await templatesCatalogPromise;
+    } finally {
+        templatesCatalogPromise = null;
+    }
+}
 
+async function getProductTemplates(productId) {
+    const numericProductId = Number(productId);
+    if (!Number.isFinite(numericProductId)) {
+        return [];
+    }
+
+    const cached = templatesByProductCache.get(numericProductId);
+    if (Array.isArray(cached)) {
+        return cached;
+    }
+
+    if (cached && typeof cached.then === 'function') {
+        return cached;
+    }
+
+    const promise = (async () => {
+        const [associationsResult, catalogResult] = await Promise.all([
+            supabaseClient
+                .from('produto_templates')
+                .select('template_id, templates(*)')
+                .eq('produto_id', numericProductId)
+                .order('ordem', { ascending: true }),
+            getTemplatesCatalog()
+        ]);
+
+        const { data: associations, error: assocError } = associationsResult;
         if (assocError) throw assocError;
 
-        // Extrair templates das associacoes
         let templates = [];
         if (associations && associations.length > 0) {
             templates = associations.map(a => a.templates).filter(t => t && t.ativo);
         }
 
-        // Se nao houver templates especificos, carregar todos os templates genericos
         if (templates.length === 0) {
-            const { data: allTemplates, error } = await supabaseClient
-                .from('templates')
-                .select('*')
-                .eq('ativo', true)
-                .order('created_at', { ascending: false });
+            templates = catalogResult || [];
+        }
 
-            if (error) throw error;
-            templates = allTemplates || [];
+        return templates;
+    })();
+
+    templatesByProductCache.set(numericProductId, promise);
+
+    try {
+        const templates = await promise;
+        templatesByProductCache.set(numericProductId, templates);
+        return templates;
+    } catch (error) {
+        templatesByProductCache.delete(numericProductId);
+        throw error;
+    }
+}
+
+async function loadTemplates(productId = currentProductId) {
+    const grid = document.getElementById('templates-modal-grid');
+    const emptyState = document.getElementById('templates-empty');
+
+    if (!grid || !emptyState) return;
+
+    const numericProductId = Number(productId);
+    if (!Number.isFinite(numericProductId)) return;
+
+    const loadToken = ++templatesLoadToken;
+
+    try {
+        const templates = await getProductTemplates(numericProductId);
+
+        if (loadToken !== templatesLoadToken || numericProductId !== Number(currentProductId)) {
+            return;
         }
 
         allTemplates = templates;
         renderTemplates(allTemplates);
     } catch (err) {
+        if (loadToken !== templatesLoadToken) return;
         console.error('Erro ao carregar templates:', err);
         grid.innerHTML = '';
         emptyState.classList.remove('hidden');
     }
+}
+
+function preloadTemplatesData(productId) {
+    const numericProductId = Number(productId);
+    if (!Number.isFinite(numericProductId)) return;
+
+    void getProductTemplates(numericProductId).catch(() => {
+        // Preload falhou, mas nao bloqueia o fluxo principal.
+    });
 }
 
 function renderTemplates(templates) {
@@ -383,14 +462,6 @@ function renderTemplates(templates) {
     const emptyState = document.getElementById('templates-empty');
 
     if (!grid || !emptyState) return;
-
-    if (!templates || templates.length === 0) {
-        grid.innerHTML = '';
-        emptyState.classList.remove('hidden');
-        return;
-    }
-
-    emptyState.classList.add('hidden');
 
     const blankCard = `
         <div class="group cursor-pointer" onclick="startBlank()">
@@ -405,6 +476,23 @@ function renderTemplates(templates) {
             </div>
         </div>
     `;
+
+    if (!templates || templates.length === 0) {
+        grid.innerHTML = blankCard + `
+            <div class="group">
+                <div class="aspect-[4/3] rounded-2xl border-2 border-dashed border-gray-200 bg-gray-50/60 flex flex-col items-center justify-center gap-2 px-4 text-center">
+                    <i data-lucide="image-off" class="w-8 h-8 text-gray-300"></i>
+                    <p class="text-sm font-semibold text-gray-600">Nenhum design pronto disponível</p>
+                    <p class="text-[11px] text-gray-400">Pode começar com um design em branco</p>
+                </div>
+            </div>
+        `;
+        emptyState.classList.add('hidden');
+        if (typeof lucide !== 'undefined') lucide.createIcons();
+        return;
+    }
+
+    emptyState.classList.add('hidden');
 
     grid.innerHTML = blankCard + templates.map(template => {
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
@@ -432,6 +520,21 @@ function renderTemplates(templates) {
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
+
+document.addEventListener('DOMContentLoaded', () => {
+    void getTemplatesCatalog().catch(() => {});
+});
+
+document.addEventListener('pointerover', (event) => {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const trigger = target.closest('[data-open-templates="true"]');
+    if (!trigger) return;
+
+    const productId = Number(trigger.getAttribute('data-product-id'));
+    preloadTemplatesData(productId);
+}, { passive: true });
 
 // Make modal functions globally available
 window.openTemplatesModal = openTemplatesModal;
