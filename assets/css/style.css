@@ -1788,15 +1788,24 @@ tbody tr:hover {
     justify-content: center;
     padding: 8px;
     overflow: visible;
+    position: relative;
 }
 
 #product-templates-grid .template-toggle-preview img {
-    width: auto !important;
-    height: auto !important;
-    max-width: 100% !important;
-    max-height: 100% !important;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100% !important;
+    height: 100% !important;
     object-fit: contain !important;
-    display: block !important;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+#product-templates-grid .template-preview-img {
+    width: 100% !important;
+    height: 100% !important;
+    object-fit: contain !important;
 }
 
 @media (min-width: 640px) {
