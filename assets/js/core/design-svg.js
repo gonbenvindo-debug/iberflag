@@ -52,6 +52,35 @@
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup.trim())}`;
     }
 
+    function normalizeSvgMarkupForPreview(svgMarkup, options = {}) {
+        const root = parseSvgMarkup(svgMarkup);
+        if (!root) {
+            return typeof svgMarkup === 'string' ? svgMarkup : '';
+        }
+
+        const viewBox = root.getAttribute('viewBox');
+        if (!viewBox) {
+            const width = Number.parseFloat(root.getAttribute('width') || '');
+            const height = Number.parseFloat(root.getAttribute('height') || '');
+            if (Number.isFinite(width) && Number.isFinite(height) && width > 0 && height > 0) {
+                root.setAttribute('viewBox', `0 0 ${width} ${height}`);
+            }
+        }
+
+        root.setAttribute('width', '100%');
+        root.setAttribute('height', '100%');
+        root.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        root.setAttribute('style', buildStyleString({
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            'background-color': options.backgroundColor || 'transparent'
+        }));
+
+        return new XMLSerializer().serializeToString(root);
+    }
+
     function inlineComputedStyles(sourceNode, targetNode) {
         if (!sourceNode || !targetNode || sourceNode.nodeType !== 1 || targetNode.nodeType !== 1) {
             return;
@@ -427,7 +456,6 @@
     function buildTemplateSvgFromElements(elements, options = {}) {
         const { width, height } = getCanvasSize(null, options);
         const svg = document.createElementNS(SVG_NS, 'svg');
-        svg.setAttribute('xmlns', SVG_NS);
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('width', String(width));
         svg.setAttribute('height', String(height));
@@ -455,7 +483,6 @@
 
         const { width, height } = getCanvasSize(editor, options);
         const svg = document.createElementNS(SVG_NS, 'svg');
-        svg.setAttribute('xmlns', SVG_NS);
         svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
         svg.setAttribute('width', String(width));
         svg.setAttribute('height', String(height));
@@ -991,8 +1018,9 @@
 
         if (!maskMarkup) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             if (previewSource) {
@@ -1011,8 +1039,9 @@
 
         if (!maskRoot || !previewHref) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             if (previewSource) {
@@ -1028,8 +1057,9 @@
         const maskNode = findTemplateOutlineElement(maskRoot, maskBox) || pickMaskNode(maskRoot);
         if (!maskNode) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const normalizedMarkup = normalizeSvgMarkupForPreview(previewMarkup, options);
+                cachePreviewMarkup(cacheKey, normalizedMarkup);
+                return normalizedMarkup;
             }
 
             const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
