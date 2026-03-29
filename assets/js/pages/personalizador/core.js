@@ -90,7 +90,7 @@ class DesignEditor {
 
         // Garantir que o layout está calculado antes de medir o stage
         requestAnimationFrame(() => this.syncCanvasViewport());
-    },
+    }
 
     showLoadingState() {
         const loading = document.createElement('div');
@@ -104,12 +104,12 @@ class DesignEditor {
         `;
         document.body.appendChild(loading);
         if (window.lucide) window.lucide.createIcons();
-    },
+    }
 
     hideLoadingState() {
         const loading = document.getElementById('editor-loading');
         if (loading) loading.remove();
-    },
+    }
 
     // ===== MOBILE UI =====
     setupMobileUI() {
