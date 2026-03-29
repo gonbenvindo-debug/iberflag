@@ -521,7 +521,7 @@ function renderTemplates(templates) {
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
             template.preview_url || template.thumbnail_url,
             currentProduct?.svg_template || null,
-            { backgroundColor: '#f8fafc' }
+            { backgroundColor: 'transparent' }
         );
         const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
         const previewAspectRatio = Math.max(
