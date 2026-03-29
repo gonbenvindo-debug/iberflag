@@ -857,21 +857,30 @@ if (productForm) {
 
 // ===== EDIT PRODUCT =====
 async function editProduct(id) {
+    console.log('[DEBUG] editProduct chamado com id:', id);
     try {
+        console.log('[DEBUG] Buscando produto no Supabase...');
         const { data, error } = await supabaseClient
             .from('produtos')
             .select('*')
             .eq('id', id)
             .single();
 
-        if (error) throw error;
+        if (error) {
+            console.error('[DEBUG] Erro Supabase:', error);
+            throw error;
+        }
+        console.log('[DEBUG] Produto encontrado:', data);
 
         currentProductId = id;
+        console.log('[DEBUG] currentProductId definido:', currentProductId);
 
         const modalTitle = document.getElementById('modal-title');
+        console.log('[DEBUG] modal-title elemento:', modalTitle);
         if (modalTitle) modalTitle.textContent = 'Editar Produto';
 
         const productNome = document.getElementById('product-nome');
+        console.log('[DEBUG] product-nome elemento:', productNome);
         if (productNome) productNome.value = data.nome || '';
 
         const productDescricao = document.getElementById('product-descricao');
@@ -902,20 +911,25 @@ async function editProduct(id) {
             resetSvgTemplateState();
         }
 
+        console.log('[DEBUG] Carregando catalogo de bases...');
         await loadBaseCatalog(true);
+        console.log('[DEBUG] Carregando associacoes de bases...');
         const baseAssignments = await loadProductBaseAssignments(id);
         renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
 
         // Carregar templates associados
+        console.log('[DEBUG] Carregando templates...');
         await loadTemplatesCatalog();
         currentProductTemplates = await loadProductTemplates(id);
         renderProductTemplatesAssignments();
         renderAvailableTemplatesSelect();
 
+        console.log('[DEBUG] Abrindo modal, productModal:', productModal);
         openModal(productModal);
+        console.log('[DEBUG] Modal aberto com sucesso');
 
     } catch (error) {
-        console.error('Erro ao carregar produto:', error);
+        console.error('[DEBUG] Erro ao carregar produto:', error);
         showToast('Erro ao carregar produto', 'error');
     }
 }
