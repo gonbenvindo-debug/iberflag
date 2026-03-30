@@ -89,7 +89,7 @@ Object.assign(DesignEditor.prototype, {
                 .order('ordem', { ascending: true });
 
             if (error) throw error;
-            this.availableBases = Array.isArray(data)  data : [];
+            this.availableBases = Array.isArray(data) ? data : [];
         } catch (error) {
             this.availableBases = [];
             console.warn('Falha ao carregar bases do produto:', error?.message || error);
@@ -126,9 +126,9 @@ Object.assign(DesignEditor.prototype, {
                 window.DesignSvgStore.importSvgIntoEditor(this, svgMarkup);
             } else {
                 const templateElements = Array.isArray(data.elementos)
-                     data.elementos
+                    ? data.elementos
                     : Array.isArray(data.elements)
-                         data.elements
+                        ? data.elements
                         : [];
 
                 if (templateElements.length > 0) {
@@ -150,7 +150,7 @@ Object.assign(DesignEditor.prototype, {
                 const allTemplates = Object.values(TEMPLATES_DATA).flat();
                 const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
                 const fallbackSvg = window.DesignSvgStore?.extractTemplateSvg(
-                    template?.elementos  template?.elements,
+                    template?.elementos || template?.elements,
                     {
                         width: this.baseCanvasSize?.width || 800,
                         height: this.baseCanvasSize?.height || 600
@@ -166,7 +166,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     resolveEditingCartIndex(cartItems = []) {
-        let targetIndex = this.editIndex !== null  Number.parseInt(this.editIndex, 10) : -1;
+        let targetIndex = this.editIndex !== null ? Number.parseInt(this.editIndex, 10) : -1;
 
         if (this.editDesignId) {
             const designMatchIndex = cartItems.findIndex((item) => String(item?.designId || item?.design_id || '') === String(this.editDesignId));
@@ -181,7 +181,7 @@ Object.assign(DesignEditor.prototype, {
     restoreSelectedBaseFromCart() {
         const cart = this.getCartData();
         const targetIndex = this.resolveEditingCartIndex(cart);
-        const item = targetIndex >= 0  cart[targetIndex] : null;
+        const item = targetIndex >= 0 ? cart[targetIndex] : null;
         const baseId = Number(item?.baseId || item?.base_id || 0);
 
         if (Number.isFinite(baseId) && baseId > 0) {
@@ -277,7 +277,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     setCartStepsCurrent(stepNumber) {
-        this.cartStepsCurrent = stepNumber === 2  2 : 1;
+        this.cartStepsCurrent = stepNumber === 2 ? 2 : 1;
 
         const step1 = document.getElementById('checkout-step-1');
         const step2 = document.getElementById('checkout-step-2');
@@ -381,10 +381,10 @@ Object.assign(DesignEditor.prototype, {
             const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId}/640/400`);
 
             return `
-                <button type="button" class="cart-base-card ${selected  'selected' : ''}" data-base-id="${baseId}">
+                <button type="button" class="cart-base-card ${selected ? 'selected' : ''}" data-base-id="${baseId}">
                     <img src="${imageUrl}" alt="${baseName}">
                     <p class="text-sm font-semibold text-slate-900">${baseName}</p>
-                    <p class="text-xs text-slate-500 mt-1">${extra > 0  `+${extra.toFixed(2)}â‚¬` : 'IncluÃ­da'}</p>
+                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluída'}</p>
                 </button>
             `;
         }).join('');
@@ -532,7 +532,7 @@ Object.assign(DesignEditor.prototype, {
         const normalizeTemplateCategory = (value) => {
             const allowed = new Set(['promocoes', 'eventos', 'corporativo', 'festas', 'varejo']);
             const candidate = String(value || '').trim().toLowerCase();
-            return allowed.has(candidate)  candidate : 'promocoes';
+            return allowed.has(candidate) ? candidate : 'promocoes';
         };
 
         const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };

@@ -10,15 +10,15 @@ Object.assign(DesignEditor.prototype, {
 
         const toFinite = (value, fallback = 0) => {
             const numeric = Number(value);
-            return Number.isFinite(numeric)  numeric : fallback;
+            return Number.isFinite(numeric) ? numeric : fallback;
         };
 
         if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
             const currentX = pointSet
-                 toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('x') || '0'))
+                ? toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('x') || '0'))
                 : toFinite(parseFloat(elementData.element.getAttribute('x') || '0') + deltaX, parseFloat(elementData.element.getAttribute('x') || '0'));
             const currentY = pointSet
-                 toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('y') || '0'))
+                ? toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('y') || '0'))
                 : toFinite(parseFloat(elementData.element.getAttribute('y') || '0') + deltaY, parseFloat(elementData.element.getAttribute('y') || '0'));
             elementData.element.setAttribute('x', currentX);
             elementData.element.setAttribute('y', currentY);
@@ -27,10 +27,10 @@ Object.assign(DesignEditor.prototype, {
 
         if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
             const currentCx = pointSet
-                 toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('cx') || '0'))
+                ? toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('cx') || '0'))
                 : toFinite(parseFloat(elementData.element.getAttribute('cx') || '0') + deltaX, parseFloat(elementData.element.getAttribute('cx') || '0'));
             const currentCy = pointSet
-                 toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('cy') || '0'))
+                ? toFinite(pointSet.y, parseFloat(elementData.element.getAttribute('cy') || '0'))
                 : toFinite(parseFloat(elementData.element.getAttribute('cy') || '0') + deltaY, parseFloat(elementData.element.getAttribute('cy') || '0'));
             elementData.element.setAttribute('cx', currentCx);
             elementData.element.setAttribute('cy', currentCy);
@@ -45,7 +45,7 @@ Object.assign(DesignEditor.prototype, {
 
             if (sourcePoints.length >= 3) {
                 const translatedPoints = pointSet
-                     sourcePoints
+                    ? sourcePoints
                     : sourcePoints.map(([x, y]) => [x + deltaX, y + deltaY]);
                 elementData.element.setAttribute(
                     'points',
@@ -325,7 +325,7 @@ Object.assign(DesignEditor.prototype, {
         // Snap horizontal
         guides.horizontal.forEach(guide => {
             const diff = Math.abs(position.y - guide.value);
-            if (diff < threshold && diff < (snaps.y?.diff === undefined  Infinity : snaps.y.diff)) {
+            if (diff < threshold && diff < (snaps.y?.diff === undefined ? Infinity : snaps.y.diff)) {
                 snaps.y = { value: guide.value, diff, type: guide.type };
             }
         });
@@ -333,7 +333,7 @@ Object.assign(DesignEditor.prototype, {
         // Snap vertical
         guides.vertical.forEach(guide => {
             const diff = Math.abs(position.x - guide.value);
-            if (diff < threshold && diff < (snaps.x?.diff === undefined  Infinity : snaps.x.diff)) {
+            if (diff < threshold && diff < (snaps.x?.diff === undefined ? Infinity : snaps.x.diff)) {
                 snaps.x = { value: guide.value, diff, type: guide.type };
             }
         });
@@ -371,7 +371,7 @@ Object.assign(DesignEditor.prototype, {
             line.setAttribute('x2', String(x2v));
             line.setAttribute('y2', String(y2v));
             line.setAttribute('stroke', colorFor(type));
-            line.setAttribute('stroke-width', type?.includes('canvas')  '1.5' : '1');
+            line.setAttribute('stroke-width', type?.includes('canvas') ? '1.5' : '1');
             line.setAttribute('stroke-dasharray', dashFor(type));
             line.setAttribute('pointer-events', 'none');
             line.setAttribute('class', 'guide-line');

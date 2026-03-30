@@ -59,7 +59,7 @@ Object.assign(DesignEditor.prototype, {
     toggleTextBold() {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             const current = this.selectedElement.element.getAttribute('font-weight') || 'normal';
-            const newWeight = current === 'bold'  'normal' : 'bold';
+            const newWeight = current === 'bold' ? 'normal' : 'bold';
             this.selectedElement.element.setAttribute('font-weight', newWeight);
             this.selectedElement.bold = newWeight === 'bold';
             this.saveHistory();
@@ -69,7 +69,7 @@ Object.assign(DesignEditor.prototype, {
     toggleTextItalic() {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             const current = this.selectedElement.element.getAttribute('font-style') || 'normal';
-            const newStyle = current === 'italic'  'normal' : 'italic';
+            const newStyle = current === 'italic' ? 'normal' : 'italic';
             this.selectedElement.element.setAttribute('font-style', newStyle);
             this.selectedElement.italic = newStyle === 'italic';
             this.saveHistory();
@@ -219,8 +219,8 @@ Object.assign(DesignEditor.prototype, {
         const targetCenterX = bounds.x + (bounds.width / 2);
         const targetCenterY = bounds.y + (bounds.height / 2);
 
-        const deltaX = axis === 'horizontal'  (targetCenterX - currentCenterX) : 0;
-        const deltaY = axis === 'vertical'  (targetCenterY - currentCenterY) : 0;
+        const deltaX = axis === 'horizontal' ? (targetCenterX - currentCenterX) : 0;
+        const deltaY = axis === 'vertical' ? (targetCenterY - currentCenterY) : 0;
 
         this.moveElementBy(this.selectedElement, deltaX, deltaY);
 
@@ -239,7 +239,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     handleKeyDown(e) {
-        const targetTag = (e.target && e.target.tagName)  e.target.tagName.toLowerCase() : '';
+        const targetTag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
         const isTypingContext = ['input', 'textarea', 'select'].includes(targetTag);
 
         // ===== CROP MODE HANDLING =====
@@ -287,7 +287,7 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const nudge = e.shiftKey  10 : 2;
+        const nudge = e.shiftKey ? 10 : 2;
         if (e.key === 'ArrowLeft') {
             e.preventDefault();
             this.nudgeSelected(-nudge, 0);
@@ -316,23 +316,23 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const selectedId = this.selectedElement  String(this.selectedElement.id) : null;
+        const selectedId = this.selectedElement ? String(this.selectedElement.id) : null;
         
         layersList.innerHTML = this.elements.map((el, index) => `
-            <div class="layer-item p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${selectedId === String(el.id)  'bg-blue-50 border-blue-600' : ''}"
+            <div class="layer-item p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${selectedId === String(el.id) ? 'bg-blue-50 border-blue-600' : ''}"
                  data-layer-index="${index}"
                  data-layer-id="${String(el.id)}"
                  draggable="true">
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
-                        <i data-lucide="${el.type === 'text'  'type' : el.type === 'image'  (el.imageKind === 'qr'  'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
-                        <span class="text-sm font-semibold">${el.type === 'text'  (el.content || 'Texto').substring(0, 20) : el.type === 'image'  (el.name || (el.imageKind === 'qr'  'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
+                        <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
+                        <span class="text-sm font-semibold">${el.type === 'text' ? (el.content || 'Texto').substring(0, 20) : el.type === 'image' ? (el.name || (el.imageKind === 'qr' ? 'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
                     </div>
                     <div class="flex gap-1">
-                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === 0  'disabled' : ''}>
+                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
                             <i data-lucide="arrow-up" class="w-3 h-3"></i>
                         </button>
-                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === this.elements.length - 1  'disabled' : ''}>
+                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === this.elements.length - 1 ? 'disabled' : ''}>
                             <i data-lucide="arrow-down" class="w-3 h-3"></i>
                         </button>
                     </div>
@@ -376,7 +376,7 @@ Object.assign(DesignEditor.prototype, {
 
                 const targetIndex = Number(item.dataset.layerIndex);
                 const fromIndex = Number.isInteger(this.layerDragIndex)
-                     this.layerDragIndex
+                    ? this.layerDragIndex
                     : Number(event.dataTransfer?.getData('text/plain'));
 
                 this.layerDragIndex = null;
@@ -402,7 +402,7 @@ Object.assign(DesignEditor.prototype, {
                 if (!Number.isInteger(index)) return;
 
                 const action = button.dataset.layerAction;
-                this.moveLayer(index, action === 'up'  -1 : 1);
+                this.moveLayer(index, action === 'up' ? -1 : 1);
             });
         });
         
@@ -480,7 +480,7 @@ Object.assign(DesignEditor.prototype, {
 
         if (needsResizeRecalc) {
             const isMobile = window.innerWidth <= 1023;
-            const fillFactor = isMobile  1.0 : 0.9;
+            const fillFactor = isMobile ? 1.0 : 0.9;
             const targetWidth = stageWidth * fillFactor;
             const targetHeight = stageHeight * fillFactor;
             const sourceWidth = Number(this.baseCanvasSize?.width) || 800;
@@ -535,7 +535,7 @@ Object.assign(DesignEditor.prototype, {
             .filter(Boolean);
 
         return JSON.stringify({
-            selectedElementId: this.selectedElement  String(this.selectedElement.id) : null,
+            selectedElementId: this.selectedElement ? String(this.selectedElement.id) : null,
             elements: serializableElements
         });
     },
@@ -598,10 +598,10 @@ Object.assign(DesignEditor.prototype, {
         const applyButtonState = (button, isEnabled, label) => {
             if (!button) return;
             button.disabled = !isEnabled;
-            button.style.opacity = isEnabled  '1' : '0.38';
-            button.style.cursor = isEnabled  'pointer' : 'not-allowed';
-            button.style.pointerEvents = isEnabled  'auto' : 'none';
-            button.title = isEnabled  label : `${label} indisponivel`;
+            button.style.opacity = isEnabled ? '1' : '0.38';
+            button.style.cursor = isEnabled ? 'pointer' : 'not-allowed';
+            button.style.pointerEvents = isEnabled ? 'auto' : 'none';
+            button.title = isEnabled ? label : `${label} indisponivel`;
         };
 
         applyButtonState(undoBtn, canUndo, 'Desfazer');
@@ -666,7 +666,7 @@ Object.assign(DesignEditor.prototype, {
         try {
             this.isRestoringHistory = true;
             const state = JSON.parse(stateStr);
-            const selectedElementId = state.selectedElementId  String(state.selectedElementId) : null;
+            const selectedElementId = state.selectedElementId ? String(state.selectedElementId) : null;
 
             this.elements.forEach((el) => el.element.remove());
             this.elements = [];
@@ -735,7 +735,7 @@ Object.assign(DesignEditor.prototype, {
         const compactDesign = JSON.stringify(payload);
 
         const candidates = svgDesign && svgDesign.length <= 180000
-             [svgDesign, compactDesign]
+            ? [svgDesign, compactDesign]
             : [compactDesign, svgDesign];
 
         let stored = false;

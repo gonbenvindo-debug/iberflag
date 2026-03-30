@@ -23,7 +23,7 @@ Object.assign(DesignEditor.prototype, {
 
         // Obter cropData atual da imagem para mostrar no modal
         const existingCropData = imgElement.dataset.cropData
-             JSON.parse(imgElement.dataset.cropData)
+            ? JSON.parse(imgElement.dataset.cropData)
             : null;
 
         if (!srcToCrop) {
@@ -205,7 +205,7 @@ Object.assign(DesignEditor.prototype, {
     createExportMaskShape() {
         const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
         const maskShape = shapeOutline
-             shapeOutline.cloneNode(true)
+            ? shapeOutline.cloneNode(true)
             : document.createElementNS('http://www.w3.org/2000/svg', 'rect');
 
         if (!shapeOutline) {
@@ -278,7 +278,7 @@ Object.assign(DesignEditor.prototype, {
         const cart = this.getCartData();
         const targetIndex = this.resolveEditingCartIndex(cart);
 
-        const existingCartItem = targetIndex >= 0  cart[targetIndex] : null;
+        const existingCartItem = targetIndex >= 0 ? cart[targetIndex] : null;
         const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         const selectedBase = this.getSelectedBaseOption();
         const selectedBaseExtra = Number(selectedBase?.preco_extra_aplicado || 0);
@@ -289,15 +289,15 @@ Object.assign(DesignEditor.prototype, {
             nome: this.currentProduct.nome,
             preco: Number(finalPrice.toFixed(2)),
             imagem: this.currentProduct.imagem,
-            quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity  1, 10) || 1),
+            quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity ?? 1, 10) || 1),
             customized: true,
             designId,
             design: design,
             design_svg: design,
             designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
-            baseId: selectedBase  Number(selectedBase.base_id) : null,
-            baseNome: selectedBase  String(selectedBase.base_nome || '') : null,
-            baseImagem: selectedBase  String(selectedBase.base_imagem || '') : null,
+            baseId: selectedBase ? Number(selectedBase.base_id) : null,
+            baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
+            baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
 

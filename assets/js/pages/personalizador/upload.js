@@ -103,7 +103,7 @@ Object.assign(DesignEditor.prototype, {
             const reader = new FileReader();
             reader.onload = async (event) => {
                 const src = event.target.result;
-                const fallbackName = (file.name  file.name.replace(/\.[^.]+$/, '') : '').trim();
+                const fallbackName = file.name ? file.name.replace(/\.[^.]+$/, '') : '';
                 const imageName = fallbackName || 'Imagem';
                 try {
                     const cropped = await this.openUploadCropModal(src);
@@ -230,7 +230,7 @@ Object.assign(DesignEditor.prototype, {
                 // Desktop: 80% para todos os lados
                 // Mobile: 100% horizontal, 80% vertical
                 const isTouch = event.pointerSource === 'touch';
-                const maxOffsetX = imageRect.width * (isTouch  1.0 : 0.8);
+                const maxOffsetX = imageRect.width * (isTouch ? 1.0 : 0.8);
                 const maxOffsetY = imageRect.height * 0.8;
                 const minOffsetX = -maxOffsetX;
                 const minOffsetY = -maxOffsetY;
@@ -343,15 +343,15 @@ Object.assign(DesignEditor.prototype, {
             const prevRect = state.imageRect;
             const minScale = 1;
             const maxScale = 6;
-            const zoomFactor = event.deltaY < 0  1.12 : (1 / 1.12);
+            const zoomFactor = event.deltaY < 0 ? 1.12 : (1 / 1.12);
             const nextScale = Math.min(maxScale, Math.max(minScale, state.viewport.scale * zoomFactor));
 
             if (nextScale === state.viewport.scale) {
                 return;
             }
 
-            const relX = prevRect.width  (pointerX - prevRect.x) / prevRect.width : 0.5;
-            const relY = prevRect.height  (pointerY - prevRect.y) / prevRect.height : 0.5;
+            const relX = prevRect.width ? (pointerX - prevRect.x) / prevRect.width : 0.5;
+            const relY = prevRect.height ? (pointerY - prevRect.y) / prevRect.height : 0.5;
 
             state.viewport.scale = nextScale;
             this.layoutUploadCropModal(false);
@@ -431,8 +431,8 @@ Object.assign(DesignEditor.prototype, {
 
                     if (newScale !== state.viewport.scale) {
                         const prevRect = state.imageRect;
-                        const relX = prevRect.width  (pinchCenter.x - prevRect.x) / prevRect.width : 0.5;
-                        const relY = prevRect.height  (pinchCenter.y - prevRect.y) / prevRect.height : 0.5;
+                        const relX = prevRect.width ? (pinchCenter.x - prevRect.x) / prevRect.width : 0.5;
+                        const relY = prevRect.height ? (pinchCenter.y - prevRect.y) / prevRect.height : 0.5;
 
                         state.viewport.scale = newScale;
                         this.layoutUploadCropModal(false);
