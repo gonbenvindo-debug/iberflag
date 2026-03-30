@@ -423,13 +423,13 @@ Object.assign(DesignEditor.prototype, {
         };
         
         // Store current element position
-        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
             this.dragStart.elementX = parseFloat(elementData.element.getAttribute('x') || 0);
             this.dragStart.elementY = parseFloat(elementData.element.getAttribute('y') || 0);
         } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
             this.dragStart.elementX = parseFloat(elementData.element.getAttribute('cx') || 0);
             this.dragStart.elementY = parseFloat(elementData.element.getAttribute('cy') || 0);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+        } else if (elementData.type === 'shape' && this.isPolygonShapeType?.(elementData.shapeType)) {
             this.dragStart.points = (elementData.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)
@@ -652,7 +652,7 @@ Object.assign(DesignEditor.prototype, {
                 anchorLocalPoint.x,
                 anchorLocalPoint.y
             ),
-            points: this.selectedElement.shapeType === 'triangle'
+            points: this.isPolygonShapeType?.(this.selectedElement.shapeType)
                 ? (this.selectedElement.element.getAttribute('points') || '')
                     .trim()
                     .split(/\s+/)
@@ -893,7 +893,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('r', constrainedRadius);
             this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
             this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
-        } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'triangle') {
+        } else if (this.selectedElement.type === 'shape' && this.isPolygonShapeType?.(this.selectedElement.shapeType)) {
             const currentPoints = this.dragStart.points || (this.selectedElement.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)

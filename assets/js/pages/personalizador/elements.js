@@ -3,6 +3,16 @@
 // ============================================================
 Object.assign(DesignEditor.prototype, {
 
+    isRectLikeShapeType(shapeType) {
+        const normalized = String(shapeType || '').trim().toLowerCase();
+        return ['rectangle', 'rounded', 'pill', 'line'].includes(normalized);
+    },
+
+    isPolygonShapeType(shapeType) {
+        const normalized = String(shapeType || '').trim().toLowerCase();
+        return ['triangle', 'diamond', 'star', 'hexagon', 'arrow'].includes(normalized);
+    },
+
     buildElementDataFromNode(node, customId = null) {
         const tagName = node.tagName.toLowerCase();
         let type = 'shape';
@@ -10,9 +20,11 @@ Object.assign(DesignEditor.prototype, {
         if (tagName === 'image') type = 'image';
 
         let shapeType = null;
-        if (tagName === 'rect') shapeType = 'rectangle';
-        if (tagName === 'circle') shapeType = 'circle';
-        if (tagName === 'polygon') shapeType = 'triangle';
+        if (tagName === 'rect') shapeType = node.dataset.shapeType || 'rectangle';
+        if (tagName === 'circle') shapeType = node.dataset.shapeType || 'circle';
+        if (tagName === 'polygon') shapeType = node.dataset.shapeType || 'triangle';
+        if (tagName === 'line') shapeType = node.dataset.shapeType || 'line';
+        if (tagName === 'path') shapeType = node.dataset.shapeType || 'path';
 
         const data = {
             id: String(customId ?? node.dataset.elementId ?? (Date.now() + Math.random())),

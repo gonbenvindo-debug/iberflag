@@ -13,7 +13,7 @@ Object.assign(DesignEditor.prototype, {
             return Number.isFinite(numeric) ? numeric : fallback;
         };
 
-        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
             const currentX = pointSet
                 ? toFinite(pointSet.x, parseFloat(elementData.element.getAttribute('x') || '0'))
                 : toFinite(parseFloat(elementData.element.getAttribute('x') || '0') + deltaX, parseFloat(elementData.element.getAttribute('x') || '0'));
@@ -37,7 +37,7 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+        if (elementData.type === 'shape' && this.isPolygonShapeType?.(elementData.shapeType)) {
             const sourcePoints = pointSet || (elementData.element.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)
@@ -122,7 +122,7 @@ Object.assign(DesignEditor.prototype, {
             state.x = elementData.element.getAttribute('x');
             state.y = elementData.element.getAttribute('y');
             state.fontSize = elementData.element.getAttribute('font-size');
-        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
             state.x = elementData.element.getAttribute('x');
             state.y = elementData.element.getAttribute('y');
             state.width = elementData.element.getAttribute('width');
@@ -131,7 +131,7 @@ Object.assign(DesignEditor.prototype, {
             state.cx = elementData.element.getAttribute('cx');
             state.cy = elementData.element.getAttribute('cy');
             state.r = elementData.element.getAttribute('r');
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+        } else if (elementData.type === 'shape' && this.isPolygonShapeType?.(elementData.shapeType)) {
             state.points = elementData.element.getAttribute('points');
         }
 
@@ -145,7 +145,7 @@ Object.assign(DesignEditor.prototype, {
             elementData.element.setAttribute('x', state.x);
             elementData.element.setAttribute('y', state.y);
             elementData.element.setAttribute('font-size', state.fontSize);
-        } else if (elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
             elementData.element.setAttribute('x', state.x);
             elementData.element.setAttribute('y', state.y);
             elementData.element.setAttribute('width', state.width);
@@ -154,7 +154,7 @@ Object.assign(DesignEditor.prototype, {
             elementData.element.setAttribute('cx', state.cx);
             elementData.element.setAttribute('cy', state.cy);
             elementData.element.setAttribute('r', state.r);
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+        } else if (elementData.type === 'shape' && this.isPolygonShapeType?.(elementData.shapeType)) {
             elementData.element.setAttribute('points', state.points);
         }
 
@@ -195,7 +195,7 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && elementData.shapeType === 'rectangle')) {
+        if (elementData.type === 'text' || elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
             this.offsetElementGeometry(elementData, 0, 0, {
                 x: (this.dragStart.elementX || 0) + deltaX,
                 y: (this.dragStart.elementY || 0) + deltaY
@@ -205,7 +205,7 @@ Object.assign(DesignEditor.prototype, {
                 x: (this.dragStart.elementX || 0) + deltaX,
                 y: (this.dragStart.elementY || 0) + deltaY
             });
-        } else if (elementData.type === 'shape' && elementData.shapeType === 'triangle') {
+        } else if (elementData.type === 'shape' && this.isPolygonShapeType?.(elementData.shapeType)) {
             const startPoints = this.dragStart.points || [];
             if (startPoints.length >= 3) {
                 this.offsetElementGeometry(

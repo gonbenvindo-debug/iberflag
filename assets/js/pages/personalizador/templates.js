@@ -189,13 +189,25 @@ Object.assign(DesignEditor.prototype, {
 
         // Add shapes
         shapes.forEach(shape => {
-            if (shape.shapeType === 'rectangle') {
+            if (this.isRectLikeShapeType?.(shape.shapeType) || shape.shapeType === 'rectangle') {
                 svgContent += `<rect x="${(shape.x / 800) * 100}%" y="${(shape.y / 600) * 100}%" width="${(shape.width / 800) * 100}%" height="${(shape.height / 600) * 100}%" fill="${shape.fill}" rx="2" />`;
             } else if (shape.shapeType === 'circle') {
                 const r = Math.min(shape.width, shape.height) / 2;
                 const cx = shape.x + r;
                 const cy = shape.y + r;
                 svgContent += `<circle cx="${(cx / 800) * 100}%" cy="${(cy / 600) * 100}%" r="${(r / 800) * 100}%" fill="${shape.fill}" />`;
+            } else if (this.isPolygonShapeType?.(shape.shapeType)) {
+                const cx = shape.x + (shape.width / 2);
+                const cy = shape.y + (shape.height / 2);
+                const size = Math.max(shape.width, shape.height);
+                const points = this.buildShapePoints?.(shape.shapeType, { x: cx, y: cy }, size) || '';
+                if (points) {
+                    const scaledPoints = points.split(' ').map((pair) => {
+                        const [x, y] = pair.split(',').map(Number);
+                        return `${(x / 800) * 100}%,${(y / 600) * 100}%`;
+                    }).join(' ');
+                    svgContent += `<polygon points="${scaledPoints}" fill="${shape.fill}" />`;
+                }
             }
         });
 
@@ -351,42 +363,18 @@ Object.assign(DesignEditor.prototype, {
     },
 
     addShapeFromTemplate(data) {
-        let shapeElement;
         const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-
-        if (data.shapeType === 'rectangle') {
-            shapeElement = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            shapeElement.setAttribute('x', data.x);
-            shapeElement.setAttribute('y', data.y);
-            shapeElement.setAttribute('width', data.width);
-            shapeElement.setAttribute('height', data.height);
-        } else if (data.shapeType === 'circle') {
-            shapeElement = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            const r = Math.min(data.width, data.height) / 2;
-            shapeElement.setAttribute('cx', data.x + r);
-            shapeElement.setAttribute('cy', data.y + r);
-            shapeElement.setAttribute('r', r);
-        } else if (data.shapeType === 'triangle') {
-            shapeElement = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            const cx = data.x + data.width / 2;
-            const cy = data.y + data.height / 2;
-            const w = data.width / 2;
-            const h = data.height / 2;
-            shapeElement.setAttribute('points', `${cx},${cy - h} ${cx - w},${cy + h} ${cx + w},${cy + h}`);
-        }
+        const shapeElement = this.createShapeElementFromDescriptor({
+            ...data,
+            x: data.x,
+            y: data.y,
+            width: data.width,
+            height: data.height
+        });
 
         if (shapeElement) {
             shapeElement.setAttribute('id', id);
-            shapeElement.setAttribute('fill', data.fill || '#3b82f6');
-            shapeElement.setAttribute('stroke', data.stroke || 'none');
-            shapeElement.setAttribute('stroke-width', data.strokeWidth || 0);
             shapeElement.setAttribute('data-element-id', id);
-
-            if (data.rotation) {
-                const cx = data.x + data.width / 2;
-                const cy = data.y + data.height / 2;
-                shapeElement.setAttribute('transform', `rotate(${data.rotation} ${cx} ${cy})`);
-            }
 
             this.canvas.appendChild(shapeElement);
 

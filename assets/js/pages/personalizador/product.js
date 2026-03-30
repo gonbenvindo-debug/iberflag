@@ -307,57 +307,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     generateCartPreviewSVG() {
-        // Crop viewBox to print area + uniform padding on all sides
-        const pb = this.printAreaBounds;
-        const pad = Math.round(Math.min(pb.width, pb.height) * 0.05); // 5% of shortest side
-        const cropX = Math.round(pb.x) - pad;
-        const cropY = Math.round(pb.y) - pad;
-        const cropW = Math.max(1, Math.round(pb.width) + pad * 2);
-        const cropH = Math.max(1, Math.round(pb.height) + pad * 2);
-
-        const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        exportSvg.setAttribute('viewBox', `${cropX} ${cropY} ${cropW} ${cropH}`);
-        exportSvg.setAttribute('width', String(cropW));
-        exportSvg.setAttribute('height', String(cropH));
-        exportSvg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-
-        // --- defs: clip path that follows the print area shape exactly ---
-        const svgDefs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        const designClip = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        designClip.setAttribute('id', 'cart-preview-clip');
-        designClip.appendChild(this.createExportMaskShape());
-        svgDefs.appendChild(designClip);
-        exportSvg.appendChild(svgDefs);
-
-        // --- design elements clipped to print area, transparent outside ---
-        const clippedGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        clippedGroup.setAttribute('clip-path', 'url(#cart-preview-clip)');
-        Array.from(this.canvas.children)
-            .filter(node => {
-                const id = node.getAttribute('id') || '';
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline'
-                    && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
-            })
-            .forEach(node => clippedGroup.appendChild(node.cloneNode(true)));
-        exportSvg.appendChild(clippedGroup);
-
-        // --- subtle border along the print area shape ---
-        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
-        if (shapeOutline) {
-            const border = shapeOutline.cloneNode(true);
-            border.removeAttribute('id');
-            border.setAttribute('fill', 'none');
-            border.setAttribute('stroke', 'rgba(0,0,0,0.15)');
-            border.setAttribute('stroke-width', '1.5');
-            border.removeAttribute('stroke-dasharray');
-            border.removeAttribute('vector-effect');
-            border.setAttribute('opacity', '1');
-            border.setAttribute('pointer-events', 'none');
-            exportSvg.appendChild(border);
-        }
-
-        return new XMLSerializer().serializeToString(exportSvg);
+        return this.getDesignSVG();
     },
 
     renderCartStepsBaseOptions() {
@@ -384,7 +334,7 @@ Object.assign(DesignEditor.prototype, {
                 <button type="button" class="cart-base-card ${selected ? 'selected' : ''}" data-base-id="${baseId}">
                     <img src="${imageUrl}" alt="${baseName}">
                     <p class="text-sm font-semibold text-slate-900">${baseName}</p>
-                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluída'}</p>
+                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}â‚¬` : 'IncluÃ­da'}</p>
                 </button>
             `;
         }).join('');
@@ -418,7 +368,7 @@ Object.assign(DesignEditor.prototype, {
 
         this.ensureSelectedBase();
         this.cartStepsDesignSnapshot = this.getDesignSVG();
-        const previewSvg = this.generateCartPreviewSVG();
+        const previewSvg = this.cartStepsDesignSnapshot || this.generateCartPreviewSVG();
         previewImg.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
         this.cartStepsDesignPreview = previewImg.src;
 

@@ -179,7 +179,7 @@ Object.assign(DesignEditor.prototype, {
             const y = parseFloat(clone.getAttribute('y') || '0') + offset;
             clone.setAttribute('x', x);
             clone.setAttribute('y', y);
-        } else if (clonedData.type === 'image' || (clonedData.type === 'shape' && clonedData.shapeType === 'rectangle')) {
+        } else if (clonedData.type === 'image' || (clonedData.type === 'shape' && this.isRectLikeShapeType?.(clonedData.shapeType))) {
             const x = parseFloat(clone.getAttribute('x') || '0') + offset;
             const y = parseFloat(clone.getAttribute('y') || '0') + offset;
             clone.setAttribute('x', x);
@@ -189,7 +189,7 @@ Object.assign(DesignEditor.prototype, {
             const cy = parseFloat(clone.getAttribute('cy') || '0') + offset;
             clone.setAttribute('cx', cx);
             clone.setAttribute('cy', cy);
-        } else if (clonedData.type === 'shape' && clonedData.shapeType === 'triangle') {
+        } else if (clonedData.type === 'shape' && this.isPolygonShapeType?.(clonedData.shapeType)) {
             const points = (clone.getAttribute('points') || '')
                 .trim()
                 .split(/\s+/)

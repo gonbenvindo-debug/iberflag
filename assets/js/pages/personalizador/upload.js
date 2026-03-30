@@ -3,6 +3,108 @@
 // ============================================================
 Object.assign(DesignEditor.prototype, {
 
+    buildShapePoints(shapeType, center, size) {
+        const normalized = String(shapeType || 'triangle').trim().toLowerCase();
+        const cx = Number(center?.x) || 0;
+        const cy = Number(center?.y) || 0;
+        const half = Math.max(1, Number(size) || 120) / 2;
+
+        if (normalized === 'triangle') {
+            return `${cx},${cy - half} ${cx + half},${cy + (half * 0.8)} ${cx - half},${cy + (half * 0.8)}`;
+        }
+
+        if (normalized === 'diamond') {
+            return `${cx},${cy - half} ${cx + half},${cy} ${cx},${cy + half} ${cx - half},${cy}`;
+        }
+
+        if (normalized === 'hexagon') {
+            const xInset = half * 0.55;
+            return `${cx - xInset},${cy - half} ${cx + xInset},${cy - half} ${cx + half},${cy} ${cx + xInset},${cy + half} ${cx - xInset},${cy + half} ${cx - half},${cy}`;
+        }
+
+        if (normalized === 'arrow') {
+            const shaft = half * 0.34;
+            return `${cx - half},${cy - shaft} ${cx + shaft},${cy - shaft} ${cx + shaft},${cy - half} ${cx + half},${cy} ${cx + shaft},${cy + half} ${cx + shaft},${cy + shaft} ${cx - half},${cy + shaft}`;
+        }
+
+        if (normalized === 'star') {
+            const outer = half;
+            const inner = half * 0.45;
+            const points = [];
+            for (let i = 0; i < 10; i += 1) {
+                const angle = (-90 + (i * 36)) * (Math.PI / 180);
+                const radius = i % 2 === 0 ? outer : inner;
+                const x = cx + Math.cos(angle) * radius;
+                const y = cy + Math.sin(angle) * radius;
+                points.push(`${x},${y}`);
+            }
+            return points.join(' ');
+        }
+
+        return `${cx},${cy - half} ${cx + half},${cy + half} ${cx - half},${cy + half}`;
+    },
+
+    createShapeElementFromDescriptor(data = {}) {
+        const normalizedShapeType = String(data.shapeType || 'rectangle').trim().toLowerCase();
+        const fill = data.fill || '#3b82f6';
+        const stroke = data.stroke || 'none';
+        const strokeWidth = Number(data.strokeWidth || 0);
+        const center = {
+            x: Number(data.x ?? 0) + (Number(data.width ?? 0) / 2),
+            y: Number(data.y ?? 0) + (Number(data.height ?? 0) / 2)
+        };
+        const baseSize = Math.max(48, Math.min(180, Number(data.size || Math.max(Number(data.width || 0), Number(data.height || 0)) || 120)));
+        let shape;
+
+        if (normalizedShapeType === 'circle') {
+            shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+            const radius = Number.isFinite(Number(data.r))
+                ? Math.max(20, Number(data.r))
+                : Math.max(24, baseSize / 2);
+            shape.setAttribute('cx', String(Number(data.cx ?? center.x) || center.x));
+            shape.setAttribute('cy', String(Number(data.cy ?? center.y) || center.y));
+            shape.setAttribute('r', String(radius));
+        } else if (this.isPolygonShapeType?.(normalizedShapeType)) {
+            shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+            const points = Array.isArray(data.points) && data.points.length > 0
+                ? data.points.map(([x, y]) => `${x},${y}`).join(' ')
+                : this.buildShapePoints(normalizedShapeType, center, baseSize);
+            shape.setAttribute('points', points);
+        } else {
+            shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            const width = Math.max(20, Number(data.width) || (normalizedShapeType === 'line' ? baseSize * 1.7 : normalizedShapeType === 'pill' ? baseSize * 1.5 : baseSize * 1.25));
+            const height = Math.max(10, Number(data.height) || (normalizedShapeType === 'line' ? Math.max(8, baseSize * 0.13) : normalizedShapeType === 'pill' ? baseSize * 0.58 : baseSize * 0.84));
+            shape.setAttribute('x', String(Number(data.x ?? (center.x - (width / 2))) || 0));
+            shape.setAttribute('y', String(Number(data.y ?? (center.y - (height / 2))) || 0));
+            shape.setAttribute('width', String(width));
+            shape.setAttribute('height', String(height));
+            if (normalizedShapeType === 'pill' || normalizedShapeType === 'line' || normalizedShapeType === 'rounded') {
+                const rx = normalizedShapeType === 'line' ? Math.max(2, height / 2) : Math.max(8, Math.min(width, height) / 4);
+                shape.setAttribute('rx', String(rx));
+                shape.setAttribute('ry', String(rx));
+            }
+        }
+
+        shape.setAttribute('fill', fill);
+        shape.setAttribute('stroke', stroke);
+        shape.setAttribute('stroke-width', String(strokeWidth));
+        shape.setAttribute('data-editable', 'true');
+        shape.dataset.shapeType = normalizedShapeType;
+        shape.style.cursor = 'move';
+
+        if (Number(data.rotation)) {
+            const rotateX = normalizedShapeType === 'circle'
+                ? (Number(data.cx ?? center.x) || center.x)
+                : center.x;
+            const rotateY = normalizedShapeType === 'circle'
+                ? (Number(data.cy ?? center.y) || center.y)
+                : center.y;
+            shape.setAttribute('transform', `rotate(${Number(data.rotation)} ${rotateX} ${rotateY})`);
+        }
+
+        return shape;
+    },
+
     focusPropertiesPanel() {
         const panel = document.getElementById('properties-panel');
         if (!panel) return;
@@ -851,35 +953,16 @@ Object.assign(DesignEditor.prototype, {
         const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
         const baseSize = Math.max(48, Math.min(180, scale.shortSide * 0.28));
-        let shape;
-
-        if (shapeType === 'rectangle') {
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            const rectWidth = baseSize * 1.25;
-            const rectHeight = baseSize * 0.84;
-            shape.setAttribute('x', String(center.x - (rectWidth / 2)));
-            shape.setAttribute('y', String(center.y - (rectHeight / 2)));
-            shape.setAttribute('width', String(rectWidth));
-            shape.setAttribute('height', String(rectHeight));
-        } else if (shapeType === 'circle') {
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-            shape.setAttribute('cx', String(center.x));
-            shape.setAttribute('cy', String(center.y));
-            shape.setAttribute('r', String(baseSize / 2));
-        } else if (shapeType === 'triangle') {
-            shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
-            const half = baseSize / 2;
-            const p1 = `${center.x},${center.y - half}`;
-            const p2 = `${center.x + half},${center.y + (half * 0.75)}`;
-            const p3 = `${center.x - half},${center.y + (half * 0.75)}`;
-            shape.setAttribute('points', `${p1} ${p2} ${p3}`);
-        }
-
-        shape.setAttribute('fill', '#3b82f6');
-        shape.setAttribute('stroke', 'none');
-        shape.setAttribute('stroke-width', '0');
-        shape.setAttribute('data-editable', 'true');
-        shape.style.cursor = 'move';
+        const shape = this.createShapeElementFromDescriptor({
+            shapeType,
+            x: center.x - (baseSize / 2),
+            y: center.y - (baseSize / 2),
+            width: baseSize,
+            height: baseSize,
+            fill: '#3b82f6',
+            stroke: 'none',
+            strokeWidth: 0
+        });
 
         this.canvas.appendChild(shape);
         this.bringPrintAreaOverlaysToFront();
