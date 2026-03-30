@@ -168,9 +168,11 @@ function renderCartItemsList() {
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
-            <div class="flex gap-4">
+            <div class="flex gap-3">
                 <a href="${getCartItemEditorLink(item, index)}" class="shrink-0">
-                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-32 h-32 rounded-2xl object-contain bg-gray-50 border border-gray-100 p-2">
+                    <div class="w-20 h-24 rounded-xl bg-gray-50 border border-gray-100 p-1.5 flex items-center justify-center">
+                        <img src="${getCartItemImage(item)}" alt="${item.nome}" class="max-w-full max-h-full object-contain">
+                    </div>
                 </a>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-2">
