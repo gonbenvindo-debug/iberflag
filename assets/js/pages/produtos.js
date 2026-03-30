@@ -252,48 +252,102 @@ function checkUrlParams() {
 }
 
 // ===== INITIALIZATION =====
-function createBlankPreviewMarkup() {
-    return window.DesignSvgStore?.buildPreviewSvgMarkup?.(
-        '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="#ffffff"/></svg>',
-        currentProduct?.svg_template || null,
-        { backgroundColor: '#ffffff' }
-    ) || '<div class="w-full h-full bg-white"></div>';
+const TEMPLATE_CATEGORY_LABELS = {
+    promocoes: 'Promoções',
+    eventos: 'Eventos',
+    corporativo: 'Corporativo',
+    festas: 'Festas',
+    varejo: 'Varejo'
+};
+
+const TEMPLATE_PREVIEW_FALLBACK = '/assets/images/template-placeholder.svg';
+
+function getTemplateCategoryLabel(category) {
+    return TEMPLATE_CATEGORY_LABELS[String(category || '').toLowerCase()] || 'Design';
 }
 
-function buildTemplateToggleCard({
-    id,
-    title,
-    subtitle = '',
-    previewContent,
-    previewAspectRatio,
-    onClick,
-    dataTemplateId = '',
-    extraButton = '',
-}) {
+function buildBlankTemplatePreviewMarkup() {
     return `
-        <div id="${id}" class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm" ${onClick ? `onclick="${onClick}"` : ''} ${dataTemplateId ? `data-template-id="${dataTemplateId}"` : ''}>
-            <div id="${id}-preview" class="template-toggle-preview relative bg-gray-50" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.24) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.24) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                <div id="${id}-preview-content" class="relative z-20 w-full h-full">
-                    ${previewContent}
-                </div>
-                ${extraButton}
+        <span class="template-gallery-card__blank-stage" aria-hidden="true">
+            <span class="template-gallery-card__blank-sheet">
+                <span class="template-gallery-card__blank-dot"></span>
+                <span class="template-gallery-card__blank-line template-gallery-card__blank-line--short"></span>
+                <span class="template-gallery-card__blank-line"></span>
+                <span class="template-gallery-card__blank-line template-gallery-card__blank-line--wide"></span>
+            </span>
+        </span>
+    `;
+}
+
+function buildTemplatePreviewMarkup(template) {
+    const previewUrl = template.preview_url || template.thumbnail_url || TEMPLATE_PREVIEW_FALLBACK;
+    const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+        previewUrl,
+        currentProduct?.svg_template || null,
+        { backgroundColor: '#f8fafc' }
+    );
+
+    if (previewMarkup) {
+        return `<span class="template-gallery-card__preview-content">${previewMarkup}</span>`;
+    }
+
+    return `
+        <img
+            src="${escapeHtml(previewUrl)}"
+            alt="${escapeHtml(template.nome)}"
+            loading="lazy"
+            class="template-gallery-card__preview-image"
+            onerror="this.src='${TEMPLATE_PREVIEW_FALLBACK}';this.onerror=null;"
+        >
+    `;
+}
+
+function buildTemplateLoadingCard() {
+    return `
+        <div class="template-gallery-card template-gallery-card--loading" aria-hidden="true">
+            <div class="template-gallery-card__preview">
+                <div class="template-gallery-card__skeleton template-gallery-card__skeleton--preview"></div>
             </div>
-            <div id="${id}-info" class="px-2 py-2 border-t border-gray-100 bg-white">
-                <h4 id="${id}-title" class="font-semibold text-xs text-gray-900 truncate text-center leading-tight">${escapeHtml(title)}</h4>
-                ${subtitle ? `<p id="${id}-subtitle" class="text-[11px] text-gray-500 truncate text-center mt-0.5">${escapeHtml(subtitle)}</p>` : ''}
+            <div class="template-gallery-card__info">
+                <div class="template-gallery-card__skeleton template-gallery-card__skeleton--title"></div>
+                <div class="template-gallery-card__skeleton template-gallery-card__skeleton--meta"></div>
             </div>
         </div>
     `;
 }
 
-function createBlankTemplateCard(productAspectRatio) {
-    return buildTemplateToggleCard({
-        id: 'template-card-blank',
+function buildTemplateGalleryCard({ action, title, meta = '', previewMarkup, templateId = '' }) {
+    const ariaLabel = action === 'blank'
+        ? 'Começar em branco'
+        : `Selecionar template ${title}`;
+
+    return `
+        <button
+            type="button"
+            class="template-gallery-card group"
+            data-gallery-action="${action}"
+            ${templateId ? `data-template-id="${escapeHtml(templateId)}"` : ''}
+            aria-label="${escapeHtml(ariaLabel)}"
+        >
+            <span class="template-gallery-card__preview">
+                <span class="template-gallery-card__preview-surface ${action === 'blank' ? 'template-gallery-card__preview-surface--blank' : ''}">
+                    ${previewMarkup}
+                </span>
+            </span>
+            <span class="template-gallery-card__info">
+                <span class="template-gallery-card__title">${escapeHtml(title)}</span>
+                ${meta ? `<span class="template-gallery-card__meta">${escapeHtml(meta)}</span>` : ''}
+            </span>
+        </button>
+    `;
+}
+
+function buildBlankTemplateCard() {
+    return buildTemplateGalleryCard({
+        action: 'blank',
         title: 'Em branco',
-        subtitle: 'Sem elementos',
-        previewContent: createBlankPreviewMarkup(),
-        previewAspectRatio: productAspectRatio,
-        onClick: 'startBlank()',
+        meta: 'Comece do zero',
+        previewMarkup: buildBlankTemplatePreviewMarkup()
     });
 }
 
@@ -322,7 +376,6 @@ window.viewProductDetails = viewProductDetails;
 
 // ===== TEMPLATES MODAL FUNCTIONS =====
 let currentProductId = null;
-let currentProductName = '';
 let currentProduct = null;
 let allTemplates = [];
 let templatesCatalogCache = null;
@@ -330,18 +383,8 @@ let templatesCatalogPromise = null;
 let templatesByProductCache = new Map();
 let templatesLoadToken = 0;
 
-function makeDomSafeId(value) {
-    return String(value || '')
-        .trim()
-        .toLowerCase()
-        .replace(/[^a-z0-9_-]+/g, '-')
-        .replace(/-+/g, '-')
-        .replace(/^-|-$/g, '') || 'item';
-}
-
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
-    currentProductName = productName;
     currentProduct = allProducts.find((product) => Number(product?.id) === Number(productId)) || null;
     const modalProductName = document.getElementById('modal-product-name');
     const modal = document.getElementById('templates-modal');
@@ -364,7 +407,6 @@ function closeTemplatesModal() {
     const modal = document.getElementById('templates-modal');
     if (modal) modal.classList.add('hidden');
     currentProductId = null;
-    currentProductName = '';
     currentProduct = null;
 }
 
@@ -384,20 +426,9 @@ function renderTemplatesLoading(message = 'A carregar templates...') {
 
     if (!grid || !emptyState) return;
 
-    const productAspectRatio = Math.max(
-        0.2,
-        Number(window.DesignSvgStore?.getSvgAspectRatio?.(currentProduct?.svg_template || '', 4 / 3)) || (4 / 3)
-    );
-
     grid.innerHTML = `
-        <div class="col-span-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-5">
-            ${Array.from({ length: 4 }).map(() => `
-                <div class="rounded-2xl border border-gray-200 bg-gray-100 overflow-hidden animate-pulse" style="aspect-ratio:${productAspectRatio};">
-                    <div class="h-full w-full bg-gradient-to-br from-gray-100 via-gray-50 to-gray-200"></div>
-                </div>
-            `).join('')}
-        </div>
-        <div class="col-span-full text-center py-4 text-sm text-gray-500">${message}</div>
+        ${Array.from({ length: 4 }).map(() => buildTemplateLoadingCard()).join('')}
+        <div class="col-span-full text-center py-2 text-sm text-gray-500">${message}</div>
     `;
     emptyState.classList.add('hidden');
 }
@@ -522,50 +553,52 @@ function renderTemplates(templates) {
 
     if (!grid || !emptyState) return;
 
-    const productAspectRatio = Math.max(
-        0.2,
-        Number(window.DesignSvgStore?.getSvgAspectRatio?.(currentProduct?.svg_template || '', 4 / 3)) || (4 / 3)
-    );
+    const cards = [buildBlankTemplateCard()];
 
-    const blankCard = createBlankTemplateCard(productAspectRatio);
-
-    if (!templates || templates.length === 0) {
-        grid.innerHTML = blankCard;
-        emptyState.classList.add('hidden');
-        if (typeof lucide !== 'undefined') lucide.createIcons();
-        return;
+    if (Array.isArray(templates) && templates.length > 0) {
+        templates.forEach((template) => {
+            cards.push(buildTemplateGalleryCard({
+                action: 'template',
+                title: template.nome,
+                meta: getTemplateCategoryLabel(template.categoria),
+                previewMarkup: buildTemplatePreviewMarkup(template),
+                templateId: template.id
+            }));
+        });
     }
 
+    grid.innerHTML = cards.join('');
     emptyState.classList.add('hidden');
-
-    grid.innerHTML = blankCard + templates.map(template => {
-        const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
-            template.preview_url || template.thumbnail_url,
-            currentProduct?.svg_template || null,
-            { backgroundColor: 'transparent' }
-        );
-        const previewUrl = template.preview_url || template.thumbnail_url || '/assets/images/template-placeholder.svg';
-        const previewAspectRatio = Math.max(
-            0.2,
-            Number(window.DesignSvgStore?.getSvgAspectRatio?.(previewMarkup || template.preview_url || template.thumbnail_url || '', productAspectRatio)) || productAspectRatio
-        );
-        const previewContent = previewMarkup
-            ? previewMarkup
-            : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" class="template-preview-img transition-transform duration-300 group-hover:scale-[1.02]" onerror="this.src='/assets/images/template-placeholder.svg';">`;
-        const templateDomId = makeDomSafeId(template.id || template.nome || 'template');
-        return buildTemplateToggleCard({
-            id: `template-card-${templateDomId}`,
-            title: template.nome,
-            previewContent,
-            previewAspectRatio,
-            onClick: `selectTemplate('${template.id}')`,
-        });
-    }).join('');
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
 }
 
+function handleTemplatesGridClick(event) {
+    const target = event.target;
+    if (!(target instanceof Element)) return;
+
+    const card = target.closest('[data-gallery-action]');
+    if (!card) return;
+
+    const action = card.getAttribute('data-gallery-action');
+    if (action === 'blank') {
+        startBlank();
+        return;
+    }
+
+    if (action === 'template') {
+        const templateId = card.getAttribute('data-template-id');
+        if (templateId) {
+            selectTemplate(templateId);
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
+    const grid = document.getElementById('templates-modal-grid');
+    if (grid) {
+        grid.addEventListener('click', handleTemplatesGridClick);
+    }
     void getTemplatesCatalog().catch(() => {});
 });
 
