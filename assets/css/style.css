@@ -2057,6 +2057,24 @@ tbody tr:hover {
     object-fit: contain !important;
 }
 
+.template-preview-svg-wrap {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.template-preview-svg-wrap svg {
+    display: block;
+    width: auto !important;
+    height: 100% !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+}
+
 @media (min-width: 640px) {
     #product-templates-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));

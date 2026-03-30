@@ -2219,14 +2219,21 @@ function renderProductTemplatesGrid() {
     grid.innerHTML = allTemplates.map(t => {
         const previewUrl = t.preview_url || t.thumbnail_url || '/assets/images/template-placeholder.svg';
         const safeName = escapeHtml(t.nome);
+        const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+            previewUrl,
+            null,
+            { backgroundColor: '#f8fafc' }
+        );
         return `
             <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 data-template-id="${t.id}">
                 <div class="template-toggle-preview relative bg-gray-50">
-                    <img src="${previewUrl}" 
-                        alt="${safeName}" 
-                        class="template-preview-img transition-transform duration-300 group-hover:scale-[1.02]"
-                        onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">
+                    ${previewMarkup
+                        ? `<span class="template-preview-svg-wrap">${previewMarkup}</span>`
+                        : `<img src="${previewUrl}" 
+                            alt="${safeName}" 
+                            class="template-preview-img transition-transform duration-300 group-hover:scale-[1.02]"
+                            onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">`}
                     <button type="button" class="template-edit-btn absolute top-1 right-1 w-7 h-7 rounded-full bg-white/95 border border-gray-300 text-red-600 hover:text-red-700 hover:bg-white flex items-center justify-center transition-all duration-200" data-template-id="${t.id}" title="Continuar a editar template">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
