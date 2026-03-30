@@ -702,6 +702,7 @@ function openCart() {
         if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
         if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'true');
         scheduleCartItemPreviewHeights();
+        window.setTimeout(scheduleCartItemPreviewHeights, 120);
     }
 }
 
