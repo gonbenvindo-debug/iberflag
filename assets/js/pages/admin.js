@@ -1,19 +1,9 @@
-// ===== ADMIN PANEL LOGIC =====
+﻿// ===== ADMIN PANEL LOGIC =====
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
-const adminUsernameMeta = document.querySelector('meta[name="iberflag-admin-username"]');
 const adminEmailMeta = document.querySelector('meta[name="iberflag-admin-email"]');
-const adminTestingMeta = document.querySelector('meta[name="iberflag-admin-testing"]');
-const adminTestUsernameMeta = document.querySelector('meta[name="iberflag-admin-test-username"]');
-const adminTestPasswordMeta = document.querySelector('meta[name="iberflag-admin-test-password"]');
-const allowedAdminUsername = (adminUsernameMeta?.content || '').trim().toLowerCase();
 const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
-const adminTestingEnabled = (adminTestingMeta?.content || '').trim().toLowerCase() === 'true';
-const testAdminUsername = (adminTestUsernameMeta?.content || (adminTestingEnabled ? 'admin' : '')).trim().toLowerCase();
-const testAdminPassword = (adminTestPasswordMeta?.content || (adminTestingEnabled ? 'admin' : '')).trim();
-const ADMIN_TEST_SESSION_KEY = 'iberflag_admin_test_auth';
-const ADMIN_LAST_PASSWORD_KEY = 'iberflag_admin_last_password';
 let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
@@ -32,48 +22,27 @@ function getRemainingLockSeconds() {
 }
 
 async function ensureAdminWriteSession() {
+    adminWriteSessionLastError = '';
+
     try {
-        adminWriteSessionLastError = '';
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session) return true;
-        if (!adminTestingEnabled || !allowedAdminEmail || !testAdminPassword) return false;
-
-        const passwordCandidates = [
-            sessionStorage.getItem(ADMIN_LAST_PASSWORD_KEY) || '',
-            testAdminPassword || '',
-            allowedAdminUsername || '',
-            'admin123'
-        ].map((value) => String(value || '').trim()).filter(Boolean);
-
-        const uniquePasswords = Array.from(new Set(passwordCandidates));
-        for (const password of uniquePasswords) {
-            const { error } = await supabaseClient.auth.signInWithPassword({
-                email: allowedAdminEmail,
-                password
-            });
-            if (!error) return true;
-
-            adminWriteSessionLastError = [error?.message, error?.status, error?.code]
-                .filter(Boolean)
-                .join(' | ');
+        if (session && isAllowedAdminSession(session)) {
+            return true;
         }
 
-        const manualPassword = prompt(`Para apagar/guardar templates, introduza a password real do Supabase para ${allowedAdminEmail}:`) || '';
-        if (manualPassword.trim()) {
-            sessionStorage.setItem(ADMIN_LAST_PASSWORD_KEY, manualPassword.trim());
-            const { error } = await supabaseClient.auth.signInWithPassword({
-                email: allowedAdminEmail,
-                password: manualPassword.trim()
-            });
-            if (!error) return true;
-            adminWriteSessionLastError = [error?.message, error?.status, error?.code]
-                .filter(Boolean)
-                .join(' | ');
+        adminWriteSessionLastError = session
+            ? 'Sessao autenticada nao pertence ao admin autorizado.'
+            : 'Sem sessao autenticada.';
+
+        if (session && !isAllowedAdminSession(session)) {
+            await supabaseClient.auth.signOut();
         }
 
+        showLoginOverlay();
         return false;
-    } catch {
-        adminWriteSessionLastError = 'Falha inesperada ao iniciar sessão de escrita.';
+    } catch (error) {
+        adminWriteSessionLastError = error?.message || 'Falha inesperada ao validar sessao.';
+        showLoginOverlay();
         return false;
     }
 }
@@ -91,23 +60,19 @@ function hideLoginOverlay() {
 }
 
 async function checkAdminAuth() {
-    if (adminTestingEnabled && sessionStorage.getItem(ADMIN_TEST_SESSION_KEY) === '1') {
-        hideLoginOverlay();
-        loadDashboard();
-        return;
-    }
-
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && isAllowedAdminSession(session)) {
             hideLoginOverlay();
             loadDashboard();
-        } else {
-            if (session && !isAllowedAdminSession(session)) {
-                await supabaseClient.auth.signOut();
-            }
-            showLoginOverlay();
+            return;
         }
+
+        if (session && !isAllowedAdminSession(session)) {
+            await supabaseClient.auth.signOut();
+        }
+
+        showLoginOverlay();
     } catch {
         showLoginOverlay();
     }
@@ -115,35 +80,29 @@ async function checkAdminAuth() {
 
 // Login form handler
 document.addEventListener('DOMContentLoaded', () => {
+    const emailInput = document.getElementById('admin-email');
+    if (emailInput && allowedAdminEmail) {
+        emailInput.value = allowedAdminEmail;
+    }
+
     const loginForm = document.getElementById('admin-login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const username = document.getElementById('admin-username').value.trim().toLowerCase();
+            const email = document.getElementById('admin-email').value.trim().toLowerCase();
             const password = document.getElementById('admin-password').value;
-            sessionStorage.setItem(ADMIN_LAST_PASSWORD_KEY, password || '');
             const btn = document.getElementById('admin-login-btn');
             const btnText = document.getElementById('admin-login-btn-text');
             const errorEl = document.getElementById('admin-login-error');
 
-            if (adminTestingEnabled && username === testAdminUsername && password === testAdminPassword) {
-                sessionStorage.setItem(ADMIN_TEST_SESSION_KEY, '1');
-                failedLoginAttempts = 0;
-                loginBlockedUntil = 0;
-                hideLoginOverlay();
-                loadDashboard();
-                if (typeof lucide !== 'undefined') lucide.createIcons();
-                return;
-            }
-
-            if (!allowedAdminUsername || !allowedAdminEmail) {
-                errorEl.textContent = 'Admin não configurado. Defina utilizador e email no head de pages/admin.html.';
+            if (!allowedAdminEmail) {
+                errorEl.textContent = 'Admin nao configurado. Defina o email permitido em pages/admin.html.';
                 errorEl.classList.remove('hidden');
                 return;
             }
 
-            if (username !== allowedAdminUsername) {
-                errorEl.textContent = 'Utilizador inválido.';
+            if (email !== allowedAdminEmail) {
+                errorEl.textContent = 'Email nao autorizado para o painel admin.';
                 errorEl.classList.remove('hidden');
                 return;
             }
@@ -156,11 +115,11 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             btn.disabled = true;
-            btnText.textContent = 'A entrar…';
+            btnText.textContent = 'A entrar...';
             errorEl.classList.add('hidden');
 
             const { error } = await supabaseClient.auth.signInWithPassword({
-                email: allowedAdminEmail,
+                email,
                 password
             });
 
@@ -171,28 +130,29 @@ document.addEventListener('DOMContentLoaded', () => {
                     failedLoginAttempts = 0;
                 }
 
-                errorEl.textContent = 'Credenciais inválidas. Verifique o utilizador e password.';
+                errorEl.textContent = 'Credenciais invalidas. Verifique o email e a password do Supabase.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
-            } else {
-                const { data: { session } } = await supabaseClient.auth.getSession();
-                if (!isAllowedAdminSession(session)) {
-                    await supabaseClient.auth.signOut();
-                    errorEl.textContent = 'Acesso não autorizado para este utilizador.';
-                    errorEl.classList.remove('hidden');
-                    btn.disabled = false;
-                    btnText.textContent = 'Entrar';
-                    showLoginOverlay();
-                    return;
-                }
-
-                failedLoginAttempts = 0;
-                loginBlockedUntil = 0;
-                hideLoginOverlay();
-                loadDashboard();
-                if (typeof lucide !== 'undefined') lucide.createIcons();
+                return;
             }
+
+            const { data: { session } } = await supabaseClient.auth.getSession();
+            if (!isAllowedAdminSession(session)) {
+                await supabaseClient.auth.signOut();
+                errorEl.textContent = 'Acesso nao autorizado para este utilizador.';
+                errorEl.classList.remove('hidden');
+                btn.disabled = false;
+                btnText.textContent = 'Entrar';
+                showLoginOverlay();
+                return;
+            }
+
+            failedLoginAttempts = 0;
+            loginBlockedUntil = 0;
+            hideLoginOverlay();
+            loadDashboard();
+            if (typeof lucide !== 'undefined') lucide.createIcons();
         });
     }
 
@@ -200,8 +160,6 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
-            sessionStorage.removeItem(ADMIN_TEST_SESSION_KEY);
-            sessionStorage.removeItem(ADMIN_LAST_PASSWORD_KEY);
             await supabaseClient.auth.signOut();
             showLoginOverlay();
         });
@@ -209,7 +167,6 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // ── End Authentication ──────────────────────────────────────────────────────
-
 let currentTab = 'dashboard';
 let currentProductId = null;
 let currentBaseId = null;
@@ -364,7 +321,7 @@ async function loadBaseCatalog(force = false) {
 
     if (error) {
         if (isMissingBasesSchema(error)) {
-            console.warn('Schema de bases ainda não aplicado:', error.message);
+            console.warn('Schema de bases ainda nÃ£o aplicado:', error.message);
             baseCatalogCache = [];
             return [];
         }
@@ -382,7 +339,7 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
     const allBases = Array.isArray(baseCatalogCache) ? baseCatalogCache : [];
 
     if (allBases.length === 0) {
-        productBasesAssignments.innerHTML = '<p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>';
+        productBasesAssignments.innerHTML = '<p class="text-sm text-gray-500">Sem bases disponÃ­veis. Crie bases no separador "Bases".</p>';
         return;
     }
 
@@ -397,7 +354,7 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
                         <input type="checkbox" class="product-base-checkbox mt-1" value="${base.id}" ${checked ? 'checked' : ''}>
                         <div>
                             <p class="text-sm font-semibold text-gray-900">${escapeHtml(base.nome)}</p>
-                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' • Inativa'}</p>
+                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' â€¢ Inativa'}</p>
                         </div>
                     </label>
                     <label class="text-xs text-gray-600 flex items-center gap-1.5">
@@ -537,7 +494,7 @@ async function loadDashboard() {
                     <img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded">
                     <div class="flex-1">
                         <h4 class="font-semibold text-sm">${p.nome}</h4>
-                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}€</p>
+                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}â‚¬</p>
                     </div>
                     <span class="badge badge-info">${p.categoria}</span>
                 </div>
@@ -594,9 +551,9 @@ async function loadProducts() {
                     <td><img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded"></td>
                     <td class="font-semibold">${p.nome}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
-                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}€</td>
+                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}â‚¬</td>
                     <td>${p.stock || 0}</td>
-                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">Não</span>'}</td>
+                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">NÃ£o</span>'}</td>
                     <td>${p.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
                     <td>
                         <div class="flex gap-2">
@@ -1207,7 +1164,7 @@ function escapeHtml(value) {
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `${amount.toFixed(2)}€`;
+    return `${amount.toFixed(2)}â‚¬`;
 }
 
 function formatDate(value) {
@@ -1365,7 +1322,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
-    // Product store image — last resort fallback only
+    // Product store image â€” last resort fallback only
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
@@ -1523,13 +1480,13 @@ async function viewOrder(id) {
         const statusNoteInput = document.getElementById('order-status-note');
 
         const metaEl = document.getElementById('order-modal-meta');
-        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} · ${formatDateTime(order.created_at)}`;
+        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} Â· ${formatDateTime(order.created_at)}`;
 
         if (summaryBlock) {
             summaryBlock.innerHTML = `
                 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem;">
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Nº Encomenda</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">NÂº Encomenda</p>
                         <p style="font-size:0.875rem;font-weight:700;color:#111827;margin:0;">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
                     </div>
                     <div>
@@ -1554,9 +1511,9 @@ async function viewOrder(id) {
 
         if (customerBlock) {
             const nome = escapeHtml(order.clientes?.nome || 'N/A');
-            const email = escapeHtml(order.clientes?.email || '—');
-            const tel = escapeHtml(order.clientes?.telefone || '—');
-            const nif = escapeHtml(order.clientes?.nif || '—');
+            const email = escapeHtml(order.clientes?.email || 'â€”');
+            const tel = escapeHtml(order.clientes?.telefone || 'â€”');
+            const nif = escapeHtml(order.clientes?.nif || 'â€”');
             const morada = escapeHtml(order.morada_envio || '');
             customerBlock.innerHTML = `
                 <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.75rem;">Cliente</p>
@@ -1638,7 +1595,7 @@ async function viewOrder(id) {
 
                     const optionsHtml = itemOptions.length > 0
                         ? `<ul style="margin:0.25rem 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.2rem;">${itemOptions.map((o) => `<li style="font-size:0.75rem;color:#6b7280;"><span style="font-weight:500;color:#374151;">${escapeHtml(o.label)}:</span> ${escapeHtml(o.value)}</li>`).join('')}</ul>`
-                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opções</p>`;
+                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opÃ§Ãµes</p>`;
 
                     return `<tr style="border-bottom:1px solid #f9fafb;">
                         <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;width:5rem;">${designCell}</td>
@@ -1657,7 +1614,7 @@ async function viewOrder(id) {
                         <thead>
                             <tr style="border-bottom:1px solid #e5e7eb;">
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;width:5rem;">Design</th>
-                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / Opções</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / OpÃ§Ãµes</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:2.5rem;">Qtd</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">P. Unit.</th>
                                 <th style="padding:0 0 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">Subtotal</th>
@@ -1697,7 +1654,7 @@ async function viewOrder(id) {
                     }).join('');
                 historyList.innerHTML = `<table style="width:100%;border-collapse:collapse;"><tbody>${historyRows}</tbody></table>`;
             } else {
-                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histórico de atualizações.</p>';
+                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histÃ³rico de atualizaÃ§Ãµes.</p>';
             }
         }
 
@@ -1894,7 +1851,7 @@ function openAdminDesignViewer(designKey) {
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
     img.src = entry.previewUrl || '';
-    if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
+    if (title) title.textContent = `Design â€” ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         if (entry.svgDataUrl) {
             downloadBtn.href = entry.svgDataUrl;
@@ -2066,7 +2023,7 @@ function getStatusColor(status) {
 }
 
 function viewClient(id) {
-    showToast('Funcionalidade de visualização de cliente em desenvolvimento', 'info');
+    showToast('Funcionalidade de visualizaÃ§Ã£o de cliente em desenvolvimento', 'info');
 }
 
 // ===== INITIALIZATION =====
@@ -2150,7 +2107,7 @@ function confirmTemplateDeleteCard(templateName = '') {
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900">Apagar template</h3>
-                        <p class="text-sm text-gray-600 mt-1">Esta ação remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e não pode ser desfeita.</p>
+                        <p class="text-sm text-gray-600 mt-1">Esta aÃ§Ã£o remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e nÃ£o pode ser desfeita.</p>
                     </div>
                 </div>
                 <div class="mt-5 flex flex-col-reverse sm:flex-row gap-3 justify-end">
@@ -2201,7 +2158,7 @@ function confirmTemplateDeleteCard(templateName = '') {
 
 async function deleteTemplateFromCard(templateId) {
     if (!templateId) {
-        console.error('ID de template inválido:', templateId);
+        console.error('ID de template invÃ¡lido:', templateId);
         return;
     }
 
@@ -2209,15 +2166,15 @@ async function deleteTemplateFromCard(templateId) {
     const template = templatesCatalogCache.find((item) => item.id === templateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
     if (!confirmed) {
-        console.log('Usuário cancelou a exclusão');
+        console.log('UsuÃ¡rio cancelou a exclusÃ£o');
         return;
     }
 
     const hasWriteSession = await ensureAdminWriteSession();
     if (!hasWriteSession) {
         const authMsg = adminWriteSessionLastError
-            ? `Sem sessão de escrita no Supabase: ${adminWriteSessionLastError}`
-            : 'Sem sessão de escrita no Supabase. Inicie sessão admin real para apagar templates.';
+            ? `Sem sessÃ£o de escrita no Supabase: ${adminWriteSessionLastError}`
+            : 'Sem sessÃ£o de escrita no Supabase. Inicie sessÃ£o admin real para apagar templates.';
         showToast(authMsg, 'error');
         return;
     }
@@ -2229,7 +2186,7 @@ async function deleteTemplateFromCard(templateId) {
             .eq('template_id', templateId);
 
         if (deleteLinksError) {
-            console.warn('Erro ao remover vínculos do template:', deleteLinksError.message);
+            console.warn('Erro ao remover vÃ­nculos do template:', deleteLinksError.message);
         }
 
         const { error: deleteTemplateError } = await supabaseClient
@@ -2254,12 +2211,12 @@ async function deleteTemplateFromCard(templateId) {
 function renderProductTemplatesGrid() {
     const grid = document.getElementById('product-templates-grid');
     if (!grid) {
-        console.error('Grid de templates não encontrado');
+        console.error('Grid de templates nÃ£o encontrado');
         return;
     }
 
     console.log('Renderizando grid de templates...');
-    console.log('Templates disponíveis:', templatesCatalogCache.length);
+    console.log('Templates disponÃ­veis:', templatesCatalogCache.length);
 
     // Log para debug dos IDs
     if (templatesCatalogCache.length > 0) {
@@ -2307,17 +2264,17 @@ function renderProductTemplatesGrid() {
     newGrid.addEventListener('click', (event) => {
         const target = event.target;
 
-        // Botão de lixo
+        // BotÃ£o de lixo
         const deleteBtn = target.closest('.template-edit-btn');
         if (deleteBtn) {
             event.preventDefault();
             event.stopPropagation();
-            console.log('Botão apagar clicado:', deleteBtn.dataset.templateId);
+            console.log('BotÃ£o apagar clicado:', deleteBtn.dataset.templateId);
             deleteTemplateFromCard(deleteBtn.dataset.templateId);
             return;
         }
 
-        // Clique no card (mas não no botão)
+        // Clique no card (mas nÃ£o no botÃ£o)
         const card = target.closest('.template-toggle-card');
         if (card) {
             console.log('Card clicado:', card.dataset.templateId);
@@ -2349,7 +2306,7 @@ async function loadProductTemplates(productId) {
         return [];
     }
 
-    return (data || []).map(d => ({ template_id: Number(d.template_id), ordem: d.ordem }));
+    return (data || []).map(d => ({ template_id: String(d.template_id), ordem: d.ordem }));
 }
 
 async function saveProductTemplates(productId) {
@@ -2368,7 +2325,7 @@ async function saveProductTemplates(productId) {
 
     const rows = currentProductTemplates.map((pt, index) => ({
         produto_id: productId,
-        template_id: Number(pt.template_id),
+        template_id: String(pt.template_id),
         ordem: index + 1
     }));
 

@@ -151,11 +151,10 @@ npx serve
 ## 📊 Aceder ao Painel Admin
 
 1. Navegue para `/admin` (ou `/admin.html`)
-2. Configure o utilizador único no meta `iberflag-admin-username` em `pages/admin.html`
-3. Configure o email interno do admin no meta `iberflag-admin-email` em `pages/admin.html`
-4. O login é feito com utilizador + password (sem campo de email)
-5. O painel só aceita sessão do utilizador cujo email coincide com `iberflag-admin-email`
-6. Funcionalidades disponíveis:
+2. Configure o email interno do admin no meta `iberflag-admin-email` em `pages/admin.html`
+3. Use o email e password reais do utilizador do Supabase autorizado para este painel
+4. O painel só aceita sessão do utilizador cujo email coincide com `iberflag-admin-email`
+5. Funcionalidades disponíveis:
    - Dashboard com estatísticas
    - Adicionar/Editar/Eliminar produtos
    - Ver encomendas e clientes

@@ -4,10 +4,6 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <meta name="iberflag-admin-testing" content="true">
-    <meta name="iberflag-admin-test-username" content="admin">
-    <meta name="iberflag-admin-test-password" content="admin">
-    <meta name="iberflag-admin-username" content="admin123">
     <meta name="iberflag-admin-email" content="admin123@iberflag.pt">
     <title>Admin Panel - IberFlag</title>
     <link rel="icon" type="image/svg+xml" href="/favicon.svg">
@@ -46,10 +42,10 @@
             </div>
             <form id="admin-login-form" class="space-y-4" autocomplete="on">
                 <div>
-                    <label for="admin-username" class="block text-sm font-medium text-gray-700 mb-1">Utilizador</label>
-                    <input id="admin-username" type="text" required autocomplete="username"
+                    <label for="admin-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input id="admin-email" type="email" required autocomplete="email"
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                        placeholder="admin">
+                        placeholder="admin123@iberflag.pt">
                 </div>
                 <div>
                     <label for="admin-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
@@ -57,9 +53,7 @@
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="••••••••••••••">
                 </div>
-                <p class="text-xs text-gray-500">Acesso com utilizador e password. O email não é pedido no login.</p>
-                <p class="text-xs text-amber-700 bg-amber-50 border border-amber-200 rounded-lg px-3 py-2">Modo teste
-                    ativo: utilizador <strong>admin</strong> e password <strong>admin</strong>.</p>
+                <p class="text-xs text-gray-500">Use a conta real do Supabase autorizada para o painel admin.</p>
                 <div id="admin-login-error"
                     class="hidden text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl px-4 py-3"></div>
                 <button type="submit" id="admin-login-btn"
