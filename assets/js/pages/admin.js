@@ -334,7 +334,7 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
                         <input type="checkbox" class="product-base-checkbox mt-1" value="${base.id}" ${checked ? 'checked' : ''}>
                         <div>
                             <p class="text-sm font-semibold text-gray-900">${escapeHtml(base.nome)}</p>
-                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' â€¢ Inativa'}</p>
+                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' • Inativa'}</p>
                         </div>
                     </label>
                     <label class="text-xs text-gray-600 flex items-center gap-1.5">
@@ -474,7 +474,7 @@ async function loadDashboard() {
                     <img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded">
                     <div class="flex-1">
                         <h4 class="font-semibold text-sm">${p.nome}</h4>
-                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}â‚¬</p>
+                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}€</p>
                     </div>
                     <span class="badge badge-info">${p.categoria}</span>
                 </div>
@@ -531,7 +531,7 @@ async function loadProducts() {
                     <td><img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded"></td>
                     <td class="font-semibold">${p.nome}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
-                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}â‚¬</td>
+                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}€</td>
                     <td>${p.stock || 0}</td>
                     <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">NÃ£o</span>'}</td>
                     <td>${p.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
@@ -1144,7 +1144,7 @@ function escapeHtml(value) {
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `${amount.toFixed(2)}â‚¬`;
+    return `${amount.toFixed(2)}€`;
 }
 
 function formatDate(value) {
@@ -1302,7 +1302,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
-    // Product store image â€” last resort fallback only
+    // Product store image — last resort fallback only
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
@@ -1491,9 +1491,9 @@ async function viewOrder(id) {
 
         if (customerBlock) {
             const nome = escapeHtml(order.clientes?.nome || 'N/A');
-            const email = escapeHtml(order.clientes?.email || 'â€”');
-            const tel = escapeHtml(order.clientes?.telefone || 'â€”');
-            const nif = escapeHtml(order.clientes?.nif || 'â€”');
+            const email = escapeHtml(order.clientes?.email || '—');
+            const tel = escapeHtml(order.clientes?.telefone || '—');
+            const nif = escapeHtml(order.clientes?.nif || '—');
             const morada = escapeHtml(order.morada_envio || '');
             customerBlock.innerHTML = `
                 <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.75rem;">Cliente</p>
@@ -1831,7 +1831,7 @@ function openAdminDesignViewer(designKey) {
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
     img.src = entry.previewUrl || '';
-    if (title) title.textContent = `Design â€” ${entry.name || 'Produto'}`;
+    if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         if (entry.svgDataUrl) {
             downloadBtn.href = entry.svgDataUrl;

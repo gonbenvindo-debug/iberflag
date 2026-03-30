@@ -22,7 +22,7 @@ function buildOrderItemSnapshots(items) {
         quantidade: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
         precoUnitario: Number(item.preco || 0),
         imagem: item.imagem || '',
-        designPreview: item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || ''),
+        designPreview: item.designPreview || (typeof getCartItemImage === 'function'  getCartItemImage(item) : item.imagem || ''),
         design: item.design || ''
     }));
 }
@@ -93,7 +93,7 @@ async function insertOrderItemsWithFallback(orderId, items) {
     const optionalValueByColumn = {
         design_id: (item) => item.designId || item.design_id || null,
         design_svg: (item) => item.design || null,
-        design_preview: (item) => item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || null),
+        design_preview: (item) => item.designPreview || (typeof getCartItemImage === 'function'  getCartItemImage(item) : item.imagem || null),
         nome_produto: (item) => item.nome || null,
         imagem_produto: (item) => item.imagem || null
     };
@@ -197,11 +197,11 @@ function loadCart() {
     // Render cart items
     orderItems.innerHTML = cart.map(item => `
         <div class="flex gap-3 pb-4 border-b">
-            <img src="${typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem}" alt="${item.nome}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
+            <img src="${typeof getCartItemImage === 'function'  getCartItemImage(item) : item.imagem}" alt="${item.nome}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
             <div class="flex-1">
                 <h4 class="font-semibold text-sm">${item.nome}</h4>
-                ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
-                ${item.baseNome ? `<p class="text-xs text-gray-500 mt-1">Base: ${item.baseNome}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
+                ${item.customized  '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
+                ${item.baseNome  `<p class="text-xs text-gray-500 mt-1">Base: ${item.baseNome}${Number(item.basePrecoExtra || 0) > 0  ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
                 <p class="text-sm text-gray-600">Qtd: ${item.quantity}</p>
             </div>
             <div class="text-right">
@@ -212,11 +212,11 @@ function loadCart() {
 
     // Calculate totals
     const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-    const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    const shipping = subtotal >= FREE_SHIPPING_THRESHOLD  0 : SHIPPING_COST;
     const total = subtotal + shipping;
 
     subtotalEl.textContent = `${subtotal.toFixed(2)}€`;
-    shippingEl.textContent = shipping === 0 ? 'Grátis' : `${shipping.toFixed(2)}€`;
+    shippingEl.textContent = shipping === 0  'Grátis' : `${shipping.toFixed(2)}€`;
     totalEl.textContent = `${total.toFixed(2)}€`;
 
     // Free shipping message
@@ -286,7 +286,7 @@ if (placeOrderBtn) {
 
         // Calculate totals
         const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD  0 : SHIPPING_COST;
         const total = subtotal + shipping;
 
         // Disable button
@@ -330,13 +330,13 @@ if (placeOrderBtn) {
                 cliente_id: customerId,
                 numero_encomenda: orderNumber,
                 status: typeof getLegacyStatusFromWorkflow === 'function'
-                    ? getLegacyStatusFromWorkflow(initialWorkflowStatus)
+                     getLegacyStatusFromWorkflow(initialWorkflowStatus)
                     : 'pendente',
                 subtotal: subtotal,
                 envio: shipping,
                 total: total,
                 notas: typeof buildOrderNotesWithMeta === 'function'
-                    ? buildOrderNotesWithMeta(orderNotes, orderMeta)
+                     buildOrderNotesWithMeta(orderNotes, orderMeta)
                     : orderNotes,
                 morada_envio: `${customerData.morada}, ${customerData.codigo_postal} ${customerData.cidade}`,
                 metodo_pagamento: 'stripe_placeholder'

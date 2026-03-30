@@ -112,7 +112,7 @@ function buildCartSidebarMarkup() {
             <div class="border-t border-slate-200 bg-white p-5">
                 <div class="mb-4 flex items-center justify-between text-lg font-bold text-slate-900">
                     <span>Total</span>
-                    <span id="cart-total">0.00â‚¬</span>
+                    <span id="cart-total">0.00€</span>
                 </div>
                 <a href="/checkout.html"
                     class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700">
@@ -178,7 +178,7 @@ function renderCartItemsList() {
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
-                            <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}â‚¬</p>
+                            <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
                         </div>
                         <button type="button" data-cart-action="remove" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Remover item">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -613,7 +613,7 @@ function updateCart() {
     renderCartItemsList();
     if (cartTotal) {
         const total = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-        cartTotal.textContent = `${total.toFixed(2)}â‚¬`;
+        cartTotal.textContent = `${total.toFixed(2)}€`;
     }
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

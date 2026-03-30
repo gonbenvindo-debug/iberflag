@@ -530,15 +530,15 @@
             if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
 
             const payloadElements = Array.isArray(payload.elementos)
-                ? payload.elementos
+                 payload.elementos
                 : Array.isArray(payload.elementos?.elements)
-                    ? payload.elementos.elements
+                     payload.elementos.elements
                     : [];
 
             if (payloadElements.length > 0) {
                 elements = payloadElements.map((elemento) => ({
                     ...elemento,
-                    id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+                    id: elemento?.id  String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
                 }));
                 selectedElement = null;
                 renderElements();
@@ -556,8 +556,8 @@
                 type,
                 x: 150 + (elements.length * 20),
                 y: 150 + (elements.length * 20),
-                width: type === 'text' ? 200 : type === 'qrcode' ? 120 : 150,
-                height: type === 'text' ? 60 : type === 'qrcode' ? 120 : 150,
+                width: type === 'text'  200 : type === 'qrcode'  120 : 150,
+                height: type === 'text'  60 : type === 'qrcode'  120 : 150,
                 rotation: 0,
                 properties: getDefaultProperties(type)
             };
@@ -614,7 +614,7 @@
 
             elements.forEach(element => {
                 const el = document.createElement('div');
-                el.className = `canvas-element ${selectedElement?.id === element.id ? 'selected' : ''}`;
+                el.className = `canvas-element ${selectedElement?.id === element.id  'selected' : ''}`;
                 el.id = `element-${element.id}`;
                 el.style.left = `${element.x}px`;
                 el.style.top = `${element.y}px`;
@@ -643,7 +643,7 @@
                         height: 100%; 
                         display: flex; 
                         align-items: center; 
-                        justify-content: ${props.textAlign === 'left' ? 'flex-start' : props.textAlign === 'right' ? 'flex-end' : 'center'};
+                        justify-content: ${props.textAlign === 'left'  'flex-start' : props.textAlign === 'right'  'flex-end' : 'center'};
                         font-family: ${props.fontFamily};
                         font-size: ${props.fontSize}px;
                         color: ${props.color};
@@ -666,7 +666,7 @@
                         height: 100%; 
                         background: ${props.fill};
                         border: ${props.strokeWidth}px solid ${props.stroke};
-                        border-radius: ${props.shape === 'circle' ? '50%' : props.shape === 'rounded' ? '12px' : '0'};
+                        border-radius: ${props.shape === 'circle'  '50%' : props.shape === 'rounded'  '12px' : '0'};
                     "></div>`;
                     break;
                 case 'qrcode':
@@ -712,7 +712,7 @@
             }
 
             list.innerHTML = elements.slice().reverse().map((element, index) => `
-                <div class="layer-item ${selectedElement?.id === element.id ? 'active' : ''}" onclick="selectElement('${element.id}')">
+                <div class="layer-item ${selectedElement?.id === element.id  'active' : ''}" onclick="selectElement('${element.id}')">
                     <iconify-icon icon="${getElementIcon(element.type)}" width="16"></iconify-icon>
                     <span class="layer-name">${getElementLabel(element)}</span>
                     <div class="layer-actions">
@@ -784,10 +784,10 @@
                         <textarea class="property-input" rows="3" onchange="updateElementProperty('text', this.value)">${props.text}</textarea>
                         <label class="property-label" style="margin-top: 12px;">Fonte</label>
                         <select class="property-input" onchange="updateElementProperty('fontFamily', this.value)">
-                            <option value="Arial" ${props.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
-                            <option value="Georgia" ${props.fontFamily === 'Georgia' ? 'selected' : ''}>Georgia</option>
-                            <option value="Times New Roman" ${props.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
-                            <option value="Helvetica" ${props.fontFamily === 'Helvetica' ? 'selected' : ''}>Helvetica</option>
+                            <option value="Arial" ${props.fontFamily === 'Arial'  'selected' : ''}>Arial</option>
+                            <option value="Georgia" ${props.fontFamily === 'Georgia'  'selected' : ''}>Georgia</option>
+                            <option value="Times New Roman" ${props.fontFamily === 'Times New Roman'  'selected' : ''}>Times New Roman</option>
+                            <option value="Helvetica" ${props.fontFamily === 'Helvetica'  'selected' : ''}>Helvetica</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
                             <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updateElementProperty('fontSize', this.value)">
@@ -804,9 +804,9 @@
                         <input type="text" class="property-input" value="${props.src}" onchange="updateElementProperty('src', this.value)">
                         <label class="property-label" style="margin-top: 12px;">Ajuste</label>
                         <select class="property-input" onchange="updateElementProperty('objectFit', this.value)">
-                            <option value="cover" ${props.objectFit === 'cover' ? 'selected' : ''}>Cover</option>
-                            <option value="contain" ${props.objectFit === 'contain' ? 'selected' : ''}>Contain</option>
-                            <option value="fill" ${props.objectFit === 'fill' ? 'selected' : ''}>Fill</option>
+                            <option value="cover" ${props.objectFit === 'cover'  'selected' : ''}>Cover</option>
+                            <option value="contain" ${props.objectFit === 'contain'  'selected' : ''}>Contain</option>
+                            <option value="fill" ${props.objectFit === 'fill'  'selected' : ''}>Fill</option>
                         </select>
                     </div>
                 `;
@@ -817,9 +817,9 @@
                     <div class="property-group">
                         <label class="property-label">Forma</label>
                         <select class="property-input" onchange="updateElementProperty('shape', this.value)">
-                            <option value="rectangle" ${props.shape === 'rectangle' ? 'selected' : ''}>Retângulo</option>
-                            <option value="rounded" ${props.shape === 'rounded' ? 'selected' : ''}>Arredondado</option>
-                            <option value="circle" ${props.shape === 'circle' ? 'selected' : ''}>Círculo</option>
+                            <option value="rectangle" ${props.shape === 'rectangle'  'selected' : ''}>Retângulo</option>
+                            <option value="rounded" ${props.shape === 'rounded'  'selected' : ''}>Arredondado</option>
+                            <option value="circle" ${props.shape === 'circle'  'selected' : ''}>Círculo</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
                             <input type="color" class="property-input" value="${props.fill}" onchange="updateElementProperty('fill', this.value)">
@@ -986,7 +986,7 @@
                 height: 600
             }) || '';
             const previewUrl = designSvg
-                ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
+                 `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
                 : '';
 
             const previewData = {

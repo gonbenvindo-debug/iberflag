@@ -467,8 +467,8 @@ Object.assign(DesignEditor.prototype, {
         if (this.isDragging && this.selectedElement) {
             // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
             const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - (this.dragStart.startClientX ?? this.dragStart.mouseX),
-                e.clientY - (this.dragStart.startClientY ?? this.dragStart.mouseY)
+                e.clientX - (this.dragStart.startClientX  this.dragStart.mouseX),
+                e.clientY - (this.dragStart.startClientY  this.dragStart.mouseY)
             );
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
@@ -520,8 +520,8 @@ Object.assign(DesignEditor.prototype, {
                     this.hideGuideLines();
                 }
 
-                if (snapPoints.x) deltaX += snapPoints.x.offsetX ?? 0;
-                if (snapPoints.y) deltaY += snapPoints.y.offsetY ?? 0;
+                if (snapPoints.x) deltaX += snapPoints.x.offsetX  0;
+                if (snapPoints.y) deltaY += snapPoints.y.offsetY  0;
             }
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
@@ -653,7 +653,7 @@ Object.assign(DesignEditor.prototype, {
                 anchorLocalPoint.y
             ),
             points: this.selectedElement.shapeType === 'triangle'
-                ? (this.selectedElement.element.getAttribute('points') || '')
+                 (this.selectedElement.element.getAttribute('points') || '')
                     .trim()
                     .split(/\s+/)
                     .map((pair) => pair.split(',').map(Number))
@@ -679,8 +679,8 @@ Object.assign(DesignEditor.prototype, {
         // ===== CROP MODE =====
         if (this.cropMode && this.cropBounds) {
             const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
-                e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
+                e.clientX - (this.dragStart.startClientX  this.dragStart.x),
+                e.clientY - (this.dragStart.startClientY  this.dragStart.y)
             );
             let dx = svgDelta.dx;
             let dy = svgDelta.dy;
@@ -743,8 +743,8 @@ Object.assign(DesignEditor.prototype, {
         // ===== NORMAL RESIZE =====
 
         const svgDelta = this.clientDeltaToSvgDelta(
-            e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
-            e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
+            e.clientX - (this.dragStart.startClientX  this.dragStart.x),
+            e.clientY - (this.dragStart.startClientY  this.dragStart.y)
         );
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         let dx = svgDelta.dx;
@@ -824,8 +824,8 @@ Object.assign(DesignEditor.prototype, {
             } else {
                 // Corner handles: project mouse delta into one continuous scalar
                 // to avoid frame-by-frame axis switching flicker.
-                const signX = this.resizeHandle.includes('w') ? -1 : 1;
-                const signY = this.resizeHandle.includes('n') ? -1 : 1;
+                const signX = this.resizeHandle.includes('w')  -1 : 1;
+                const signY = this.resizeHandle.includes('n')  -1 : 1;
                 const projectedHeightDelta = ((signY * dy) + ((signX * dx) / ratio)) / 2;
                 const targetHeight = Math.max(20, bbox.height + projectedHeightDelta);
                 const targetWidth = Math.max(20, targetHeight * ratio);
@@ -834,10 +834,10 @@ Object.assign(DesignEditor.prototype, {
                 newHeight = targetHeight;
 
                 newX = this.resizeHandle.includes('w')
-                    ? bbox.x + (bbox.width - newWidth)
+                     bbox.x + (bbox.width - newWidth)
                     : bbox.x;
                 newY = this.resizeHandle.includes('n')
-                    ? bbox.y + (bbox.height - newHeight)
+                     bbox.y + (bbox.height - newHeight)
                     : bbox.y;
             }
         }
@@ -856,13 +856,13 @@ Object.assign(DesignEditor.prototype, {
         };
 
         const constrainedRect = rotation === 0
-            ? (shouldKeepRatio
-                ? this.constrainResizeRectWithRatio(
+             (shouldKeepRatio
+                 this.constrainResizeRectWithRatio(
                     startBox,
                     proposedBox,
                     this.resizeHandle,
                     canvasBounds,
-                    bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
+                    bbox.width > 0 && bbox.height > 0  (bbox.width / bbox.height) : 1
                 )
                 : this.constrainResizeRect(
                     startBox,
@@ -900,8 +900,8 @@ Object.assign(DesignEditor.prototype, {
                 .map((pair) => pair.split(',').map(Number));
 
             if (currentPoints.length >= 3) {
-                const scaleX = bbox.width > 0 ? (newWidth / bbox.width) : 1;
-                const scaleY = bbox.height > 0 ? (newHeight / bbox.height) : 1;
+                const scaleX = bbox.width > 0  (newWidth / bbox.width) : 1;
+                const scaleY = bbox.height > 0  (newHeight / bbox.height) : 1;
                 const resized = currentPoints.map(([x, y]) => {
                     const nextX = newX + (x - bbox.x) * scaleX;
                     const nextY = newY + (y - bbox.y) * scaleY;
@@ -921,7 +921,7 @@ Object.assign(DesignEditor.prototype, {
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             
             // Get current baseline position
-            const currentY = this.dragStart.textY ?? parseFloat(this.selectedElement.element.getAttribute('y') || '0');
+            const currentY = this.dragStart.textY  parseFloat(this.selectedElement.element.getAttribute('y') || '0');
             
             // Calculate how much the baseline should move based on bbox.y change
             const yOffset = newY - bbox.y;
@@ -990,7 +990,7 @@ Object.assign(DesignEditor.prototype, {
         this.rotationStartX = mouseX;
         this.rotationStartY = mouseY;
         this.rotationHasMovement = false;
-        this.rotationMovementThreshold = this._touchGestureActive ? 1 : 0;
+        this.rotationMovementThreshold = this._touchGestureActive  1 : 0;
     },
     
     doRotate(e) {
@@ -1000,7 +1000,7 @@ Object.assign(DesignEditor.prototype, {
         if (!this.rotationHasMovement) {
             const dx = Math.abs(e.clientX - this.rotationStartX);
             const dy = Math.abs(e.clientY - this.rotationStartY);
-            const threshold = Number.isFinite(this.rotationMovementThreshold) ? this.rotationMovementThreshold : 0;
+            const threshold = Number.isFinite(this.rotationMovementThreshold)  this.rotationMovementThreshold : 0;
             if (dx < threshold && dy < threshold) {
                 return; // Muito pequeno ainda
             }
@@ -1027,11 +1027,11 @@ Object.assign(DesignEditor.prototype, {
         }
 
         // Normalize rotation and snap to 45-degree guides when very close.
-        rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
+        rotation = this.getRotationGuideSnap(rotation, e.shiftKey  2 : 4).value;
         
         const previousTransform = this.selectedElement.element.getAttribute('transform');
         const candidateTransform = rotation
-            ? `rotate(${rotation} ${centerX} ${centerY})`
+             `rotate(${rotation} ${centerX} ${centerY})`
             : null;
 
         // Apply candidate transform once to validate bounds at the same pivot.
@@ -1101,7 +1101,7 @@ Object.assign(DesignEditor.prototype, {
 
             const previousTransform = this.selectedElement.element.getAttribute('transform');
             const candidateTransform = rotation
-                ? `rotate(${rotation} ${centerX} ${centerY})`
+                 `rotate(${rotation} ${centerX} ${centerY})`
                 : null;
 
             // Test the new rotation using the same pivot.
@@ -1130,8 +1130,8 @@ Object.assign(DesignEditor.prototype, {
                 }
                 // Reset input to previous value
                 const prevRotation = this.selectedElement.rotation || 0;
-                const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
-                               this.selectedElement.type === 'image' ? 'prop-image-rotation' :
+                const inputId = this.selectedElement.type === 'text'  'prop-text-rotation' :
+                               this.selectedElement.type === 'image'  'prop-image-rotation' :
                                'prop-shape-rotation';
                 const input = document.getElementById(inputId);
                 if (input) input.value = prevRotation;

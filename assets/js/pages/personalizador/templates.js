@@ -91,12 +91,12 @@ Object.assign(DesignEditor.prototype, {
             // Render categories
             const categories = window.DesignTemplates?.categories || [];
             categoriesContainer.innerHTML = `
-                <button class="template-category ${!categoryId ? 'active' : ''}" data-category="all">
+                <button class="template-category ${!categoryId  'active' : ''}" data-category="all">
                     <i data-lucide="layout-grid" class="w-4 h-4"></i>
                     <span>Todos</span>
                 </button>
                 ${categories.map(cat => `
-                    <button class="template-category ${categoryId === cat.id ? 'active' : ''}" data-category="${cat.id}">
+                    <button class="template-category ${categoryId === cat.id  'active' : ''}" data-category="${cat.id}">
                         <i data-lucide="${cat.icon}" class="w-4 h-4"></i>
                         <span>${cat.name}</span>
                     </button>
@@ -109,7 +109,7 @@ Object.assign(DesignEditor.prototype, {
                     const cat = btn.dataset.category;
                     categoriesContainer.querySelectorAll('.template-category').forEach(b => b.classList.remove('active'));
                     btn.classList.add('active');
-                    this.renderTemplateGallery(cat === 'all' ? null : cat, searchQuery);
+                    this.renderTemplateGallery(cat === 'all'  null : cat, searchQuery);
                 });
             });
 
@@ -202,7 +202,7 @@ Object.assign(DesignEditor.prototype, {
         // Add text placeholders
         texts.forEach((text, i) => {
             const fontSize = Math.min(text.size / 2, 16);
-            svgContent += `<text x="${(text.x / 800) * 100}%" y="${((text.y / 600) * 100) + (i * 10)}%" text-anchor="middle" font-size="${fontSize}" fill="${text.color}" font-family="${text.font}" font-weight="${text.bold ? 'bold' : 'normal'}">${text.content.substring(0, 15)}</text>`;
+            svgContent += `<text x="${(text.x / 800) * 100}%" y="${((text.y / 600) * 100) + (i * 10)}%" text-anchor="middle" font-size="${fontSize}" fill="${text.color}" font-family="${text.font}" font-weight="${text.bold  'bold' : 'normal'}">${text.content.substring(0, 15)}</text>`;
         });
 
         return `<svg viewBox="0 0 800 600" xmlns="http://www.w3.org/2000/svg">${svgContent}</svg>`;
@@ -210,7 +210,7 @@ Object.assign(DesignEditor.prototype, {
 
     filterTemplates(query) {
         const activeCategory = document.querySelector('.template-category.active')?.dataset.category;
-        const categoryId = activeCategory === 'all' ? null : activeCategory;
+        const categoryId = activeCategory === 'all'  null : activeCategory;
         this.renderTemplateGallery(categoryId, query);
     },
 
@@ -252,56 +252,56 @@ Object.assign(DesignEditor.prototype, {
     normalizeTemplateElement(data = {}) {
         const properties = data.properties || {};
         const normalizedType = data.type
-            || (properties.text !== undefined || properties.fontFamily !== undefined ? 'text' : null)
-            || (properties.shape !== undefined ? 'shape' : null)
-            || (properties.src !== undefined ? 'image' : null)
-            || (properties.content !== undefined ? 'qrcode' : null)
+            || (properties.text !== undefined || properties.fontFamily !== undefined  'text' : null)
+            || (properties.shape !== undefined  'shape' : null)
+            || (properties.src !== undefined  'image' : null)
+            || (properties.content !== undefined  'qrcode' : null)
             || 'shape';
 
         const normalized = {
             ...data,
             type: normalizedType,
-            x: Number(data.x ?? 0),
-            y: Number(data.y ?? 0),
-            width: Number(data.width ?? 0),
-            height: Number(data.height ?? 0),
-            rotation: Number(data.rotation ?? 0)
+            x: Number(data.x  0),
+            y: Number(data.y  0),
+            width: Number(data.width  0),
+            height: Number(data.height  0),
+            rotation: Number(data.rotation  0)
         };
 
         if (normalizedType === 'text') {
-            normalized.content = data.content ?? properties.text ?? 'Texto';
-            normalized.font = data.font ?? properties.fontFamily ?? 'Arial';
-            normalized.size = Number(data.size ?? properties.fontSize ?? 24);
-            normalized.color = data.color ?? properties.color ?? '#000000';
-            normalized.bold = Boolean(data.bold ?? (String(properties.fontWeight || '').toLowerCase() === 'bold'));
-            normalized.italic = Boolean(data.italic ?? (String(properties.fontStyle || '').toLowerCase() === 'italic'));
+            normalized.content = data.content  properties.text  'Texto';
+            normalized.font = data.font  properties.fontFamily  'Arial';
+            normalized.size = Number(data.size  properties.fontSize  24);
+            normalized.color = data.color  properties.color  '#000000';
+            normalized.bold = Boolean(data.bold  (String(properties.fontWeight || '').toLowerCase() === 'bold'));
+            normalized.italic = Boolean(data.italic  (String(properties.fontStyle || '').toLowerCase() === 'italic'));
             normalized.textAnchor = data.textAnchor
-                ?? (properties.textAlign === 'center' ? 'middle' : properties.textAlign === 'right' ? 'end' : 'start');
+                 (properties.textAlign === 'center'  'middle' : properties.textAlign === 'right'  'end' : 'start');
         }
 
         if (normalizedType === 'shape') {
-            normalized.shapeType = data.shapeType ?? properties.shape ?? 'rectangle';
-            normalized.fill = data.fill ?? properties.fill ?? '#3b82f6';
-            normalized.stroke = data.stroke ?? properties.stroke ?? 'none';
-            normalized.strokeWidth = Number(data.strokeWidth ?? properties.strokeWidth ?? 0);
+            normalized.shapeType = data.shapeType  properties.shape  'rectangle';
+            normalized.fill = data.fill  properties.fill  '#3b82f6';
+            normalized.stroke = data.stroke  properties.stroke  'none';
+            normalized.strokeWidth = Number(data.strokeWidth  properties.strokeWidth  0);
         }
 
         if (normalizedType === 'image') {
-            normalized.src = data.src ?? properties.src ?? '';
-            normalized.name = data.name ?? properties.name ?? 'Imagem';
-            normalized.imageKind = data.imageKind ?? properties.imageKind ?? 'image';
-            normalized.opacity = Number(data.opacity ?? properties.opacity ?? 1);
-            normalized.objectFit = data.objectFit ?? properties.objectFit ?? 'cover';
-            normalized.borderRadius = Number(data.borderRadius ?? properties.borderRadius ?? 0);
-            normalized.qrContent = data.qrContent ?? properties.qrContent ?? '';
-            normalized.qrColor = data.qrColor ?? properties.qrColor ?? '#111827';
+            normalized.src = data.src  properties.src  '';
+            normalized.name = data.name  properties.name  'Imagem';
+            normalized.imageKind = data.imageKind  properties.imageKind  'image';
+            normalized.opacity = Number(data.opacity  properties.opacity  1);
+            normalized.objectFit = data.objectFit  properties.objectFit  'cover';
+            normalized.borderRadius = Number(data.borderRadius  properties.borderRadius  0);
+            normalized.qrContent = data.qrContent  properties.qrContent  '';
+            normalized.qrColor = data.qrColor  properties.qrColor  '#111827';
         }
 
         if (normalizedType === 'qrcode') {
-            normalized.name = data.name ?? properties.name ?? 'QR Code';
-            normalized.qrContent = data.qrContent ?? properties.content ?? '';
-            normalized.qrColor = data.qrColor ?? properties.color ?? '#111827';
-            normalized.bgColor = data.bgColor ?? properties.bgColor ?? '#ffffff';
+            normalized.name = data.name  properties.name  'QR Code';
+            normalized.qrContent = data.qrContent  properties.content  '';
+            normalized.qrColor = data.qrColor  properties.color  '#111827';
+            normalized.bgColor = data.bgColor  properties.bgColor  '#ffffff';
             normalized.imageKind = 'qr';
         }
 
@@ -332,8 +332,8 @@ Object.assign(DesignEditor.prototype, {
         textElement.setAttribute('font-family', data.font || 'Arial');
         textElement.setAttribute('font-size', data.size || 24);
         textElement.setAttribute('fill', data.color || '#000000');
-        textElement.setAttribute('font-weight', data.bold ? 'bold' : 'normal');
-        textElement.setAttribute('font-style', data.italic ? 'italic' : 'normal');
+        textElement.setAttribute('font-weight', data.bold  'bold' : 'normal');
+        textElement.setAttribute('font-style', data.italic  'italic' : 'normal');
         textElement.setAttribute('text-anchor', data.textAnchor || 'start');
         textElement.setAttribute('data-element-id', id);
         textElement.textContent = data.content || 'Texto';
@@ -401,7 +401,7 @@ Object.assign(DesignEditor.prototype, {
     addImageFromTemplate(data) {
         const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
+        const src = data.src || (data.imageKind === 'qr' && data.qrContent  this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
 
         imageElement.setAttribute('id', id);
         imageElement.setAttribute('x', String(data.x || 0));
@@ -411,7 +411,7 @@ Object.assign(DesignEditor.prototype, {
         imageElement.setAttribute('data-editable', 'true');
         imageElement.setAttribute('data-element-id', id);
         imageElement.setAttribute('href', src);
-        imageElement.setAttribute('opacity', String(data.opacity ?? 1));
+        imageElement.setAttribute('opacity', String(data.opacity  1));
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
 
@@ -425,7 +425,7 @@ Object.assign(DesignEditor.prototype, {
         const objectFit = String(data.objectFit || 'cover').toLowerCase();
         imageElement.setAttribute(
             'preserveAspectRatio',
-            objectFit === 'contain' ? 'xMidYMid meet' : objectFit === 'fill' ? 'none' : 'xMidYMid slice'
+            objectFit === 'contain'  'xMidYMid meet' : objectFit === 'fill'  'none' : 'xMidYMid slice'
         );
 
         if (data.borderRadius) {
