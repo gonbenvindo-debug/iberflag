@@ -279,7 +279,7 @@ function buildBlankTemplatePreviewMarkup() {
     const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
         blankSvg,
         currentProduct?.svg_template || null,
-        { backgroundColor: '#ffffff' }
+        { backgroundColor: 'transparent' }
     );
 
     if (previewMarkup) {

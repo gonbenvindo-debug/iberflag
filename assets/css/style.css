@@ -1839,8 +1839,12 @@ tbody tr:hover {
 
 #templates-modal-grid .template-gallery-card__preview-surface--blank {
     background:
-        radial-gradient(circle at 30% 25%, rgba(59, 130, 246, 0.06), transparent 34%),
-        linear-gradient(180deg, #f8fafc 0%, #eef2f7 100%);
+        linear-gradient(45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
+        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%),
+        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%);
+    background-size: 16px 16px;
+    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
 }
 
 #templates-modal-grid .template-gallery-card__preview-content,
