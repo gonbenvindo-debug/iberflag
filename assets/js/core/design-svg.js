@@ -18,6 +18,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
+    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v3';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
 
@@ -822,6 +823,31 @@
         return outlineNode;
     }
 
+    function buildPreviewOutlineHaloNode(maskNode, transform) {
+        const haloNode = maskNode.cloneNode(true);
+        haloNode.removeAttribute?.('id');
+        haloNode.removeAttribute?.('pointer-events');
+        haloNode.removeAttribute?.('opacity');
+        haloNode.removeAttribute?.('fill');
+        haloNode.removeAttribute?.('stroke');
+        haloNode.removeAttribute?.('stroke-width');
+        haloNode.removeAttribute?.('stroke-dasharray');
+        haloNode.setAttribute?.('fill', 'none');
+        haloNode.setAttribute?.('stroke', '#ffffff');
+        haloNode.setAttribute?.('stroke-width', '4');
+        haloNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
+        haloNode.setAttribute?.('opacity', '0.85');
+        haloNode.setAttribute?.('stroke-linecap', 'round');
+        haloNode.setAttribute?.('stroke-linejoin', 'round');
+        haloNode.setAttribute?.('pointer-events', 'none');
+        if (transform) {
+            haloNode.setAttribute?.('transform', transform);
+        } else {
+            haloNode.removeAttribute?.('transform');
+        }
+        return haloNode;
+    }
+
     function buildPreviewMaskNode(maskNode, transform) {
         const maskNodeClone = maskNode.cloneNode(true);
         maskNodeClone.removeAttribute?.('id');
@@ -907,6 +933,7 @@
         };
 
         return [
+            PREVIEW_MARKUP_CACHE_VERSION,
             serialize(previewValue),
             serialize(maskValue),
             serialize({
@@ -1091,7 +1118,9 @@
             wrapper.appendChild(image);
         }
 
+        const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
         const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
+        wrapper.appendChild(previewOutlineHaloNode);
         wrapper.appendChild(previewOutlineNode);
 
         const serialized = new XMLSerializer().serializeToString(wrapper);
