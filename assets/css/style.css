@@ -1784,6 +1784,7 @@ tbody tr:hover {
 #templates-modal-grid .template-gallery-card {
     appearance: none;
     width: 100%;
+    max-height: 24rem;
     border: 1px solid rgba(148, 163, 184, 0.26);
     background: #ffffff;
     border-radius: 1.25rem;
@@ -1813,6 +1814,7 @@ tbody tr:hover {
     position: relative;
     aspect-ratio: var(--template-preview-ratio, 4 / 3);
     min-height: 11rem;
+    max-height: 18rem;
     background: #f8fafc;
     overflow: hidden;
     border-bottom: 1px solid rgba(148, 163, 184, 0.16);
