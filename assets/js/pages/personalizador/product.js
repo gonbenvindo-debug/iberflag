@@ -426,6 +426,11 @@ Object.assign(DesignEditor.prototype, {
         this.updateCartStepsTotalDisplay();
         this.setCartStepsCurrent(1);
 
+        if (typeof modal.inert !== 'undefined') {
+            modal.inert = false;
+        } else {
+            modal.removeAttribute('inert');
+        }
         modal.classList.add('is-open');
         modal.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
@@ -441,6 +446,11 @@ Object.assign(DesignEditor.prototype, {
 
         modal.classList.remove('is-open');
         modal.setAttribute('aria-hidden', 'true');
+        if (typeof modal.inert !== 'undefined') {
+            modal.inert = true;
+        } else {
+            modal.setAttribute('inert', '');
+        }
         document.body.style.overflow = '';
     },
 
