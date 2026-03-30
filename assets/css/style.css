@@ -1777,10 +1777,12 @@ tbody tr:hover {
     letter-spacing: 0.01em;
 }
 
+#templates-modal-grid,
 #product-templates-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
 }
 
+#templates-modal-grid .template-toggle-preview,
 #product-templates-grid .template-toggle-preview {
     aspect-ratio: 1 / 1;
     display: flex;
@@ -1791,6 +1793,7 @@ tbody tr:hover {
     position: relative;
 }
 
+#templates-modal-grid .template-toggle-preview img,
 #product-templates-grid .template-toggle-preview img {
     position: absolute;
     top: 0;
@@ -1802,6 +1805,7 @@ tbody tr:hover {
     box-sizing: border-box;
 }
 
+#templates-modal-grid .template-preview-img,
 #product-templates-grid .template-preview-img {
     width: 100% !important;
     height: 100% !important;
@@ -1809,18 +1813,21 @@ tbody tr:hover {
 }
 
 @media (min-width: 640px) {
+    #templates-modal-grid,
     #product-templates-grid {
         grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 768px) {
+    #templates-modal-grid,
     #product-templates-grid {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 }
 
 @media (min-width: 1024px) {
+    #templates-modal-grid,
     #product-templates-grid {
         grid-template-columns: repeat(6, minmax(0, 1fr));
     }

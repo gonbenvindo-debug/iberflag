@@ -260,20 +260,41 @@ function createBlankPreviewMarkup() {
     ) || '<div class="w-full h-full bg-white"></div>';
 }
 
-function createBlankTemplateCard(productAspectRatio) {
+function buildTemplateToggleCard({
+    id,
+    title,
+    subtitle = '',
+    previewContent,
+    previewAspectRatio,
+    onClick,
+    dataTemplateId = '',
+    extraButton = '',
+}) {
     return `
-        <div id="template-card-blank" class="group cursor-pointer" onclick="startBlank()">
-            <div id="template-card-blank-frame" class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${productAspectRatio}; background-color:#ffffff; background-image:linear-gradient(45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.24) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.24) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                <div id="template-card-blank-preview" class="relative z-20 w-full h-full">
-                    ${createBlankPreviewMarkup()}
+        <div id="${id}" class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm" ${onClick ? `onclick="${onClick}"` : ''} ${dataTemplateId ? `data-template-id="${dataTemplateId}"` : ''}>
+            <div id="${id}-preview" class="template-toggle-preview relative bg-gray-50" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.24) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.24) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
+                <div id="${id}-preview-content" class="relative z-20 w-full h-full">
+                    ${previewContent}
                 </div>
+                ${extraButton}
             </div>
-            <div id="template-card-blank-info" class="mt-2.5 px-1">
-                <p id="template-card-blank-title" class="font-semibold text-sm text-gray-900 truncate">Em branco</p>
-                <p id="template-card-blank-subtitle" class="text-xs text-gray-500 truncate">Sem elementos</p>
+            <div id="${id}-info" class="px-2 py-2 border-t border-gray-100 bg-white">
+                <h4 id="${id}-title" class="font-semibold text-xs text-gray-900 truncate text-center leading-tight">${escapeHtml(title)}</h4>
+                ${subtitle ? `<p id="${id}-subtitle" class="text-[11px] text-gray-500 truncate text-center mt-0.5">${escapeHtml(subtitle)}</p>` : ''}
             </div>
         </div>
     `;
+}
+
+function createBlankTemplateCard(productAspectRatio) {
+    return buildTemplateToggleCard({
+        id: 'template-card-blank',
+        title: 'Em branco',
+        subtitle: 'Sem elementos',
+        previewContent: createBlankPreviewMarkup(),
+        previewAspectRatio: productAspectRatio,
+        onClick: 'startBlank()',
+    });
 }
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -530,20 +551,15 @@ function renderTemplates(templates) {
         );
         const previewContent = previewMarkup
             ? previewMarkup
-            : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" onerror="this.src='/assets/images/template-placeholder.svg';">`;
+            : `<img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(template.nome)}" loading="lazy" class="template-preview-img transition-transform duration-300 group-hover:scale-[1.02]" onerror="this.src='/assets/images/template-placeholder.svg';">`;
         const templateDomId = makeDomSafeId(template.id || template.nome || 'template');
-        return `
-        <div id="template-card-${templateDomId}" class="group cursor-pointer" onclick="selectTemplate('${template.id}')">
-            <div id="template-card-${templateDomId}-frame" class="rounded-2xl overflow-hidden border-2 border-gray-200 group-hover:border-blue-500 transition-all duration-300 relative shadow-sm group-hover:shadow-lg" style="aspect-ratio:${previewAspectRatio}; background-color:#f8fafc; background-image:linear-gradient(45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(-45deg, rgba(148,163,184,.24) 25%, transparent 25%), linear-gradient(45deg, transparent 75%, rgba(148,163,184,.24) 75%), linear-gradient(-45deg, transparent 75%, rgba(148,163,184,.24) 75%); background-size:16px 16px; background-position:0 0, 0 8px, 8px -8px, -8px 0px;">
-                <div id="template-card-${templateDomId}-preview" class="relative z-20 w-full h-full">
-                    ${previewContent}
-                </div>
-            </div>
-            <div id="template-card-${templateDomId}-info" class="mt-2.5 px-1">
-                <p id="template-card-${templateDomId}-title" class="font-semibold text-sm text-gray-900 truncate">${escapeHtml(template.nome)}</p>
-            </div>
-        </div>
-    `;
+        return buildTemplateToggleCard({
+            id: `template-card-${templateDomId}`,
+            title: template.nome,
+            previewContent,
+            previewAspectRatio,
+            onClick: `selectTemplate('${template.id}')`,
+        });
     }).join('');
 
     if (typeof lucide !== 'undefined') lucide.createIcons();
