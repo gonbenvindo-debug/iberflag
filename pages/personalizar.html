@@ -128,6 +128,19 @@
             border-top: 1px solid #e2e8f0;
         }
 
+        #elements-panel,
+        #properties-panel {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        #elements-panel {
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            gap: 0.9rem;
+        }
+
         .section-title {
             font-size: 0.78rem;
             text-transform: uppercase;
@@ -684,6 +697,58 @@
             text-align: center;
             color: #64748b;
             background: #f8fafc;
+        }
+
+        .image-library-panel-sidebar {
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            min-height: 0;
+            flex: 1 1 auto;
+            padding-top: 0.9rem;
+            border-top: 1px solid #e2e8f0;
+        }
+
+        .image-library-panel-sidebar__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+        }
+
+        .image-library-panel-sidebar__badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 1.9rem;
+            padding: 0 0.7rem;
+            border-radius: 999px;
+            background: #eff6ff;
+            color: #1d4ed8;
+            font-size: 0.72rem;
+            font-weight: 800;
+            white-space: nowrap;
+        }
+
+        .image-library-search--sidebar {
+            padding: 0.8rem;
+            background: #f8fafc;
+        }
+
+        .image-library-scroll {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            padding-right: 0.2rem;
+        }
+
+        .image-library-grid--sidebar {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 0.65rem;
+        }
+
+        .image-library-grid--sidebar .image-library-card__thumb {
+            aspect-ratio: 1 / 1;
         }
 
         .cart-steps-modal {
@@ -1435,6 +1500,37 @@
                             </button>
                         </div>
                     </div>
+
+                    <div id="image-library-panel" class="image-library-panel-sidebar">
+                        <div class="image-library-panel-sidebar__head">
+                            <p class="elements-group-title">Galeria</p>
+                            <span class="image-library-panel-sidebar__badge" id="pixabay-search-count"></span>
+                        </div>
+
+                        <div class="image-library-search image-library-search--sidebar">
+                            <div class="image-library-search__row">
+                                <input id="pixabay-search-input" class="image-library-search__input" type="search"
+                                    placeholder="Pesquisar imagens">
+                                <button id="pixabay-search-btn" type="button" class="image-library-search__button">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                    Buscar
+                                </button>
+                            </div>
+                            <div class="image-library-meta">
+                                <span class="image-library-status" id="pixabay-search-status">Galeria publica de imagens</span>
+                            </div>
+                        </div>
+
+                        <div class="image-library-scroll">
+                            <div id="pixabay-results" class="image-library-grid image-library-grid--sidebar"></div>
+                            <div id="pixabay-pagination" class="mt-4 flex justify-center"></div>
+                            <div id="pixabay-empty" class="image-library-empty hidden">
+                                <i data-lucide="image-off" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+                                <p class="font-semibold text-slate-700">Sem resultados ainda</p>
+                                <p class="text-sm mt-1">Pesquisa uma palavra para ver imagens publicas aqui.</p>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
                     <p class="section-title">Propriedades</p>
@@ -1695,7 +1791,7 @@
         </div>
     </div>
 
-    <div id="image-library-modal" class="image-library-modal" aria-hidden="true" role="dialog" aria-modal="true"
+    <div id="legacy-image-library-modal" class="image-library-modal" style="display:none" aria-hidden="true" role="dialog" aria-modal="true"
         inert>
         <div class="image-library-panel">
             <div class="image-library-header">
@@ -1704,7 +1800,7 @@
                     <p class="text-sm text-slate-500 mt-1">Escolhe um ficheiro do computador ou pesquisa imagens
                         pÃºblicas no Pixabay.</p>
                 </div>
-                <button id="image-library-close" type="button" class="p-2 rounded-lg hover:bg-slate-100"
+                <button id="legacy-image-library-close" type="button" class="p-2 rounded-lg hover:bg-slate-100"
                     aria-label="Fechar biblioteca de imagens">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
@@ -1718,7 +1814,7 @@
                             <p class="text-sm text-slate-500 mt-1">MantÃ©m o mesmo recorte e ajuste das imagens
                                 normais.</p>
                         </div>
-                        <button id="image-library-local-btn" type="button" class="image-library-upload-card__button">
+                        <button id="legacy-image-library-local-btn" type="button" class="image-library-upload-card__button">
                             <i data-lucide="upload" class="w-4 h-4"></i>
                             Escolher ficheiro
                         </button>
@@ -1733,23 +1829,23 @@
                             </p>
                         </div>
                         <div class="image-library-search__row">
-                            <input id="pixabay-search-input" class="image-library-search__input" type="search"
+                            <input id="legacy-pixabay-search-input" class="image-library-search__input" type="search"
                                 placeholder="Pesquisar imagens, ex.: bandeira, evento, outdoor">
-                            <button id="pixabay-search-btn" type="button" class="image-library-search__button">
+                            <button id="legacy-pixabay-search-btn" type="button" class="image-library-search__button">
                                 <i data-lucide="search" class="w-4 h-4"></i>
                                 Pesquisar
                             </button>
                         </div>
                         <div class="image-library-meta">
-                            <span class="image-library-status" id="pixabay-search-status">Pronto para pesquisar</span>
-                            <span id="pixabay-search-count"></span>
+                            <span class="image-library-status" id="legacy-pixabay-search-status">Pronto para pesquisar</span>
+                            <span id="legacy-pixabay-search-count"></span>
                         </div>
                     </div>
                 </div>
 
-                <div id="pixabay-results" class="image-library-grid"></div>
-                <div id="pixabay-pagination" class="mt-4 flex justify-center"></div>
-                <div id="pixabay-empty" class="image-library-empty hidden">
+                <div id="legacy-pixabay-results" class="image-library-grid"></div>
+                <div id="legacy-pixabay-pagination" class="mt-4 flex justify-center"></div>
+                <div id="legacy-pixabay-empty" class="image-library-empty hidden">
                     <i data-lucide="image-off" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
                     <p class="font-semibold text-slate-700">Sem resultados ainda</p>
                     <p class="text-sm mt-1">Faz uma pesquisa para ver imagens pÃºblicas do Pixabay aqui.</p>

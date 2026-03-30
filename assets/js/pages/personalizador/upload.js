@@ -236,7 +236,7 @@ Object.assign(DesignEditor.prototype, {
             this.pixabaySearchState = {
                 query: '',
                 page: 1,
-                perPage: 12,
+                perPage: 8,
                 totalHits: 0,
                 hits: [],
                 hasSearched: false,
@@ -252,29 +252,14 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const modal = document.getElementById('image-library-modal');
-        const closeBtn = document.getElementById('image-library-close');
-        const localBtn = document.getElementById('image-library-local-btn');
+        const panel = document.getElementById('image-library-panel');
         const searchBtn = document.getElementById('pixabay-search-btn');
         const searchInput = document.getElementById('pixabay-search-input');
         const results = document.getElementById('pixabay-results');
 
-        if (!modal || !closeBtn || !localBtn || !searchBtn || !searchInput || !results) {
+        if (!panel || !searchBtn || !searchInput || !results) {
             return;
         }
-
-        closeBtn.addEventListener('click', () => this.closeImageLibraryModal());
-
-        modal.addEventListener('click', (event) => {
-            if (event.target === modal) {
-                this.closeImageLibraryModal();
-            }
-        });
-
-        localBtn.addEventListener('click', () => {
-            this.closeImageLibraryModal();
-            document.getElementById('image-upload')?.click();
-        });
 
         searchBtn.addEventListener('click', () => {
             this.searchPixabayImages(searchInput.value, 1);
@@ -300,67 +285,58 @@ Object.assign(DesignEditor.prototype, {
         });
 
         document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && modal.classList.contains('is-open')) {
-                this.closeImageLibraryModal();
+            if (event.key === 'Escape' && document.activeElement === searchInput) {
+                searchInput.blur();
             }
         });
 
         this.imageLibraryListenersReady = true;
+
+        if (!this.getPixabayState().hasSearched) {
+            this.searchPixabayImages('', 1);
+        } else {
+            const state = this.getPixabayState();
+            if (Array.isArray(state.hits) && state.hits.length > 0) {
+                this.renderPixabayResults(state.hits, {
+                    query: state.query,
+                    totalHits: state.totalHits,
+                    page: state.page,
+                    perPage: state.perPage
+                });
+            }
+        }
     },
 
     openImageLibraryModal() {
         this.setupImageLibraryModalListeners();
 
-        const modal = document.getElementById('image-library-modal');
         const searchInput = document.getElementById('pixabay-search-input');
         const status = document.getElementById('pixabay-search-status');
         const count = document.getElementById('pixabay-search-count');
-
-        if (!modal) return;
-
-        const state = this.getPixabayState();
-
-        modal.classList.add('is-open');
-        modal.removeAttribute('inert');
-        modal.setAttribute('aria-hidden', 'false');
-        document.body.classList.add('overflow-hidden');
-        this.preventSidebarClose?.();
+        const panel = document.getElementById('image-library-panel');
+        if (!panel) return;
 
         if (searchInput) {
-            searchInput.value = state.query || '';
+            searchInput.value = this.getPixabayState().query || '';
             window.requestAnimationFrame?.(() => searchInput.focus({ preventScroll: true }));
+            panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
 
         if (status) {
+            const state = this.getPixabayState();
             status.textContent = state.hasSearched && state.query
                 ? `Resultados para "${state.query}"`
-                : 'Galeria publica do Pixabay';
+                : 'Galeria publica de imagens';
         }
 
         if (count) {
+            const state = this.getPixabayState();
             count.textContent = state.totalHits ? `${Number(state.totalHits).toLocaleString('pt-PT')} imagens` : '';
-        }
-
-        if (Array.isArray(state.hits) && state.hits.length > 0) {
-            this.renderPixabayResults(state.hits, {
-                query: state.query,
-                totalHits: state.totalHits,
-                page: state.page,
-                perPage: state.perPage
-            });
-        } else if (!state.loading) {
-            this.searchPixabayImages(state.query || '', 1);
         }
     },
 
     closeImageLibraryModal() {
-        const modal = document.getElementById('image-library-modal');
-        if (modal) {
-            modal.classList.remove('is-open');
-            modal.setAttribute('aria-hidden', 'true');
-            modal.setAttribute('inert', '');
-        }
-        document.body.classList.remove('overflow-hidden');
+        return;
     },
 
     renderPixabayEmptyState(title, description, icon = 'image-off') {
@@ -439,7 +415,7 @@ Object.assign(DesignEditor.prototype, {
                 <button id="pixabay-load-more" type="button"
                     class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
                     <i data-lucide="plus" class="w-4 h-4"></i>
-                    Carregar mais
+                    Ver mais
                 </button>
             ` : '';
 
@@ -591,7 +567,6 @@ Object.assign(DesignEditor.prototype, {
             const blob = await response.blob();
             const dataUrl = await this.blobToDataUrl(blob);
 
-            this.closeImageLibraryModal();
             const cropped = await this.openUploadCropModal(dataUrl);
             if (!cropped) {
                 return;
@@ -614,7 +589,7 @@ Object.assign(DesignEditor.prototype, {
             if (status) {
                 status.textContent = state.hasSearched && state.query
                     ? `Resultados para "${state.query}"`
-                    : 'Galeria publica do Pixabay';
+                : 'Galeria publica do Pixabay';
             }
         }
     },

@@ -221,10 +221,6 @@ Object.assign(DesignEditor.prototype, {
         // Add elements
         document.getElementById('add-text-btn').addEventListener('click', () => this.addText());
         document.getElementById('add-image-btn').addEventListener('click', () => {
-            if (typeof this.openImageLibraryModal === 'function') {
-                this.openImageLibraryModal();
-                return;
-            }
             document.getElementById('image-upload')?.click();
         });
         document.getElementById('image-upload').addEventListener('change', (e) => this.handleImageUpload(e));
@@ -237,6 +233,10 @@ Object.assign(DesignEditor.prototype, {
         document.querySelectorAll('.shape-btn').forEach(btn => {
             btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
         });
+
+        if (typeof this.setupImageLibraryModalListeners === 'function') {
+            this.setupImageLibraryModalListeners();
+        }
 
         // Zoom
         document.getElementById('zoom-in').addEventListener('click', () => this.setZoom(this.zoom + 0.1));
