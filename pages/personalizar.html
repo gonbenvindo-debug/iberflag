@@ -138,42 +138,108 @@
         }
 
         .elements-panel-head {
-            margin-bottom: 0.9rem;
+            padding: 0.95rem 1rem;
+            margin: -0.25rem -0.25rem 1rem;
+            border-radius: 18px;
+            background:
+                radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 36%),
+                linear-gradient(180deg, #f8fbff 0%, #ffffff 60%);
+            border: 1px solid #dce7f7;
+        }
+
+        .elements-panel-kicker {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            margin-bottom: 0.55rem;
+        }
+
+        .elements-panel-chip,
+        .elements-panel-badge,
+        .elements-group-hint {
+            display: inline-flex;
+            align-items: center;
+            border-radius: 999px;
+            font-size: 0.68rem;
+            font-weight: 800;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            white-space: nowrap;
+        }
+
+        .elements-panel-chip {
+            padding: 0.34rem 0.55rem;
+            background: #111827;
+            color: #ffffff;
+        }
+
+        .elements-panel-badge {
+            padding: 0.34rem 0.55rem;
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .elements-panel-title {
+            margin: 0;
+            font-size: 1.15rem;
+            line-height: 1.1;
+            font-weight: 900;
+            color: #0f172a;
+            letter-spacing: -0.03em;
         }
 
         .elements-panel-note {
-            margin-top: -0.2rem;
-            font-size: 0.8rem;
-            line-height: 1.45;
-            color: #64748b;
+            margin-top: 0.35rem;
+            font-size: 0.82rem;
+            line-height: 1.4;
+            color: #5b6b82;
         }
 
         .elements-group {
             margin-bottom: 1rem;
         }
 
+        .elements-group-head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.65rem;
+            margin-bottom: 0.55rem;
+        }
+
         .elements-group-title {
-            margin-bottom: 0.65rem;
-            font-size: 0.78rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
+            margin: 0;
+            font-size: 0.74rem;
+            font-weight: 800;
+            letter-spacing: 0.09em;
             text-transform: uppercase;
-            color: var(--text-muted);
+            color: #64748b;
+        }
+
+        .elements-group-hint {
+            padding: 0.28rem 0.5rem;
+            background: #f1f5f9;
+            color: #334155;
         }
 
         .elements-grid {
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.65rem;
+            gap: 0.6rem;
+        }
+
+        .elements-grid--compact {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
 
         .element-card,
         .shape-card {
             width: 100%;
             min-width: 0;
-            border: 1px solid var(--panel-border);
+            border: 1px solid #dbe3ee;
             background: #ffffff;
-            border-radius: 14px;
+            border-radius: 16px;
             text-align: left;
             transition: transform 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
         }
@@ -181,49 +247,58 @@
         .element-card {
             display: flex;
             align-items: center;
-            gap: 0.75rem;
-            padding: 0.8rem 0.85rem;
-            min-height: 4.4rem;
-            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
+            gap: 0.7rem;
+            padding: 0.78rem 0.8rem;
+            min-height: 3.8rem;
+            box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
         }
 
+        .tool-tile:hover,
+        .shape-tile:hover,
         .element-card:hover,
         .shape-card:hover {
             transform: translateY(-1px);
-            border-color: #cbd5e1;
+            border-color: #bfd3f7;
             box-shadow: 0 12px 24px rgba(15, 23, 42, 0.08);
             background: #f8fbff;
         }
 
         .element-card__icon,
-        .shape-card__icon {
+        .shape-card__icon,
+        .tool-tile__icon,
+        .shape-tile__icon {
             flex-shrink: 0;
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            width: 2.55rem;
-            height: 2.55rem;
+            width: 2.35rem;
+            height: 2.35rem;
             border-radius: 12px;
             background: #eff6ff;
             color: #2563eb;
         }
 
-        .element-card__icon--dark {
+        .element-card__icon--dark,
+        .tool-tile--dark .tool-tile__icon,
+        .tool-tile__icon.tool-tile--dark {
             background: #0f172a;
             color: #ffffff;
         }
 
-        .element-card__icon--neutral {
+        .element-card__icon--neutral,
+        .tool-tile--neutral .tool-tile__icon {
             background: #f1f5f9;
             color: #334155;
         }
 
-        .element-card--green .element-card__icon {
+        .element-card--green .element-card__icon,
+        .tool-tile--green .tool-tile__icon {
             background: #ecfdf5;
             color: #059669;
         }
 
-        .element-card--slate .element-card__icon {
+        .element-card--slate .element-card__icon,
+        .tool-tile--slate .tool-tile__icon {
             background: #e2e8f0;
             color: #0f172a;
         }
@@ -237,43 +312,74 @@
         }
 
         .element-card__title,
-        .shape-card__title {
+        .shape-card__title,
+        .tool-tile__label,
+        .shape-tile__label {
             display: block;
-            font-size: 0.88rem;
+            font-size: 0.84rem;
             font-weight: 800;
             color: #0f172a;
             line-height: 1.15;
+            letter-spacing: -0.01em;
         }
 
         .element-card__meta,
         .shape-card__meta {
-            display: block;
-            font-size: 0.72rem;
-            line-height: 1.35;
-            color: #64748b;
+            display: none;
         }
 
-        .shape-card {
+        .tool-tile {
+            display: flex;
+            align-items: center;
+            gap: 0.65rem;
+            width: 100%;
+            min-width: 0;
+            padding: 0.72rem 0.8rem;
+            border-radius: 16px;
+            border: 1px solid #dbe3ee;
+            background: #ffffff;
+            box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
+        }
+
+        .tool-tile__label {
+            white-space: nowrap;
+        }
+
+        .shape-grid {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 0.5rem;
+        }
+
+        .shape-tile {
             display: flex;
             flex-direction: column;
-            justify-content: flex-start;
-            gap: 0.55rem;
-            padding: 0.75rem;
-            min-height: 6.25rem;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            padding: 0.72rem 0.45rem 0.7rem;
+            min-height: 5.3rem;
+            border-radius: 16px;
+            border: 1px solid #dbe3ee;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+            box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
         }
 
-        .shape-card__icon {
-            width: 100%;
-            height: 2.25rem;
-            border-radius: 11px;
+        .shape-tile__icon {
+            width: 2.15rem;
+            height: 2.15rem;
+            border-radius: 12px;
             background: #f8fafc;
             color: #0f172a;
         }
 
-        .shape-card__icon svg {
-            width: 1.15rem;
-            height: 1.15rem;
+        .shape-tile__icon svg {
+            width: 1.05rem;
+            height: 1.05rem;
+        }
+
+        .tool-tile--blue {
+            background: linear-gradient(180deg, #ffffff 0%, #f8fbff 100%);
         }
 
         .action-btn {
@@ -822,9 +928,9 @@
         }
 
         /* =============================================
-           EDITOR LAYOUT — CSS puro, zero Tailwind no layout estrutural
+           EDITOR LAYOUT â€” CSS puro, zero Tailwind no layout estrutural
            Os elementos estruturais (nav, body-layout, main, canvas-stage,
-           bottom-bar) não têm classes Tailwind de layout — só CSS aqui.
+           bottom-bar) nÃ£o tÃªm classes Tailwind de layout â€” sÃ³ CSS aqui.
            ============================================= */
 
         /* ----- Componentes UI (desktop e mobile) ----- */
@@ -884,7 +990,7 @@
             pointer-events: auto;
         }
 
-        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepõe via @media) ----- */
+        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepÃµe via @media) ----- */
         #editor-nav {
             height: 4rem;
             display: flex;
@@ -896,7 +1002,7 @@
             box-sizing: border-box;
         }
 
-        /* Logo: altura fixa do nav para imunidade a reflow dos ícones */
+        /* Logo: altura fixa do nav para imunidade a reflow dos Ã­cones */
         #editor-nav>a:first-child {
             display: flex;
             align-items: center;
@@ -1128,6 +1234,28 @@
                 gap: 0.55rem;
             }
 
+            .elements-grid--compact {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .shape-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.45rem;
+            }
+
+            .tool-tile {
+                padding: 0.68rem 0.72rem;
+            }
+
+            .shape-tile {
+                min-height: 4.9rem;
+                padding: 0.65rem 0.4rem 0.6rem;
+            }
+
+            .shape-tile__label {
+                font-size: 0.74rem;
+            }
+
             .action-btn {
                 padding: 0.45rem 0.6rem;
                 font-size: 0.75rem;
@@ -1138,13 +1266,13 @@
                 grid-template-columns: repeat(2, 1fr) !important;
             }
 
-            /* Forçar 2 colunas nos botoes de acoes */
+            /* ForÃ§ar 2 colunas nos botoes de acoes */
             .grid.grid-cols-2 {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
             }
 
-            /* Forçar 3 colunas nas formas */
+            /* ForÃ§ar 3 colunas nas formas */
             .grid.grid-cols-3 {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
@@ -1332,131 +1460,97 @@
                 <span class="drawer-grip"></span>
                 <div id="elements-panel" class="sidebar-section overflow-y-auto">
                     <div class="elements-panel-head">
-                        <p class="section-title">Elementos</p>
-                        <p class="elements-panel-note">Texto, imagens, formas e atalhos rápidos para montar a bandeira.</p>
+                        <div class="elements-panel-kicker">
+                            <span class="elements-panel-chip">Ferramentas</span>
+                            <span class="elements-panel-badge">2 colunas</span>
+                        </div>
+                        <h2 class="elements-panel-title">Inserir no design</h2>
+                        <p class="elements-panel-note">Texto, imagem, QR e formas num painel compacto e rapido.</p>
                     </div>
 
                     <div class="elements-group">
-                        <p class="elements-group-title">Adicionar</p>
-                        <div class="elements-grid">
-                            <button id="add-text-btn" class="element-card element-card--blue">
-                                <span class="element-card__icon">
+                        <div class="elements-group-head">
+                            <p class="elements-group-title">Inserir</p>
+                            <span class="elements-group-hint">4 atalhos</span>
+                        </div>
+                        <div class="elements-grid elements-grid--compact">
+                            <button id="add-text-btn" class="tool-tile tool-tile--blue">
+                                <span class="tool-tile__icon">
                                     <i data-lucide="type" class="w-5 h-5"></i>
                                 </span>
-                                <span class="element-card__body">
-                                    <span class="element-card__title">Texto</span>
-                                    <span class="element-card__meta">Títulos, slogans e chamadas</span>
-                                </span>
+                                <span class="tool-tile__label">Texto</span>
                             </button>
 
-                            <button id="add-image-btn" class="element-card element-card--green">
-                                <span class="element-card__icon">
+                            <button id="add-image-btn" class="tool-tile tool-tile--green">
+                                <span class="tool-tile__icon">
                                     <i data-lucide="image" class="w-5 h-5"></i>
                                 </span>
-                                <span class="element-card__body">
-                                    <span class="element-card__title">Imagem</span>
-                                    <span class="element-card__meta">Logo, fotografia ou arte</span>
-                                </span>
+                                <span class="tool-tile__label">Imagem</span>
                             </button>
                             <input type="file" id="image-upload" accept="image/*" class="hidden">
 
-                            <button id="add-qr-btn" class="element-card element-card--slate">
-                                <span class="element-card__icon element-card__icon--dark">
+                            <button id="add-qr-btn" class="tool-tile tool-tile--slate">
+                                <span class="tool-tile__icon tool-tile--dark">
                                     <i data-lucide="qr-code" class="w-5 h-5"></i>
                                 </span>
-                                <span class="element-card__body">
-                                    <span class="element-card__title">QR Code</span>
-                                    <span class="element-card__meta">Link, contacto ou campanha</span>
-                                </span>
+                                <span class="tool-tile__label">QR</span>
                             </button>
 
-                            <button id="templates-btn" class="element-card element-card--neutral">
-                                <span class="element-card__icon element-card__icon--neutral">
+                            <button id="templates-btn" class="tool-tile tool-tile--neutral">
+                                <span class="tool-tile__icon tool-tile--neutral">
                                     <i data-lucide="layout-template" class="w-5 h-5"></i>
                                 </span>
-                                <span class="element-card__body">
-                                    <span class="element-card__title">Template</span>
-                                    <span class="element-card__meta">Começa com uma base pronta</span>
-                                </span>
+                                <span class="tool-tile__label">Modelo</span>
                             </button>
                         </div>
                     </div>
 
                     <div class="elements-group">
-                        <p class="elements-group-title">Formas</p>
-                        <div class="elements-grid elements-grid--shapes">
-                            <button class="shape-btn shape-card" data-shape="rectangle">
-                                <span class="shape-card__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Rectângulo</span>
-                                    <span class="shape-card__meta">Blocos, fundos e faixas</span>
-                                </span>
+                        <div class="elements-group-head">
+                            <p class="elements-group-title">Formas</p>
+                            <span class="elements-group-hint">8 formas</span>
+                        </div>
+                        <div class="shape-grid">
+                            <button class="shape-btn shape-tile" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
+                                <span class="shape-tile__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Rect</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="rounded">
-                                <span class="shape-card__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Cartão</span>
-                                    <span class="shape-card__meta">Caixa com cantos suaves</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="rounded" title="Cartao" aria-label="Cartao">
+                                <span class="shape-tile__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Card</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="circle">
-                                <span class="shape-card__icon"><i data-lucide="circle" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Círculo</span>
-                                    <span class="shape-card__meta">Selos, ícones e badges</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="circle" title="Circulo" aria-label="Circulo">
+                                <span class="shape-tile__icon"><i data-lucide="circle" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Circ</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="triangle">
-                                <span class="shape-card__icon"><i data-lucide="triangle" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Triângulo</span>
-                                    <span class="shape-card__meta">Setas e composições</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
+                                <span class="shape-tile__icon"><i data-lucide="triangle" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Tri</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="diamond">
-                                <span class="shape-card__icon"><i data-lucide="diamond" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Diamante</span>
-                                    <span class="shape-card__meta">Destaques e etiquetas</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="diamond" title="Diamante" aria-label="Diamante">
+                                <span class="shape-tile__icon"><i data-lucide="diamond" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Dia</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="star">
-                                <span class="shape-card__icon"><i data-lucide="star" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Estrela</span>
-                                    <span class="shape-card__meta">Promoções e callouts</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="star" title="Estrela" aria-label="Estrela">
+                                <span class="shape-tile__icon"><i data-lucide="star" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Star</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="hexagon">
-                                <span class="shape-card__icon"><i data-lucide="hexagon" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Hexágono</span>
-                                    <span class="shape-card__meta">Selo técnico ou etiqueta</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="hexagon" title="Hexagono" aria-label="Hexagono">
+                                <span class="shape-tile__icon"><i data-lucide="hexagon" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Hex</span>
                             </button>
-                            <button class="shape-btn shape-card" data-shape="arrow">
-                                <span class="shape-card__icon"><i data-lucide="arrow-right" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Seta</span>
-                                    <span class="shape-card__meta">Direção e destaque</span>
-                                </span>
-                            </button>
-                            <button class="shape-btn shape-card" data-shape="line">
-                                <span class="shape-card__icon"><i data-lucide="minus" class="w-5 h-5"></i></span>
-                                <span class="shape-card__body">
-                                    <span class="shape-card__title">Linha</span>
-                                    <span class="shape-card__meta">Separadores e composição</span>
-                                </span>
+                            <button class="shape-btn shape-tile" data-shape="arrow" title="Seta" aria-label="Seta">
+                                <span class="shape-tile__icon"><i data-lucide="arrow-right" class="w-5 h-5"></i></span>
+                                <span class="shape-tile__label">Arrow</span>
                             </button>
                         </div>
                     </div>
                 </div>
-
                 <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
                     <p class="section-title">Propriedades</p>
 
                     <div class="mb-4 flex items-center gap-3">
-                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
+                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporÃ§Ãµes">
                             <span class="slide-button-toggle"></span>
                         </button>
                         <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
@@ -1540,8 +1634,8 @@
                                 class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-text-rotation-val">0</span>°</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
+                                    id="prop-text-rotation-val">0</span>Â°</label>
                             <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0"
                                 class="w-full">
                         </div>
@@ -1567,8 +1661,8 @@
                             <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-image-rotation-val">0</span>°</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
+                                    id="prop-image-rotation-val">0</span>Â°</label>
                             <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0"
                                 class="w-full">
                         </div>
@@ -1597,8 +1691,8 @@
                             <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-shape-rotation-val">0</span>°</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
+                                    id="prop-shape-rotation-val">0</span>Â°</label>
                             <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0"
                                 class="w-full">
                         </div>
@@ -1622,7 +1716,7 @@
                 </div>
             </div>
 
-            <!-- Bottom Toolbar (desktop apenas — em mobile está escondido) -->
+            <!-- Bottom Toolbar (desktop apenas â€” em mobile estÃ¡ escondido) -->
             <div class="panel-clean editor-bottom-bar">
                 <div style="display:flex;align-items:center;gap:0.25rem;">
                     <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
@@ -1718,7 +1812,7 @@
                 <div>
                     <h2 class="text-xl font-bold text-slate-900">Adicionar imagem</h2>
                     <p class="text-sm text-slate-500 mt-1">Escolhe um ficheiro do computador ou pesquisa imagens
-                        públicas no Pixabay.</p>
+                        pÃºblicas no Pixabay.</p>
                 </div>
                 <button id="image-library-close" type="button" class="p-2 rounded-lg hover:bg-slate-100"
                     aria-label="Fechar biblioteca de imagens">
@@ -1731,7 +1825,7 @@
                     <div class="image-library-upload-card">
                         <div>
                             <p class="text-sm font-bold text-slate-900">Carregar do computador</p>
-                            <p class="text-sm text-slate-500 mt-1">Mantém o mesmo recorte e ajuste das imagens
+                            <p class="text-sm text-slate-500 mt-1">MantÃ©m o mesmo recorte e ajuste das imagens
                                 normais.</p>
                         </div>
                         <button id="image-library-local-btn" type="button" class="image-library-upload-card__button">
@@ -1768,7 +1862,7 @@
                 <div id="pixabay-empty" class="image-library-empty hidden">
                     <i data-lucide="image-off" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
                     <p class="font-semibold text-slate-700">Sem resultados ainda</p>
-                    <p class="text-sm mt-1">Faz uma pesquisa para ver imagens públicas do Pixabay aqui.</p>
+                    <p class="text-sm mt-1">Faz uma pesquisa para ver imagens pÃºblicas do Pixabay aqui.</p>
                 </div>
             </div>
         </div>
@@ -1795,17 +1889,17 @@
             <div class="cart-step-content">
                 <section id="cart-step-pane-1" class="cart-step-pane active">
                     <h3 class="text-lg font-bold text-slate-900 mb-1">Confirmar design antes de adicionar</h3>
-                    <p class="text-sm text-slate-500 mb-4">Revê o resultado final para garantir que está tudo correto.
+                    <p class="text-sm text-slate-500 mb-4">RevÃª o resultado final para garantir que estÃ¡ tudo correto.
                     </p>
                     <img id="cart-design-preview" class="cart-design-preview" alt="Preview do design">
                 </section>
 
                 <section id="cart-step-pane-2" class="cart-step-pane">
-                    <h3 class="text-lg font-bold text-slate-900 mb-1">Escolher base de fixação</h3>
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">Escolher base de fixaÃ§Ã£o</h3>
                     <p class="text-sm text-slate-500 mb-4">Seleciona uma base para este design.</p>
                     <div id="cart-base-options" class="cart-base-grid"></div>
-                    <p id="cart-base-empty" class="hidden text-sm text-slate-500">Este produto não tem bases
-                        configuradas. O design será adicionado sem base.</p>
+                    <p id="cart-base-empty" class="hidden text-sm text-slate-500">Este produto nÃ£o tem bases
+                        configuradas. O design serÃ¡ adicionado sem base.</p>
                 </section>
             </div>
 
@@ -1837,7 +1931,7 @@
     <script src="/assets/js/core/logic.js?v=20260330t" defer></script>
     <script src="/assets/js/core/design-svg.js" defer></script>
 
-    <!-- Carregar módulos do personalizador em paralelo com defer -->
+    <!-- Carregar mÃ³dulos do personalizador em paralelo com defer -->
 <script src="/assets/js/pages/personalizador/core.js?v=20260330x" defer></script>
 <script src="/assets/js/pages/personalizador/templates.js?v=20260330x" defer></script>
 <script src="/assets/js/pages/personalizador/product.js?v=20260330x" defer></script>
@@ -1850,7 +1944,7 @@
 <script src="/assets/js/pages/personalizador/properties.js?v=20260330x" defer></script>
 <script src="/assets/js/pages/personalizador/export.js?v=20260330x" defer></script>
 
-    <!-- Entry point - deve carregar por último -->
+    <!-- Entry point - deve carregar por Ãºltimo -->
     <script src="/assets/js/pages/personalizar.js" defer></script>
     <script>
         lucide.createIcons();
