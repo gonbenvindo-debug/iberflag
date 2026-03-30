@@ -48,6 +48,7 @@ class DesignEditor {
         // this later, but the default editor workspace should not feel inset.
         this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
         this.workspaceBounds = { x: 0, y: 0, width: 800, height: 600 };
+        this.templateSourceBounds = { x: 0, y: 0, width: 800, height: 600 };
         this.keepAspectRatio = true;
         this.baseCanvasSize = { width: 800, height: 600 };
         this.initialCanvasSize = null; // Will store computed base size at 100% zoom

@@ -46,7 +46,13 @@ Object.assign(DesignEditor.prototype, {
             this.printArea = rect;
         }
 
-        this.configureCanvasFromSourceBounds({ x: 0, y: 0, width: 800, height: 600 });
+        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
+        this.printAreaBounds = {
+            x: workspaceBounds.x,
+            y: workspaceBounds.y,
+            width: workspaceBounds.width,
+            height: workspaceBounds.height
+        };
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
@@ -66,7 +72,7 @@ Object.assign(DesignEditor.prototype, {
         const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
 
-        this.printAreaBounds = {
+        this.templateSourceBounds = {
             x: 0,
             y: 0,
             width: canvasWidth,
@@ -264,12 +270,14 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.configureCanvasFromSourceBounds(sourceBounds);
+        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
         const contentBounds = {
-            x: this.printAreaBounds.x,
-            y: this.printAreaBounds.y,
-            width: this.printAreaBounds.width,
-            height: this.printAreaBounds.height
+            x: workspaceBounds.x,
+            y: workspaceBounds.y,
+            width: workspaceBounds.width,
+            height: workspaceBounds.height
         };
+        this.printAreaBounds = contentBounds;
         const uniformScale = Math.min(
             contentBounds.width / sourceBounds.width,
             contentBounds.height / sourceBounds.height
@@ -316,10 +324,10 @@ Object.assign(DesignEditor.prototype, {
         visualArea.setAttribute('pointer-events', 'none');
         visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
-        this.printArea.setAttribute('x', String(this.printAreaBounds.x));
-        this.printArea.setAttribute('y', String(this.printAreaBounds.y));
-        this.printArea.setAttribute('width', String(this.printAreaBounds.width));
-        this.printArea.setAttribute('height', String(this.printAreaBounds.height));
+        this.printArea.setAttribute('x', String(contentBounds.x));
+        this.printArea.setAttribute('y', String(contentBounds.y));
+        this.printArea.setAttribute('width', String(contentBounds.width));
+        this.printArea.setAttribute('height', String(contentBounds.height));
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
