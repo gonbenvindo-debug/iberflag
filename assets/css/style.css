@@ -187,7 +187,7 @@ body {
 }
 
 .cart-item-preview-frame {
-    --cart-item-preview-inset: clamp(0.2rem, 0.55vw, 0.35rem);
+    --cart-item-preview-inset: clamp(0.1rem, 0.25vw, 0.2rem);
     --cart-item-preview-radius: 0.85rem;
 
     width: 100%;
@@ -208,8 +208,8 @@ body {
     display: block;
     width: auto;
     height: auto;
-    max-width: min(84%, calc(100% - (var(--cart-item-preview-inset) * 2)));
-    max-height: min(84%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+    max-width: min(94%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+    max-height: min(94%, calc(100% - (var(--cart-item-preview-inset) * 2)));
     object-fit: contain;
     object-position: center;
     flex: 0 0 auto;
