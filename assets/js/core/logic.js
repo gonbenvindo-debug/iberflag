@@ -64,6 +64,7 @@ var mobileMenuBtn = document.getElementById('mobile-menu-btn');
 var mobileMenu = document.getElementById('mobile-menu');
 var cartUiListenersReady = false;
 var cartPreviewSyncFrame = null;
+var cartPreviewResizeObserver = null;
 
 function refreshCartDomReferences() {
     productsContainer = document.getElementById('products-container');
@@ -218,6 +219,7 @@ function renderCartItemsList() {
     `).join('');
 
     scheduleCartItemPreviewHeights();
+    bindCartItemPreviewObserver();
 }
 
 function scheduleCartItemPreviewHeights() {
@@ -254,6 +256,30 @@ function syncCartItemPreviewHeights() {
 
         previewEl.style.height = `${height}px`;
         previewLinkEl.style.height = `${height}px`;
+    });
+}
+
+function bindCartItemPreviewObserver() {
+    if (cartPreviewResizeObserver) {
+        cartPreviewResizeObserver.disconnect();
+        cartPreviewResizeObserver = null;
+    }
+
+    if (typeof ResizeObserver === 'undefined' || !cartItemsContainer) {
+        return;
+    }
+
+    const detailsNodes = Array.from(cartItemsContainer.querySelectorAll('[data-cart-details]')).filter((node) => node instanceof HTMLElement);
+    if (detailsNodes.length === 0) {
+        return;
+    }
+
+    cartPreviewResizeObserver = new ResizeObserver(() => {
+        scheduleCartItemPreviewHeights();
+    });
+
+    detailsNodes.forEach((node) => {
+        cartPreviewResizeObserver.observe(node);
     });
 }
 
