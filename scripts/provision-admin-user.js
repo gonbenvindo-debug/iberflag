@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
 const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin123@iberflag.pt';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin';
+const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 function buildHeaders() {
     return {
@@ -89,6 +89,10 @@ async function updatePassword(userId) {
 async function main() {
     if (!SUPABASE_SERVICE_ROLE_KEY) {
         throw new Error('Falta SUPABASE_SERVICE_ROLE_KEY. Sem essa chave nao e possivel criar o utilizador admin.');
+    }
+
+    if (ADMIN_PASSWORD.length < 6) {
+        throw new Error('A password de teste precisa de ter pelo menos 6 caracteres no Supabase Auth.');
     }
 
     console.log(`A preparar utilizador admin: ${ADMIN_EMAIL}`);

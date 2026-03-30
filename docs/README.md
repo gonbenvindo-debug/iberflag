@@ -155,7 +155,8 @@ npx serve
 3. Use apenas a password do utilizador autorizado no Supabase
 4. O painel só aceita sessão do utilizador admin definido no código
 5. Para criar ou atualizar o utilizador de teste, defina `SUPABASE_SERVICE_ROLE_KEY` e execute `npm run provision:admin`
-6. Funcionalidades disponíveis:
+6. O Supabase Auth exige password com 6+ caracteres, por isso o teste preparado usa `admin123`
+7. Funcionalidades disponíveis:
    - Dashboard com estatísticas
    - Adicionar/Editar/Eliminar produtos
    - Ver encomendas e clientes
