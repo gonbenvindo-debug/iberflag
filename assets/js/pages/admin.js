@@ -1,4 +1,4 @@
-﻿// ===== ADMIN PANEL LOGIC =====
+// ===== ADMIN PANEL LOGIC =====
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
@@ -2003,7 +2003,7 @@ function getStatusColor(status) {
 }
 
 function viewClient(id) {
-    showToast('Funcionalidade de visualizaÃ§Ã£o de cliente em desenvolvimento', 'info');
+    showToast('Funcionalidade de visualização de cliente em desenvolvimento', 'info');
 }
 
 // ===== INITIALIZATION =====
@@ -2138,7 +2138,7 @@ function confirmTemplateDeleteCard(templateName = '') {
 
 async function deleteTemplateFromCard(templateId) {
     if (!templateId) {
-        console.error('ID de template invÃ¡lido:', templateId);
+        console.error('ID de template inválido:', templateId);
         return;
     }
 
@@ -2146,7 +2146,7 @@ async function deleteTemplateFromCard(templateId) {
     const template = templatesCatalogCache.find((item) => item.id === templateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
     if (!confirmed) {
-        console.log('UsuÃ¡rio cancelou a exclusÃ£o');
+        console.log('Usuário cancelou a exclusÃ£o');
         return;
     }
 
