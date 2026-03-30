@@ -170,8 +170,10 @@ function renderCartItemsList() {
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
             <div class="flex items-start gap-3">
                 <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 self-start shrink-0" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
-                    <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="h-full w-full rounded-xl border border-gray-200 p-2.5 bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#f8fafc_0%_50%)] bg-[size:10px_10px] flex items-center justify-center overflow-hidden">
-                        <img src="${getCartItemImage(item)}" alt="${item.nome}" class="block max-w-full max-h-full object-contain object-center">
+                    <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="relative h-full w-full rounded-xl border border-gray-200 bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#f8fafc_0%_50%)] bg-[size:10px_10px] overflow-hidden">
+                        <div class="absolute inset-2.5 flex items-center justify-center">
+                            <img src="${getCartItemImage(item)}" alt="${item.nome}" class="block h-full w-full object-contain object-center">
+                        </div>
                     </div>
                 </a>
                 <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex-1">
