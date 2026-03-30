@@ -2868,6 +2868,17 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         font-size: 16px !important;
     }
 
+    /* Keep cart items identical to desktop layout on mobile */
+    #cart-sidebar .flex.gap-2,
+    #cart-sidebar .flex.gap-3 {
+        flex-direction: row !important;
+    }
+
+    #cart-sidebar .flex.gap-2 > *,
+    #cart-sidebar .flex.gap-3 > * {
+        width: auto !important;
+    }
+
     /* Prevent zoom on iOS */
 
 }
