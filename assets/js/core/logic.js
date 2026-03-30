@@ -168,9 +168,9 @@ function renderCartItemsList() {
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
-            <div class="flex gap-3">
+            <div class="flex gap-4">
                 <a href="${getCartItemEditorLink(item, index)}" class="shrink-0">
-                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-20 h-20 rounded-xl object-cover bg-gray-50 border border-gray-100">
+                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-32 h-32 rounded-2xl object-contain bg-gray-50 border border-gray-100 p-2">
                 </a>
                 <div class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-2">
@@ -183,7 +183,6 @@ function renderCartItemsList() {
                         </button>
                     </div>
                     <div class="mt-2 flex items-center gap-2">
-                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600">${item.customized ? 'Personalizado' : 'Base'}</span>
                         ${item.quantity > 1 ? `<span class="text-xs text-gray-500">Qtd. ${item.quantity}</span>` : ''}
                     </div>
                     <div class="mt-3 flex flex-wrap items-center gap-2">
@@ -626,7 +625,7 @@ function updateCart() {
         } else {
             cartItemsContainer.innerHTML = cart.map((item, index) => `
                 <div class="flex gap-4 mb-4 pb-4 border-b">
-                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-20 h-20 object-cover rounded-lg bg-gray-50 border border-gray-100">
+                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-28 h-28 object-contain rounded-2xl bg-gray-50 border border-gray-100 p-2">
                     <div class="flex-1">
                         <h4 class="font-bold text-sm">${item.nome}</h4>
                         ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
