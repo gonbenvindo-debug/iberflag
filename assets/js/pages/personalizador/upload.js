@@ -253,40 +253,29 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const panel = document.getElementById('image-library-panel');
-        const searchBtn = document.getElementById('pixabay-search-btn');
         const searchInput = document.getElementById('pixabay-search-input');
         const results = document.getElementById('pixabay-results');
 
-        if (!panel || !searchBtn || !searchInput || !results) {
+        if (!panel || !searchInput || !results) {
             return;
         }
 
-        searchBtn.addEventListener('click', () => {
-            this.searchPixabayImages(searchInput.value, 1);
-        });
-
-        searchInput.addEventListener('keydown', (event) => {
-            if (event.key !== 'Enter') return;
-            event.preventDefault();
-            this.searchPixabayImages(searchInput.value, 1);
+        let searchTimer = null;
+        searchInput.addEventListener('input', () => {
+            window.clearTimeout(searchTimer);
+            searchTimer = window.setTimeout(() => {
+                this.searchPixabayImages(searchInput.value, 1);
+            }, 220);
         });
 
         results.addEventListener('click', (event) => {
-            const button = event.target?.closest?.('[data-pixabay-use]');
-            if (!button) return;
-
-            const card = button.closest('[data-pixabay-card]');
+            const card = event.target?.closest?.('[data-pixabay-card]');
+            if (!card) return;
             const index = Number(card?.dataset?.pixabayCard || '-1');
             const state = this.getPixabayState();
             const hit = Array.isArray(state.hits) ? state.hits[index] : null;
             if (hit) {
                 this.insertPixabayImage(hit);
-            }
-        });
-
-        document.addEventListener('keydown', (event) => {
-            if (event.key === 'Escape' && document.activeElement === searchInput) {
-                searchInput.blur();
             }
         });
 
@@ -311,8 +300,6 @@ Object.assign(DesignEditor.prototype, {
         this.setupImageLibraryModalListeners();
 
         const searchInput = document.getElementById('pixabay-search-input');
-        const status = document.getElementById('pixabay-search-status');
-        const count = document.getElementById('pixabay-search-count');
         const panel = document.getElementById('image-library-panel');
         if (!panel) return;
 
@@ -321,25 +308,13 @@ Object.assign(DesignEditor.prototype, {
             window.requestAnimationFrame?.(() => searchInput.focus({ preventScroll: true }));
             panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
         }
-
-        if (status) {
-            const state = this.getPixabayState();
-            status.textContent = state.hasSearched && state.query
-                ? `Resultados para "${state.query}"`
-                : 'Galeria publica de imagens';
-        }
-
-        if (count) {
-            const state = this.getPixabayState();
-            count.textContent = state.totalHits ? `${Number(state.totalHits).toLocaleString('pt-PT')} imagens` : '';
-        }
     },
 
     closeImageLibraryModal() {
         return;
     },
 
-    renderPixabayEmptyState(title, description, icon = 'image-off') {
+        renderPixabayEmptyState(title, description, icon = 'image-off') {
         const empty = document.getElementById('pixabay-empty');
         const results = document.getElementById('pixabay-results');
         if (!empty || !results) return;
@@ -360,33 +335,25 @@ Object.assign(DesignEditor.prototype, {
     renderPixabayCard(hit, index) {
         const previewUrl = hit.previewURL || hit.webformatURL || hit.largeImageURL || '';
         const label = (hit.tags || hit.user || 'Pixabay image').split(',')[0].trim() || 'Pixabay image';
-        const author = hit.user ? `by ${hit.user}` : 'Pixabay';
-        const dimensions = hit.imageWidth && hit.imageHeight ? `${hit.imageWidth} x ${hit.imageHeight}` : '';
 
         return `
-            <article class="image-library-card" data-pixabay-card="${index}">
+            <button type="button" class="image-library-card" data-pixabay-card="${index}" aria-label="Usar imagem ${escapeHtml(label)}">
                 <div class="image-library-card__thumb">
                     <img src="${previewUrl}" alt="${escapeHtml(label)}" loading="lazy">
                 </div>
                 <div class="image-library-card__body">
                     <div class="image-library-card__title">${escapeHtml(label)}</div>
-                    <div class="image-library-card__meta">Pixabay · ${escapeHtml(author)}${dimensions ? ` · ${escapeHtml(dimensions)}` : ''}</div>
-                    <button type="button" class="image-library-card__action" data-pixabay-use="${index}">
-                        Usar imagem
-                    </button>
                 </div>
-            </article>
+            </button>
         `;
     },
 
     renderPixabayResults(hits = [], meta = {}) {
         const results = document.getElementById('pixabay-results');
         const empty = document.getElementById('pixabay-empty');
-        const status = document.getElementById('pixabay-search-status');
-        const count = document.getElementById('pixabay-search-count');
         const pagination = document.getElementById('pixabay-pagination');
 
-        if (!results || !empty || !status || !count) return;
+        if (!results || !empty) return;
 
         const query = String(meta.query || '').trim();
         const totalHits = Number(meta.totalHits || hits.length || 0);
@@ -396,19 +363,15 @@ Object.assign(DesignEditor.prototype, {
 
         if (!Array.isArray(hits) || hits.length === 0) {
             this.renderPixabayEmptyState(
-                query ? 'Nenhuma imagem encontrada' : 'Galeria vazia',
-                query ? 'Tenta uma pesquisa diferente no Pixabay.' : 'Escreve algo para pesquisar ou usa uma imagem do computador.'
+                query ? 'Nenhuma imagem encontrada' : 'Sem imagens',
+                query ? 'Tenta outra pesquisa.' : 'Escreve para procurar imagens.'
             );
-            status.textContent = query ? `Sem resultados para "${query}"` : 'Galeria publica do Pixabay';
-            count.textContent = '';
             if (pagination) pagination.innerHTML = '';
             return;
         }
 
         empty.classList.add('hidden');
         results.innerHTML = hits.map((hit, index) => this.renderPixabayCard(hit, index)).join('');
-        status.textContent = query ? `Resultados para "${query}"` : 'Galeria publica do Pixabay';
-        count.textContent = `${Number(totalHits).toLocaleString('pt-PT')} imagens`;
 
         if (pagination) {
             pagination.innerHTML = hasMore ? `
@@ -436,8 +399,6 @@ Object.assign(DesignEditor.prototype, {
         const state = this.getPixabayState();
         const normalizedQuery = String(query || '').trim().slice(0, 100);
         const perPage = state.perPage || 12;
-        const status = document.getElementById('pixabay-search-status');
-        const count = document.getElementById('pixabay-search-count');
         const results = document.getElementById('pixabay-results');
         const empty = document.getElementById('pixabay-empty');
         const pagination = document.getElementById('pixabay-pagination');
@@ -448,22 +409,12 @@ Object.assign(DesignEditor.prototype, {
         state.hasSearched = true;
         state.loading = true;
 
-        if (status) {
-            status.textContent = normalizedQuery
-                ? `A pesquisar "${normalizedQuery}"...`
-                : 'A carregar imagens publicas...';
-        }
-
-        if (count) {
-            count.textContent = '';
-        }
-
         if (results) {
             results.innerHTML = `
                 <div class="image-library-empty">
                     <i data-lucide="loader-2" class="w-10 h-10 mx-auto mb-3 animate-spin text-slate-300"></i>
                     <p class="font-semibold text-slate-700">A carregar imagens</p>
-                    <p class="text-sm mt-1">${normalizedQuery ? 'Aguarda um momento enquanto pesquisamos no Pixabay.' : 'A mostrar imagens publicas selecionadas do Pixabay.'}</p>
+                    <p class="text-sm mt-1">Aguarda um momento.</p>
                 </div>
             `;
         }
@@ -512,14 +463,11 @@ Object.assign(DesignEditor.prototype, {
             console.error('Erro ao pesquisar Pixabay:', error);
             state.hits = [];
             state.totalHits = 0;
-            if (status) {
-                status.textContent = 'Nao foi possivel pesquisar no Pixabay';
-            }
             this.renderPixabayEmptyState(
                 'Erro ao carregar',
-                error?.message || 'Verifica se a API do Pixabay esta configurada.'
+                error?.message || 'Verifica a configuracao da pesquisa.'
             );
-            showToast(error?.message || 'Nao foi possivel pesquisar imagens do Pixabay', 'error');
+            showToast(error?.message || 'Nao foi possivel pesquisar imagens', 'error');
         } finally {
             state.loading = false;
         }
@@ -541,13 +489,7 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const state = this.getPixabayState();
-        const status = document.getElementById('pixabay-search-status');
         const sourceName = (hit?.tags || hit?.user || 'Pixabay image').split(',')[0].trim() || 'Pixabay image';
-
-        if (status) {
-            status.textContent = 'A preparar imagem para inserir...';
-        }
 
         try {
             const proxyUrl = new URL('/api/pixabay-image', window.location.origin);
@@ -581,16 +523,7 @@ Object.assign(DesignEditor.prototype, {
             showToast('Imagem do Pixabay adicionada ao design', 'success');
         } catch (error) {
             console.error('Erro ao inserir imagem do Pixabay:', error);
-            if (status) {
-                status.textContent = 'Nao foi possivel preparar a imagem';
-            }
             showToast(error?.message || 'Nao foi possivel inserir a imagem do Pixabay', 'error');
-        } finally {
-            if (status) {
-                status.textContent = state.hasSearched && state.query
-                    ? `Resultados para "${state.query}"`
-                : 'Galeria publica do Pixabay';
-            }
         }
     },
 
