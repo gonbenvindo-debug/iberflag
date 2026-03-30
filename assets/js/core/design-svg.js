@@ -808,9 +808,11 @@
         outlineNode.removeAttribute?.('stroke-dasharray');
         outlineNode.setAttribute?.('fill', 'none');
         outlineNode.setAttribute?.('stroke', '#3b82f6');
-        outlineNode.setAttribute?.('stroke-width', '2');
+        outlineNode.setAttribute?.('stroke-width', '1.5');
         outlineNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
         outlineNode.setAttribute?.('opacity', '0.75');
+        outlineNode.setAttribute?.('stroke-linecap', 'round');
+        outlineNode.setAttribute?.('stroke-linejoin', 'round');
         outlineNode.setAttribute?.('pointer-events', 'none');
         if (transform) {
             outlineNode.setAttribute?.('transform', transform);
@@ -1088,6 +1090,9 @@
             image.setAttribute('transform', previewTransform);
             wrapper.appendChild(image);
         }
+
+        const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
+        wrapper.appendChild(previewOutlineNode);
 
         const serialized = new XMLSerializer().serializeToString(wrapper);
         cachePreviewMarkup(cacheKey, serialized);
