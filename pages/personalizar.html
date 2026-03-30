@@ -137,75 +137,8 @@
             margin-bottom: 0.75rem;
         }
 
-        .elements-panel-head {
-            padding: 0.95rem 1rem;
-            margin: -0.25rem -0.25rem 1rem;
-            border-radius: 18px;
-            background:
-                radial-gradient(circle at top right, rgba(37, 99, 235, 0.14), transparent 36%),
-                linear-gradient(180deg, #f8fbff 0%, #ffffff 60%);
-            border: 1px solid #dce7f7;
-        }
-
-        .elements-panel-kicker {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            margin-bottom: 0.55rem;
-        }
-
-        .elements-panel-chip,
-        .elements-panel-badge,
-        .elements-group-hint {
-            display: inline-flex;
-            align-items: center;
-            border-radius: 999px;
-            font-size: 0.68rem;
-            font-weight: 800;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            white-space: nowrap;
-        }
-
-        .elements-panel-chip {
-            padding: 0.34rem 0.55rem;
-            background: #111827;
-            color: #ffffff;
-        }
-
-        .elements-panel-badge {
-            padding: 0.34rem 0.55rem;
-            background: #dbeafe;
-            color: #1d4ed8;
-        }
-
-        .elements-panel-title {
-            margin: 0;
-            font-size: 1.15rem;
-            line-height: 1.1;
-            font-weight: 900;
-            color: #0f172a;
-            letter-spacing: -0.03em;
-        }
-
-        .elements-panel-note {
-            margin-top: 0.35rem;
-            font-size: 0.82rem;
-            line-height: 1.4;
-            color: #5b6b82;
-        }
-
         .elements-group {
             margin-bottom: 1rem;
-        }
-
-        .elements-group-head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.65rem;
-            margin-bottom: 0.55rem;
         }
 
         .elements-group-title {
@@ -215,12 +148,6 @@
             letter-spacing: 0.09em;
             text-transform: uppercase;
             color: #64748b;
-        }
-
-        .elements-group-hint {
-            padding: 0.28rem 0.5rem;
-            background: #f1f5f9;
-            color: #334155;
         }
 
         .elements-grid {
@@ -313,8 +240,7 @@
 
         .element-card__title,
         .shape-card__title,
-        .tool-tile__label,
-        .shape-tile__label {
+        .tool-tile__label {
             display: block;
             font-size: 0.84rem;
             font-weight: 800;
@@ -356,9 +282,9 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            gap: 0.5rem;
-            padding: 0.72rem 0.45rem 0.7rem;
-            min-height: 5.3rem;
+            gap: 0.25rem;
+            padding: 0.72rem 0.45rem;
+            min-height: 4.45rem;
             border-radius: 16px;
             border: 1px solid #dbe3ee;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
@@ -1248,12 +1174,8 @@
             }
 
             .shape-tile {
-                min-height: 4.9rem;
-                padding: 0.65rem 0.4rem 0.6rem;
-            }
-
-            .shape-tile__label {
-                font-size: 0.74rem;
+                min-height: 4rem;
+                padding: 0.58rem 0.35rem;
             }
 
             .action-btn {
@@ -1459,29 +1381,19 @@
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
                 <div id="elements-panel" class="sidebar-section overflow-y-auto">
-                    <div class="elements-panel-head">
-                        <div class="elements-panel-kicker">
-                            <span class="elements-panel-chip">Ferramentas</span>
-                            <span class="elements-panel-badge">2 colunas</span>
-                        </div>
-                        <h2 class="elements-panel-title">Inserir no design</h2>
-                        <p class="elements-panel-note">Texto, imagem, QR e formas num painel compacto e rapido.</p>
-                    </div>
-
                     <div class="elements-group">
                         <div class="elements-group-head">
                             <p class="elements-group-title">Inserir</p>
-                            <span class="elements-group-hint">4 atalhos</span>
                         </div>
                         <div class="elements-grid elements-grid--compact">
-                            <button id="add-text-btn" class="tool-tile tool-tile--blue">
+                            <button id="add-text-btn" class="tool-tile tool-tile--blue" title="Texto" aria-label="Texto">
                                 <span class="tool-tile__icon">
                                     <i data-lucide="type" class="w-5 h-5"></i>
                                 </span>
                                 <span class="tool-tile__label">Texto</span>
                             </button>
 
-                            <button id="add-image-btn" class="tool-tile tool-tile--green">
+                            <button id="add-image-btn" class="tool-tile tool-tile--green" title="Imagem" aria-label="Imagem">
                                 <span class="tool-tile__icon">
                                     <i data-lucide="image" class="w-5 h-5"></i>
                                 </span>
@@ -1489,18 +1401,18 @@
                             </button>
                             <input type="file" id="image-upload" accept="image/*" class="hidden">
 
-                            <button id="add-qr-btn" class="tool-tile tool-tile--slate">
+                            <button id="add-qr-btn" class="tool-tile tool-tile--slate" title="QR" aria-label="QR">
                                 <span class="tool-tile__icon tool-tile--dark">
                                     <i data-lucide="qr-code" class="w-5 h-5"></i>
                                 </span>
                                 <span class="tool-tile__label">QR</span>
                             </button>
 
-                            <button id="templates-btn" class="tool-tile tool-tile--neutral">
+                            <button id="add-line-btn" class="tool-tile tool-tile--neutral" title="Linha" aria-label="Linha">
                                 <span class="tool-tile__icon tool-tile--neutral">
-                                    <i data-lucide="layout-template" class="w-5 h-5"></i>
+                                    <i data-lucide="minus" class="w-5 h-5"></i>
                                 </span>
-                                <span class="tool-tile__label">Modelo</span>
+                                <span class="tool-tile__label">Linha</span>
                             </button>
                         </div>
                     </div>
@@ -1508,40 +1420,31 @@
                     <div class="elements-group">
                         <div class="elements-group-head">
                             <p class="elements-group-title">Formas</p>
-                            <span class="elements-group-hint">8 formas</span>
                         </div>
                         <div class="shape-grid">
                             <button class="shape-btn shape-tile" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
                                 <span class="shape-tile__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Rect</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="rounded" title="Cartao" aria-label="Cartao">
                                 <span class="shape-tile__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Card</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="circle" title="Circulo" aria-label="Circulo">
                                 <span class="shape-tile__icon"><i data-lucide="circle" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Circ</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
                                 <span class="shape-tile__icon"><i data-lucide="triangle" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Tri</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="diamond" title="Diamante" aria-label="Diamante">
                                 <span class="shape-tile__icon"><i data-lucide="diamond" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Dia</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="star" title="Estrela" aria-label="Estrela">
                                 <span class="shape-tile__icon"><i data-lucide="star" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Star</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="hexagon" title="Hexagono" aria-label="Hexagono">
                                 <span class="shape-tile__icon"><i data-lucide="hexagon" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Hex</span>
                             </button>
                             <button class="shape-btn shape-tile" data-shape="arrow" title="Seta" aria-label="Seta">
                                 <span class="shape-tile__icon"><i data-lucide="arrow-right" class="w-5 h-5"></i></span>
-                                <span class="shape-tile__label">Arrow</span>
                             </button>
                         </div>
                     </div>
