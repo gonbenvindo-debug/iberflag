@@ -109,8 +109,9 @@ Object.assign(DesignEditor.prototype, {
         const transformedCorners = corners.map(corner => corner.matrixTransform(ctm));
         
         // Find min/max of transformed corners (in SVG coordinates)
-        const svgRect = this.canvas.getBoundingClientRect();
-        if (!svgRect.width || !svgRect.height) {
+        const metrics = this.getCanvasViewportMetrics?.();
+        const svgRect = metrics?.rect || this.canvas.getBoundingClientRect();
+        if (!svgRect.width || !svgRect.height || !metrics?.scale) {
             return {
                 left: bbox.x,
                 right: bbox.x + bbox.width,
@@ -122,10 +123,11 @@ Object.assign(DesignEditor.prototype, {
         let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
         
         transformedCorners.forEach(corner => {
-            // Convert from client coords to SVG coords
-            const vb = this.getCanvasViewBoxSize();
-            const svgX = (corner.x - svgRect.left) / svgRect.width * vb.width;
-            const svgY = (corner.y - svgRect.top) / svgRect.height * vb.height;
+            // Convert from client coords to SVG coords using the same
+            // viewport metrics used by the rest of the editor.
+            const svgPoint = this.clientToSvgPoint?.(corner.x, corner.y) || null;
+            const svgX = Number(svgPoint?.x);
+            const svgY = Number(svgPoint?.y);
             if (!Number.isFinite(svgX) || !Number.isFinite(svgY)) return;
             minX = Math.min(minX, svgX);
             maxX = Math.max(maxX, svgX);
