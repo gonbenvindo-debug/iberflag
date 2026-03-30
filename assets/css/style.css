@@ -221,12 +221,13 @@ body {
 
 @media (max-width: 640px) {
     #cart-sidebar .cart-item-preview-frame {
-        --cart-item-preview-inset: 0.15rem;
+        --cart-item-preview-inset: 0.1rem;
+        height: auto;
     }
 
     #cart-sidebar .cart-item-preview-image {
-        max-width: min(86%, calc(100% - (var(--cart-item-preview-inset) * 2)));
-        max-height: min(86%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+        max-width: min(92%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+        max-height: min(92%, calc(100% - (var(--cart-item-preview-inset) * 2)));
     }
 }
 
