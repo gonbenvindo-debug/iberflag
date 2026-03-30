@@ -237,9 +237,6 @@ function scheduleCartItemPreviewHeights() {
 
 function syncCartItemPreviewHeights() {
     if (!cartItemsContainer) return;
-    const isMobile = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
-        ? window.matchMedia('(max-width: 640px)').matches
-        : false;
 
     cartItemsContainer.querySelectorAll('[data-cart-details]').forEach((detailsEl) => {
         if (!(detailsEl instanceof HTMLElement)) return;
@@ -253,10 +250,6 @@ function syncCartItemPreviewHeights() {
 
         previewEl.style.height = 'auto';
         previewLinkEl.style.height = 'auto';
-
-        if (isMobile) {
-            return;
-        }
 
         const height = Math.ceil(detailsEl.getBoundingClientRect().height);
         if (!height) return;
