@@ -278,22 +278,26 @@
         }
 
         .shape-tile {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            gap: 0.25rem;
-            padding: 0.72rem 0.45rem;
-            min-height: 4.45rem;
+            display: grid;
+            place-items: center;
+            gap: 0;
+            width: 100%;
+            aspect-ratio: 1 / 1;
+            padding: 0.5rem;
+            min-height: 0;
             border-radius: 16px;
             border: 1px solid #dbe3ee;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
         }
 
+        .shape-btn.shape-tile {
+            width: 100%;
+        }
+
         .shape-tile__icon {
-            width: 2.15rem;
-            height: 2.15rem;
+            width: 2.2rem;
+            height: 2.2rem;
             border-radius: 12px;
             background: #f8fafc;
             color: #0f172a;
@@ -1174,8 +1178,9 @@
             }
 
             .shape-tile {
-                min-height: 4rem;
-                padding: 0.58rem 0.35rem;
+                aspect-ratio: 1 / 1;
+                min-height: 0;
+                padding: 0.35rem;
             }
 
             .action-btn {
