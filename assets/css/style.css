@@ -1878,6 +1878,12 @@ tbody tr:hover {
     padding: 0.9rem;
 }
 
+#templates-modal-grid .template-gallery-card__blank-fallback {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+}
+
 #templates-modal-grid .template-gallery-card__blank-sheet {
     width: min(76%, 180px);
     height: min(76%, 180px);

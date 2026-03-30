@@ -275,16 +275,18 @@ function getCurrentProductPreviewRatio(fallback = 4 / 3) {
 }
 
 function buildBlankTemplatePreviewMarkup() {
-    return `
-        <span class="template-gallery-card__blank-stage" aria-hidden="true">
-            <span class="template-gallery-card__blank-sheet">
-                <span class="template-gallery-card__blank-dot"></span>
-                <span class="template-gallery-card__blank-line template-gallery-card__blank-line--short"></span>
-                <span class="template-gallery-card__blank-line"></span>
-                <span class="template-gallery-card__blank-line template-gallery-card__blank-line--wide"></span>
-            </span>
-        </span>
-    `;
+    const blankSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100"><rect x="0" y="0" width="100" height="100" fill="#ffffff"/></svg>';
+    const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
+        blankSvg,
+        currentProduct?.svg_template || null,
+        { backgroundColor: '#ffffff' }
+    );
+
+    if (previewMarkup) {
+        return `<span class="template-gallery-card__preview-content">${previewMarkup}</span>`;
+    }
+
+    return `<div class="template-gallery-card__blank-fallback"></div>`;
 }
 
 function buildTemplatePreviewMarkup(template) {
@@ -354,7 +356,7 @@ function buildBlankTemplateCard() {
     return buildTemplateGalleryCard({
         action: 'blank',
         title: 'Em branco',
-        meta: 'Comece do zero',
+        meta: 'Formato do produto',
         previewMarkup: buildBlankTemplatePreviewMarkup()
     });
 }
