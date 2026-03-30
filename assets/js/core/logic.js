@@ -63,8 +63,6 @@ var cartSidebarCount = document.getElementById('cart-sidebar-count');
 var mobileMenuBtn = document.getElementById('mobile-menu-btn');
 var mobileMenu = document.getElementById('mobile-menu');
 var cartUiListenersReady = false;
-var cartPreviewSyncFrame = null;
-var cartPreviewResizeObserver = null;
 
 function refreshCartDomReferences() {
     productsContainer = document.getElementById('products-container');
@@ -179,13 +177,13 @@ function renderCartItemsList() {
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
-            <div class="flex items-start gap-3">
-                <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 self-start shrink-0" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
+            <div class="grid grid-cols-[clamp(4.75rem,22vw,5.75rem)_minmax(0,1fr)] items-stretch gap-3">
+                <a href="${getCartItemEditorLink(item, index)}" class="flex min-h-0 shrink-0 self-stretch" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
                     </div>
                 </a>
-                <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex-1">
+                <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex min-h-0 flex-col">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
@@ -217,70 +215,6 @@ function renderCartItemsList() {
             </div>
         </article>
     `).join('');
-
-    scheduleCartItemPreviewHeights();
-    bindCartItemPreviewObserver();
-}
-
-function scheduleCartItemPreviewHeights() {
-    if (cartPreviewSyncFrame) {
-        cancelAnimationFrame(cartPreviewSyncFrame);
-    }
-
-    cartPreviewSyncFrame = requestAnimationFrame(() => {
-        cartPreviewSyncFrame = requestAnimationFrame(() => {
-            cartPreviewSyncFrame = null;
-            syncCartItemPreviewHeights();
-        });
-    });
-}
-
-function syncCartItemPreviewHeights() {
-    if (!cartItemsContainer) return;
-
-    cartItemsContainer.querySelectorAll('[data-cart-details]').forEach((detailsEl) => {
-        if (!(detailsEl instanceof HTMLElement)) return;
-
-        const index = detailsEl.getAttribute('data-cart-details');
-        if (!index) return;
-
-        const previewEl = cartItemsContainer.querySelector(`[data-cart-preview="${index}"]`);
-        const previewLinkEl = cartItemsContainer.querySelector(`[data-cart-preview-link="${index}"]`);
-        if (!(previewEl instanceof HTMLElement) || !(previewLinkEl instanceof HTMLElement)) return;
-
-        previewEl.style.height = 'auto';
-        previewLinkEl.style.height = 'auto';
-
-        const height = Math.ceil(detailsEl.getBoundingClientRect().height);
-        if (!height) return;
-
-        previewEl.style.height = `${height}px`;
-        previewLinkEl.style.height = `${height}px`;
-    });
-}
-
-function bindCartItemPreviewObserver() {
-    if (cartPreviewResizeObserver) {
-        cartPreviewResizeObserver.disconnect();
-        cartPreviewResizeObserver = null;
-    }
-
-    if (typeof ResizeObserver === 'undefined' || !cartItemsContainer) {
-        return;
-    }
-
-    const detailsNodes = Array.from(cartItemsContainer.querySelectorAll('[data-cart-details]')).filter((node) => node instanceof HTMLElement);
-    if (detailsNodes.length === 0) {
-        return;
-    }
-
-    cartPreviewResizeObserver = new ResizeObserver(() => {
-        scheduleCartItemPreviewHeights();
-    });
-
-    detailsNodes.forEach((node) => {
-        cartPreviewResizeObserver.observe(node);
-    });
 }
 
 function handleCartItemsClick(event) {
@@ -340,8 +274,6 @@ function initPageUiInteractions() {
                 closeCart();
             }
         });
-
-        window.addEventListener('resize', syncCartItemPreviewHeights);
 
         if (mobileMenuBtn && mobileMenu) {
             mobileMenuBtn.addEventListener('click', () => {
@@ -727,8 +659,6 @@ function openCart() {
         document.body.style.overflow = 'hidden';
         if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
         if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'true');
-        scheduleCartItemPreviewHeights();
-        window.setTimeout(scheduleCartItemPreviewHeights, 120);
     }
 }
 
