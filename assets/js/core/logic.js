@@ -206,6 +206,29 @@ function renderCartItemsList() {
             </div>
         </article>
     `).join('');
+
+    requestAnimationFrame(syncCartItemPreviewHeights);
+}
+
+function syncCartItemPreviewHeights() {
+    if (!cartItemsContainer) return;
+
+    cartItemsContainer.querySelectorAll('[data-cart-details]').forEach((detailsEl) => {
+        if (!(detailsEl instanceof HTMLElement)) return;
+
+        const index = detailsEl.getAttribute('data-cart-details');
+        if (!index) return;
+
+        const previewEl = cartItemsContainer.querySelector(`[data-cart-preview="${index}"]`);
+        const previewLinkEl = cartItemsContainer.querySelector(`[data-cart-preview-link="${index}"]`);
+        if (!(previewEl instanceof HTMLElement) || !(previewLinkEl instanceof HTMLElement)) return;
+
+        const height = Math.ceil(detailsEl.getBoundingClientRect().height);
+        if (!height) return;
+
+        previewEl.style.height = `${height}px`;
+        previewLinkEl.style.height = `${height}px`;
+    });
 }
 
 function handleCartItemsClick(event) {
@@ -265,6 +288,8 @@ function initPageUiInteractions() {
                 closeCart();
             }
         });
+
+        window.addEventListener('resize', syncCartItemPreviewHeights);
 
         if (mobileMenuBtn && mobileMenu) {
             mobileMenuBtn.addEventListener('click', () => {
