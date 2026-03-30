@@ -2,8 +2,7 @@
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
-const adminEmailMeta = document.querySelector('meta[name="iberflag-admin-email"]');
-const allowedAdminEmail = (adminEmailMeta?.content || '').trim().toLowerCase();
+const ADMIN_EMAIL = 'admin123@iberflag.pt';
 let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
@@ -13,8 +12,7 @@ function getSessionEmail(session) {
 }
 
 function isAllowedAdminSession(session) {
-    if (!allowedAdminEmail) return false;
-    return getSessionEmail(session) === allowedAdminEmail;
+    return getSessionEmail(session) === ADMIN_EMAIL;
 }
 
 function getRemainingLockSeconds() {
@@ -80,32 +78,14 @@ async function checkAdminAuth() {
 
 // Login form handler
 document.addEventListener('DOMContentLoaded', () => {
-    const emailInput = document.getElementById('admin-email');
-    if (emailInput && allowedAdminEmail) {
-        emailInput.value = allowedAdminEmail;
-    }
-
     const loginForm = document.getElementById('admin-login-form');
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            const email = document.getElementById('admin-email').value.trim().toLowerCase();
             const password = document.getElementById('admin-password').value;
             const btn = document.getElementById('admin-login-btn');
             const btnText = document.getElementById('admin-login-btn-text');
             const errorEl = document.getElementById('admin-login-error');
-
-            if (!allowedAdminEmail) {
-                errorEl.textContent = 'Admin nao configurado. Defina o email permitido em pages/admin.html.';
-                errorEl.classList.remove('hidden');
-                return;
-            }
-
-            if (email !== allowedAdminEmail) {
-                errorEl.textContent = 'Email nao autorizado para o painel admin.';
-                errorEl.classList.remove('hidden');
-                return;
-            }
 
             const remainingLockSeconds = getRemainingLockSeconds();
             if (remainingLockSeconds > 0) {
@@ -119,7 +99,7 @@ document.addEventListener('DOMContentLoaded', () => {
             errorEl.classList.add('hidden');
 
             const { error } = await supabaseClient.auth.signInWithPassword({
-                email,
+                email: ADMIN_EMAIL,
                 password
             });
 
@@ -130,7 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     failedLoginAttempts = 0;
                 }
 
-                errorEl.textContent = 'Credenciais invalidas. Verifique o email e a password do Supabase.';
+                errorEl.textContent = 'Credenciais invalidas. Verifique a password do admin.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
