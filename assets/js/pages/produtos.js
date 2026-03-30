@@ -1,7 +1,7 @@
 // ===== PRODUCTS PAGE LOGIC =====
 
 function escapeHtml(value) {
-    return String(value  '')
+    return String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -17,7 +17,7 @@ let priceFilters = [];
 
 function parseProductPrice(product) {
     const numericPrice = Number(product?.preco);
-    return Number.isFinite(numericPrice)  numericPrice : 0;
+    return Number.isFinite(numericPrice) ? numericPrice : 0;
 }
 
 // ===== DOM ELEMENTS =====
@@ -88,7 +88,7 @@ function renderProductsGrid(products) {
                 <div class="product-badge">
                     ${safePrice}€
                 </div>
-                ${product.destaque  '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
+                ${product.destaque ? '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
             </div>
             <div class="p-6 flex flex-col flex-grow">
                 <div class="mb-2">
@@ -328,7 +328,7 @@ function buildTemplateLoadingCard() {
 
 function buildTemplateGalleryCard({ action, title, meta = '', previewMarkup, templateId = '' }) {
     const ariaLabel = action === 'blank'
-         'Começar em branco'
+        ? 'Come?ar em branco'
         : `Selecionar template ${title}`;
 
     return `
@@ -336,17 +336,17 @@ function buildTemplateGalleryCard({ action, title, meta = '', previewMarkup, tem
             type="button"
             class="template-gallery-card group"
             data-gallery-action="${action}"
-            ${templateId  `data-template-id="${escapeHtml(templateId)}"` : ''}
+            ${templateId ? `data-template-id="${escapeHtml(templateId)}"` : ''}
             aria-label="${escapeHtml(ariaLabel)}"
         >
             <span class="template-gallery-card__preview">
-                <span class="template-gallery-card__preview-surface ${action === 'blank'  'template-gallery-card__preview-surface--blank' : ''}">
+                <span class="template-gallery-card__preview-surface ${action === 'blank' ? 'template-gallery-card__preview-surface--blank' : ''}">
                     ${previewMarkup}
                 </span>
             </span>
             <span class="template-gallery-card__info">
                 <span class="template-gallery-card__title">${escapeHtml(title)}</span>
-                ${meta  `<span class="template-gallery-card__meta">${escapeHtml(meta)}</span>` : ''}
+                ${meta ? `<span class="template-gallery-card__meta">${escapeHtml(meta)}</span>` : ''}
             </span>
         </button>
     `;

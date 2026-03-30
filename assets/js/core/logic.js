@@ -21,6 +21,15 @@ window.supabaseClient = supabaseClient;
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;');
+}
+
 function getStoredCart() {
     const storageKeys = [CART_STORAGE_KEY, ...LEGACY_CART_STORAGE_KEYS];
 
