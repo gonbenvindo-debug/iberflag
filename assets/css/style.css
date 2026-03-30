@@ -215,6 +215,10 @@ body {
     flex: 0 0 auto;
 }
 
+#cart-sidebar {
+    width: min(24rem, calc(100vw - 1rem));
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes marquee {
     0% {
@@ -2711,11 +2715,6 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     /* Product cards */
     .product-card {
         margin-bottom: 1rem;
-    }
-
-    /* Cart sidebar */
-    #cart-sidebar {
-        width: 100% !important;
     }
 
     /* Forms */

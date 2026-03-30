@@ -86,7 +86,7 @@ function buildCartSidebarMarkup() {
 
     cartSidebar.dataset.cartEnhanced = '1';
     cartSidebar.setAttribute('aria-hidden', 'true');
-    cartSidebar.className = 'fixed inset-y-0 right-0 z-50 flex h-full w-full translate-x-full transform border-l border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 md:w-96';
+    cartSidebar.className = 'fixed inset-y-0 right-0 z-50 flex h-full translate-x-full transform border-l border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300';
     cartSidebar.style.zIndex = '60';
     cartSidebar.innerHTML = `
         <div class="flex h-full w-full flex-col">
