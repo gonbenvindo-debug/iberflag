@@ -170,7 +170,7 @@ function renderCartItemsList() {
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
             <div class="flex gap-3">
                 <a href="${getCartItemEditorLink(item, index)}" class="shrink-0">
-                    <div class="w-20 h-24 rounded-xl bg-gray-50 border border-gray-100 p-1.5 flex items-center justify-center">
+                    <div class="w-16 h-20 rounded-xl border border-gray-200 p-1 bg-[repeating-conic-gradient(#e5e7eb_0%_25%,#f8fafc_0%_50%)] bg-[size:10px_10px] flex items-center justify-center overflow-hidden">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="max-w-full max-h-full object-contain">
                     </div>
                 </a>
@@ -592,69 +592,6 @@ function updateCart() {
     }
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
-    }
-    return;
-
-    if (cartCount) {
-        if (totalItems > 0) {
-            cartCount.textContent = totalItems;
-            cartCount.classList.remove('hidden');
-        } else {
-            cartCount.classList.add('hidden');
-        }
-    }
-
-    // Update mobile cart count
-    const cartCountMobile = document.getElementById('cart-count-mobile');
-    if (cartCountMobile) {
-        if (totalItems > 0) {
-            cartCountMobile.textContent = totalItems;
-            cartCountMobile.classList.remove('hidden');
-        } else {
-            cartCountMobile.classList.add('hidden');
-        }
-    }
-
-    // Update cart items
-    if (cartItemsContainer) {
-        if (cart.length === 0) {
-            cartItemsContainer.innerHTML = `
-                <div class="text-center text-gray-500 py-12">
-                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                    <p>O seu carrinho está vazio</p>
-                </div>
-            `;
-        } else {
-            cartItemsContainer.innerHTML = cart.map((item, index) => `
-                <div class="flex gap-4 mb-4 pb-4 border-b">
-                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-28 h-28 object-contain rounded-2xl bg-gray-50 border border-gray-100 p-2">
-                    <div class="flex-1">
-                        <h4 class="font-bold text-sm">${item.nome}</h4>
-                        ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
-                        <p class="text-blue-600 font-bold">${item.preco.toFixed(2)}€</p>
-                        <div class="flex items-center gap-2 mt-2">
-                            <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100 transition-colors">
-                                <i data-lucide="${item.customized ? 'edit' : 'palette'}" class="w-3 h-3"></i>
-                                ${item.customized ? 'Editar' : 'Personalizar'}
-                            </a>
-                            <button onclick="removeFromCart(${index})" class="ml-auto text-red-500 hover:text-red-700">
-                                <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            `).join('');
-        }
-
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
-    }
-
-    // Update total
-    if (cartTotal) {
-        const total = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-        cartTotal.textContent = `${total.toFixed(2)}€`;
     }
 }
 
