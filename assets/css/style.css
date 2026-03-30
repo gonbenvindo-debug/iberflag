@@ -206,10 +206,10 @@ body {
 
 .cart-item-preview-image {
     display: block;
-    width: auto;
-    height: auto;
-    max-width: min(94%, calc(100% - (var(--cart-item-preview-inset) * 2)));
-    max-height: min(94%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+    width: 100%;
+    height: 100%;
+    max-width: calc(100% - (var(--cart-item-preview-inset) * 2));
+    max-height: calc(100% - (var(--cart-item-preview-inset) * 2));
     object-fit: contain;
     object-position: center;
     flex: 0 0 auto;
@@ -221,13 +221,12 @@ body {
 
 @media (max-width: 640px) {
     #cart-sidebar .cart-item-preview-frame {
-        --cart-item-preview-inset: 0.1rem;
-        height: auto;
+        --cart-item-preview-inset: 0.08rem;
     }
 
     #cart-sidebar .cart-item-preview-image {
-        max-width: min(92%, calc(100% - (var(--cart-item-preview-inset) * 2)));
-        max-height: min(92%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+        max-width: calc(100% - (var(--cart-item-preview-inset) * 2));
+        max-height: calc(100% - (var(--cart-item-preview-inset) * 2));
     }
 }
 
