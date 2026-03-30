@@ -234,10 +234,6 @@ Object.assign(DesignEditor.prototype, {
             btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
         });
 
-        if (typeof this.setupImageLibraryModalListeners === 'function') {
-            this.setupImageLibraryModalListeners();
-        }
-
         // Zoom
         document.getElementById('zoom-in').addEventListener('click', () => this.setZoom(this.zoom + 0.1));
         document.getElementById('zoom-out').addEventListener('click', () => this.setZoom(this.zoom - 0.1));

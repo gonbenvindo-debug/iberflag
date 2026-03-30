@@ -480,301 +480,6 @@
             bottom: -8px;
             cursor: nwse-resize;
         }
-
-        .image-library-modal {
-            position: fixed;
-            inset: 0;
-            z-index: 1280;
-            background: rgba(15, 23, 42, 0.74);
-            display: none;
-            align-items: center;
-            justify-content: center;
-            padding: 1.25rem;
-        }
-
-        .image-library-modal.is-open {
-            display: flex;
-        }
-
-        .image-library-panel {
-            width: min(1040px, 100%);
-            max-height: 92vh;
-            background: #fff;
-            border-radius: 18px;
-            border: 1px solid #e2e8f0;
-            box-shadow: 0 26px 80px rgba(2, 6, 23, 0.45);
-            overflow: hidden;
-            display: flex;
-            flex-direction: column;
-        }
-
-        .image-library-header {
-            padding: 1rem 1.25rem;
-            border-bottom: 1px solid #e2e8f0;
-            background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
-            display: flex;
-            align-items: flex-start;
-            justify-content: space-between;
-            gap: 1rem;
-        }
-
-        .image-library-body {
-            padding: 1rem 1.25rem 1.25rem;
-            overflow-y: auto;
-        }
-
-        .image-library-top {
-            display: grid;
-            grid-template-columns: minmax(0, 18rem) minmax(0, 1fr);
-            gap: 1rem;
-            margin-bottom: 1rem;
-        }
-
-        .image-library-upload-card {
-            border: 1px solid #dbe3ee;
-            border-radius: 16px;
-            background: #f8fafc;
-            padding: 1rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.75rem;
-            min-width: 0;
-        }
-
-        .image-library-upload-card__button {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.5rem;
-            width: 100%;
-            border-radius: 12px;
-            padding: 0.85rem 1rem;
-            background: #111827;
-            color: #ffffff;
-            font-weight: 700;
-            border: none;
-        }
-
-        .image-library-upload-card__hint {
-            font-size: 0.82rem;
-            line-height: 1.45;
-            color: #64748b;
-        }
-
-        .image-library-search {
-            border: 1px solid #dbe3ee;
-            border-radius: 16px;
-            background: #ffffff;
-            padding: 0.9rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.85rem;
-            min-width: 0;
-        }
-
-        .image-library-search__row {
-            display: flex;
-            gap: 0.65rem;
-        }
-
-        .image-library-search__input {
-            flex: 1;
-            min-width: 0;
-            border: 1px solid #cbd5e1;
-            border-radius: 12px;
-            padding: 0.85rem 0.95rem;
-            font-size: 0.95rem;
-            color: #0f172a;
-            background: #ffffff;
-        }
-
-        .image-library-search__input:focus {
-            outline: none;
-            border-color: #2563eb;
-            box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.14);
-        }
-
-        .image-library-search__button {
-            flex-shrink: 0;
-            border: none;
-            background: #2563eb;
-            color: #ffffff;
-            font-weight: 700;
-            border-radius: 12px;
-            padding: 0.85rem 1rem;
-        }
-
-        .image-library-meta {
-            display: flex;
-            flex-wrap: wrap;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-            font-size: 0.82rem;
-            color: #64748b;
-        }
-
-        .image-library-status {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.4rem;
-            font-weight: 600;
-            color: #334155;
-        }
-
-        .image-library-grid {
-            display: grid;
-            grid-template-columns: repeat(3, minmax(0, 1fr));
-            gap: 0.8rem;
-        }
-
-        .image-library-card {
-            display: flex;
-            flex-direction: column;
-            width: 100%;
-            padding: 0;
-            border: 1px solid #dbe3ee;
-            border-radius: 16px;
-            overflow: hidden;
-            background: #ffffff;
-            text-align: left;
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-            transition: transform 0.18s ease, box-shadow 0.18s ease, border-color 0.18s ease;
-        }
-
-        .image-library-card:hover {
-            transform: translateY(-1px);
-            border-color: #bfdbfe;
-            box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
-        }
-
-        .image-library-card__thumb {
-            aspect-ratio: 4 / 3;
-            background: repeating-conic-gradient(#f8fafc 0% 25%, #eef2f7 0% 50%) 50% / 24px 24px;
-            overflow: hidden;
-        }
-
-        .image-library-card__thumb img {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            display: block;
-        }
-
-        .image-library-card__body {
-            padding: 0.85rem 0.9rem 0.9rem;
-            display: flex;
-            flex-direction: column;
-            gap: 0.35rem;
-        }
-
-        .image-library-card__title {
-            font-size: 0.88rem;
-            font-weight: 800;
-            color: #0f172a;
-            line-height: 1.25;
-        }
-
-        .image-library-card__meta {
-            font-size: 0.72rem;
-            color: #64748b;
-            line-height: 1.35;
-        }
-
-        .image-library-card__action {
-            margin-top: 0.2rem;
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: 0.4rem;
-            border-radius: 10px;
-            padding: 0.65rem 0.8rem;
-            background: #111827;
-            color: #ffffff;
-            font-weight: 700;
-            font-size: 0.82rem;
-        }
-
-        .image-library-empty {
-            border: 1px dashed #cbd5e1;
-            border-radius: 16px;
-            padding: 2.5rem 1rem;
-            text-align: center;
-            color: #64748b;
-            background: #f8fafc;
-        }
-
-        .image-library-panel-sidebar {
-            display: flex;
-            flex-direction: column;
-            gap: 0.8rem;
-            min-height: 0;
-            flex: 1 1 auto;
-            padding-top: 0.9rem;
-            border-top: 1px solid #e2e8f0;
-        }
-
-        .image-library-panel-sidebar__head {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.75rem;
-        }
-
-        .image-library-search--sidebar {
-            padding: 0;
-            background: transparent;
-        }
-
-        .image-library-scroll {
-            flex: 1 1 auto;
-            min-height: 0;
-            overflow-y: auto;
-            padding-right: 0.2rem;
-        }
-
-        .image-library-grid--sidebar {
-            grid-template-columns: repeat(2, minmax(0, 1fr));
-            gap: 0.7rem;
-        }
-
-        .image-library-grid--sidebar .image-library-card__thumb {
-            aspect-ratio: 1 / 1;
-        }
-
-        .image-library-search--sidebar .image-library-search__row {
-            gap: 0;
-        }
-
-        .image-library-card {
-            padding: 0;
-            appearance: none;
-            -webkit-appearance: none;
-            cursor: pointer;
-        }
-
-        .image-library-card__body {
-            padding: 0.75rem 0.8rem 0.85rem;
-        }
-
-        .image-library-card__title {
-            font-size: 0.84rem;
-        }
-
-        .image-library-card__meta {
-            display: none;
-        }
-
-        .image-library-card__action {
-            display: none;
-        }
-
-        .image-library-search--sidebar .image-library-search__input {
-            width: 100%;
-        }
-
         .cart-steps-modal {
             position: fixed;
             inset: 0;
@@ -1468,9 +1173,7 @@
         <span id="product-price" class="editor-info-price"></span>
     </div>
 
-    <div class="editor-body-layout" id="editor-body-layout">
-
-        <!-- Left Sidebar - Tools -->
+    <div class="editor-body-layout" id="editor-body-layout">        <!-- Left Sidebar - Tools -->
         <aside class="w-80 overflow-y-auto editor-sidebar-left" id="editor-sidebar-left">
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
@@ -1501,7 +1204,6 @@
                                 </span>
                                 <span class="tool-tile__label">QR</span>
                             </button>
-
                         </div>
                     </div>
 
@@ -1525,177 +1227,11 @@
                         </div>
                     </div>
 
-                    <div id="image-library-panel" class="image-library-panel-sidebar">
-                        <div class="image-library-panel-sidebar__head">
-                            <p class="elements-group-title">Imagens</p>
+                    <div class="elements-group">
+                        <div class="elements-group-head">
+                            <p class="elements-group-title">Camadas</p>
                         </div>
-
-                        <div class="image-library-search image-library-search--sidebar">
-                            <input id="pixabay-search-input" class="image-library-search__input" type="search"
-                                placeholder="Pesquisar imagens">
-                        </div>
-
-                        <div class="image-library-scroll">
-                            <div id="pixabay-results" class="image-library-grid image-library-grid--sidebar"></div>
-                            <div id="pixabay-pagination" class="mt-4 flex justify-center"></div>
-                            <div id="pixabay-empty" class="image-library-empty hidden">
-                                <i data-lucide="image-off" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
-                                <p class="font-semibold text-slate-700">Sem resultados</p>
-                                <p class="text-sm mt-1">Escreve para pesquisar imagens.</p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div id="properties-panel" class="sidebar-section hidden overflow-y-auto">
-                    <p class="section-title">Propriedades</p>
-
-                    <div class="mb-4 flex items-center gap-3">
-                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporÃ§Ãµes">
-                            <span class="slide-button-toggle"></span>
-                        </button>
-                        <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
-                            Manter proporcoes
-                        </label>
-                    </div>
-
-                    <p class="section-title">Acoes Rapidas</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                            Duplicar
-                        </button>
-                        <button id="delete-element-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            Apagar
-                        </button>
-                        <button id="center-h-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
-                            Centrar H
-                        </button>
-                        <button id="center-v-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
-                            Centrar V
-                        </button>
-                    </div>
-
-                    <div id="no-selection" class="text-center text-gray-400 py-12">
-                        <i data-lucide="mouse-pointer" class="w-12 h-12 mx-auto mb-2"></i>
-                        <p>Selecione um elemento para editar</p>
-                    </div>
-
-                    <div id="text-properties" class="space-y-4 hidden">
-                        <h3 class="font-bold text-lg mb-4">Propriedades do Texto</h3>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Texto</label>
-                            <input type="text" id="prop-text-content" class="w-full border rounded-lg px-3 py-2">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Fonte</label>
-                            <select id="prop-text-font" class="w-full border rounded-lg px-3 py-2">
-                                <option value="Arial" style="font-family: Arial;">Arial</option>
-                                <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
-                                <option value="Georgia" style="font-family: Georgia;">Georgia</option>
-                                <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman
-                                </option>
-                                <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
-                                <option value="Verdana" style="font-family: Verdana;">Verdana</option>
-                                <option value="Impact" style="font-family: Impact;">Impact</option>
-                                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS
-                                </option>
-                                <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
-                                <option value="Palatino Linotype" style="font-family: 'Palatino Linotype';">Palatino
-                                    Linotype</option>
-                                <option value="Garamond" style="font-family: Garamond;">Garamond</option>
-                                <option value="Bookman" style="font-family: Bookman;">Bookman</option>
-                                <option value="Lucida Console" style="font-family: 'Lucida Console';">Lucida Console
-                                </option>
-                                <option value="Tahoma" style="font-family: Tahoma;">Tahoma</option>
-                                <option value="Gill Sans" style="font-family: 'Gill Sans';">Gill Sans</option>
-                                <option value="Calibri" style="font-family: Calibri;">Calibri</option>
-                                <option value="Consolas" style="font-family: Consolas;">Consolas</option>
-                                <option value="Century Gothic" style="font-family: 'Century Gothic';">Century Gothic
-                                </option>
-                            </select>
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span
-                                    id="prop-text-size-val">24</span>px</label>
-                            <input type="range" id="prop-text-size" min="12" max="120" value="24" class="w-full">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor</label>
-                            <input type="color" id="prop-text-color" value="#000000"
-                                class="w-full h-10 rounded cursor-pointer">
-                        </div>
-                        <div class="flex gap-2">
-                            <button id="prop-text-bold"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
-                            <button id="prop-text-italic"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
-                                    id="prop-text-rotation-val">0</span>Â°</label>
-                            <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
-                        </div>
-                    </div>
-
-                    <div id="image-properties" class="space-y-4 hidden">
-                        <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
-                        <div id="qr-properties" class="hidden">
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
-                            <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2"
-                                placeholder="https://site.pt ou texto livre">
-                            <div class="mt-3">
-                                <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
-                                <input type="color" id="prop-qr-color" value="#111827"
-                                    class="w-full h-10 rounded cursor-pointer">
-                            </div>
-                            <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera
-                                atualizado no canvas.</p>
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span
-                                    id="prop-image-opacity-val">100</span>%</label>
-                            <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
-                                    id="prop-image-rotation-val">0</span>Â°</label>
-                            <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
-                        </div>
-                        <button id="crop-image-btn"
-                            class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 mt-4">
-                            <i data-lucide="crop" class="w-4 h-4"></i>
-                            Cortar Imagem
-                        </button>
-                    </div>
-
-                    <div id="shape-properties" class="space-y-4 hidden">
-                        <h3 class="font-bold text-lg mb-4">Propriedades da Forma</h3>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor de Preenchimento</label>
-                            <input type="color" id="prop-shape-fill" value="#3b82f6"
-                                class="w-full h-10 rounded cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do Contorno</label>
-                            <input type="color" id="prop-shape-stroke" value="#000000"
-                                class="w-full h-10 rounded cursor-pointer">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span
-                                    id="prop-shape-stroke-val">0</span>px</label>
-                            <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
-                        </div>
-                        <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃ§Ã£o: <span
-                                    id="prop-shape-rotation-val">0</span>Â°</label>
-                            <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
-                        </div>
+                        <div id="layers-list" class="space-y-2"></div>
                     </div>
                 </div>
             </div>
@@ -1749,15 +1285,150 @@
             </nav>
         </main>
 
-        <!-- Right Sidebar - Layers -->
+        <!-- Right Sidebar - Properties -->
         <aside class="w-64 editor-sidebar-right" id="editor-sidebar-right">
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
-                <div class="p-4 border-b border-gray-100">
-                    <h3 class="font-bold text-lg">Camadas</h3>
-                </div>
-                <div id="layers-list" class="flex-1 overflow-y-auto p-4">
-                    <p class="text-sm text-gray-400 text-center py-8">Nenhuma camada ainda</p>
+                <div id="properties-panel" class="sidebar-section overflow-y-auto">
+                    <p class="section-title">Propriedades</p>
+
+                    <div class="mb-4 flex items-center gap-3">
+                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
+                            <span class="slide-button-toggle"></span>
+                        </button>
+                        <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
+                            Manter proporcoes
+                        </label>
+                    </div>
+
+                    <p class="section-title">Acoes Rapidas</p>
+                    <div class="grid grid-cols-2 gap-2">
+                        <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            Duplicar
+                        </button>
+                        <button id="delete-element-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            Apagar
+                        </button>
+                        <button id="center-h-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
+                            Centrar H
+                        </button>
+                        <button id="center-v-btn" class="action-btn flex items-center justify-center gap-2">
+                            <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
+                            Centrar V
+                        </button>
+                    </div>
+
+                    <div id="no-selection" class="text-center text-gray-400 py-12">
+                        <i data-lucide="mouse-pointer" class="w-12 h-12 mx-auto mb-2"></i>
+                        <p>Selecione um elemento para editar</p>
+                    </div>
+
+                    <div id="text-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades do Texto</h3>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Texto</label>
+                            <input type="text" id="prop-text-content" class="w-full border rounded-lg px-3 py-2">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Fonte</label>
+                            <select id="prop-text-font" class="w-full border rounded-lg px-3 py-2">
+                                <option value="Arial" style="font-family: Arial;">Arial</option>
+                                <option value="Helvetica" style="font-family: Helvetica;">Helvetica</option>
+                                <option value="Georgia" style="font-family: Georgia;">Georgia</option>
+                                <option value="Times New Roman" style="font-family: 'Times New Roman';">Times New Roman
+                                </option>
+                                <option value="Courier New" style="font-family: 'Courier New';">Courier New</option>
+                                <option value="Verdana" style="font-family: Verdana;">Verdana</option>
+                                <option value="Impact" style="font-family: Impact;">Impact</option>
+                                <option value="Comic Sans MS" style="font-family: 'Comic Sans MS';">Comic Sans MS
+                                </option>
+                                <option value="Trebuchet MS" style="font-family: 'Trebuchet MS';">Trebuchet MS</option>
+                                <option value="Tahoma" style="font-family: Tahoma;">Tahoma</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span
+                                    id="prop-text-size-val">24</span>px</label>
+                            <input type="range" id="prop-text-size" min="12" max="120" value="24" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor</label>
+                            <input type="color" id="prop-text-color" value="#000000"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="prop-text-bold"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
+                            <button id="prop-text-italic"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃƒÂ§ÃƒÂ£o: <span
+                                    id="prop-text-rotation-val">0</span>Ã‚Â°</label>
+                            <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
+                        </div>
+                    </div>
+
+                    <div id="image-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
+                        <div id="qr-properties" class="hidden">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
+                            <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2"
+                                placeholder="https://site.pt ou texto livre">
+                            <div class="mt-3">
+                                <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
+                                <input type="color" id="prop-qr-color" value="#111827"
+                                    class="w-full h-10 rounded cursor-pointer">
+                            </div>
+                            <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera
+                                atualizado no canvas.</p>
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span
+                                    id="prop-image-opacity-val">100</span>%</label>
+                            <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃƒÂ§ÃƒÂ£o: <span
+                                    id="prop-image-rotation-val">0</span>Ã‚Â°</label>
+                            <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
+                        </div>
+                        <button id="crop-image-btn"
+                            class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 mt-4">
+                            <i data-lucide="crop" class="w-4 h-4"></i>
+                            Cortar Imagem
+                        </button>
+                    </div>
+
+                    <div id="shape-properties" class="space-y-4 hidden">
+                        <h3 class="font-bold text-lg mb-4">Propriedades da Forma</h3>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor de Preenchimento</label>
+                            <input type="color" id="prop-shape-fill" value="#3b82f6"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do Contorno</label>
+                            <input type="color" id="prop-shape-stroke" value="#000000"
+                                class="w-full h-10 rounded cursor-pointer">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span
+                                    id="prop-shape-stroke-val">0</span>px</label>
+                            <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
+                        </div>
+                        <div>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">RotaÃƒÂ§ÃƒÂ£o: <span
+                                    id="prop-shape-rotation-val">0</span>Ã‚Â°</label>
+                            <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0"
+                                class="w-full">
+                        </div>
+                    </div>
                 </div>
             </div>
         </aside>
@@ -1803,72 +1474,7 @@
                 </button>
             </div>
         </div>
-    </div>
-
-    <div id="legacy-image-library-modal" class="image-library-modal" style="display:none" aria-hidden="true" role="dialog" aria-modal="true"
-        inert>
-        <div class="image-library-panel">
-            <div class="image-library-header">
-                <div>
-                    <h2 class="text-xl font-bold text-slate-900">Adicionar imagem</h2>
-                    <p class="text-sm text-slate-500 mt-1">Escolhe um ficheiro do computador ou pesquisa imagens
-                        pÃºblicas no Pixabay.</p>
-                </div>
-                <button id="legacy-image-library-close" type="button" class="p-2 rounded-lg hover:bg-slate-100"
-                    aria-label="Fechar biblioteca de imagens">
-                    <i data-lucide="x" class="w-5 h-5"></i>
-                </button>
-            </div>
-
-            <div class="image-library-body">
-                <div class="image-library-top">
-                    <div class="image-library-upload-card">
-                        <div>
-                            <p class="text-sm font-bold text-slate-900">Carregar do computador</p>
-                            <p class="text-sm text-slate-500 mt-1">MantÃ©m o mesmo recorte e ajuste das imagens
-                                normais.</p>
-                        </div>
-                        <button id="legacy-image-library-local-btn" type="button" class="image-library-upload-card__button">
-                            <i data-lucide="upload" class="w-4 h-4"></i>
-                            Escolher ficheiro
-                        </button>
-                        <p class="image-library-upload-card__hint">Se quiseres, podes depois recortar a imagem antes
-                            de inserir no design.</p>
-                    </div>
-
-                    <div class="image-library-search">
-                        <div>
-                            <p class="text-sm font-bold text-slate-900">Pesquisar imagens</p>
-                            <p class="text-sm text-slate-500 mt-1">Procura e escolhe imagens para inserir no design.
-                            </p>
-                        </div>
-                        <div class="image-library-search__row">
-                            <input id="legacy-pixabay-search-input" class="image-library-search__input" type="search"
-                                placeholder="Pesquisar imagens, ex.: bandeira, evento, outdoor">
-                            <button id="legacy-pixabay-search-btn" type="button" class="image-library-search__button">
-                                <i data-lucide="search" class="w-4 h-4"></i>
-                                Pesquisar
-                            </button>
-                        </div>
-                        <div class="image-library-meta">
-                            <span class="image-library-status" id="legacy-pixabay-search-status">Pronto</span>
-                            <span id="legacy-pixabay-search-count"></span>
-                        </div>
-                    </div>
-                </div>
-
-                <div id="legacy-pixabay-results" class="image-library-grid"></div>
-                <div id="legacy-pixabay-pagination" class="mt-4 flex justify-center"></div>
-                <div id="legacy-pixabay-empty" class="image-library-empty hidden">
-                    <i data-lucide="image-off" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
-                    <p class="font-semibold text-slate-700">Sem resultados ainda</p>
-                    <p class="text-sm mt-1">Faz uma pesquisa para ver imagens pÃºblicas do Pixabay aqui.</p>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true" inert>
+    </div><div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true" inert>
         <div class="cart-steps-panel">
             <div class="checkout-steps">
                 <div id="checkout-step-1" class="checkout-step active">

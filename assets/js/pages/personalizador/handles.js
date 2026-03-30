@@ -77,7 +77,6 @@ Object.assign(DesignEditor.prototype, {
         
         // Update properties panel
         this.updatePropertiesPanel(elementData);
-        this.updateSidebarMode();
 
         // Bring attention to properties automatically.
         this.focusPropertiesPanel();
