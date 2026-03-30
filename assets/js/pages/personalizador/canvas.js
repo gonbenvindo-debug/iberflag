@@ -18,6 +18,37 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
+    getCanvasViewportMetrics() {
+        const rect = this.canvas?.getBoundingClientRect?.();
+        const vb = this.getCanvasViewBoxSize();
+
+        if (!rect || !rect.width || !rect.height || !vb.width || !vb.height) {
+            return {
+                rect: rect || { left: 0, top: 0, width: 0, height: 0 },
+                vb,
+                scale: 1,
+                offsetX: 0,
+                offsetY: 0,
+                renderedWidth: rect?.width || 0,
+                renderedHeight: rect?.height || 0
+            };
+        }
+
+        const scale = Math.min(rect.width / vb.width, rect.height / vb.height) || 1;
+        const renderedWidth = vb.width * scale;
+        const renderedHeight = vb.height * scale;
+
+        return {
+            rect,
+            vb,
+            scale,
+            renderedWidth,
+            renderedHeight,
+            offsetX: (rect.width - renderedWidth) / 2,
+            offsetY: (rect.height - renderedHeight) / 2
+        };
+    },
+
     constrainResizeRect(startBox, proposedBox, handle, bounds) {
         const minWidth = 20;
         const minHeight = 20;
@@ -243,30 +274,24 @@ Object.assign(DesignEditor.prototype, {
     },
 
     clientToSvgPoint(clientX, clientY) {
-        const rect = this.canvas.getBoundingClientRect();
-        const vb = this.getCanvasViewBoxSize();
-        const svgWidth = vb.width;
-        const svgHeight = vb.height;
+        const metrics = this.getCanvasViewportMetrics();
+        const rect = metrics.rect;
 
         return {
-            x: ((clientX - rect.left) / rect.width) * svgWidth,
-            y: ((clientY - rect.top) / rect.height) * svgHeight
+            x: ((clientX - rect.left - metrics.offsetX) / metrics.scale),
+            y: ((clientY - rect.top - metrics.offsetY) / metrics.scale)
         };
     },
 
     clientDeltaToSvgDelta(deltaClientX, deltaClientY) {
-        const rect = this.canvas.getBoundingClientRect();
-        const vb = this.getCanvasViewBoxSize();
-        const svgWidth = vb.width;
-        const svgHeight = vb.height;
-
-        if (!rect.width || !rect.height) {
+        const metrics = this.getCanvasViewportMetrics();
+        if (!metrics.rect.width || !metrics.rect.height || !metrics.scale) {
             return { dx: 0, dy: 0 };
         }
 
         return {
-            dx: (deltaClientX / rect.width) * svgWidth,
-            dy: (deltaClientY / rect.height) * svgHeight
+            dx: deltaClientX / metrics.scale,
+            dy: deltaClientY / metrics.scale
         };
     },
 

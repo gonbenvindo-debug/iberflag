@@ -199,10 +199,8 @@ Object.assign(DesignEditor.prototype, {
     // without getScreenCTM(). This is immune to CTM staleness during active gestures.
     getHandlePoints(elementData) {
         const bbox = elementData.element.getBBox();
-        const vb = this.getCanvasViewBoxSize();
-        const wrapperRect = this.canvasWrapper.getBoundingClientRect();
-        const sx = wrapperRect.width  / vb.width;
-        const sy = wrapperRect.height / vb.height;
+        const metrics = this.getCanvasViewportMetrics();
+        const scale = metrics.scale || 1;
 
         const rotation = (elementData.rotation || 0) * Math.PI / 180;
         const cx = bbox.x + bbox.width  / 2;
@@ -210,20 +208,25 @@ Object.assign(DesignEditor.prototype, {
 
         // Rotate a point around the element's centre, then scale to wrapper pixels.
         const toWrapper = (px, py) => {
-            if (!rotation) return { x: px * sx, y: py * sy };
+            if (!rotation) {
+                return {
+                    x: metrics.offsetX + (px * scale),
+                    y: metrics.offsetY + (py * scale)
+                };
+            }
             const dx = px - cx;
             const dy = py - cy;
             return {
-                x: (cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * sx,
-                y: (cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * sy
+                x: metrics.offsetX + ((cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * scale),
+                y: metrics.offsetY + ((cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * scale)
             };
         };
 
         const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
         // Offset to viewport coords so handles work inside position:fixed container.
-        const ox = wrapperRect.left;
-        const oy = wrapperRect.top;
+        const ox = metrics.rect.left;
+        const oy = metrics.rect.top;
         const toVP = (p) => ({ x: p.x + ox, y: p.y + oy });
 
         const tl = toVP(toWrapper(bbox.x,              bbox.y));

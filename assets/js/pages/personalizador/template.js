@@ -59,45 +59,19 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
 
-        const defaultMaskShape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-        defaultMaskShape.setAttribute('x', String(this.printAreaBounds.x));
-        defaultMaskShape.setAttribute('y', String(this.printAreaBounds.y));
-        defaultMaskShape.setAttribute('width', String(this.printAreaBounds.width));
-        defaultMaskShape.setAttribute('height', String(this.printAreaBounds.height));
-        this.upsertPrintAreaBackground(defaultMaskShape);
-        this.upsertOutsideAreaOverlay(defaultMaskShape);
-
         this.bringPrintAreaOverlaysToFront();
     },
 
     configureCanvasFromSourceBounds(sourceBounds) {
-        const safeWidth = Math.max(1, Number(sourceBounds?.width) || 800);
-        const safeHeight = Math.max(1, Number(sourceBounds?.height) || 600);
-        const ratio = safeWidth / safeHeight;
-
-        const margin = 50;
-        const contentLongestSide = 700;
-
-        let contentWidth = contentLongestSide;
-        let contentHeight = contentLongestSide;
-
-        if (ratio >= 1) {
-            contentWidth = contentLongestSide;
-            contentHeight = contentLongestSide / ratio;
-        } else {
-            contentHeight = contentLongestSide;
-            contentWidth = contentLongestSide * ratio;
-        }
-
-        const canvasWidth = Math.max(200, Math.round(contentWidth + (margin * 2)));
-        const canvasHeight = Math.max(200, Math.round(contentHeight + (margin * 2)));
+        const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
+        const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
 
         this.baseCanvasSize = { width: canvasWidth, height: canvasHeight };
         this.printAreaBounds = {
-            x: margin,
-            y: margin,
-            width: contentWidth,
-            height: contentHeight
+            x: 0,
+            y: 0,
+            width: canvasWidth,
+            height: canvasHeight
         };
 
         if (this.canvas) {
@@ -354,9 +328,6 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
         this.printArea.setAttribute('height', String(this.printAreaBounds.height));
-
-        this.upsertPrintAreaBackground(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
-        this.upsertOutsideAreaOverlay(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();

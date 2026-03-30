@@ -456,7 +456,13 @@ Object.assign(DesignEditor.prototype, {
 
         const stageWidth = this.canvasStage.clientWidth;
         const stageHeight = this.canvasStage.clientHeight;
-        if (!stageWidth || !stageHeight) {
+        const stageStyle = window.getComputedStyle(this.canvasStage);
+        const paddingX = (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0);
+        const paddingY = (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0);
+        const availableWidth = Math.max(0, stageWidth - paddingX);
+        const availableHeight = Math.max(0, stageHeight - paddingY);
+
+        if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {
                 this.initialCanvasSize = {
                     width: Number(this.baseCanvasSize?.width) || 800,
@@ -479,25 +485,9 @@ Object.assign(DesignEditor.prototype, {
         );
 
         if (needsResizeRecalc) {
-            const isMobile = window.innerWidth <= 1023;
-            const fillFactor = isMobile ? 1.0 : 0.9;
-            const targetWidth = stageWidth * fillFactor;
-            const targetHeight = stageHeight * fillFactor;
-            const sourceWidth = Number(this.baseCanvasSize?.width) || 800;
-            const sourceHeight = Number(this.baseCanvasSize?.height) || 600;
-            const ratio = sourceWidth / sourceHeight;
-
-            let baseWidth = targetWidth;
-            let baseHeight = baseWidth / ratio;
-
-            if (baseHeight > targetHeight) {
-                baseHeight = targetHeight;
-                baseWidth = baseHeight * ratio;
-            }
-
             this.initialCanvasSize = {
-                width: baseWidth,
-                height: baseHeight
+                width: availableWidth,
+                height: availableHeight
             };
             this._lastViewportStageWidth = stageWidth;
             this._lastViewportStageHeight = stageHeight;
