@@ -34,6 +34,8 @@ class DesignEditor {
         this.rotationStart = 0;
         this.rotationCenterClient = null;
         this.rotationHandleRadiusClient = null;
+        this.moveFrameRequest = null;
+        this.pendingMoveEvent = null;
         this.currentProduct = null;
         this.editIndex = null;
         this.editDesignId = null;

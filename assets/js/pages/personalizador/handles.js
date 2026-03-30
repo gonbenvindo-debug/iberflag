@@ -418,6 +418,7 @@ Object.assign(DesignEditor.prototype, {
             mouseY: e.clientY,
             bbox: elementData.element.getBBox(),
             transformedBounds: this.getTransformedBounds(elementData),
+            guides: this.calculateGuides(elementData),
             snapLock: { x: null, y: null }
         };
         
@@ -438,6 +439,31 @@ Object.assign(DesignEditor.prototype, {
     },
     
     handleMouseMove(e) {
+        if (!e) {
+            return;
+        }
+
+        this.pendingMoveEvent = {
+            clientX: e.clientX,
+            clientY: e.clientY,
+            shiftKey: Boolean(e.shiftKey)
+        };
+
+        if (this.moveFrameRequest !== null) {
+            return;
+        }
+
+        this.moveFrameRequest = requestAnimationFrame(() => {
+            this.moveFrameRequest = null;
+            const pendingEvent = this.pendingMoveEvent;
+            this.pendingMoveEvent = null;
+            if (pendingEvent) {
+                this.processMouseMove(pendingEvent);
+            }
+        });
+    },
+
+    processMouseMove(e) {
         if (this.isDragging && this.selectedElement) {
             // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
             const svgDelta = this.clientDeltaToSvgDelta(
@@ -449,7 +475,7 @@ Object.assign(DesignEditor.prototype, {
 
             // ===== GUIDES & SNAP ALIGNMENT (sempre activo durante drag) =====
             {
-                const guides = this.calculateGuides(this.selectedElement);
+                const guides = this.dragStart.guides || this.calculateGuides(this.selectedElement);
                 const transformedBounds = this.dragStart.transformedBounds || this.getTransformedBounds(this.selectedElement);
                 const elLeft   = transformedBounds.left   + deltaX;
                 const elRight  = transformedBounds.right  + deltaX;
@@ -516,6 +542,19 @@ Object.assign(DesignEditor.prototype, {
         const wasRotating = this.isRotating;
         const wasDragging = this.isDragging;
         const wasResizing = this.isResizing;
+
+        if (this.moveFrameRequest !== null) {
+            cancelAnimationFrame(this.moveFrameRequest);
+            this.moveFrameRequest = null;
+        }
+
+        if (this.pendingMoveEvent && (this.isDragging || this.isResizing || this.isRotating)) {
+            const pendingEvent = this.pendingMoveEvent;
+            this.pendingMoveEvent = null;
+            this.processMouseMove(pendingEvent);
+        } else {
+            this.pendingMoveEvent = null;
+        }
         
         if (this.isDragging || this.isResizing || this.isRotating) {
             this.commitHistoryGesture();
