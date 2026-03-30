@@ -266,6 +266,14 @@ function getTemplateCategoryLabel(category) {
     return TEMPLATE_CATEGORY_LABELS[String(category || '').toLowerCase()] || 'Design';
 }
 
+function getCurrentProductPreviewRatio(fallback = 4 / 3) {
+    const source = currentProduct?.svg_template || '';
+    return Math.max(
+        0.2,
+        Number(window.DesignSvgStore?.getSvgAspectRatio?.(source, fallback)) || fallback
+    );
+}
+
 function buildBlankTemplatePreviewMarkup() {
     return `
         <span class="template-gallery-card__blank-stage" aria-hidden="true">
@@ -304,7 +312,7 @@ function buildTemplatePreviewMarkup(template) {
 
 function buildTemplateLoadingCard() {
     return `
-        <div class="template-gallery-card template-gallery-card--loading" aria-hidden="true">
+        <div class="template-gallery-card template-gallery-card--loading" aria-hidden="true" style="--template-preview-ratio: ${getCurrentProductPreviewRatio()};">
             <div class="template-gallery-card__preview">
                 <div class="template-gallery-card__skeleton template-gallery-card__skeleton--preview"></div>
             </div>
@@ -425,6 +433,8 @@ function renderTemplatesLoading(message = 'A carregar templates...') {
     const emptyState = document.getElementById('templates-empty');
 
     if (!grid || !emptyState) return;
+
+    grid.style.setProperty('--template-preview-ratio', String(getCurrentProductPreviewRatio()));
 
     grid.innerHTML = `
         ${Array.from({ length: 4 }).map(() => buildTemplateLoadingCard()).join('')}
@@ -552,6 +562,8 @@ function renderTemplates(templates) {
     const emptyState = document.getElementById('templates-empty');
 
     if (!grid || !emptyState) return;
+
+    grid.style.setProperty('--template-preview-ratio', String(getCurrentProductPreviewRatio()));
 
     const cards = [buildBlankTemplateCard()];
 
