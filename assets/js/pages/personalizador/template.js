@@ -66,20 +66,12 @@ Object.assign(DesignEditor.prototype, {
         const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
 
-        this.baseCanvasSize = { width: canvasWidth, height: canvasHeight };
         this.printAreaBounds = {
             x: 0,
             y: 0,
             width: canvasWidth,
             height: canvasHeight
         };
-
-        if (this.canvas) {
-            this.canvas.setAttribute('viewBox', `0 0 ${canvasWidth} ${canvasHeight}`);
-        }
-
-        // Force viewport recalculation because ratio changed with template.
-        this.initialCanvasSize = null;
     },
 
     bringPrintAreaOverlaysToFront() {

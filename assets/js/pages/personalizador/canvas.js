@@ -4,13 +4,7 @@
 Object.assign(DesignEditor.prototype, {
 
     getEditableBounds() {
-        const bounds = this.workspaceBounds;
-        if (bounds && Number.isFinite(bounds.x) && Number.isFinite(bounds.y) && Number.isFinite(bounds.width) && Number.isFinite(bounds.height)) {
-            return bounds;
-        }
-
-        // Fall back to the full canvas viewBox if the workspace bounds are not initialised.
-        return this.getCanvasBounds();
+        return this.getWorkspaceBounds();
     },
 
     getCanvasBounds() {

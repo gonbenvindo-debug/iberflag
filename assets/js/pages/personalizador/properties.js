@@ -500,6 +500,7 @@ Object.assign(DesignEditor.prototype, {
         this.canvasWrapper.style.width = `${scaledWidth}px`;
         this.canvasWrapper.style.height = `${scaledHeight}px`;
         this.canvasWrapper.style.transform = 'none';
+        this.syncWorkspaceBounds?.();
     },
 
     setZoom(newZoom) {
