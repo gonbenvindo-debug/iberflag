@@ -43,12 +43,240 @@ var cart = [];
 // ===== DOM ELEMENTS =====
 var productsContainer = document.getElementById('products-container');
 var cartBtn = document.getElementById('cart-btn');
+var cartBtnMobile = document.getElementById('cart-btn-mobile');
 var cartSidebar = document.getElementById('cart-sidebar');
 var cartOverlay = document.getElementById('cart-overlay');
 var closeCartBtn = document.getElementById('close-cart');
 var cartItemsContainer = document.getElementById('cart-items');
 var cartTotal = document.getElementById('cart-total');
 var cartCount = document.getElementById('cart-count');
+var cartSidebarCount = document.getElementById('cart-sidebar-count');
+var mobileMenuBtn = document.getElementById('mobile-menu-btn');
+var mobileMenu = document.getElementById('mobile-menu');
+var cartUiListenersReady = false;
+
+function refreshCartDomReferences() {
+    productsContainer = document.getElementById('products-container');
+    cartBtn = document.getElementById('cart-btn');
+    cartBtnMobile = document.getElementById('cart-btn-mobile');
+    cartSidebar = document.getElementById('cart-sidebar');
+    cartOverlay = document.getElementById('cart-overlay');
+    closeCartBtn = document.getElementById('close-cart');
+    cartItemsContainer = document.getElementById('cart-items');
+    cartTotal = document.getElementById('cart-total');
+    cartCount = document.getElementById('cart-count');
+    cartSidebarCount = document.getElementById('cart-sidebar-count');
+    mobileMenuBtn = document.getElementById('mobile-menu-btn');
+    mobileMenu = document.getElementById('mobile-menu');
+}
+
+function buildCartSidebarMarkup() {
+    if (!cartSidebar || cartSidebar.dataset.cartEnhanced === '1') {
+        return;
+    }
+
+    cartSidebar.dataset.cartEnhanced = '1';
+    cartSidebar.setAttribute('aria-hidden', 'true');
+    cartSidebar.className = 'fixed inset-y-0 right-0 z-50 flex h-full w-full translate-x-full transform border-l border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300 md:w-96';
+    cartSidebar.style.zIndex = '60';
+    cartSidebar.innerHTML = `
+        <div class="flex h-full w-full flex-col">
+            <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
+                <div>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Carrinho</p>
+                    <h3 class="text-xl font-bold text-slate-900">Carrinho de Compras</h3>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span id="cart-sidebar-count"
+                        class="hidden min-w-8 rounded-full bg-blue-600 px-2.5 py-1 text-center text-xs font-bold text-white">0</span>
+                    <button id="close-cart"
+                        class="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 hover:text-gray-800"
+                        aria-label="Fechar carrinho">
+                        <i data-lucide="x" class="w-5 h-5"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
+                <span>Itens no carrinho</span>
+                <span id="cart-total-items" class="font-semibold text-slate-900">0</span>
+            </div>
+            <div id="cart-items" class="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
+                <div class="rounded-2xl border border-dashed border-slate-200 bg-slate-50 px-4 py-10 text-center text-gray-500">
+                    <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
+                        <i data-lucide="shopping-cart" class="w-7 h-7 text-gray-300"></i>
+                    </div>
+                    <p class="font-semibold text-slate-700">O seu carrinho está vazio</p>
+                    <p class="mt-1 text-sm text-slate-500">Escolha um produto para começar.</p>
+                </div>
+            </div>
+            <div class="border-t border-slate-200 bg-white p-5">
+                <div class="mb-4 flex items-center justify-between text-lg font-bold text-slate-900">
+                    <span>Total</span>
+                    <span id="cart-total">0.00â‚¬</span>
+                </div>
+                <a href="/checkout.html"
+                    class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700">
+                    Finalizar Encomenda
+                </a>
+            </div>
+        </div>
+    `;
+
+    const overlay = document.getElementById('cart-overlay');
+    if (overlay) {
+        overlay.className = 'fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-sm';
+        overlay.style.zIndex = '50';
+    }
+}
+
+function updateCartCountBadges(totalItems) {
+    const value = Number.isFinite(totalItems) ? Math.max(0, totalItems) : 0;
+    const hasItems = value > 0;
+    const labels = [cartCount, document.getElementById('cart-count-mobile'), cartSidebarCount].filter(Boolean);
+
+    labels.forEach((label) => {
+        if (hasItems) {
+            label.textContent = String(value);
+            label.classList.remove('hidden');
+        } else {
+            label.textContent = '0';
+            label.classList.add('hidden');
+        }
+    });
+
+    const totalItemsLabel = document.getElementById('cart-total-items');
+    if (totalItemsLabel) {
+        totalItemsLabel.textContent = String(value);
+    }
+}
+
+function renderCartItemsList() {
+    if (!cartItemsContainer) return;
+
+    if (cart.length === 0) {
+        cartItemsContainer.innerHTML = `
+            <div class="text-center text-gray-500 py-12 px-6">
+                <div class="mx-auto mb-4 w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
+                    <i data-lucide="shopping-cart" class="w-8 h-8 text-gray-300"></i>
+                </div>
+                <p class="font-semibold text-gray-700">O seu carrinho está vazio</p>
+                <p class="text-sm text-gray-500 mt-1">Adicione produtos para continuar.</p>
+            </div>
+        `;
+        return;
+    }
+
+    cartItemsContainer.innerHTML = cart.map((item, index) => `
+        <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
+            <div class="flex gap-3">
+                <a href="${getCartItemEditorLink(item, index)}" class="shrink-0">
+                    <img src="${getCartItemImage(item)}" alt="${item.nome}" class="w-20 h-20 rounded-xl object-cover bg-gray-50 border border-gray-100">
+                </a>
+                <div class="min-w-0 flex-1">
+                    <div class="flex items-start justify-between gap-2">
+                        <div class="min-w-0">
+                            <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
+                            <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}â‚¬</p>
+                        </div>
+                        <button type="button" data-cart-action="remove" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Remover item">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                    <div class="mt-2 flex items-center gap-2">
+                        <span class="inline-flex items-center rounded-full bg-gray-100 px-2.5 py-1 text-[11px] font-semibold uppercase tracking-wide text-gray-600">${item.customized ? 'Personalizado' : 'Base'}</span>
+                        ${item.quantity > 1 ? `<span class="text-xs text-gray-500">Qtd. ${item.quantity}</span>` : ''}
+                    </div>
+                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                        <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                            <i data-lucide="${item.customized ? 'edit-3' : 'palette'}" class="w-3.5 h-3.5"></i>
+                            ${item.customized ? 'Editar' : 'Personalizar'}
+                        </a>
+                        <div class="ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
+                            <button type="button" data-cart-action="decrease" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="Diminuir quantidade">
+                                <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                            </button>
+                            <span class="min-w-8 px-2 text-center text-sm font-semibold text-gray-900">${item.quantity}</span>
+                            <button type="button" data-cart-action="increase" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="Aumentar quantidade">
+                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </article>
+    `).join('');
+}
+
+function handleCartItemsClick(event) {
+    const target = event.target instanceof Element ? event.target.closest('[data-cart-action]') : null;
+    if (!target || !cartItemsContainer?.contains(target)) {
+        return;
+    }
+
+    const action = target.getAttribute('data-cart-action');
+    const index = Number(target.getAttribute('data-cart-index'));
+    if (!Number.isInteger(index) || index < 0 || index >= cart.length) {
+        return;
+    }
+
+    if (action === 'remove') {
+        removeFromCart(index);
+        return;
+    }
+
+    if (action === 'increase') {
+        updateQuantity(index, (cart[index]?.quantity || 1) + 1);
+        return;
+    }
+
+    if (action === 'decrease') {
+        updateQuantity(index, (cart[index]?.quantity || 1) - 1);
+    }
+}
+
+function initPageUiInteractions() {
+    buildCartSidebarMarkup();
+    refreshCartDomReferences();
+
+    if (!cartUiListenersReady) {
+        if (cartBtn) {
+            cartBtn.addEventListener('click', openCart);
+        }
+
+        if (cartBtnMobile) {
+            cartBtnMobile.addEventListener('click', openCart);
+        }
+
+        if (closeCartBtn) {
+            closeCartBtn.addEventListener('click', closeCart);
+        }
+
+        if (cartOverlay) {
+            cartOverlay.addEventListener('click', closeCart);
+        }
+
+        if (cartItemsContainer) {
+            cartItemsContainer.addEventListener('click', handleCartItemsClick);
+        }
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && cartSidebar && cartSidebar.classList.contains('cart-open')) {
+                closeCart();
+            }
+        });
+
+        if (mobileMenuBtn && mobileMenu) {
+            mobileMenuBtn.addEventListener('click', () => {
+                mobileMenu.classList.toggle('hidden');
+            });
+        }
+
+        cartUiListenersReady = true;
+    }
+
+    updateCart();
+    injectOrdersTrackingLink();
+}
 
 // ===== INITIAL PRODUCTS (FALLBACK) =====
 var initialProducts = [
@@ -346,6 +574,7 @@ async function fetchProducts() {
 
 // ===== CART FUNCTIONS =====
 function updateCart() {
+    refreshCartDomReferences();
     cart = normalizeCartItems(cart);
     localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
     LEGACY_CART_STORAGE_KEYS.forEach((key) => {
@@ -354,6 +583,16 @@ function updateCart() {
 
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
+    updateCartCountBadges(totalItems);
+    renderCartItemsList();
+    if (cartTotal) {
+        const total = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
+        cartTotal.textContent = `${total.toFixed(2)}â‚¬`;
+    }
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+    return;
 
     if (cartCount) {
         if (totalItems > 0) {
@@ -465,18 +704,26 @@ function updateQuantity(index, newQuantity) {
 }
 
 function openCart() {
+    refreshCartDomReferences();
     if (cartSidebar && cartOverlay) {
         cartSidebar.classList.add('cart-open');
         cartOverlay.classList.remove('hidden');
+        cartSidebar.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
+        if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
+        if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'true');
     }
 }
 
 function closeCart() {
+    refreshCartDomReferences();
     if (cartSidebar && cartOverlay) {
         cartSidebar.classList.remove('cart-open');
         cartOverlay.classList.add('hidden');
+        cartSidebar.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+        if (cartBtn) cartBtn.setAttribute('aria-expanded', 'false');
+        if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'false');
     }
 }
 
@@ -549,21 +796,6 @@ if (cartOverlay) {
     cartOverlay.addEventListener('click', closeCart);
 }
 
-// ===== MOBILE MENU =====
-var mobileMenuBtn = document.getElementById('mobile-menu-btn');
-var mobileMenu = document.getElementById('mobile-menu');
-var cartBtnMobile = document.getElementById('cart-btn-mobile');
-
-if (mobileMenuBtn && mobileMenu) {
-    mobileMenuBtn.addEventListener('click', () => {
-        mobileMenu.classList.toggle('hidden');
-    });
-}
-
-if (cartBtnMobile) {
-    cartBtnMobile.addEventListener('click', openCart);
-}
-
 document.addEventListener('click', (event) => {
     const target = event.target;
     if (!(target instanceof Element)) {
@@ -590,8 +822,7 @@ document.addEventListener('click', (event) => {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
-    updateCart();
-    injectOrdersTrackingLink();
+    initPageUiInteractions();
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
