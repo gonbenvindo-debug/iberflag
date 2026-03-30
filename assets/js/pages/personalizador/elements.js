@@ -233,11 +233,6 @@ Object.assign(DesignEditor.prototype, {
             addQrBtn.addEventListener('click', () => this.handleAddQRCode());
         }
 
-        const addLineBtn = document.getElementById('add-line-btn');
-        if (addLineBtn) {
-            addLineBtn.addEventListener('click', () => this.addShape('line'));
-        }
-
         // Shapes
         document.querySelectorAll('.shape-btn').forEach(btn => {
             btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
