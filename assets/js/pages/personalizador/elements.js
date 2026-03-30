@@ -61,6 +61,28 @@ Object.assign(DesignEditor.prototype, {
             data.fill = node.getAttribute('fill') || '#3b82f6';
             data.stroke = node.getAttribute('stroke') || '#000000';
             data.strokeWidth = parseFloat(node.getAttribute('stroke-width') || '0');
+
+            if (shapeType === 'circle') {
+                data.cx = parseFloat(node.getAttribute('cx') || '0');
+                data.cy = parseFloat(node.getAttribute('cy') || '0');
+                data.r = parseFloat(node.getAttribute('r') || '0');
+                data.width = data.r * 2;
+                data.height = data.r * 2;
+            } else if (this.isPolygonShapeType?.(shapeType)) {
+                const points = String(node.getAttribute('points') || '').trim();
+                data.points = points;
+                const bbox = node.getBBox();
+                data.x = bbox.x;
+                data.y = bbox.y;
+                data.width = bbox.width;
+                data.height = bbox.height;
+            } else {
+                const bbox = node.getBBox();
+                data.x = parseFloat(node.getAttribute('x') || String(bbox.x || 0));
+                data.y = parseFloat(node.getAttribute('y') || String(bbox.y || 0));
+                data.width = parseFloat(node.getAttribute('width') || String(bbox.width || 0));
+                data.height = parseFloat(node.getAttribute('height') || String(bbox.height || 0));
+            }
         }
 
         const transform = node.getAttribute('transform') || '';
@@ -199,7 +221,11 @@ Object.assign(DesignEditor.prototype, {
         // Add elements
         document.getElementById('add-text-btn').addEventListener('click', () => this.addText());
         document.getElementById('add-image-btn').addEventListener('click', () => {
-            document.getElementById('image-upload').click();
+            if (typeof this.openImageLibraryModal === 'function') {
+                this.openImageLibraryModal();
+                return;
+            }
+            document.getElementById('image-upload')?.click();
         });
         document.getElementById('image-upload').addEventListener('change', (e) => this.handleImageUpload(e));
         const addQrBtn = document.getElementById('add-qr-btn');

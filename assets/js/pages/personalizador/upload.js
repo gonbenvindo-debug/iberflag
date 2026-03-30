@@ -68,6 +68,8 @@ Object.assign(DesignEditor.prototype, {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
             const points = Array.isArray(data.points) && data.points.length > 0
                 ? data.points.map(([x, y]) => `${x},${y}`).join(' ')
+                : typeof data.points === 'string' && data.points.trim()
+                    ? data.points.trim()
                 : this.buildShapePoints(normalizedShapeType, center, baseSize);
             shape.setAttribute('points', points);
         } else {
@@ -201,6 +203,7 @@ Object.assign(DesignEditor.prototype, {
 
     handleImageFile(file) {
         if (!file || !file.type.startsWith('image/')) return Promise.resolve();
+        this.closeImageLibraryModal?.();
         return new Promise((resolve) => {
             const reader = new FileReader();
             reader.onload = async (event) => {
@@ -226,6 +229,394 @@ Object.assign(DesignEditor.prototype, {
             reader.onerror = () => resolve();
             reader.readAsDataURL(file);
         });
+    },
+
+    getPixabayState() {
+        if (!this.pixabaySearchState) {
+            this.pixabaySearchState = {
+                query: '',
+                page: 1,
+                perPage: 12,
+                totalHits: 0,
+                hits: [],
+                hasSearched: false,
+                loading: false
+            };
+        }
+
+        return this.pixabaySearchState;
+    },
+
+    setupImageLibraryModalListeners() {
+        if (this.imageLibraryListenersReady) {
+            return;
+        }
+
+        const modal = document.getElementById('image-library-modal');
+        const closeBtn = document.getElementById('image-library-close');
+        const localBtn = document.getElementById('image-library-local-btn');
+        const searchBtn = document.getElementById('pixabay-search-btn');
+        const searchInput = document.getElementById('pixabay-search-input');
+        const results = document.getElementById('pixabay-results');
+
+        if (!modal || !closeBtn || !localBtn || !searchBtn || !searchInput || !results) {
+            return;
+        }
+
+        closeBtn.addEventListener('click', () => this.closeImageLibraryModal());
+
+        modal.addEventListener('click', (event) => {
+            if (event.target === modal) {
+                this.closeImageLibraryModal();
+            }
+        });
+
+        localBtn.addEventListener('click', () => {
+            this.closeImageLibraryModal();
+            document.getElementById('image-upload')?.click();
+        });
+
+        searchBtn.addEventListener('click', () => {
+            this.searchPixabayImages(searchInput.value, 1);
+        });
+
+        searchInput.addEventListener('keydown', (event) => {
+            if (event.key !== 'Enter') return;
+            event.preventDefault();
+            this.searchPixabayImages(searchInput.value, 1);
+        });
+
+        results.addEventListener('click', (event) => {
+            const button = event.target?.closest?.('[data-pixabay-use]');
+            if (!button) return;
+
+            const card = button.closest('[data-pixabay-card]');
+            const index = Number(card?.dataset?.pixabayCard || '-1');
+            const state = this.getPixabayState();
+            const hit = Array.isArray(state.hits) ? state.hits[index] : null;
+            if (hit) {
+                this.insertPixabayImage(hit);
+            }
+        });
+
+        document.addEventListener('keydown', (event) => {
+            if (event.key === 'Escape' && modal.classList.contains('is-open')) {
+                this.closeImageLibraryModal();
+            }
+        });
+
+        this.imageLibraryListenersReady = true;
+    },
+
+    openImageLibraryModal() {
+        this.setupImageLibraryModalListeners();
+
+        const modal = document.getElementById('image-library-modal');
+        const searchInput = document.getElementById('pixabay-search-input');
+        const status = document.getElementById('pixabay-search-status');
+        const count = document.getElementById('pixabay-search-count');
+
+        if (!modal) return;
+
+        const state = this.getPixabayState();
+
+        modal.classList.add('is-open');
+        modal.removeAttribute('inert');
+        modal.setAttribute('aria-hidden', 'false');
+        document.body.classList.add('overflow-hidden');
+        this.preventSidebarClose?.();
+
+        if (searchInput) {
+            searchInput.value = state.query || '';
+            window.requestAnimationFrame?.(() => searchInput.focus({ preventScroll: true }));
+        }
+
+        if (status) {
+            status.textContent = state.hasSearched && state.query
+                ? `Resultados para "${state.query}"`
+                : 'Galeria publica do Pixabay';
+        }
+
+        if (count) {
+            count.textContent = state.totalHits ? `${Number(state.totalHits).toLocaleString('pt-PT')} imagens` : '';
+        }
+
+        if (Array.isArray(state.hits) && state.hits.length > 0) {
+            this.renderPixabayResults(state.hits, {
+                query: state.query,
+                totalHits: state.totalHits,
+                page: state.page,
+                perPage: state.perPage
+            });
+        } else if (!state.loading) {
+            this.searchPixabayImages(state.query || '', 1);
+        }
+    },
+
+    closeImageLibraryModal() {
+        const modal = document.getElementById('image-library-modal');
+        if (modal) {
+            modal.classList.remove('is-open');
+            modal.setAttribute('aria-hidden', 'true');
+            modal.setAttribute('inert', '');
+        }
+        document.body.classList.remove('overflow-hidden');
+    },
+
+    renderPixabayEmptyState(title, description, icon = 'image-off') {
+        const empty = document.getElementById('pixabay-empty');
+        const results = document.getElementById('pixabay-results');
+        if (!empty || !results) return;
+
+        empty.innerHTML = `
+            <i data-lucide="${icon}" class="w-10 h-10 mx-auto mb-3 text-slate-300"></i>
+            <p class="font-semibold text-slate-700">${escapeHtml(title)}</p>
+            <p class="text-sm mt-1">${escapeHtml(description)}</p>
+        `;
+        empty.classList.remove('hidden');
+        results.innerHTML = '';
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    },
+
+    renderPixabayCard(hit, index) {
+        const previewUrl = hit.previewURL || hit.webformatURL || hit.largeImageURL || '';
+        const label = (hit.tags || hit.user || 'Pixabay image').split(',')[0].trim() || 'Pixabay image';
+        const author = hit.user ? `by ${hit.user}` : 'Pixabay';
+        const dimensions = hit.imageWidth && hit.imageHeight ? `${hit.imageWidth} x ${hit.imageHeight}` : '';
+
+        return `
+            <article class="image-library-card" data-pixabay-card="${index}">
+                <div class="image-library-card__thumb">
+                    <img src="${previewUrl}" alt="${escapeHtml(label)}" loading="lazy">
+                </div>
+                <div class="image-library-card__body">
+                    <div class="image-library-card__title">${escapeHtml(label)}</div>
+                    <div class="image-library-card__meta">Pixabay · ${escapeHtml(author)}${dimensions ? ` · ${escapeHtml(dimensions)}` : ''}</div>
+                    <button type="button" class="image-library-card__action" data-pixabay-use="${index}">
+                        Usar imagem
+                    </button>
+                </div>
+            </article>
+        `;
+    },
+
+    renderPixabayResults(hits = [], meta = {}) {
+        const results = document.getElementById('pixabay-results');
+        const empty = document.getElementById('pixabay-empty');
+        const status = document.getElementById('pixabay-search-status');
+        const count = document.getElementById('pixabay-search-count');
+        const pagination = document.getElementById('pixabay-pagination');
+
+        if (!results || !empty || !status || !count) return;
+
+        const query = String(meta.query || '').trim();
+        const totalHits = Number(meta.totalHits || hits.length || 0);
+        const page = Number(meta.page || 1);
+        const perPage = Number(meta.perPage || this.getPixabayState().perPage || 12);
+        const hasMore = totalHits > (page * perPage);
+
+        if (!Array.isArray(hits) || hits.length === 0) {
+            this.renderPixabayEmptyState(
+                query ? 'Nenhuma imagem encontrada' : 'Galeria vazia',
+                query ? 'Tenta uma pesquisa diferente no Pixabay.' : 'Escreve algo para pesquisar ou usa uma imagem do computador.'
+            );
+            status.textContent = query ? `Sem resultados para "${query}"` : 'Galeria publica do Pixabay';
+            count.textContent = '';
+            if (pagination) pagination.innerHTML = '';
+            return;
+        }
+
+        empty.classList.add('hidden');
+        results.innerHTML = hits.map((hit, index) => this.renderPixabayCard(hit, index)).join('');
+        status.textContent = query ? `Resultados para "${query}"` : 'Galeria publica do Pixabay';
+        count.textContent = `${Number(totalHits).toLocaleString('pt-PT')} imagens`;
+
+        if (pagination) {
+            pagination.innerHTML = hasMore ? `
+                <button id="pixabay-load-more" type="button"
+                    class="inline-flex items-center gap-2 rounded-xl border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 hover:bg-slate-50">
+                    <i data-lucide="plus" class="w-4 h-4"></i>
+                    Carregar mais
+                </button>
+            ` : '';
+
+            const loadMoreBtn = document.getElementById('pixabay-load-more');
+            if (loadMoreBtn) {
+                loadMoreBtn.addEventListener('click', () => {
+                    this.searchPixabayImages(query, page + 1);
+                });
+            }
+        }
+
+        if (window.lucide) {
+            window.lucide.createIcons();
+        }
+    },
+
+    async searchPixabayImages(query = '', page = 1) {
+        const state = this.getPixabayState();
+        const normalizedQuery = String(query || '').trim().slice(0, 100);
+        const perPage = state.perPage || 12;
+        const status = document.getElementById('pixabay-search-status');
+        const count = document.getElementById('pixabay-search-count');
+        const results = document.getElementById('pixabay-results');
+        const empty = document.getElementById('pixabay-empty');
+        const pagination = document.getElementById('pixabay-pagination');
+
+        state.query = normalizedQuery;
+        state.page = Number(page) || 1;
+        state.perPage = perPage;
+        state.hasSearched = true;
+        state.loading = true;
+
+        if (status) {
+            status.textContent = normalizedQuery
+                ? `A pesquisar "${normalizedQuery}"...`
+                : 'A carregar imagens publicas...';
+        }
+
+        if (count) {
+            count.textContent = '';
+        }
+
+        if (results) {
+            results.innerHTML = `
+                <div class="image-library-empty">
+                    <i data-lucide="loader-2" class="w-10 h-10 mx-auto mb-3 animate-spin text-slate-300"></i>
+                    <p class="font-semibold text-slate-700">A carregar imagens</p>
+                    <p class="text-sm mt-1">${normalizedQuery ? 'Aguarda um momento enquanto pesquisamos no Pixabay.' : 'A mostrar imagens publicas selecionadas do Pixabay.'}</p>
+                </div>
+            `;
+        }
+
+        if (empty) {
+            empty.classList.add('hidden');
+        }
+
+        if (pagination) {
+            pagination.innerHTML = '';
+        }
+
+        try {
+            const requestUrl = new URL('/api/pixabay-search', window.location.origin);
+            if (normalizedQuery) {
+                requestUrl.searchParams.set('q', normalizedQuery);
+            }
+            requestUrl.searchParams.set('page', String(state.page));
+            requestUrl.searchParams.set('per_page', String(perPage));
+
+            const response = await fetch(requestUrl.toString(), {
+                headers: {
+                    Accept: 'application/json'
+                }
+            });
+
+            const payload = await response.json().catch(() => null);
+
+            if (!response.ok) {
+                throw new Error(payload?.error || payload?.message || `Pixabay request failed (${response.status})`);
+            }
+
+            const hits = Array.isArray(payload?.hits) ? payload.hits : [];
+            state.totalHits = Number(payload?.totalHits || payload?.total || 0);
+            state.hits = state.page > 1 && normalizedQuery === state.query
+                ? [...(Array.isArray(state.hits) ? state.hits : []), ...hits]
+                : hits;
+
+            this.renderPixabayResults(state.hits, {
+                query: normalizedQuery,
+                totalHits: state.totalHits,
+                page: state.page,
+                perPage
+            });
+        } catch (error) {
+            console.error('Erro ao pesquisar Pixabay:', error);
+            state.hits = [];
+            state.totalHits = 0;
+            if (status) {
+                status.textContent = 'Nao foi possivel pesquisar no Pixabay';
+            }
+            this.renderPixabayEmptyState(
+                'Erro ao carregar',
+                error?.message || 'Verifica se a API do Pixabay esta configurada.'
+            );
+            showToast(error?.message || 'Nao foi possivel pesquisar imagens do Pixabay', 'error');
+        } finally {
+            state.loading = false;
+        }
+    },
+
+    async blobToDataUrl(blob) {
+        return new Promise((resolve, reject) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => reject(reader.error || new Error('Falha ao converter imagem'));
+            reader.readAsDataURL(blob);
+        });
+    },
+
+    async insertPixabayImage(hit) {
+        const sourceUrl = hit?.largeImageURL || hit?.webformatURL || hit?.previewURL;
+        if (!sourceUrl) {
+            showToast('Nao foi possivel obter a imagem selecionada', 'error');
+            return;
+        }
+
+        const state = this.getPixabayState();
+        const status = document.getElementById('pixabay-search-status');
+        const sourceName = (hit?.tags || hit?.user || 'Pixabay image').split(',')[0].trim() || 'Pixabay image';
+
+        if (status) {
+            status.textContent = 'A preparar imagem para inserir...';
+        }
+
+        try {
+            const proxyUrl = new URL('/api/pixabay-image', window.location.origin);
+            proxyUrl.searchParams.set('url', sourceUrl);
+
+            const response = await fetch(proxyUrl.toString(), {
+                headers: {
+                    Accept: 'image/*'
+                }
+            });
+
+            if (!response.ok) {
+                const errorPayload = await response.json().catch(() => null);
+                throw new Error(errorPayload?.error || errorPayload?.message || `Pixabay image request failed (${response.status})`);
+            }
+
+            const blob = await response.blob();
+            const dataUrl = await this.blobToDataUrl(blob);
+
+            this.closeImageLibraryModal();
+            const cropped = await this.openUploadCropModal(dataUrl);
+            if (!cropped) {
+                return;
+            }
+
+            this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, `Pixabay: ${sourceName}`, {
+                cropData: cropped.cropData,
+                fullWidth: cropped.fullWidth,
+                fullHeight: cropped.fullHeight
+            });
+
+            showToast('Imagem do Pixabay adicionada ao design', 'success');
+        } catch (error) {
+            console.error('Erro ao inserir imagem do Pixabay:', error);
+            if (status) {
+                status.textContent = 'Nao foi possivel preparar a imagem';
+            }
+            showToast(error?.message || 'Nao foi possivel inserir a imagem do Pixabay', 'error');
+        } finally {
+            if (status) {
+                status.textContent = state.hasSearched && state.query
+                    ? `Resultados para "${state.query}"`
+                    : 'Galeria publica do Pixabay';
+            }
+        }
     },
 
     handlePaste(e) {

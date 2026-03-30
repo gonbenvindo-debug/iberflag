@@ -197,10 +197,14 @@ Object.assign(DesignEditor.prototype, {
                 const cy = shape.y + r;
                 svgContent += `<circle cx="${(cx / 800) * 100}%" cy="${(cy / 600) * 100}%" r="${(r / 800) * 100}%" fill="${shape.fill}" />`;
             } else if (this.isPolygonShapeType?.(shape.shapeType)) {
-                const cx = shape.x + (shape.width / 2);
-                const cy = shape.y + (shape.height / 2);
-                const size = Math.max(shape.width, shape.height);
-                const points = this.buildShapePoints?.(shape.shapeType, { x: cx, y: cy }, size) || '';
+                const rawPoints = typeof shape.points === 'string' && shape.points.trim()
+                    ? shape.points.trim()
+                    : '';
+                const points = rawPoints || this.buildShapePoints?.(
+                    shape.shapeType,
+                    { x: shape.x + (shape.width / 2), y: shape.y + (shape.height / 2) },
+                    Math.max(shape.width, shape.height)
+                ) || '';
                 if (points) {
                     const scaledPoints = points.split(' ').map((pair) => {
                         const [x, y] = pair.split(',').map(Number);
