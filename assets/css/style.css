@@ -219,6 +219,17 @@ body {
     width: min(24rem, calc(100vw - 1rem));
 }
 
+@media (max-width: 640px) {
+    #cart-sidebar .cart-item-preview-frame {
+        --cart-item-preview-inset: 0.15rem;
+    }
+
+    #cart-sidebar .cart-item-preview-image {
+        max-width: min(86%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+        max-height: min(86%, calc(100% - (var(--cart-item-preview-inset) * 2)));
+    }
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes marquee {
     0% {
