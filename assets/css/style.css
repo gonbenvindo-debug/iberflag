@@ -221,8 +221,16 @@ body {
 }
 
 @media (max-width: 640px) {
+    #cart-sidebar [data-cart-preview-link] {
+        width: clamp(3.5rem, 22vw, 4.25rem) !important;
+        align-self: flex-start;
+    }
+
     #cart-sidebar .cart-item-preview-frame {
         --cart-item-preview-inset: 0.08rem;
+        width: 100%;
+        height: clamp(6.5rem, 38vw, 8rem);
+        max-height: 8rem;
         min-height: 0;
     }
 
