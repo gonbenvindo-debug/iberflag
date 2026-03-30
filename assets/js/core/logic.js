@@ -177,13 +177,13 @@ function renderCartItemsList() {
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
-            <div class="grid grid-cols-[clamp(4.75rem,22vw,5.75rem)_minmax(0,1fr)] items-stretch gap-3">
-                <a href="${getCartItemEditorLink(item, index)}" class="flex min-h-0 shrink-0 self-stretch" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
+            <div class="flex items-start gap-3">
+                <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
                     </div>
                 </a>
-                <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex min-h-0 flex-col">
+                <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex-1">
                     <div class="flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
