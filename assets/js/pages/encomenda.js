@@ -1,4 +1,4 @@
-const orderLoading = document.getElementById('order-loading');
+﻿const orderLoading = document.getElementById('order-loading');
 const orderNotFound = document.getElementById('order-not-found');
 const orderDetail = document.getElementById('order-detail');
 const itemPreviewModal = document.getElementById('item-preview-modal');
@@ -11,7 +11,7 @@ const itemPreviewDownload = document.getElementById('item-preview-download');
 let renderedItemPreviews = [];
 
 function escapeHtml(value) {
-    return String(value  '')
+    return String(value ?? '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -41,7 +41,7 @@ function sanitizeFilenameToken(value) {
 }
 
 function resolveOrderItemSnapshot(orderMeta, item, index) {
-    const snapshots = Array.isArray(orderMeta?.itemSnapshots)  orderMeta.itemSnapshots : [];
+    const snapshots = Array.isArray(orderMeta?.itemSnapshots) ? orderMeta.itemSnapshots : [];
     const byIndex = snapshots[index];
     if (byIndex) {
         return byIndex;
@@ -114,7 +114,7 @@ function pushOptionEntries(entries, key, value) {
 
     if (typeof value === 'object') {
         Object.entries(value).forEach(([entryKey, entryValue]) => {
-            const baseLabel = key  `${key} ${normalizeOptionLabel(entryKey)}` : normalizeOptionLabel(entryKey);
+            const baseLabel = key ? `${key} ${normalizeOptionLabel(entryKey)}` : normalizeOptionLabel(entryKey);
             pushOptionEntries(entries, baseLabel, entryValue);
         });
         return;
@@ -208,7 +208,7 @@ function extractOrderItemOptions(item, snapshot) {
                 return;
             }
 
-            const parsed = typeof rawValue === 'string'  parseJsonSafe(rawValue) : null;
+            const parsed = typeof rawValue === 'string' ? parseJsonSafe(rawValue) : null;
             if (parsed !== null) {
                 pushOptionEntries(entries, key, parsed);
                 return;
@@ -281,7 +281,7 @@ function resolveOrderItemVisual(item, snapshot) {
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
-    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function')  buildSvgDataUrl(designSvg) : '';
+    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
 
     // Priority: SVG design → explicit preview → product image fallback
     return {
@@ -291,7 +291,7 @@ function resolveOrderItemVisual(item, snapshot) {
 }
 
 function renderOrderHeader(order, workflowStatus) {
-    const statusLabel = typeof getWorkflowStatusLabel === 'function'  getWorkflowStatusLabel(workflowStatus) : workflowStatus;
+    const statusLabel = typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(workflowStatus) : workflowStatus;
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `Criada em ${formatDateTime(order.created_at)}`;
@@ -301,7 +301,7 @@ function renderOrderHeader(order, workflowStatus) {
 
 function renderOrderSidebar(order, splitMeta) {
     const tracking = typeof getTrackingDetails === 'function'
-         getTrackingDetails(order)
+        ? getTrackingDetails(order)
         : { trackingCode: '', trackingUrl: '' };
 
     const trackingCodeEl = document.getElementById('order-tracking-code');
@@ -332,11 +332,11 @@ function renderOrderSidebar(order, splitMeta) {
 function renderStatusTable(order, workflowStatus, splitMeta) {
     const statusTableBody = document.getElementById('order-status-table-body');
     const history = Array.isArray(splitMeta?.meta?.statusHistory)
-         splitMeta.meta.statusHistory
+        ? splitMeta.meta.statusHistory
         : [];
 
     const rows = history.length > 0
-         history
+        ? history
             .slice()
             .sort((a, b) => new Date(b.at) - new Date(a.at))
             .map((entry) => ({
@@ -354,7 +354,7 @@ function renderStatusTable(order, workflowStatus, splitMeta) {
 
     statusTableBody.innerHTML = rows.map((row) => `
         <tr>
-            <td class="text-sm font-semibold text-gray-800">${escapeHtml(typeof getWorkflowStatusLabel === 'function'  getWorkflowStatusLabel(row.status) : row.status)}</td>
+            <td class="text-sm font-semibold text-gray-800">${escapeHtml(typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(row.status) : row.status)}</td>
             <td class="text-sm text-gray-600">${escapeHtml(formatDateTime(row.at))}</td>
             <td class="text-sm text-gray-600">${escapeHtml(row.note || '-')}</td>
         </tr>
@@ -363,10 +363,10 @@ function renderStatusTable(order, workflowStatus, splitMeta) {
 
 function renderOrderItems(order, items, splitMeta) {
     const orderItemsEl = document.getElementById('order-items');
-    const snapshots = Array.isArray(splitMeta?.meta?.itemSnapshots)  splitMeta.meta.itemSnapshots : [];
+    const snapshots = Array.isArray(splitMeta?.meta?.itemSnapshots) ? splitMeta.meta.itemSnapshots : [];
 
     const listSource = Array.isArray(items) && items.length > 0
-         items
+        ? items
         : snapshots.map((snapshot) => ({
             produto_id: snapshot.produtoId,
             quantidade: snapshot.quantidade,
@@ -393,7 +393,7 @@ function renderOrderItems(order, items, splitMeta) {
         return;
     }
 
-    const rowsHtml = listSource.filter(item => item != null).map((item, index) => {
+    const rowsHtml = listSource.map((item, index) => {
         const snapshot = resolveOrderItemSnapshot(splitMeta.meta, item, index);
         const visuals = resolveOrderItemVisual(item, snapshot);
         const productName = item?.produtos?.nome || snapshot?.nome || `Produto #${item.produto_id || index + 1}`;
@@ -520,7 +520,7 @@ async function loadOrderByCode(orderCode) {
 
     return {
         order: data,
-        items: Array.isArray(data.items)  data.items : []
+        items: Array.isArray(data.items) ? data.items : []
     };
 }
 
@@ -552,11 +552,11 @@ async function initOrderPage() {
         }
 
         const splitMeta = typeof splitOrderNotesAndMeta === 'function'
-             splitOrderNotesAndMeta(result.order.notas)
+            ? splitOrderNotesAndMeta(result.order.notas)
             : { publicNotes: result.order.notas || '', meta: {} };
 
         const workflowStatus = typeof deriveWorkflowStatus === 'function'
-             deriveWorkflowStatus(result.order)
+            ? deriveWorkflowStatus(result.order)
             : result.order.status;
 
         renderOrderHeader(result.order, workflowStatus);

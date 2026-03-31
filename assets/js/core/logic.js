@@ -48,6 +48,7 @@ function getStoredCart() {
 }
 
 var cart = [];
+var cartDesignHydrationPending = false;
 
 // ===== DOM ELEMENTS =====
 var productsContainer = document.getElementById('products-container');
@@ -515,7 +516,55 @@ function normalizeCartItems(items) {
         .filter(Boolean);
 }
 
+function compactCartItems(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items.map((item) => {
+        const {
+            design,
+            design_svg,
+            designPreview,
+            preview_url,
+            previewUrl,
+            thumbnail,
+            ...rest
+        } = item || {};
+
+        return { ...rest };
+    });
+}
+
+async function hydrateCartDesignAssets() {
+    if (cartDesignHydrationPending) {
+        return;
+    }
+
+    if (!window.CartAssetStore?.hydrateCartItems) {
+        updateCart();
+        return;
+    }
+
+    cartDesignHydrationPending = true;
+
+    try {
+        if (window.CartAssetStore?.migrateLegacyCartItems) {
+            cart = await window.CartAssetStore.migrateLegacyCartItems(cart);
+        }
+
+        cart = await window.CartAssetStore.hydrateCartItems(cart);
+        updateCart();
+    } catch (error) {
+        console.warn('Falha ao hidratar os designs do carrinho:', error);
+        updateCart();
+    } finally {
+        cartDesignHydrationPending = false;
+    }
+}
+
 cart = normalizeCartItems(getStoredCart());
+window.cartHydrationPromise = hydrateCartDesignAssets();
 
 // ===== RENDER PRODUCTS =====
 function renderProducts(products) {
@@ -586,10 +635,21 @@ async function fetchProducts() {
 function updateCart() {
     refreshCartDomReferences();
     cart = normalizeCartItems(cart);
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
+    const persistedCart = compactCartItems(cart);
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(persistedCart));
     LEGACY_CART_STORAGE_KEYS.forEach((key) => {
-        localStorage.setItem(key, JSON.stringify(cart));
+        localStorage.setItem(key, JSON.stringify(persistedCart));
     });
+
+    if (window.CartAssetStore?.cleanupUnusedDesigns) {
+        const activeDesignIds = cart
+            .map((item) => String(item?.designId || item?.design_id || '').trim())
+            .filter(Boolean);
+
+        window.CartAssetStore.cleanupUnusedDesigns(activeDesignIds).catch((error) => {
+            console.warn('Falha ao limpar designs antigos do carrinho:', error);
+        });
+    }
 
     // Update cart count
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);

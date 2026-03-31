@@ -62,7 +62,7 @@ Object.assign(DesignEditor.prototype, {
         if (templateId) {
             await this.loadTemplate(templateId);
         } else if (this.editIndex !== null || this.editDesignId) {
-            this.loadExistingDesign(parseInt(this.editIndex, 10));
+            await this.loadExistingDesign(parseInt(this.editIndex, 10));
         } else {
             this.loadAutosaveDesign();
         }
@@ -433,6 +433,7 @@ Object.assign(DesignEditor.prototype, {
         const compactCart = Array.isArray(cart)
             ? cart.map((item) => {
                 const {
+                    design,
                     designPreview,
                     design_svg,
                     preview_url,
@@ -442,12 +443,7 @@ Object.assign(DesignEditor.prototype, {
                 } = item || {};
 
                 return {
-                    ...rest,
-                    design: typeof rest.design === 'string' && rest.design.trim()
-                        ? rest.design
-                        : typeof design_svg === 'string' && design_svg.trim()
-                            ? design_svg
-                            : null
+                    ...rest
                 };
             })
             : [];
@@ -462,6 +458,16 @@ Object.assign(DesignEditor.prototype, {
         });
 
         localStorage.setItem(this.cartStorageKey, serialized);
+
+        if (window.CartAssetStore?.cleanupUnusedDesigns) {
+            const activeDesignIds = compactCart
+                .map((item) => String(item?.designId || item?.design_id || '').trim())
+                .filter(Boolean);
+
+            window.CartAssetStore.cleanupUnusedDesigns(activeDesignIds).catch((error) => {
+                console.warn('Falha ao limpar designs antigos do carrinho:', error);
+            });
+        }
     },
 
     setupAdminMode() {

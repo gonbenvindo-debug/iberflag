@@ -391,7 +391,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     // ===== ADD TO CART =====
-    addToCart(designOverride = null) {
+    async addToCart(designOverride = null) {
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
@@ -417,11 +417,19 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
+            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
             baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
+
+        if (window.CartAssetStore?.saveDesign && designId) {
+            await window.CartAssetStore.saveDesign(designId, design, {
+                productId: this.currentProduct?.id,
+                preview: cartItem.designPreview
+            });
+        }
 
         if (targetIndex >= 0) {
             cart[targetIndex] = cartItem;

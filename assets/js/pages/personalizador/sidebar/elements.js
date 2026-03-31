@@ -211,7 +211,11 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
-    loadExistingDesign(index) {
+    async loadExistingDesign(index) {
+        if (window.cartHydrationPromise) {
+            await window.cartHydrationPromise;
+        }
+
         const cart = this.getCartData();
         let targetIndex = Number.isInteger(index) ? index : -1;
 
@@ -222,10 +226,17 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        if (targetIndex >= 0 && cart[targetIndex] && cart[targetIndex].design) {
+        let sourceItem = targetIndex >= 0 ? cart[targetIndex] : null;
+
+        if (sourceItem && !sourceItem.design && window.CartAssetStore?.hydrateCartItems) {
+            const hydrated = await window.CartAssetStore.hydrateCartItems([sourceItem]);
+            sourceItem = hydrated[0] || sourceItem;
+        }
+
+        if (targetIndex >= 0 && sourceItem && sourceItem.design) {
             try {
                 const parser = new DOMParser();
-                const svgDoc = parser.parseFromString(cart[targetIndex].design, 'image/svg+xml');
+                const svgDoc = parser.parseFromString(sourceItem.design, 'image/svg+xml');
                 const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
 
                 designElements.forEach(el => {
@@ -242,7 +253,7 @@ Object.assign(DesignEditor.prototype, {
                 this.saveHistory();
 
                 this.editIndex = String(targetIndex);
-                this.editDesignId = String(cart[targetIndex].designId || cart[targetIndex].design_id || this.editDesignId || '');
+                this.editDesignId = String(sourceItem.designId || sourceItem.design_id || this.editDesignId || '');
             } catch (error) {
                 console.error('Error loading existing design:', error);
             }
