@@ -2,6 +2,7 @@
 // SVG TEMPLATE & PRINT AREA
 // ============================================================
 const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
+const PRINT_AREA_OUTLINE_HEIGHT_RATIO = 0.9;
 
 function isDesignSvgDebugEnabled() {
     return Boolean(
@@ -278,10 +279,8 @@ Object.assign(DesignEditor.prototype, {
             height: workspaceBounds.height
         };
         this.printAreaBounds = contentBounds;
-        const uniformScale = Math.min(
-            contentBounds.width / sourceBounds.width,
-            contentBounds.height / sourceBounds.height
-        );
+        const targetOutlineHeight = contentBounds.height * PRINT_AREA_OUTLINE_HEIGHT_RATIO;
+        const uniformScale = targetOutlineHeight / sourceBounds.height;
         const renderedWidth = sourceBounds.width * uniformScale;
         const renderedHeight = sourceBounds.height * uniformScale;
         const offsetX = contentBounds.x + ((contentBounds.width - renderedWidth) / 2) - (sourceBounds.x * uniformScale);
@@ -290,6 +289,7 @@ Object.assign(DesignEditor.prototype, {
         logTemplateDebug('print-area-geometry', {
             sourceBounds,
             contentBounds,
+            targetOutlineHeight,
             uniformScale,
             renderedWidth,
             renderedHeight,
