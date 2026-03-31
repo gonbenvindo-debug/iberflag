@@ -144,6 +144,8 @@
             overflow: hidden;
             position: relative;
             z-index: 1;
+            border: none;
+            box-shadow: none;
         }
 
         #canvas-wrapper {
