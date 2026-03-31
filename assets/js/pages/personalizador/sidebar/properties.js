@@ -487,17 +487,12 @@ Object.assign(DesignEditor.prototype, {
         if (needsResizeRecalc) {
             const canvasSize = this.getCanvasViewBoxSize?.() || this.baseCanvasSize || { width: 800, height: 600 };
             const canvasAspect = Math.max(0.0001, (Number(canvasSize.width) || 800) / (Number(canvasSize.height) || 600));
-            let fitWidth = availableWidth;
-            let fitHeight = fitWidth / canvasAspect;
-
-            if (fitHeight > availableHeight) {
-                fitHeight = availableHeight;
-                fitWidth = fitHeight * canvasAspect;
-            }
+            const targetHeight = Math.max(1, availableHeight * 0.9);
+            const targetWidth = targetHeight * canvasAspect;
 
             this.initialCanvasSize = {
-                width: fitWidth,
-                height: fitHeight
+                width: targetWidth,
+                height: targetHeight
             };
             this._lastViewportStageWidth = stageWidth;
             this._lastViewportStageHeight = stageHeight;
