@@ -454,8 +454,9 @@ Object.assign(DesignEditor.prototype, {
     syncCanvasViewport() {
         if (!this.canvasStage || !this.canvasWrapper) return;
 
-        const stageWidth = this.canvasStage.clientWidth;
-        const stageHeight = this.canvasStage.clientHeight;
+        const stageRect = this.canvasStage.getBoundingClientRect?.();
+        const stageWidth = stageRect?.width || this.canvasStage.clientWidth;
+        const stageHeight = stageRect?.height || this.canvasStage.clientHeight;
         const stageStyle = window.getComputedStyle(this.canvasStage);
         const paddingX = (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0);
         const paddingY = (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0);
@@ -485,14 +486,9 @@ Object.assign(DesignEditor.prototype, {
         );
 
         if (needsResizeRecalc) {
-            const canvasSize = this.getCanvasViewBoxSize?.() || this.baseCanvasSize || { width: 800, height: 600 };
-            const canvasAspect = Math.max(0.0001, (Number(canvasSize.width) || 800) / (Number(canvasSize.height) || 600));
-            const targetHeight = Math.max(1, availableHeight);
-            const targetWidth = targetHeight * canvasAspect;
-
             this.initialCanvasSize = {
-                width: targetWidth,
-                height: targetHeight
+                width: Math.max(1, availableWidth),
+                height: Math.max(1, availableHeight)
             };
             this._lastViewportStageWidth = stageWidth;
             this._lastViewportStageHeight = stageHeight;
