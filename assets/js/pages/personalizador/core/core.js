@@ -64,6 +64,7 @@ class DesignEditor {
         // ===== CROP =====
         this.cropMode = false;
         this.cropBounds = null;
+        this.cropKeepAspectRatioBackup = null;
 
         // ===== PRE-INSERT CROP MODAL =====
         this.uploadCropState = null;

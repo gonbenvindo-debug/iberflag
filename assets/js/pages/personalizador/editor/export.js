@@ -3,6 +3,36 @@
 // ============================================================
 Object.assign(DesignEditor.prototype, {
 
+    beginCropSession() {
+        if (this.cropKeepAspectRatioBackup !== null) {
+            return;
+        }
+
+        this.cropKeepAspectRatioBackup = this.keepAspectRatio;
+        if (this.keepAspectRatio) {
+            this.keepAspectRatio = false;
+            const keepAspectBtn = document.getElementById('keep-aspect-ratio');
+            if (keepAspectBtn) {
+                keepAspectBtn.classList.remove('active');
+            }
+        }
+    },
+
+    endCropSession() {
+        if (this.cropKeepAspectRatioBackup === null) {
+            return;
+        }
+
+        const restoreKeepAspectRatio = this.cropKeepAspectRatioBackup;
+        this.cropKeepAspectRatioBackup = null;
+        this.keepAspectRatio = restoreKeepAspectRatio;
+
+        const keepAspectBtn = document.getElementById('keep-aspect-ratio');
+        if (keepAspectBtn) {
+            keepAspectBtn.classList.toggle('active', restoreKeepAspectRatio);
+        }
+    },
+
     startCropMode() {
         if (!this.selectedElement || this.selectedElement.type !== 'image') {
             showToast('Seleccione uma imagem para cortar', 'warning');
@@ -32,6 +62,7 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const elementToUpdate = this.selectedElement;
+        this.beginCropSession();
 
         this.openUploadCropModal(srcToCrop, existingCropData).then((croppedImageData) => {
             if (croppedImageData && elementToUpdate) {
@@ -67,6 +98,8 @@ Object.assign(DesignEditor.prototype, {
                 this.showResizeHandles(elementToUpdate);
                 this.saveHistory();
             }
+        }).finally(() => {
+            this.endCropSession();
         });
     },
 
