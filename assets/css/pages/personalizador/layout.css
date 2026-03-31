@@ -146,6 +146,10 @@
             z-index: 1;
         }
 
+        #canvas-wrapper {
+            flex: 0 0 auto;
+        }
+
         .editor-bottom-bar {
             display: flex;
             align-items: center;
