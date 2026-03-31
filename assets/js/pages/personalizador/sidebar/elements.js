@@ -56,6 +56,10 @@ Object.assign(DesignEditor.prototype, {
             data.originalSrc = node.dataset.originalSrc || '';
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
+            data.x = parseFloat(node.getAttribute('x') || '0');
+            data.y = parseFloat(node.getAttribute('y') || '0');
+            data.width = parseFloat(node.getAttribute('width') || '0');
+            data.height = parseFloat(node.getAttribute('height') || '0');
             try {
                 data.cropData = node.dataset.cropData ? JSON.parse(node.dataset.cropData) : null;
             } catch {

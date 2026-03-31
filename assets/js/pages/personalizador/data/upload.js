@@ -903,10 +903,12 @@ Object.assign(DesignEditor.prototype, {
         const fullHeight = options.fullHeight || height;
         const originalSrc = options.originalSrc || src;
         const cropSourceData = options.cropSourceData || null;
+        const x = center.x - (fitted.width / 2);
+        const y = center.y - (fitted.height / 2);
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
-        img.setAttribute('x', String(center.x - (fitted.width / 2)));
-        img.setAttribute('y', String(center.y - (fitted.height / 2)));
+        img.setAttribute('x', String(x));
+        img.setAttribute('y', String(y));
         img.setAttribute('width', String(fitted.width));
         img.setAttribute('height', String(fitted.height));
         img.setAttribute('href', src);
@@ -952,6 +954,10 @@ Object.assign(DesignEditor.prototype, {
             id: Date.now(),
             element: img,
             type: 'image',
+            x,
+            y,
+            width: fitted.width,
+            height: fitted.height,
             src,
             name,
             imageKind,
