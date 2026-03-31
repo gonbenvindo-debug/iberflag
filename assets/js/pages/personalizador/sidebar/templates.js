@@ -393,7 +393,7 @@ Object.assign(DesignEditor.prototype, {
         const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
-        const cropData = data.cropData || null;
+        const cropData = this.normalizeCropSelectionData?.(data.cropData, data.cropSourceData, data.fullWidth, data.fullHeight) || data.cropData || null;
         const fullWidth = Number(data.fullWidth || 0) || Number(data.width || 0) || 0;
         const fullHeight = Number(data.fullHeight || 0) || Number(data.height || 0) || 0;
         const cropSourceData = data.cropSourceData || (cropData && fullWidth && fullHeight ? {
@@ -415,6 +415,10 @@ Object.assign(DesignEditor.prototype, {
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
         imageElement.dataset.originalSrc = data.originalSrc || src;
+        imageElement.dataset.baseX = String(data.baseX ?? data.x ?? 0);
+        imageElement.dataset.baseY = String(data.baseY ?? data.y ?? 0);
+        imageElement.dataset.baseWidth = String(data.baseWidth ?? data.width ?? 120);
+        imageElement.dataset.baseHeight = String(data.baseHeight ?? data.height ?? 120);
         if (cropData) {
             imageElement.dataset.cropData = JSON.stringify(cropData);
         }

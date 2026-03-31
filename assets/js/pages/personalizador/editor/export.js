@@ -64,14 +64,12 @@ Object.assign(DesignEditor.prototype, {
         const sourceCropData = this.parseSourceCropData?.(imgElement) || null;
         const currentFullWidth = Number(imgElement.dataset.fullWidth || 0) || null;
         const currentFullHeight = Number(imgElement.dataset.fullHeight || 0) || null;
-        if ((!existingCropData || !Number.isFinite(existingCropData.x)) && sourceCropData && currentFullWidth && currentFullHeight) {
-            existingCropData = {
-                x: sourceCropData.x / currentFullWidth,
-                y: sourceCropData.y / currentFullHeight,
-                width: sourceCropData.width / currentFullWidth,
-                height: sourceCropData.height / currentFullHeight
-            };
-        }
+        existingCropData = this.normalizeCropSelectionData?.(
+            existingCropData,
+            sourceCropData,
+            currentFullWidth,
+            currentFullHeight
+        ) || existingCropData;
 
         if (!srcToCrop) {
             showToast('Fonte da imagem não encontrada', 'error');
@@ -99,8 +97,10 @@ Object.assign(DesignEditor.prototype, {
                     const cropY = Math.min(1, Math.max(0, Number(cropData.y) || 0));
                     const cropWidthRatio = Math.max(0.05, Math.min(1, Number(cropData.width) || 1));
                     const cropHeightRatio = Math.max(0.05, Math.min(1, Number(cropData.height) || 1));
-                    const nextWidth = Math.max(20, currentBox.width * cropWidthRatio);
-                    const nextHeight = Math.max(20, currentBox.height * cropHeightRatio);
+                    const baseWidth = Math.max(20, Number(imgElement.dataset.baseWidth || currentBox.width || 0) || currentBox.width);
+                    const baseHeight = Math.max(20, Number(imgElement.dataset.baseHeight || currentBox.height || 0) || currentBox.height);
+                    const nextWidth = Math.max(20, baseWidth * cropWidthRatio);
+                    const nextHeight = Math.max(20, baseHeight * cropHeightRatio);
                     const nextX = currentBox.x + (currentBox.width * cropX);
                     const nextY = currentBox.y + (currentBox.height * cropY);
 
@@ -117,6 +117,12 @@ Object.assign(DesignEditor.prototype, {
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
+                    if (!imgElement.dataset.baseWidth) {
+                        imgElement.dataset.baseWidth = String(baseWidth);
+                    }
+                    if (!imgElement.dataset.baseHeight) {
+                        imgElement.dataset.baseHeight = String(baseHeight);
+                    }
                     imgElement.dataset.cropSourceData = JSON.stringify({
                         x: viewBoxX,
                         y: viewBoxY,
@@ -129,6 +135,8 @@ Object.assign(DesignEditor.prototype, {
                     elementToUpdate.y = nextY;
                     elementToUpdate.width = nextWidth;
                     elementToUpdate.height = nextHeight;
+                    elementToUpdate.baseWidth = Number(imgElement.dataset.baseWidth || baseWidth) || baseWidth;
+                    elementToUpdate.baseHeight = Number(imgElement.dataset.baseHeight || baseHeight) || baseHeight;
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;

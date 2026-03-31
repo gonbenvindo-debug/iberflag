@@ -23,6 +23,68 @@ Object.assign(DesignEditor.prototype, {
         return null;
     },
 
+    normalizeCropSelectionData(cropData, sourceCropData = null, fullWidth = null, fullHeight = null) {
+        const toFinite = (value) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : null;
+        };
+
+        if (!cropData) {
+            return null;
+        }
+
+        const direct = {
+            x: toFinite(cropData.x),
+            y: toFinite(cropData.y),
+            width: toFinite(cropData.width),
+            height: toFinite(cropData.height)
+        };
+        if (direct.x !== null && direct.y !== null && direct.width !== null && direct.height !== null) {
+            return {
+                x: Math.max(0, Math.min(1, direct.x)),
+                y: Math.max(0, Math.min(1, direct.y)),
+                width: Math.max(0.05, Math.min(1, direct.width)),
+                height: Math.max(0.05, Math.min(1, direct.height))
+            };
+        }
+
+        const ratio = {
+            x: toFinite(cropData.xRatio),
+            y: toFinite(cropData.yRatio),
+            width: toFinite(cropData.widthRatio),
+            height: toFinite(cropData.heightRatio)
+        };
+        if (ratio.x !== null && ratio.y !== null && ratio.width !== null && ratio.height !== null) {
+            return {
+                x: Math.max(0, Math.min(1, ratio.x)),
+                y: Math.max(0, Math.min(1, ratio.y)),
+                width: Math.max(0.05, Math.min(1, ratio.width)),
+                height: Math.max(0.05, Math.min(1, ratio.height))
+            };
+        }
+
+        if (sourceCropData && Number.isFinite(Number(fullWidth)) && Number.isFinite(Number(fullHeight))) {
+            const fw = Number(fullWidth);
+            const fh = Number(fullHeight);
+            const normalized = {
+                x: toFinite(sourceCropData.x) !== null ? Number(sourceCropData.x) / fw : null,
+                y: toFinite(sourceCropData.y) !== null ? Number(sourceCropData.y) / fh : null,
+                width: toFinite(sourceCropData.width) !== null ? Number(sourceCropData.width) / fw : null,
+                height: toFinite(sourceCropData.height) !== null ? Number(sourceCropData.height) / fh : null
+            };
+            if (normalized.x !== null && normalized.y !== null && normalized.width !== null && normalized.height !== null) {
+                return {
+                    x: Math.max(0, Math.min(1, normalized.x)),
+                    y: Math.max(0, Math.min(1, normalized.y)),
+                    width: Math.max(0.05, Math.min(1, normalized.width)),
+                    height: Math.max(0.05, Math.min(1, normalized.height))
+                };
+            }
+        }
+
+        return null;
+    },
+
     buildShapePoints(shapeType, center, size) {
         const normalized = String(shapeType || 'triangle').trim().toLowerCase();
         const cx = Number(center?.x) || 0;
@@ -714,14 +776,18 @@ Object.assign(DesignEditor.prototype, {
         viewport.style.height = `${fitHeight}px`;
         viewport.style.transform = `scale(${scale})`;
 
+        const normalizedInitialCropData = this.normalizeCropSelectionData(
+            this.uploadCropState.initialCropData
+        );
+
         if (resetSelection || !this.uploadCropState.selectionNormalized) {
             // Se ha cropData inicial (imagem ja cortada), usar ele
-            if (this.uploadCropState.initialCropData) {
+            if (normalizedInitialCropData) {
                 this.uploadCropState.selectionNormalized = {
-                    x: this.uploadCropState.initialCropData.x,
-                    y: this.uploadCropState.initialCropData.y,
-                    width: this.uploadCropState.initialCropData.width,
-                    height: this.uploadCropState.initialCropData.height
+                    x: normalizedInitialCropData.x,
+                    y: normalizedInitialCropData.y,
+                    width: normalizedInitialCropData.width,
+                    height: normalizedInitialCropData.height
                 };
             } else {
                 this.uploadCropState.selectionNormalized = {
@@ -917,6 +983,10 @@ Object.assign(DesignEditor.prototype, {
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
         img.dataset.originalSrc = originalSrc;
+        img.dataset.baseX = String(x);
+        img.dataset.baseY = String(y);
+        img.dataset.baseWidth = String(fitted.width);
+        img.dataset.baseHeight = String(fitted.height);
 
         if (cropData) {
             const viewBoxX = cropData.x * fullWidth;
@@ -958,6 +1028,10 @@ Object.assign(DesignEditor.prototype, {
             y,
             width: fitted.width,
             height: fitted.height,
+            baseX: x,
+            baseY: y,
+            baseWidth: fitted.width,
+            baseHeight: fitted.height,
             src,
             name,
             imageKind,

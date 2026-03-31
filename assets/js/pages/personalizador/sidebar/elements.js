@@ -60,6 +60,10 @@ Object.assign(DesignEditor.prototype, {
             data.y = parseFloat(node.getAttribute('y') || '0');
             data.width = parseFloat(node.getAttribute('width') || '0');
             data.height = parseFloat(node.getAttribute('height') || '0');
+            data.baseX = parseFloat(node.dataset.baseX || String(data.x || 0));
+            data.baseY = parseFloat(node.dataset.baseY || String(data.y || 0));
+            data.baseWidth = parseFloat(node.dataset.baseWidth || String(data.width || 0));
+            data.baseHeight = parseFloat(node.dataset.baseHeight || String(data.height || 0));
             try {
                 data.cropData = node.dataset.cropData ? JSON.parse(node.dataset.cropData) : null;
             } catch {
@@ -72,6 +76,7 @@ Object.assign(DesignEditor.prototype, {
             }
             data.fullWidth = Number(node.dataset.fullWidth || 0) || undefined;
             data.fullHeight = Number(node.dataset.fullHeight || 0) || undefined;
+            data.cropData = this.normalizeCropSelectionData?.(data.cropData, data.cropSourceData, data.fullWidth, data.fullHeight) || data.cropData;
 
             if (!data.cropData && data.cropSourceData && data.fullWidth && data.fullHeight) {
                 data.cropData = {
@@ -150,8 +155,29 @@ Object.assign(DesignEditor.prototype, {
             } else {
                 delete elementData.element.dataset.originalSrc;
             }
+            if (Number.isFinite(Number(elementData.baseX))) {
+                elementData.element.dataset.baseX = String(elementData.baseX);
+            } else {
+                delete elementData.element.dataset.baseX;
+            }
+            if (Number.isFinite(Number(elementData.baseY))) {
+                elementData.element.dataset.baseY = String(elementData.baseY);
+            } else {
+                delete elementData.element.dataset.baseY;
+            }
+            if (Number.isFinite(Number(elementData.baseWidth))) {
+                elementData.element.dataset.baseWidth = String(elementData.baseWidth);
+            } else {
+                delete elementData.element.dataset.baseWidth;
+            }
+            if (Number.isFinite(Number(elementData.baseHeight))) {
+                elementData.element.dataset.baseHeight = String(elementData.baseHeight);
+            } else {
+                delete elementData.element.dataset.baseHeight;
+            }
             if (elementData.cropData) {
-                elementData.element.dataset.cropData = JSON.stringify(elementData.cropData);
+                const normalizedCropData = this.normalizeCropSelectionData?.(elementData.cropData, elementData.cropSourceData, elementData.fullWidth, elementData.fullHeight) || elementData.cropData;
+                elementData.element.dataset.cropData = JSON.stringify(normalizedCropData);
             } else {
                 delete elementData.element.dataset.cropData;
             }
