@@ -201,6 +201,7 @@ Object.assign(DesignEditor.prototype, {
                     const cropped = await this.openUploadCropModal(src);
                     if (cropped) {
                         this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName, {
+                            originalSrc: src,
                             cropData: cropped.cropData,
                             fullWidth: cropped.fullWidth,
                             fullHeight: cropped.fullHeight
@@ -880,6 +881,7 @@ Object.assign(DesignEditor.prototype, {
         const cropData = options.cropData || null;
         const fullWidth = options.fullWidth || width;
         const fullHeight = options.fullHeight || height;
+        const originalSrc = options.originalSrc || src;
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttribute('x', String(center.x - (fitted.width / 2)));
@@ -891,6 +893,7 @@ Object.assign(DesignEditor.prototype, {
         img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
+        img.dataset.originalSrc = originalSrc;
 
         if (cropData) {
             const viewBoxX = cropData.x * fullWidth;
@@ -923,6 +926,7 @@ Object.assign(DesignEditor.prototype, {
             imageKind,
             qrContent,
             qrColor,
+            originalSrc,
             cropData,
             fullWidth,
             fullHeight,

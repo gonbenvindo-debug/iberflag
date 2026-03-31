@@ -53,8 +53,16 @@ Object.assign(DesignEditor.prototype, {
             data.src = node.getAttribute('href') || '';
             data.name = node.dataset.name || 'Imagem';
             data.imageKind = node.dataset.imageKind || 'image';
+            data.originalSrc = node.dataset.originalSrc || '';
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
+            try {
+                data.cropData = node.dataset.cropData ? JSON.parse(node.dataset.cropData) : null;
+            } catch {
+                data.cropData = null;
+            }
+            data.fullWidth = Number(node.dataset.fullWidth || 0) || undefined;
+            data.fullHeight = Number(node.dataset.fullHeight || 0) || undefined;
         }
 
         if (type === 'shape') {
@@ -110,6 +118,11 @@ Object.assign(DesignEditor.prototype, {
         if (elementData.type === 'image') {
             elementData.element.dataset.name = elementData.name || 'Imagem';
             elementData.element.dataset.imageKind = elementData.imageKind || 'image';
+            if (elementData.originalSrc) {
+                elementData.element.dataset.originalSrc = elementData.originalSrc;
+            } else {
+                delete elementData.element.dataset.originalSrc;
+            }
 
             if (elementData.qrContent) {
                 elementData.element.dataset.qrContent = elementData.qrContent;

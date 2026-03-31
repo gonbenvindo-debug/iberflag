@@ -405,6 +405,7 @@ Object.assign(DesignEditor.prototype, {
         imageElement.setAttribute('opacity', String(data.opacity ?? 1));
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
+        imageElement.dataset.originalSrc = data.originalSrc || src;
 
         if (data.qrContent) {
             imageElement.dataset.qrContent = data.qrContent;
