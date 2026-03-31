@@ -406,6 +406,9 @@ Object.assign(DesignEditor.prototype, {
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
         imageElement.dataset.originalSrc = data.originalSrc || src;
+        if (data.cropSourceData) {
+            imageElement.dataset.cropSourceData = JSON.stringify(data.cropSourceData);
+        }
 
         if (data.qrContent) {
             imageElement.dataset.qrContent = data.qrContent;

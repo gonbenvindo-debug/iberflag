@@ -52,9 +52,26 @@ Object.assign(DesignEditor.prototype, {
         const srcToCrop = originalSrc || currentSrc;
 
         // Obter cropData atual da imagem para mostrar no modal
-        const existingCropData = imgElement.dataset.cropData
-            ? JSON.parse(imgElement.dataset.cropData)
-            : null;
+        let existingCropData = null;
+        try {
+            if (imgElement.dataset.cropData) {
+                existingCropData = JSON.parse(imgElement.dataset.cropData);
+            }
+        } catch {
+            existingCropData = null;
+        }
+
+        const sourceCropData = this.parseSourceCropData?.(imgElement) || null;
+        const currentFullWidth = Number(imgElement.dataset.fullWidth || 0) || null;
+        const currentFullHeight = Number(imgElement.dataset.fullHeight || 0) || null;
+        if ((!existingCropData || !Number.isFinite(existingCropData.x)) && sourceCropData && currentFullWidth && currentFullHeight) {
+            existingCropData = {
+                x: sourceCropData.x / currentFullWidth,
+                y: sourceCropData.y / currentFullHeight,
+                width: sourceCropData.width / currentFullWidth,
+                height: sourceCropData.height / currentFullHeight
+            };
+        }
 
         if (!srcToCrop) {
             showToast('Fonte da imagem não encontrada', 'error');
@@ -100,6 +117,12 @@ Object.assign(DesignEditor.prototype, {
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
+                    imgElement.dataset.cropSourceData = JSON.stringify({
+                        x: viewBoxX,
+                        y: viewBoxY,
+                        width: viewBoxWidth,
+                        height: viewBoxHeight
+                    });
 
                     elementToUpdate.src = croppedImageData.dataUrl;
                     elementToUpdate.x = nextX;
@@ -109,6 +132,12 @@ Object.assign(DesignEditor.prototype, {
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;
+                    elementToUpdate.cropSourceData = {
+                        x: viewBoxX,
+                        y: viewBoxY,
+                        width: viewBoxWidth,
+                        height: viewBoxHeight
+                    };
                     this.applyElementRotation(elementToUpdate);
                 }
 

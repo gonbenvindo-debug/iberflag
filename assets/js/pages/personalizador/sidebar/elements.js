@@ -61,6 +61,11 @@ Object.assign(DesignEditor.prototype, {
             } catch {
                 data.cropData = null;
             }
+            try {
+                data.cropSourceData = node.dataset.cropSourceData ? JSON.parse(node.dataset.cropSourceData) : null;
+            } catch {
+                data.cropSourceData = null;
+            }
             data.fullWidth = Number(node.dataset.fullWidth || 0) || undefined;
             data.fullHeight = Number(node.dataset.fullHeight || 0) || undefined;
         }
@@ -122,6 +127,11 @@ Object.assign(DesignEditor.prototype, {
                 elementData.element.dataset.originalSrc = elementData.originalSrc;
             } else {
                 delete elementData.element.dataset.originalSrc;
+            }
+            if (elementData.cropSourceData) {
+                elementData.element.dataset.cropSourceData = JSON.stringify(elementData.cropSourceData);
+            } else {
+                delete elementData.element.dataset.cropSourceData;
             }
 
             if (elementData.qrContent) {

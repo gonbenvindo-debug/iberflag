@@ -3,6 +3,26 @@
 // ============================================================
 Object.assign(DesignEditor.prototype, {
 
+    parseSourceCropData(nodeOrDataset) {
+        const dataset = nodeOrDataset?.dataset || nodeOrDataset || {};
+        try {
+            if (dataset.cropSourceData) {
+                const parsed = JSON.parse(dataset.cropSourceData);
+                if (parsed && Number.isFinite(Number(parsed.x)) && Number.isFinite(Number(parsed.y)) && Number.isFinite(Number(parsed.width)) && Number.isFinite(Number(parsed.height))) {
+                    return {
+                        x: Number(parsed.x),
+                        y: Number(parsed.y),
+                        width: Number(parsed.width),
+                        height: Number(parsed.height)
+                    };
+                }
+            }
+        } catch {
+            return null;
+        }
+        return null;
+    },
+
     buildShapePoints(shapeType, center, size) {
         const normalized = String(shapeType || 'triangle').trim().toLowerCase();
         const cx = Number(center?.x) || 0;
@@ -882,6 +902,7 @@ Object.assign(DesignEditor.prototype, {
         const fullWidth = options.fullWidth || width;
         const fullHeight = options.fullHeight || height;
         const originalSrc = options.originalSrc || src;
+        const cropSourceData = options.cropSourceData || null;
 
         const img = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         img.setAttribute('x', String(center.x - (fitted.width / 2)));
@@ -904,6 +925,16 @@ Object.assign(DesignEditor.prototype, {
             img.dataset.cropData = JSON.stringify(cropData);
             img.dataset.fullWidth = String(fullWidth);
             img.dataset.fullHeight = String(fullHeight);
+            if (cropSourceData) {
+                img.dataset.cropSourceData = JSON.stringify(cropSourceData);
+            } else {
+                img.dataset.cropSourceData = JSON.stringify({
+                    x: viewBoxX,
+                    y: viewBoxY,
+                    width: viewBoxWidth,
+                    height: viewBoxHeight
+                });
+            }
         }
 
         if (qrContent) {
@@ -930,6 +961,12 @@ Object.assign(DesignEditor.prototype, {
             cropData,
             fullWidth,
             fullHeight,
+            cropSourceData: cropSourceData || (cropData ? {
+                x: cropData.x * fullWidth,
+                y: cropData.y * fullHeight,
+                width: cropData.width * fullWidth,
+                height: cropData.height * fullHeight
+            } : null),
             opacity: 1,
             rotation: 0
         };
