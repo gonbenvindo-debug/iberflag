@@ -46,24 +46,50 @@
         host.appendChild(tempSvg);
 
         try {
-            const svgRect = tempSvg.getBoundingClientRect();
-            const elementRect = clone.getBoundingClientRect();
-            const measured = {
-                x: elementRect.left - svgRect.left,
-                y: elementRect.top - svgRect.top,
-                width: elementRect.width,
-                height: elementRect.height
-            };
+            if (typeof clone.getBBox === 'function') {
+                const bbox = clone.getBBox();
+                if (
+                    bbox &&
+                    Number.isFinite(bbox.x) &&
+                    Number.isFinite(bbox.y) &&
+                    Number.isFinite(bbox.width) &&
+                    Number.isFinite(bbox.height) &&
+                    bbox.width > 0 &&
+                    bbox.height > 0
+                ) {
+                    const ctm = typeof clone.getCTM === 'function' ? clone.getCTM() : null;
+                    const points = [
+                        { x: bbox.x, y: bbox.y },
+                        { x: bbox.x + bbox.width, y: bbox.y },
+                        { x: bbox.x + bbox.width, y: bbox.y + bbox.height },
+                        { x: bbox.x, y: bbox.y + bbox.height }
+                    ];
+                    const transformed = ctm
+                        ? points.map((point) => {
+                            const mapped = new DOMPoint(point.x, point.y).matrixTransform(ctm);
+                            return { x: mapped.x, y: mapped.y };
+                        })
+                        : points;
+                    const xs = transformed.map((point) => point.x);
+                    const ys = transformed.map((point) => point.y);
+                    const measured = {
+                        x: Math.min(...xs),
+                        y: Math.min(...ys),
+                        width: Math.max(...xs) - Math.min(...xs),
+                        height: Math.max(...ys) - Math.min(...ys)
+                    };
 
-            if (
-                Number.isFinite(measured.x) &&
-                Number.isFinite(measured.y) &&
-                Number.isFinite(measured.width) &&
-                Number.isFinite(measured.height) &&
-                measured.width > 0 &&
-                measured.height > 0
-            ) {
-                return normalizeBounds(measured, fallback);
+                    if (
+                        Number.isFinite(measured.x) &&
+                        Number.isFinite(measured.y) &&
+                        Number.isFinite(measured.width) &&
+                        Number.isFinite(measured.height) &&
+                        measured.width > 0 &&
+                        measured.height > 0
+                    ) {
+                        return normalizeBounds(measured, fallback);
+                    }
+                }
             }
         } catch (error) {
             // Fall back to the source bounds if the element cannot be measured.
