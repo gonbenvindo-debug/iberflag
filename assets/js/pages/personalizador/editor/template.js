@@ -2,7 +2,6 @@
 // SVG TEMPLATE & PRINT AREA
 // ============================================================
 const DESIGN_SVG_DEBUG_PARAM = /(?:\?|&)debug(?:=1)?(?:&|$)/i;
-const PRINT_AREA_OUTLINE_HEIGHT_RATIO = 0.9;
 
 function isDesignSvgDebugEnabled() {
     return Boolean(
@@ -30,44 +29,6 @@ function logTemplateDebug(channel, details) {
 
 Object.assign(DesignEditor.prototype, {
 
-    getPreferredPrintAreaBounds(sourceBounds) {
-        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
-        const fallbackSourceBounds = sourceBounds && sourceBounds.width > 0 && sourceBounds.height > 0
-            ? sourceBounds
-            : {
-                x: workspaceBounds.x,
-                y: workspaceBounds.y,
-                width: workspaceBounds.width,
-                height: workspaceBounds.height
-            };
-
-        const targetHeight = workspaceBounds.height * PRINT_AREA_OUTLINE_HEIGHT_RATIO;
-        const heightScale = targetHeight / fallbackSourceBounds.height;
-        const widthScale = workspaceBounds.width / fallbackSourceBounds.width;
-        const uniformScale = Math.min(heightScale, widthScale);
-        const renderedWidth = fallbackSourceBounds.width * uniformScale;
-        const renderedHeight = fallbackSourceBounds.height * uniformScale;
-        const offsetX = workspaceBounds.x + ((workspaceBounds.width - renderedWidth) / 2) - (fallbackSourceBounds.x * uniformScale);
-        const offsetY = workspaceBounds.y + ((workspaceBounds.height - renderedHeight) / 2) - (fallbackSourceBounds.y * uniformScale);
-
-        return {
-            sourceBounds: fallbackSourceBounds,
-            workspaceBounds,
-            targetHeight,
-            uniformScale,
-            renderedWidth,
-            renderedHeight,
-            offsetX,
-            offsetY,
-            frameBounds: {
-                x: workspaceBounds.x + ((workspaceBounds.width - renderedWidth) / 2),
-                y: workspaceBounds.y + ((workspaceBounds.height - renderedHeight) / 2),
-                width: renderedWidth,
-                height: renderedHeight
-            }
-        };
-    },
-
     setDefaultPrintArea() {
         const existingVisualArea = this.canvas.querySelector('#print-area-shape-outline');
         if (existingVisualArea) {
@@ -85,7 +46,11 @@ Object.assign(DesignEditor.prototype, {
             this.printArea = rect;
         }
 
-        const preferredBounds = this.getPreferredPrintAreaBounds(this.templateSourceBounds);
+        const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
+            this.getWorkspaceBounds?.() || this.getCanvasBounds(),
+            this.templateSourceBounds,
+            { heightRatio: 0.9 }
+        );
         this.printAreaBounds = preferredBounds.frameBounds;
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
@@ -304,7 +269,11 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.configureCanvasFromSourceBounds(sourceBounds);
-        const preferredBounds = this.getPreferredPrintAreaBounds(sourceBounds);
+        const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
+            this.getWorkspaceBounds?.() || this.getCanvasBounds(),
+            sourceBounds,
+            { heightRatio: 0.9 }
+        );
         const contentBounds = preferredBounds.frameBounds;
         this.printAreaBounds = contentBounds;
         const { targetHeight: targetOutlineHeight, uniformScale, renderedWidth, renderedHeight, offsetX, offsetY } = preferredBounds;
