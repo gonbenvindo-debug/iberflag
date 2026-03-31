@@ -30,6 +30,44 @@ function logTemplateDebug(channel, details) {
 
 Object.assign(DesignEditor.prototype, {
 
+    getPreferredPrintAreaBounds(sourceBounds) {
+        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
+        const fallbackSourceBounds = sourceBounds && sourceBounds.width > 0 && sourceBounds.height > 0
+            ? sourceBounds
+            : {
+                x: workspaceBounds.x,
+                y: workspaceBounds.y,
+                width: workspaceBounds.width,
+                height: workspaceBounds.height
+            };
+
+        const targetHeight = workspaceBounds.height * PRINT_AREA_OUTLINE_HEIGHT_RATIO;
+        const heightScale = targetHeight / fallbackSourceBounds.height;
+        const widthScale = workspaceBounds.width / fallbackSourceBounds.width;
+        const uniformScale = Math.min(heightScale, widthScale);
+        const renderedWidth = fallbackSourceBounds.width * uniformScale;
+        const renderedHeight = fallbackSourceBounds.height * uniformScale;
+        const offsetX = workspaceBounds.x + ((workspaceBounds.width - renderedWidth) / 2) - (fallbackSourceBounds.x * uniformScale);
+        const offsetY = workspaceBounds.y + ((workspaceBounds.height - renderedHeight) / 2) - (fallbackSourceBounds.y * uniformScale);
+
+        return {
+            sourceBounds: fallbackSourceBounds,
+            workspaceBounds,
+            targetHeight,
+            uniformScale,
+            renderedWidth,
+            renderedHeight,
+            offsetX,
+            offsetY,
+            frameBounds: {
+                x: workspaceBounds.x + ((workspaceBounds.width - renderedWidth) / 2),
+                y: workspaceBounds.y + ((workspaceBounds.height - renderedHeight) / 2),
+                width: renderedWidth,
+                height: renderedHeight
+            }
+        };
+    },
+
     setDefaultPrintArea() {
         const existingVisualArea = this.canvas.querySelector('#print-area-shape-outline');
         if (existingVisualArea) {
@@ -47,13 +85,8 @@ Object.assign(DesignEditor.prototype, {
             this.printArea = rect;
         }
 
-        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
-        this.printAreaBounds = {
-            x: workspaceBounds.x,
-            y: workspaceBounds.y,
-            width: workspaceBounds.width,
-            height: workspaceBounds.height
-        };
+        const preferredBounds = this.getPreferredPrintAreaBounds(this.templateSourceBounds);
+        this.printAreaBounds = preferredBounds.frameBounds;
         this.printArea.setAttribute('x', String(this.printAreaBounds.x));
         this.printArea.setAttribute('y', String(this.printAreaBounds.y));
         this.printArea.setAttribute('width', String(this.printAreaBounds.width));
@@ -271,23 +304,14 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.configureCanvasFromSourceBounds(sourceBounds);
-        const workspaceBounds = this.getWorkspaceBounds?.() || this.getCanvasBounds();
-        const contentBounds = {
-            x: workspaceBounds.x,
-            y: workspaceBounds.y,
-            width: workspaceBounds.width,
-            height: workspaceBounds.height
-        };
+        const preferredBounds = this.getPreferredPrintAreaBounds(sourceBounds);
+        const contentBounds = preferredBounds.frameBounds;
         this.printAreaBounds = contentBounds;
-        const targetOutlineHeight = contentBounds.height * PRINT_AREA_OUTLINE_HEIGHT_RATIO;
-        const uniformScale = targetOutlineHeight / sourceBounds.height;
-        const renderedWidth = sourceBounds.width * uniformScale;
-        const renderedHeight = sourceBounds.height * uniformScale;
-        const offsetX = contentBounds.x + ((contentBounds.width - renderedWidth) / 2) - (sourceBounds.x * uniformScale);
-        const offsetY = contentBounds.y + ((contentBounds.height - renderedHeight) / 2) - (sourceBounds.y * uniformScale);
+        const { targetHeight: targetOutlineHeight, uniformScale, renderedWidth, renderedHeight, offsetX, offsetY } = preferredBounds;
 
         logTemplateDebug('print-area-geometry', {
             sourceBounds,
+            workspaceBounds: preferredBounds.workspaceBounds,
             contentBounds,
             targetOutlineHeight,
             uniformScale,
