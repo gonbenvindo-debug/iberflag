@@ -4,9 +4,15 @@
 Object.assign(DesignEditor.prototype, {
 
     getEditableBounds() {
+        const stageRect = this.canvasStage?.getBoundingClientRect?.();
         const metrics = this.getCanvasViewportMetrics?.();
 
         if (
+            stageRect &&
+            Number.isFinite(stageRect.width) &&
+            Number.isFinite(stageRect.height) &&
+            stageRect.width > 0 &&
+            stageRect.height > 0 &&
             metrics &&
             metrics.rect &&
             Number.isFinite(metrics.rect.width) &&
@@ -16,14 +22,19 @@ Object.assign(DesignEditor.prototype, {
             Number.isFinite(metrics.scale) &&
             metrics.scale > 0
         ) {
-            // Use the actual rendered editor viewport, not the raw SVG viewBox.
-            // This keeps the drag/resize limits aligned with the full checkerboard
-            // stage even when the SVG is letterboxed vertically or horizontally.
+            // Use the actual canvas-stage bounds, mapped into SVG coordinates.
+            // This keeps drag/resize limits aligned with the full checkerboard
+            // area, not just the rendered SVG element box.
+            const left = ((stageRect.left - metrics.rect.left) - metrics.offsetX) / metrics.scale;
+            const top = ((stageRect.top - metrics.rect.top) - metrics.offsetY) / metrics.scale;
+            const right = ((stageRect.right - metrics.rect.left) - metrics.offsetX) / metrics.scale;
+            const bottom = ((stageRect.bottom - metrics.rect.top) - metrics.offsetY) / metrics.scale;
+
             return {
-                x: -(metrics.offsetX / metrics.scale),
-                y: -(metrics.offsetY / metrics.scale),
-                width: metrics.rect.width / metrics.scale,
-                height: metrics.rect.height / metrics.scale
+                x: left,
+                y: top,
+                width: right - left,
+                height: bottom - top
             };
         }
 
