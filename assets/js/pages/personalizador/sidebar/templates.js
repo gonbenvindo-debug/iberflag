@@ -393,6 +393,15 @@ Object.assign(DesignEditor.prototype, {
         const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
         const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
+        const cropData = data.cropData || null;
+        const fullWidth = Number(data.fullWidth || 0) || Number(data.width || 0) || 0;
+        const fullHeight = Number(data.fullHeight || 0) || Number(data.height || 0) || 0;
+        const cropSourceData = data.cropSourceData || (cropData && fullWidth && fullHeight ? {
+            x: cropData.x * fullWidth,
+            y: cropData.y * fullHeight,
+            width: cropData.width * fullWidth,
+            height: cropData.height * fullHeight
+        } : null);
 
         imageElement.setAttribute('id', id);
         imageElement.setAttribute('x', String(data.x || 0));
@@ -406,8 +415,17 @@ Object.assign(DesignEditor.prototype, {
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
         imageElement.dataset.originalSrc = data.originalSrc || src;
-        if (data.cropSourceData) {
-            imageElement.dataset.cropSourceData = JSON.stringify(data.cropSourceData);
+        if (cropData) {
+            imageElement.dataset.cropData = JSON.stringify(cropData);
+        }
+        if (fullWidth) {
+            imageElement.dataset.fullWidth = String(fullWidth);
+        }
+        if (fullHeight) {
+            imageElement.dataset.fullHeight = String(fullHeight);
+        }
+        if (cropSourceData) {
+            imageElement.dataset.cropSourceData = JSON.stringify(cropSourceData);
         }
 
         if (data.qrContent) {

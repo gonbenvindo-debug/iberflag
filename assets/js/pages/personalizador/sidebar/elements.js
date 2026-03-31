@@ -68,6 +68,24 @@ Object.assign(DesignEditor.prototype, {
             }
             data.fullWidth = Number(node.dataset.fullWidth || 0) || undefined;
             data.fullHeight = Number(node.dataset.fullHeight || 0) || undefined;
+
+            if (!data.cropData && data.cropSourceData && data.fullWidth && data.fullHeight) {
+                data.cropData = {
+                    x: data.cropSourceData.x / data.fullWidth,
+                    y: data.cropSourceData.y / data.fullHeight,
+                    width: data.cropSourceData.width / data.fullWidth,
+                    height: data.cropSourceData.height / data.fullHeight
+                };
+            }
+
+            if (!data.cropSourceData && data.cropData && data.fullWidth && data.fullHeight) {
+                data.cropSourceData = {
+                    x: data.cropData.x * data.fullWidth,
+                    y: data.cropData.y * data.fullHeight,
+                    width: data.cropData.width * data.fullWidth,
+                    height: data.cropData.height * data.fullHeight
+                };
+            }
         }
 
         if (type === 'shape') {
@@ -127,6 +145,21 @@ Object.assign(DesignEditor.prototype, {
                 elementData.element.dataset.originalSrc = elementData.originalSrc;
             } else {
                 delete elementData.element.dataset.originalSrc;
+            }
+            if (elementData.cropData) {
+                elementData.element.dataset.cropData = JSON.stringify(elementData.cropData);
+            } else {
+                delete elementData.element.dataset.cropData;
+            }
+            if (Number.isFinite(Number(elementData.fullWidth))) {
+                elementData.element.dataset.fullWidth = String(elementData.fullWidth);
+            } else {
+                delete elementData.element.dataset.fullWidth;
+            }
+            if (Number.isFinite(Number(elementData.fullHeight))) {
+                elementData.element.dataset.fullHeight = String(elementData.fullHeight);
+            } else {
+                delete elementData.element.dataset.fullHeight;
             }
             if (elementData.cropSourceData) {
                 elementData.element.dataset.cropSourceData = JSON.stringify(elementData.cropSourceData);
