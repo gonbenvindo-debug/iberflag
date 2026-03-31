@@ -16,11 +16,9 @@
         const normalizedSource = normalizeBounds(sourceBounds, normalizedWorkspace);
         const targetHeightRatio = Number.isFinite(options.heightRatio) ? Number(options.heightRatio) : 0.9;
         const targetHeight = normalizedWorkspace.height * targetHeightRatio;
-        const heightScale = targetHeight / normalizedSource.height;
-        const widthScale = normalizedWorkspace.width / normalizedSource.width;
-        const uniformScale = Math.min(heightScale, widthScale);
+        const uniformScale = targetHeight / normalizedSource.height;
         const renderedWidth = normalizedSource.width * uniformScale;
-        const renderedHeight = normalizedSource.height * uniformScale;
+        const renderedHeight = targetHeight;
         const frameX = normalizedWorkspace.x + ((normalizedWorkspace.width - renderedWidth) / 2);
         const frameY = normalizedWorkspace.y + ((normalizedWorkspace.height - renderedHeight) / 2);
         const offsetX = frameX - (normalizedSource.x * uniformScale);
