@@ -33,6 +33,30 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    getImageCropReferenceBox(imgElement, fallbackBox = null) {
+        if (!imgElement) {
+            return fallbackBox || { x: 0, y: 0, width: 0, height: 0 };
+        }
+
+        const currentBox = fallbackBox || imgElement.getBBox?.() || { x: 0, y: 0, width: 0, height: 0 };
+        const toFinite = (value) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : null;
+        };
+
+        const baseX = toFinite(imgElement.dataset?.baseX);
+        const baseY = toFinite(imgElement.dataset?.baseY);
+        const baseWidth = toFinite(imgElement.dataset?.baseWidth);
+        const baseHeight = toFinite(imgElement.dataset?.baseHeight);
+
+        return {
+            x: baseX ?? currentBox.x,
+            y: baseY ?? currentBox.y,
+            width: baseWidth ?? currentBox.width,
+            height: baseHeight ?? currentBox.height
+        };
+    },
+
     startCropMode() {
         if (!this.selectedElement || this.selectedElement.type !== 'image') {
             showToast('Seleccione uma imagem para cortar', 'warning');
@@ -87,6 +111,7 @@ Object.assign(DesignEditor.prototype, {
                 }
 
                 const currentBox = imgElement.getBBox();
+                const referenceBox = this.getImageCropReferenceBox?.(imgElement, currentBox) || currentBox;
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
                 if (croppedImageData.cropData) {
@@ -97,12 +122,14 @@ Object.assign(DesignEditor.prototype, {
                     const cropY = Math.min(1, Math.max(0, Number(cropData.y) || 0));
                     const cropWidthRatio = Math.max(0.05, Math.min(1, Number(cropData.width) || 1));
                     const cropHeightRatio = Math.max(0.05, Math.min(1, Number(cropData.height) || 1));
-                    const baseWidth = Math.max(20, Number(imgElement.dataset.baseWidth || currentBox.width || 0) || currentBox.width);
-                    const baseHeight = Math.max(20, Number(imgElement.dataset.baseHeight || currentBox.height || 0) || currentBox.height);
+                    const baseX = Math.max(0, Number(imgElement.dataset.baseX || referenceBox.x || 0) || referenceBox.x);
+                    const baseY = Math.max(0, Number(imgElement.dataset.baseY || referenceBox.y || 0) || referenceBox.y);
+                    const baseWidth = Math.max(20, Number(imgElement.dataset.baseWidth || referenceBox.width || 0) || referenceBox.width);
+                    const baseHeight = Math.max(20, Number(imgElement.dataset.baseHeight || referenceBox.height || 0) || referenceBox.height);
                     const nextWidth = Math.max(20, baseWidth * cropWidthRatio);
                     const nextHeight = Math.max(20, baseHeight * cropHeightRatio);
-                    const nextX = currentBox.x + (currentBox.width * cropX);
-                    const nextY = currentBox.y + (currentBox.height * cropY);
+                    const nextX = baseX + (baseWidth * cropX);
+                    const nextY = baseY + (baseHeight * cropY);
 
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
@@ -117,6 +144,12 @@ Object.assign(DesignEditor.prototype, {
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
+                    if (!imgElement.dataset.baseX) {
+                        imgElement.dataset.baseX = String(baseX);
+                    }
+                    if (!imgElement.dataset.baseY) {
+                        imgElement.dataset.baseY = String(baseY);
+                    }
                     if (!imgElement.dataset.baseWidth) {
                         imgElement.dataset.baseWidth = String(baseWidth);
                     }
@@ -135,6 +168,8 @@ Object.assign(DesignEditor.prototype, {
                     elementToUpdate.y = nextY;
                     elementToUpdate.width = nextWidth;
                     elementToUpdate.height = nextHeight;
+                    elementToUpdate.baseX = Number(imgElement.dataset.baseX || baseX) || baseX;
+                    elementToUpdate.baseY = Number(imgElement.dataset.baseY || baseY) || baseY;
                     elementToUpdate.baseWidth = Number(imgElement.dataset.baseWidth || baseWidth) || baseWidth;
                     elementToUpdate.baseHeight = Number(imgElement.dataset.baseHeight || baseHeight) || baseHeight;
                     elementToUpdate.cropData = cropData;
