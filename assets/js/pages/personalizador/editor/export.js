@@ -78,12 +78,14 @@ Object.assign(DesignEditor.prototype, {
                     const fullWidth = croppedImageData.fullWidth;
                     const fullHeight = croppedImageData.fullHeight;
                     const cropData = croppedImageData.cropData;
-                    const cropWidthRatio = Math.max(0.05, Number(cropData.width) || 1);
-                    const cropHeightRatio = Math.max(0.05, Number(cropData.height) || 1);
+                    const cropX = Math.min(1, Math.max(0, Number(cropData.x) || 0));
+                    const cropY = Math.min(1, Math.max(0, Number(cropData.y) || 0));
+                    const cropWidthRatio = Math.max(0.05, Math.min(1, Number(cropData.width) || 1));
+                    const cropHeightRatio = Math.max(0.05, Math.min(1, Number(cropData.height) || 1));
                     const nextWidth = Math.max(20, currentBox.width * cropWidthRatio);
                     const nextHeight = Math.max(20, currentBox.height * cropHeightRatio);
-                    const nextX = currentBox.x + ((currentBox.width - nextWidth) / 2);
-                    const nextY = currentBox.y + ((currentBox.height - nextHeight) / 2);
+                    const nextX = currentBox.x + (currentBox.width * cropX);
+                    const nextY = currentBox.y + (currentBox.height * cropY);
 
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
