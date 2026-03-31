@@ -257,7 +257,7 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
-    updatePrintAreaFromElement(areaElement, sourceBounds) {
+    updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds = sourceBounds) {
         this.setDefaultPrintArea();
 
         if (!areaElement || !sourceBounds || !sourceBounds.width || !sourceBounds.height) {
@@ -271,7 +271,7 @@ Object.assign(DesignEditor.prototype, {
         this.configureCanvasFromSourceBounds(sourceBounds);
         const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
             this.getWorkspaceBounds?.() || this.getCanvasBounds(),
-            sourceBounds,
+            outlineBounds || sourceBounds,
             { heightRatio: 0.9 }
         );
         const contentBounds = preferredBounds.frameBounds;
@@ -281,6 +281,7 @@ Object.assign(DesignEditor.prototype, {
         logTemplateDebug('print-area-geometry', {
             sourceBounds,
             workspaceBounds: preferredBounds.workspaceBounds,
+            outlineBounds: preferredBounds.sourceBounds,
             contentBounds,
             targetOutlineHeight,
             uniformScale,
@@ -453,10 +454,14 @@ Object.assign(DesignEditor.prototype, {
             }
 
             const areaElement = this.findTemplateOutlineElement(root, sourceBounds);
+            const outlineBounds = areaElement
+                ? window.DesignEditorPrintAreaLayout.measureElementBounds(areaElement, sourceBounds)
+                : sourceBounds;
 
             logTemplateDebug('loadSVGTemplate', {
                 sourceBounds,
                 rootViewBox: root.getAttribute('viewBox') || '',
+                outlineBounds,
                 outline: areaElement ? {
                     tag: String(areaElement.tagName || '').toLowerCase(),
                     id: areaElement.getAttribute?.('id') || '',
@@ -478,7 +483,7 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            this.updatePrintAreaFromElement(areaElement, sourceBounds);
+            this.updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds);
         } catch (error) {
             console.error('Error loading SVG template:', error);
             this.setDefaultPrintArea();

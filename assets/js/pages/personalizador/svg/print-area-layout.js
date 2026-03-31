@@ -11,6 +11,69 @@
         };
     }
 
+    function measureElementBounds(element, fallbackBounds) {
+        if (!element || typeof document === 'undefined') {
+            return normalizeBounds(fallbackBounds, { x: 0, y: 0, width: 800, height: 600 });
+        }
+
+        const fallback = normalizeBounds(fallbackBounds, { x: 0, y: 0, width: 800, height: 600 });
+        const sourceNamespace = 'http://www.w3.org/2000/svg';
+        const tempSvg = document.createElementNS(sourceNamespace, 'svg');
+        const tempWrapper = document.createElementNS(sourceNamespace, 'g');
+        const clone = element.cloneNode(true);
+
+        tempSvg.setAttribute('width', String(fallback.width));
+        tempSvg.setAttribute('height', String(fallback.height));
+        tempSvg.setAttribute('viewBox', `${fallback.x} ${fallback.y} ${fallback.width} ${fallback.height}`);
+        tempSvg.setAttribute('aria-hidden', 'true');
+        tempSvg.style.position = 'absolute';
+        tempSvg.style.left = '-10000px';
+        tempSvg.style.top = '0';
+        tempSvg.style.width = `${fallback.width}px`;
+        tempSvg.style.height = `${fallback.height}px`;
+        tempSvg.style.overflow = 'hidden';
+        tempSvg.style.visibility = 'hidden';
+        tempSvg.style.pointerEvents = 'none';
+
+        tempWrapper.appendChild(clone);
+        tempSvg.appendChild(tempWrapper);
+
+        const host = document.body || document.documentElement;
+        if (!host) {
+            return fallback;
+        }
+
+        host.appendChild(tempSvg);
+
+        try {
+            const svgRect = tempSvg.getBoundingClientRect();
+            const elementRect = clone.getBoundingClientRect();
+            const measured = {
+                x: elementRect.left - svgRect.left,
+                y: elementRect.top - svgRect.top,
+                width: elementRect.width,
+                height: elementRect.height
+            };
+
+            if (
+                Number.isFinite(measured.x) &&
+                Number.isFinite(measured.y) &&
+                Number.isFinite(measured.width) &&
+                Number.isFinite(measured.height) &&
+                measured.width > 0 &&
+                measured.height > 0
+            ) {
+                return normalizeBounds(measured, fallback);
+            }
+        } catch (error) {
+            // Fall back to the source bounds if the element cannot be measured.
+        } finally {
+            tempSvg.remove();
+        }
+
+        return fallback;
+    }
+
     function getPreferredPrintAreaBounds(workspaceBounds, sourceBounds, options = {}) {
         const normalizedWorkspace = normalizeBounds(workspaceBounds, { x: 0, y: 0, width: 800, height: 600 });
         const normalizedSource = normalizeBounds(sourceBounds, normalizedWorkspace);
@@ -43,6 +106,7 @@
     }
 
     global.DesignEditorPrintAreaLayout = {
-        getPreferredPrintAreaBounds
+        getPreferredPrintAreaBounds,
+        measureElementBounds
     };
 })(window);
