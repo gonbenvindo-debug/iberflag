@@ -1,0 +1,155 @@
+/* =============================================
+           EDITOR LAYOUT â€” CSS puro, zero Tailwind no layout estrutural
+           Os elementos estruturais (nav, body-layout, main, canvas-stage,
+           bottom-bar) nÃ£o tÃªm classes Tailwind de layout â€” sÃ³ CSS aqui.
+           ============================================= */
+
+        /* ----- Componentes UI (desktop e mobile) ----- */
+        .drawer-grip {
+            display: none;
+            width: 40px;
+            height: 4px;
+            background: #cbd5e1;
+            border-radius: 9999px;
+            margin: 10px auto 8px;
+            flex-shrink: 0;
+            cursor: grab;
+        }
+
+        .editor-mobile-tabs {
+            display: none;
+        }
+
+        .editor-mobile-tab {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 3px;
+            padding: 6px 4px;
+            font-size: 0.6rem;
+            font-weight: 700;
+            color: #94a3b8;
+            border: none;
+            border-top: 2px solid transparent;
+            background: transparent;
+            cursor: pointer;
+            transition: color 0.15s, border-color 0.15s;
+            min-height: 50px;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+        }
+
+        .editor-mobile-tab.active {
+            color: #2563eb;
+            border-top-color: #2563eb;
+        }
+
+        .editor-mobile-backdrop {
+            display: none;
+            position: fixed;
+            inset: 0;
+            z-index: 110;
+            background: rgba(15, 23, 42, 0.5);
+            backdrop-filter: blur(1px);
+            -webkit-backdrop-filter: blur(1px);
+            pointer-events: none;
+        }
+
+        .editor-mobile-backdrop.active {
+            display: block;
+            pointer-events: auto;
+        }
+
+        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepÃµe via @media) ----- */
+        #editor-nav {
+            height: 4rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.75rem;
+            padding: 0 1rem;
+            flex-shrink: 0;
+            box-sizing: border-box;
+        }
+
+        /* Logo: altura fixa do nav para imunidade a reflow dos Ã­cones */
+        #editor-nav>a:first-child {
+            display: flex;
+            align-items: center;
+            height: 100%;
+            flex-shrink: 0;
+        }
+
+        #editor-info-bar {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 0.5rem;
+            padding: 0 1rem;
+            height: 2.25rem;
+            flex-shrink: 0;
+            box-sizing: border-box;
+            border-bottom: 1px solid var(--panel-border);
+            background: #f8fafc;
+            overflow: hidden;
+        }
+
+        .editor-info-name {
+            font-size: 0.82rem;
+            font-weight: 600;
+            color: #1e293b;
+            min-width: 0;
+        }
+
+        .editor-info-price {
+            font-size: 0.9rem;
+            font-weight: 700;
+            color: #2563eb;
+            flex-shrink: 0;
+        }
+
+        .editor-body-layout {
+            display: flex;
+            height: calc(100vh - 4rem - 2.25rem);
+            overflow: hidden;
+        }
+
+        .editor-sidebar-left {
+            padding: 1rem 0.5rem 1rem 1rem;
+        }
+
+        .editor-sidebar-right {
+            padding: 1rem 1rem 1rem 0.5rem;
+        }
+
+        .editor-main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            padding: 0 1rem 0 0.5rem;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        #canvas-stage {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 0;
+            min-height: 0;
+            overflow: hidden;
+            position: relative;
+            z-index: 1;
+        }
+
+        .editor-bottom-bar {
+            display: flex;
+            align-items: center;
+            padding: 0.4rem 0.75rem;
+            flex-shrink: 0;
+            border-top: 1px solid var(--panel-border);
+        }

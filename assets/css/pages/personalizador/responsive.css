@@ -1,0 +1,294 @@
+/* ----- MOBILE (<1024px) ----- */
+        @media (max-width: 1023px) {
+
+            body.app-page {
+                height: 100dvh;
+                box-sizing: border-box;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                padding-top: env(safe-area-inset-top, 0px);
+            }
+
+            #editor-nav {
+                height: 3rem;
+                min-height: 3rem;
+                max-height: 3rem;
+                padding: 0 max(0.75rem, env(safe-area-inset-right, 0px)) 0 max(0.75rem, env(safe-area-inset-left, 0px));
+                gap: 0.5rem;
+                flex-shrink: 0;
+            }
+
+            .editor-body-layout {
+                flex: 1;
+                height: auto;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            .drawer-grip {
+                display: block;
+            }
+
+            .editor-sidebar-left,
+            .editor-sidebar-right {
+                position: fixed;
+                bottom: 0;
+                left: 0;
+                right: 0;
+                width: 100%;
+                max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
+                z-index: 120;
+                padding: 0;
+                margin: 0;
+                background: #ffffff;
+                border-radius: 20px 20px 0 0;
+                box-shadow: 0 -6px 32px rgba(15, 23, 42, 0.2);
+                transform: translateY(100%);
+                transition: transform 0.32s cubic-bezier(0.4, 0, 0.2, 1);
+                will-change: transform;
+                display: flex;
+                flex-direction: column;
+                overflow: hidden;
+                pointer-events: none;
+            }
+
+            .editor-sidebar-left.panel-open,
+            .editor-sidebar-right.panel-open {
+                transform: translateY(0);
+                pointer-events: auto;
+            }
+
+            .editor-sidebar-left .sidebar-shell,
+            .editor-sidebar-right .sidebar-shell {
+                flex: 1;
+                overflow-y: auto;
+                -webkit-overflow-scrolling: touch;
+                border: none;
+                border-radius: 0;
+                height: auto;
+                padding-bottom: env(safe-area-inset-bottom, 0px);
+                pointer-events: auto !important;
+            }
+
+            .editor-main {
+                flex: 1;
+                min-height: 0;
+                display: flex;
+                flex-direction: column;
+                padding: 0;
+                overflow: hidden;
+            }
+
+            #canvas-stage {
+                flex: 1;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                padding: 0;
+                min-height: 0;
+                overflow: hidden;
+            }
+
+            #add-to-cart-btn {
+                padding: 0.4rem 0.7rem;
+            }
+
+            .editor-undo-redo {
+                display: none;
+            }
+
+            #editor-info-bar {
+                padding: 0 max(0.75rem, env(safe-area-inset-left, 0px));
+            }
+
+            .editor-bottom-bar {
+                display: flex !important;
+                justify-content: center;
+                padding: 0.5rem;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+            }
+
+            .editor-mobile-tabs {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                gap: 0.5rem;
+                background: #ffffff;
+                border-top: 1px solid #e5e7eb;
+                flex-shrink: 0;
+                padding: 0.75rem;
+                padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
+            }
+
+            /* Compact Mobile Panels */
+            .sidebar-section {
+                padding: 0.75rem 0.75rem;
+            }
+
+            /* Garantir inputs funcionem no mobile */
+            .sidebar-shell input,
+            .sidebar-shell select,
+            .sidebar-shell button,
+            .sidebar-shell textarea {
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1;
+            }
+
+            .section-title {
+                font-size: 0.7rem;
+                margin-bottom: 0.5rem;
+            }
+
+            .elements-panel-note {
+                font-size: 0.75rem;
+            }
+
+            .elements-grid {
+                gap: 0.55rem;
+            }
+
+            .elements-grid--compact {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            .shape-grid {
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+                gap: 0.45rem;
+            }
+
+            .tool-tile {
+                padding: 0.68rem 0.72rem;
+            }
+
+            .shape-tile {
+                aspect-ratio: 1 / 1;
+                min-height: 0;
+                padding: 0.35rem;
+            }
+
+            .action-btn {
+                padding: 0.45rem 0.6rem;
+                font-size: 0.75rem;
+            }
+
+            .grid-cols-2 {
+                gap: 0.5rem !important;
+                grid-template-columns: repeat(2, 1fr) !important;
+            }
+
+            /* ForÃ§ar 2 colunas nos botoes de acoes */
+            .grid.grid-cols-2 {
+                display: grid !important;
+                grid-template-columns: 1fr 1fr !important;
+            }
+
+            /* ForÃ§ar 3 colunas nas formas */
+            .grid.grid-cols-3 {
+                display: grid !important;
+                grid-template-columns: repeat(3, 1fr) !important;
+            }
+
+            /* Esconder botao propriedades quando nao ha selecao */
+            #mobile-tab-properties {
+                display: none !important;
+            }
+
+            /* Mostrar botao propriedades quando ha elemento selecionado */
+            body.has-element-selected #mobile-tab-properties {
+                display: flex !important;
+            }
+
+            #text-properties,
+            #image-properties,
+            #shape-properties {
+                padding: 0.75rem;
+            }
+
+            #text-properties div,
+            #image-properties div,
+            #shape-properties div {
+                margin-bottom: 0.5rem !important;
+            }
+
+            #text-properties label,
+            #image-properties label,
+            #shape-properties label {
+                font-size: 0.75rem;
+                margin-bottom: 0.25rem;
+            }
+
+            #text-properties input:not([type="color"]),
+            #text-properties select,
+            #image-properties input:not([type="color"]),
+            #shape-properties input:not([type="color"]) {
+                padding: 0.35rem 0.5rem;
+                font-size: 0.75rem;
+            }
+
+            #text-properties input[type="range"],
+            #image-properties input[type="range"],
+            #shape-properties input[type="range"] {
+                height: 32px;
+                padding: 0;
+                margin: 8px 0;
+                touch-action: manipulation;
+                pointer-events: auto !important;
+                position: relative;
+                z-index: 1;
+            }
+
+            /* Melhorar thumb do range no mobile */
+            #text-properties input[type="range"]::-webkit-slider-thumb,
+            #image-properties input[type="range"]::-webkit-slider-thumb,
+            #shape-properties input[type="range"]::-webkit-slider-thumb {
+                -webkit-appearance: none;
+                appearance: none;
+                width: 24px;
+                height: 24px;
+                background: #2563eb;
+                cursor: pointer;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            #text-properties input[type="range"]::-moz-range-thumb,
+            #image-properties input[type="range"]::-moz-range-thumb,
+            #shape-properties input[type="range"]::-moz-range-thumb {
+                width: 24px;
+                height: 24px;
+                background: #2563eb;
+                cursor: pointer;
+                border-radius: 50%;
+                border: 2px solid white;
+                box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+            }
+
+            /* Estilizar track do range */
+            #text-properties input[type="range"]::-webkit-slider-runnable-track,
+            #image-properties input[type="range"]::-webkit-slider-runnable-track,
+            #shape-properties input[type="range"]::-webkit-slider-runnable-track {
+                width: 100%;
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
+            }
+
+            #text-properties input[type="range"]::-moz-range-track,
+            #image-properties input[type="range"]::-moz-range-track,
+            #shape-properties input[type="range"]::-moz-range-track {
+                width: 100%;
+                height: 6px;
+                background: #e2e8f0;
+                border-radius: 3px;
+            }
+
+            #add-text-btn,
+            .upload-image-btn-mobile {
+                width: 100%;
+                padding: 0.5rem !important;
+                font-size: 0.8rem;
+            }
+        }
