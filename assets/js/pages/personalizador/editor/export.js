@@ -71,26 +71,43 @@ Object.assign(DesignEditor.prototype, {
                     imgElement.dataset.originalSrc = currentSrc;
                 }
 
+                const currentBox = imgElement.getBBox();
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
                 if (croppedImageData.cropData) {
                     const fullWidth = croppedImageData.fullWidth;
                     const fullHeight = croppedImageData.fullHeight;
                     const cropData = croppedImageData.cropData;
+                    const cropWidthRatio = Math.max(0.05, Number(cropData.width) || 1);
+                    const cropHeightRatio = Math.max(0.05, Number(cropData.height) || 1);
+                    const nextWidth = Math.max(20, currentBox.width * cropWidthRatio);
+                    const nextHeight = Math.max(20, currentBox.height * cropHeightRatio);
+                    const nextX = currentBox.x + ((currentBox.width - nextWidth) / 2);
+                    const nextY = currentBox.y + ((currentBox.height - nextHeight) / 2);
 
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
                     const viewBoxWidth = cropData.width * fullWidth;
                     const viewBoxHeight = cropData.height * fullHeight;
 
+                    imgElement.setAttribute('x', String(nextX));
+                    imgElement.setAttribute('y', String(nextY));
+                    imgElement.setAttribute('width', String(nextWidth));
+                    imgElement.setAttribute('height', String(nextHeight));
                     imgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
 
+                    elementToUpdate.src = croppedImageData.dataUrl;
+                    elementToUpdate.x = nextX;
+                    elementToUpdate.y = nextY;
+                    elementToUpdate.width = nextWidth;
+                    elementToUpdate.height = nextHeight;
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;
+                    this.applyElementRotation(elementToUpdate);
                 }
 
                 showToast('Imagem cortada com sucesso', 'success');
