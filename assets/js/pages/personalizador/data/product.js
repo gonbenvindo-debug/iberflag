@@ -430,10 +430,38 @@ Object.assign(DesignEditor.prototype, {
     },
 
     saveCartData(cart) {
-        localStorage.setItem(this.cartStorageKey, JSON.stringify(cart));
+        const compactCart = Array.isArray(cart)
+            ? cart.map((item) => {
+                const {
+                    designPreview,
+                    design_svg,
+                    preview_url,
+                    previewUrl,
+                    thumbnail,
+                    ...rest
+                } = item || {};
+
+                return {
+                    ...rest,
+                    design: typeof rest.design === 'string' && rest.design.trim()
+                        ? rest.design
+                        : typeof design_svg === 'string' && design_svg.trim()
+                            ? design_svg
+                            : null
+                };
+            })
+            : [];
+
+        const serialized = JSON.stringify(compactCart);
+
+        // Libertar espaço antes de gravar a nova versão compacta.
         this.legacyCartStorageKeys.forEach((key) => {
-            localStorage.setItem(key, JSON.stringify(cart));
+            if (key && key !== this.cartStorageKey) {
+                localStorage.removeItem(key);
+            }
         });
+
+        localStorage.setItem(this.cartStorageKey, serialized);
     },
 
     setupAdminMode() {

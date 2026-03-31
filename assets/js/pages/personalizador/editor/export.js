@@ -417,8 +417,6 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
-            design_svg: design,
-            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
             baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
