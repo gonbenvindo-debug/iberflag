@@ -56,7 +56,11 @@ Object.assign(DesignEditor.prototype, {
             };
         }
 
-        const scale = Math.min(rect.width / vb.width, rect.height / vb.height) || 1;
+        const preserveAspectRatio = String(this.canvas?.getAttribute?.('preserveAspectRatio') || '').toLowerCase();
+        const useSlice = preserveAspectRatio.includes('slice');
+        const scale = (useSlice
+            ? Math.max(rect.width / vb.width, rect.height / vb.height)
+            : Math.min(rect.width / vb.width, rect.height / vb.height)) || 1;
         const renderedWidth = vb.width * scale;
         const renderedHeight = vb.height * scale;
 
