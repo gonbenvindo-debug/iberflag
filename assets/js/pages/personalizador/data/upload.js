@@ -209,6 +209,9 @@ Object.assign(DesignEditor.prototype, {
     },
 
     clearSelection() {
+        if (this._inlineTextEditorState) {
+            this.closeInlineTextEditor?.(true);
+        }
         this.selectedElement = null;
         this.hideResizeHandles();
         this.elements.forEach(el => el.element.classList.remove('element-selected'));

@@ -9,28 +9,20 @@ Object.assign(DesignEditor.prototype, {
         // Prevent text selection on element
         elementData.element.style.userSelect = 'none';
         elementData.element.style.webkitUserSelect = 'none';
-        
-        // Track double-click for text editing
-        let lastClickTime = 0;
-        const doubleClickThreshold = 300;
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
         
         const handleElementPress = () => {
             this.selectElement(elementData);
-            
-            // Double-click/tap to edit text
-            const now = Date.now();
-            if (now - lastClickTime < doubleClickThreshold && elementData.type === 'text') {
-                const textContent = document.getElementById('prop-text-content');
-                if (textContent) {
-                    textContent.focus();
-                    textContent.select();
-                }
-            }
-            lastClickTime = now;
         };
         
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
+            if (elementData.type === 'text' && !isMobile && e.detail === 2) {
+                e.preventDefault();
+                this.selectElement(elementData);
+                this.openInlineTextEditor?.(elementData);
+                return;
+            }
             e.preventDefault();
             this.startDrag(e, elementData);
             handleElementPress();
@@ -47,9 +39,114 @@ Object.assign(DesignEditor.prototype, {
             handleElementPress();
         }, { passive: false });
     },
+
+    openInlineTextEditor(elementData) {
+        if (!elementData || elementData.type !== 'text') return;
+        if (window.matchMedia('(max-width: 767px)').matches) {
+            const textContent = document.getElementById('prop-text-content');
+            if (textContent) {
+                textContent.focus();
+                textContent.select();
+            }
+            return;
+        }
+
+        this.closeInlineTextEditor(false);
+
+        const textNode = elementData.element;
+        const rect = textNode.getBoundingClientRect();
+        if (!rect.width || !rect.height) return;
+
+        const editor = document.createElement('input');
+        editor.type = 'text';
+        editor.id = 'inline-text-editor';
+        editor.value = String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? '');
+        editor.setAttribute('aria-label', 'Editar texto');
+        editor.autocomplete = 'off';
+        editor.spellcheck = false;
+
+        const computed = window.getComputedStyle(textNode);
+        Object.assign(editor.style, {
+            position: 'fixed',
+            left: `${rect.left}px`,
+            top: `${rect.top}px`,
+            width: `${Math.max(rect.width + 24, 140)}px`,
+            height: `${Math.max(rect.height + 12, 38)}px`,
+            zIndex: '1000',
+            margin: '0',
+            padding: '4px 10px',
+            border: '1px solid #2563eb',
+            borderRadius: '10px',
+            background: 'rgba(255, 255, 255, 0.98)',
+            color: computed.fill || '#0f172a',
+            fontFamily: computed.fontFamily,
+            fontSize: computed.fontSize,
+            fontWeight: computed.fontWeight,
+            fontStyle: computed.fontStyle,
+            textDecoration: computed.textDecoration,
+            textTransform: computed.textTransform,
+            lineHeight: computed.lineHeight,
+            outline: 'none',
+            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.18)'
+        });
+
+        const commit = () => {
+            if (!this._inlineTextEditorState) return;
+            const nextValue = editor.value;
+            this.updateTextContent(nextValue);
+            this.closeInlineTextEditor(true);
+        };
+
+        editor.addEventListener('input', () => {
+            this.updateTextContent(editor.value);
+        });
+        editor.addEventListener('keydown', (event) => {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                commit();
+            }
+            if (event.key === 'Escape') {
+                event.preventDefault();
+                this.closeInlineTextEditor(false);
+            }
+        });
+        editor.addEventListener('blur', () => {
+            if (!this._inlineTextEditorState) return;
+            commit();
+        });
+
+        document.body.appendChild(editor);
+        editor.focus();
+        editor.select();
+        this._inlineTextEditorState = {
+            elementId: elementData.id,
+            originalValue: String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? ''),
+            editor
+        };
+    },
+
+    closeInlineTextEditor(commit = true) {
+        const state = this._inlineTextEditorState;
+        if (!state) return;
+
+        const editor = state.editor;
+        this._inlineTextEditorState = null;
+
+        if (editor?.parentNode) {
+            editor.parentNode.removeChild(editor);
+        }
+
+        if (!commit && this.selectedElement && this.selectedElement.type === 'text') {
+            this.updateTextContent(state.originalValue);
+        }
+    },
     
     selectElement(elementData, options = {}) {
         const { skipReposition = false } = options;
+
+        if (this._inlineTextEditorState && this._inlineTextEditorState.elementId !== elementData?.id) {
+            this.closeInlineTextEditor?.(true);
+        }
 
         // Blur any active input to prevent focus blocking drag
         if (document.activeElement && document.activeElement.tagName === 'INPUT') {

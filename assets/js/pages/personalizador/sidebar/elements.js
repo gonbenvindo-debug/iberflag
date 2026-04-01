@@ -38,12 +38,15 @@ Object.assign(DesignEditor.prototype, {
 
         if (type === 'text') {
             const bbox = node.getBBox();
+            data.rawContent = node.dataset.rawContent || node.textContent || '';
             data.content = node.textContent || '';
             data.font = node.getAttribute('font-family') || 'Arial';
             data.size = parseFloat(node.getAttribute('font-size') || '24');
             data.color = node.getAttribute('fill') || '#000000';
             data.bold = (node.getAttribute('font-weight') || 'normal') === 'bold';
             data.italic = (node.getAttribute('font-style') || 'normal') === 'italic';
+            data.underline = String(node.getAttribute('text-decoration') || '').toLowerCase().includes('underline');
+            data.capsLock = String(node.dataset.capsLock || 'false') === 'true';
             data.width = bbox.width;
             data.height = bbox.height;
         }
@@ -224,6 +227,17 @@ Object.assign(DesignEditor.prototype, {
                 elementData.element.dataset.qrColor = elementData.qrColor;
             } else {
                 delete elementData.element.dataset.qrColor;
+            }
+        } else if (elementData.type === 'text') {
+            if (elementData.rawContent != null) {
+                elementData.element.dataset.rawContent = String(elementData.rawContent);
+            } else {
+                delete elementData.element.dataset.rawContent;
+            }
+            if (typeof elementData.capsLock === 'boolean') {
+                elementData.element.dataset.capsLock = elementData.capsLock ? 'true' : 'false';
+            } else {
+                delete elementData.element.dataset.capsLock;
             }
         }
     },
@@ -579,21 +593,23 @@ Object.assign(DesignEditor.prototype, {
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
+        const quickTextContent = document.getElementById('quick-text-content');
         if (quickFontBtn) quickFontBtn.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
             this.toggleQuickFontPopover();
         });
         const quickFontSelect = document.getElementById('quick-font-select');
-        const quickFontSizeDownBtn = document.getElementById('quick-font-size-down-btn');
-        const quickFontSizeUpBtn = document.getElementById('quick-font-size-up-btn');
         const quickFontBoldBtn = document.getElementById('quick-font-bold-btn');
         const quickFontItalicBtn = document.getElementById('quick-font-italic-btn');
+        const quickFontUnderlineBtn = document.getElementById('quick-font-underline-btn');
+        const quickFontCapsBtn = document.getElementById('quick-font-caps-btn');
+        if (quickTextContent) quickTextContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (quickFontSelect) quickFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
-        if (quickFontSizeDownBtn) quickFontSizeDownBtn.addEventListener('click', () => this.stepQuickTextSize(-2));
-        if (quickFontSizeUpBtn) quickFontSizeUpBtn.addEventListener('click', () => this.stepQuickTextSize(2));
         if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
         if (quickFontItalicBtn) quickFontItalicBtn.addEventListener('click', () => this.toggleTextItalic());
+        if (quickFontUnderlineBtn) quickFontUnderlineBtn.addEventListener('click', () => this.updateTextUnderline(!this.selectedElement?.underline));
+        if (quickFontCapsBtn) quickFontCapsBtn.addEventListener('click', () => this.toggleTextCapsLock());
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {

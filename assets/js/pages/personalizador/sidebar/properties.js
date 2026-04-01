@@ -5,8 +5,12 @@ Object.assign(DesignEditor.prototype, {
 
     updateTextContent(value) {
         if (this.selectedElement && this.selectedElement.type === 'text') {
-            this.selectedElement.element.textContent = value;
-            this.selectedElement.content = value;
+            const rawValue = String(value ?? '');
+            this.selectedElement.rawContent = rawValue;
+            this.selectedElement.content = rawValue;
+            this.selectedElement.element.dataset.rawContent = rawValue;
+            const displayValue = this.selectedElement.capsLock ? rawValue.toUpperCase() : rawValue;
+            this.selectedElement.element.textContent = displayValue;
             
             // Update stored dimensions
             const bbox = this.selectedElement.element.getBBox();
@@ -58,6 +62,20 @@ Object.assign(DesignEditor.prototype, {
             this.renderQuickFontPopover?.();
         }
     },
+
+    updateTextUnderline(enabled) {
+        if (this.selectedElement && this.selectedElement.type === 'text') {
+            const isEnabled = Boolean(enabled);
+            if (isEnabled) {
+                this.selectedElement.element.setAttribute('text-decoration', 'underline');
+            } else {
+                this.selectedElement.element.removeAttribute('text-decoration');
+            }
+            this.selectedElement.underline = isEnabled;
+            this.saveHistory();
+            this.renderQuickFontPopover?.();
+        }
+    },
     
     toggleTextBold() {
         if (this.selectedElement && this.selectedElement.type === 'text') {
@@ -65,6 +83,23 @@ Object.assign(DesignEditor.prototype, {
             const newWeight = current === 'bold' ? 'normal' : 'bold';
             this.selectedElement.element.setAttribute('font-weight', newWeight);
             this.selectedElement.bold = newWeight === 'bold';
+            this.saveHistory();
+            this.renderQuickFontPopover?.();
+        }
+    },
+
+    toggleTextCapsLock() {
+        if (this.selectedElement && this.selectedElement.type === 'text') {
+            const nextState = !this.selectedElement.capsLock;
+            this.selectedElement.capsLock = nextState;
+            this.selectedElement.element.dataset.capsLock = nextState ? 'true' : 'false';
+            const rawContent = this.selectedElement.rawContent ?? this.selectedElement.content ?? this.selectedElement.element.textContent ?? '';
+            const displayValue = nextState ? String(rawContent).toUpperCase() : String(rawContent);
+            this.selectedElement.element.textContent = displayValue;
+            const bbox = this.selectedElement.element.getBBox();
+            this.selectedElement.width = bbox.width;
+            this.selectedElement.height = bbox.height;
+            this.showResizeHandles(this.selectedElement);
             this.saveHistory();
             this.renderQuickFontPopover?.();
         }
@@ -137,14 +172,13 @@ Object.assign(DesignEditor.prototype, {
 
     renderQuickFontPopover() {
         const currentLabel = document.getElementById('quick-font-current');
-        const currentSizeLabel = document.getElementById('quick-font-size-current');
+        const textContentInput = document.getElementById('quick-text-content');
         const fontSelect = document.getElementById('quick-font-select');
         const boldBtn = document.getElementById('quick-font-bold-btn');
         const italicBtn = document.getElementById('quick-font-italic-btn');
-        const sizeDownBtn = document.getElementById('quick-font-size-down-btn');
-        const sizeUpBtn = document.getElementById('quick-font-size-up-btn');
+        const underlineBtn = document.getElementById('quick-font-underline-btn');
+        const capsBtn = document.getElementById('quick-font-caps-btn');
         const textFont = document.getElementById('prop-text-font');
-        const textSize = document.getElementById('prop-text-size');
         if (!fontSelect) return;
 
         const fontOptions = this.getQuickFontOptions();
@@ -152,17 +186,21 @@ Object.assign(DesignEditor.prototype, {
         const currentFont = this.selectedElement?.type === 'text'
             ? (this.selectedElement.font || textFont?.value || fontOptions[0]?.value || 'Arial')
             : (textFont?.value || fontOptions[0]?.value || 'Arial');
-        const currentSize = this.selectedElement?.type === 'text'
-            ? Number(this.selectedElement.size || textSize?.value || 24)
-            : Number(textSize?.value || 24);
         const isBold = Boolean(hasText && this.selectedElement.bold);
         const isItalic = Boolean(hasText && this.selectedElement.italic);
+        const isUnderline = Boolean(hasText && this.selectedElement.underline);
+        const isCapsLock = Boolean(hasText && this.selectedElement.capsLock);
+        const rawContent = hasText
+            ? String(this.selectedElement.rawContent ?? this.selectedElement.content ?? this.selectedElement.element.textContent ?? '')
+            : '';
 
         if (currentLabel) {
             currentLabel.textContent = currentFont;
         }
-        if (currentSizeLabel) {
-            currentSizeLabel.textContent = `${currentSize}px`;
+        if (textContentInput) {
+            textContentInput.value = rawContent;
+            textContentInput.disabled = !hasText;
+            textContentInput.classList.toggle('is-disabled', !hasText);
         }
         if (boldBtn) {
             boldBtn.classList.toggle('active', isBold);
@@ -172,13 +210,17 @@ Object.assign(DesignEditor.prototype, {
             italicBtn.classList.toggle('active', isItalic);
             italicBtn.setAttribute('aria-pressed', String(isItalic));
         }
-        if (sizeDownBtn) {
-            sizeDownBtn.disabled = !hasText;
-            sizeDownBtn.classList.toggle('is-disabled', !hasText);
+        if (underlineBtn) {
+            underlineBtn.classList.toggle('active', isUnderline);
+            underlineBtn.setAttribute('aria-pressed', String(isUnderline));
+            underlineBtn.disabled = !hasText;
+            underlineBtn.classList.toggle('is-disabled', !hasText);
         }
-        if (sizeUpBtn) {
-            sizeUpBtn.disabled = !hasText;
-            sizeUpBtn.classList.toggle('is-disabled', !hasText);
+        if (capsBtn) {
+            capsBtn.classList.toggle('active', isCapsLock);
+            capsBtn.setAttribute('aria-pressed', String(isCapsLock));
+            capsBtn.disabled = !hasText;
+            capsBtn.classList.toggle('is-disabled', !hasText);
         }
 
         fontSelect.disabled = !hasText;
@@ -252,6 +294,7 @@ Object.assign(DesignEditor.prototype, {
         if (popover) {
             popover.classList.remove('is-open');
             popover.setAttribute('aria-hidden', 'true');
+            popover.classList.add('hidden');
         }
         if (btn) {
             btn.setAttribute('aria-expanded', 'false');
@@ -613,7 +656,7 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(keepAspectBtn, false);
             setHiddenState(fontAnchor, false);
             setHiddenState(fontBtn, false);
-            setHiddenState(fontPopover, !isText);
+            setHiddenState(fontPopover, !(isText && fontPopover?.classList.contains('is-open')));
             setHiddenState(opacityAnchor, false);
 
             setDisabledState(document.getElementById('quick-delete-btn'), !hasSelection);
@@ -651,7 +694,6 @@ Object.assign(DesignEditor.prototype, {
                 this.renderQuickFontPopover();
             } else {
                 this.closeQuickFontPopover();
-                setHiddenState(fontPopover, true);
             }
 
             if (!hasSelection && keepAspectBtn) {
@@ -679,7 +721,7 @@ Object.assign(DesignEditor.prototype, {
         if (fontBtn) {
             setHiddenState(fontAnchor, !isText);
             setHiddenState(fontBtn, !isText);
-            setHiddenState(fontPopover, !isText);
+            setHiddenState(fontPopover, !(isText && fontPopover?.classList.contains('is-open')));
             setDisabledState(fontBtn, !isText);
             fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
             fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
@@ -708,7 +750,6 @@ Object.assign(DesignEditor.prototype, {
             this.renderQuickFontPopover();
         } else {
             this.closeQuickFontPopover();
-            setHiddenState(fontPopover, true);
         }
 
         this.syncKeepAspectControls();
