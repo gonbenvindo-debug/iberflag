@@ -421,52 +421,103 @@ Object.assign(DesignEditor.prototype, {
         const duplicateBtn = document.getElementById('quick-duplicate-btn');
         const centerHBtn = document.getElementById('quick-center-h-btn');
         const centerVBtn = document.getElementById('quick-center-v-btn');
+        const keepAspectBtn = document.getElementById('quick-keep-aspect-btn');
         const fontBtn = document.getElementById('quick-font-btn');
         const opacityAnchor = document.getElementById('quick-opacity-anchor');
         const opacityBtn = document.getElementById('quick-opacity-btn');
-        const showToolbar = Boolean(elementData);
+        const opacityRange = document.getElementById('quick-opacity-range');
+        const opacityValue = document.getElementById('quick-opacity-value');
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
+        const hasSelection = Boolean(elementData);
+        const isText = hasSelection && elementData.type === 'text';
+        const isImage = hasSelection && elementData.type === 'image';
+        const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
-        toolbar.classList.toggle('hidden', !showToolbar);
+        const setDisabledState = (button, disabled) => {
+            if (!button) return;
+            button.disabled = disabled;
+            button.classList.toggle('is-disabled', disabled);
+            button.setAttribute('aria-disabled', String(disabled));
+        };
 
-        if (!showToolbar) {
-            if (opacityAnchor) opacityAnchor.classList.add('hidden');
-            this.closeQuickOpacityPopover();
-            if (fontBtn) fontBtn.classList.add('hidden');
-            if (opacityBtn) opacityBtn.classList.remove('active');
+        const setHiddenState = (item, hidden) => {
+            if (!item) return;
+            item.classList.toggle('hidden', hidden);
+        };
+
+        if (isMobile) {
+            toolbar.classList.remove('hidden');
+
+            setHiddenState(duplicateBtn, false);
+            setHiddenState(centerHBtn, false);
+            setHiddenState(centerVBtn, false);
+            setHiddenState(keepAspectBtn, false);
+            setHiddenState(fontBtn, false);
+            setHiddenState(opacityAnchor, false);
+
+            setDisabledState(duplicateBtn, !hasSelection);
+            setDisabledState(centerHBtn, !hasSelection);
+            setDisabledState(centerVBtn, !hasSelection);
+            setDisabledState(keepAspectBtn, !hasSelection);
+            setDisabledState(fontBtn, !isText);
+            setDisabledState(opacityBtn, !isImage);
+
+            if (fontBtn) {
+                fontBtn.classList.toggle('active', isText);
+                fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
+                fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
+            }
+
+            if (opacityBtn) {
+                opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
+                opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
+                opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
+                opacityBtn.setAttribute('aria-expanded', 'false');
+            }
+
+            if (isImage) {
+                this.applyQuickOpacityValue(opacityPercent, false);
+            } else {
+                this.closeQuickOpacityPopover();
+                if (opacityRange) opacityRange.value = '100';
+                if (opacityValue) opacityValue.textContent = '100%';
+            }
+
+            this.syncKeepAspectControls();
             return;
         }
 
-        const isText = elementData.type === 'text';
-        const isImage = elementData.type === 'image';
-        const opacityPercent = Math.round(((elementData.opacity ?? 1) * 100));
+        toolbar.classList.toggle('hidden', !hasSelection);
 
-        if (duplicateBtn) duplicateBtn.classList.toggle('hidden', false);
-        if (centerHBtn) centerHBtn.classList.toggle('hidden', false);
-        if (centerVBtn) centerVBtn.classList.toggle('hidden', false);
-        if (fontBtn) {
-            fontBtn.classList.toggle('hidden', !isText);
-            fontBtn.classList.toggle('active', isText);
-            if (isText) {
-                fontBtn.title = `Fonte: ${elementData.font || 'Arial'}`;
-                fontBtn.setAttribute('aria-label', `Fonte: ${elementData.font || 'Arial'}`);
-            } else {
-                fontBtn.classList.remove('active');
-            }
+        if (!hasSelection) {
+            this.closeQuickOpacityPopover();
+            return;
         }
+
+        setDisabledState(duplicateBtn, false);
+        setDisabledState(centerHBtn, false);
+        setDisabledState(centerVBtn, false);
+        setDisabledState(keepAspectBtn, false);
+
+        if (fontBtn) {
+            setHiddenState(fontBtn, !isText);
+            setDisabledState(fontBtn, !isText);
+            fontBtn.classList.toggle('active', isText);
+            fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
+            fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
+        }
+
         if (opacityAnchor) {
-            opacityAnchor.classList.toggle('hidden', !isImage);
+            setHiddenState(opacityAnchor, !isImage);
         }
         if (opacityBtn) {
-            if (isImage) {
-                opacityBtn.title = `Opacidade: ${opacityPercent}%`;
-                opacityBtn.setAttribute('aria-label', `Opacidade: ${opacityPercent}%`);
-                opacityBtn.classList.toggle('active', opacityPercent < 100);
-                opacityBtn.setAttribute('aria-expanded', 'false');
-            } else {
-                opacityBtn.classList.remove('active');
-                opacityBtn.setAttribute('aria-expanded', 'false');
-            }
+            setDisabledState(opacityBtn, !isImage);
+            opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
+            opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
+            opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
+            opacityBtn.setAttribute('aria-expanded', 'false');
         }
+
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);
         } else {

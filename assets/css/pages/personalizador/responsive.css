@@ -199,6 +199,22 @@
                 color: #dc2626;
             }
 
+            .context-action:disabled,
+            .context-action.is-disabled {
+                opacity: 0.42;
+                color: #94a3b8;
+                border-color: #e2e8f0;
+                background: #f8fafc;
+                box-shadow: none;
+                cursor: not-allowed;
+                transform: none;
+            }
+
+            .context-action:disabled svg,
+            .context-action.is-disabled svg {
+                opacity: 0.78;
+            }
+
             .context-popover-anchor {
                 position: relative;
                 flex: 0 0 auto;
