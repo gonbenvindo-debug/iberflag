@@ -171,7 +171,6 @@ Object.assign(DesignEditor.prototype, {
     },
 
     renderQuickFontPopover() {
-        const currentLabel = document.getElementById('quick-font-current');
         const textContentInput = document.getElementById('quick-text-content');
         const fontSelect = document.getElementById('quick-font-select');
         const boldBtn = document.getElementById('quick-font-bold-btn');
@@ -194,9 +193,6 @@ Object.assign(DesignEditor.prototype, {
             ? String(this.selectedElement.rawContent ?? this.selectedElement.content ?? this.selectedElement.element.textContent ?? '')
             : '';
 
-        if (currentLabel) {
-            currentLabel.textContent = currentFont;
-        }
         if (textContentInput) {
             textContentInput.value = rawContent;
             textContentInput.disabled = !hasText;

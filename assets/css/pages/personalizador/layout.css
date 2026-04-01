@@ -262,8 +262,8 @@
 
         .editor-bottom-bar > .context-popover {
             position: absolute;
-            left: 0.75rem;
-            right: 0.75rem;
+            left: -0.75rem;
+            right: -0.75rem;
             bottom: calc(100% - 1px);
             opacity: 0;
             pointer-events: none;
@@ -342,22 +342,6 @@
         .quick-font-textarea:focus {
             border-color: #93c5fd;
             box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.12);
-        }
-
-        .quick-font-header {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            gap: 0.5rem;
-            width: 100%;
-        }
-
-        .quick-font-title {
-            font-size: 0.68rem;
-            font-weight: 900;
-            letter-spacing: 0.16em;
-            text-transform: uppercase;
-            color: #64748b;
         }
 
         .quick-font-actions {
