@@ -579,7 +579,19 @@ Object.assign(DesignEditor.prototype, {
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
-        if (quickFontBtn) quickFontBtn.addEventListener('click', () => this.cycleQuickTextFont(1));
+        if (quickFontBtn) quickFontBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.toggleQuickFontPopover();
+        });
+        const quickFontSizeDownBtn = document.getElementById('quick-font-size-down-btn');
+        const quickFontSizeUpBtn = document.getElementById('quick-font-size-up-btn');
+        const quickFontBoldBtn = document.getElementById('quick-font-bold-btn');
+        const quickFontItalicBtn = document.getElementById('quick-font-italic-btn');
+        if (quickFontSizeDownBtn) quickFontSizeDownBtn.addEventListener('click', () => this.stepQuickTextSize(-2));
+        if (quickFontSizeUpBtn) quickFontSizeUpBtn.addEventListener('click', () => this.stepQuickTextSize(2));
+        if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
+        if (quickFontItalicBtn) quickFontItalicBtn.addEventListener('click', () => this.toggleTextItalic());
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {
@@ -655,22 +667,27 @@ Object.assign(DesignEditor.prototype, {
             this.toggleQuickOpacityPopover();
         });
 
-        if (!this._quickOpacityDismissalBound) {
+        if (!this._quickToolbarPopoverDismissalBound) {
             document.addEventListener('pointerdown', (event) => {
+                const fontAnchor = document.getElementById('quick-font-anchor');
+                const fontPopover = document.getElementById('quick-font-popover');
                 const anchor = document.getElementById('quick-opacity-anchor');
                 const popover = document.getElementById('quick-opacity-popover');
-                if (!anchor || !popover || anchor.classList.contains('hidden')) return;
-                if (anchor.contains(event.target)) return;
+                if (fontAnchor && fontPopover && fontPopover.classList.contains('is-open') && !fontAnchor.contains(event.target)) {
+                    this.closeQuickFontPopover();
+                }
+                if (!anchor || !popover || !popover.classList.contains('is-open') || anchor.contains(event.target)) return;
                 this.closeQuickOpacityPopover();
             }, true);
 
             document.addEventListener('keydown', (event) => {
                 if (event.key === 'Escape') {
                     this.closeQuickOpacityPopover();
+                    this.closeQuickFontPopover();
                 }
             });
 
-            this._quickOpacityDismissalBound = true;
+            this._quickToolbarPopoverDismissalBound = true;
         }
 
         const qrContent = document.getElementById('prop-qr-content');

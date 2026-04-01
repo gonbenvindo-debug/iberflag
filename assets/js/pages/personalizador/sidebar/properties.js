@@ -30,6 +30,7 @@ Object.assign(DesignEditor.prototype, {
             
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
+            this.renderQuickFontPopover?.();
         }
     },
     
@@ -45,6 +46,7 @@ Object.assign(DesignEditor.prototype, {
             
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
+            this.renderQuickFontPopover?.();
         }
     },
     
@@ -53,6 +55,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('fill', value);
             this.selectedElement.color = value;
             this.queueHistorySave();
+            this.renderQuickFontPopover?.();
         }
     },
     
@@ -63,6 +66,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('font-weight', newWeight);
             this.selectedElement.bold = newWeight === 'bold';
             this.saveHistory();
+            this.renderQuickFontPopover?.();
         }
     },
     
@@ -73,6 +77,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('font-style', newStyle);
             this.selectedElement.italic = newStyle === 'italic';
             this.saveHistory();
+            this.renderQuickFontPopover?.();
         }
     },
     
@@ -115,6 +120,154 @@ Object.assign(DesignEditor.prototype, {
         const nextValue = presets[nextIndex];
 
         this.applyQuickOpacityValue(nextValue);
+    },
+
+    getQuickFontOptions() {
+        const fontSelect = document.getElementById('prop-text-font');
+        if (!fontSelect) return [];
+
+        return Array.from(fontSelect.options)
+            .map((option) => ({
+                value: option.value,
+                label: option.textContent?.trim() || option.value,
+                family: option.style?.fontFamily || option.value
+            }))
+            .filter((option) => Boolean(option.value));
+    },
+
+    renderQuickFontPopover() {
+        const optionsContainer = document.getElementById('quick-font-options');
+        const currentLabel = document.getElementById('quick-font-current');
+        const boldBtn = document.getElementById('quick-font-bold-btn');
+        const italicBtn = document.getElementById('quick-font-italic-btn');
+        const sizeDownBtn = document.getElementById('quick-font-size-down-btn');
+        const sizeUpBtn = document.getElementById('quick-font-size-up-btn');
+        const textFont = document.getElementById('prop-text-font');
+        const textSize = document.getElementById('prop-text-size');
+        if (!optionsContainer) return;
+
+        const fontOptions = this.getQuickFontOptions();
+        const hasText = Boolean(this.selectedElement && this.selectedElement.type === 'text');
+        const currentFont = this.selectedElement?.type === 'text'
+            ? (this.selectedElement.font || textFont?.value || fontOptions[0]?.value || 'Arial')
+            : (textFont?.value || fontOptions[0]?.value || 'Arial');
+        const currentSize = this.selectedElement?.type === 'text'
+            ? Number(this.selectedElement.size || textSize?.value || 24)
+            : Number(textSize?.value || 24);
+        const isBold = Boolean(hasText && this.selectedElement.bold);
+        const isItalic = Boolean(hasText && this.selectedElement.italic);
+
+        if (currentLabel) {
+            currentLabel.textContent = `${currentFont} · ${currentSize}px`;
+        }
+        if (boldBtn) {
+            boldBtn.classList.toggle('active', isBold);
+            boldBtn.setAttribute('aria-pressed', String(isBold));
+        }
+        if (italicBtn) {
+            italicBtn.classList.toggle('active', isItalic);
+            italicBtn.setAttribute('aria-pressed', String(isItalic));
+        }
+        if (sizeDownBtn) {
+            sizeDownBtn.disabled = !hasText;
+            sizeDownBtn.classList.toggle('is-disabled', !hasText);
+        }
+        if (sizeUpBtn) {
+            sizeUpBtn.disabled = !hasText;
+            sizeUpBtn.classList.toggle('is-disabled', !hasText);
+        }
+
+        const previousScrollTop = optionsContainer.scrollTop;
+
+        optionsContainer.innerHTML = fontOptions.map((option) => {
+            const active = option.value === currentFont;
+            const safeValue = String(option.value).replace(/"/g, '&quot;');
+            const family = String(option.family || option.value).replace(/"/g, '&quot;');
+            return `<button type="button" class="quick-font-option${active ? ' active' : ''}" data-font-value="${safeValue}" style="font-family: ${family};" aria-pressed="${active}" ${hasText ? '' : 'disabled'}>
+                ${option.label}
+            </button>`;
+        }).join('');
+
+        optionsContainer.scrollTop = previousScrollTop;
+
+        optionsContainer.querySelectorAll('.quick-font-option').forEach((button) => {
+            button.addEventListener('click', () => {
+                this.selectQuickFontFamily(button.dataset.fontValue);
+            });
+        });
+    },
+
+    selectQuickFontFamily(font) {
+        if (!this.selectedElement || this.selectedElement.type !== 'text') return;
+
+        const textFont = document.getElementById('prop-text-font');
+        if (textFont && font) {
+            textFont.value = font;
+        }
+        if (font) {
+            this.updateTextFont(font);
+        }
+        this.renderQuickFontPopover();
+        this.updateContextualToolbar(this.selectedElement);
+    },
+
+    stepQuickTextSize(delta = 2) {
+        if (!this.selectedElement || this.selectedElement.type !== 'text') return;
+
+        const textSize = document.getElementById('prop-text-size');
+        const currentSize = Number(this.selectedElement.size || textSize?.value || 24);
+        const nextSize = Math.max(12, Math.min(120, Math.round(currentSize + delta)));
+
+        if (textSize) {
+            textSize.value = String(nextSize);
+        }
+        this.updateTextSize(String(nextSize));
+        const sizeValue = document.getElementById('prop-text-size-val');
+        if (sizeValue) {
+            sizeValue.textContent = String(nextSize);
+        }
+        this.renderQuickFontPopover();
+        this.updateContextualToolbar(this.selectedElement);
+    },
+
+    openQuickFontPopover() {
+        const anchor = document.getElementById('quick-font-anchor');
+        const btn = document.getElementById('quick-font-btn');
+        const popover = document.getElementById('quick-font-popover');
+        if (!anchor || !btn || !popover || anchor.classList.contains('hidden')) return;
+        if (!this.selectedElement || this.selectedElement.type !== 'text') return;
+
+        this.renderQuickFontPopover();
+        popover.classList.add('is-open');
+        popover.setAttribute('aria-hidden', 'false');
+        btn.setAttribute('aria-expanded', 'true');
+        btn.classList.add('active');
+    },
+
+    closeQuickFontPopover() {
+        const btn = document.getElementById('quick-font-btn');
+        const popover = document.getElementById('quick-font-popover');
+        if (popover) {
+            popover.classList.remove('is-open');
+            popover.setAttribute('aria-hidden', 'true');
+        }
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+            btn.classList.remove('active');
+        }
+    },
+
+    toggleQuickFontPopover() {
+        const anchor = document.getElementById('quick-font-anchor');
+        const popover = document.getElementById('quick-font-popover');
+        if (!anchor || !popover || anchor.classList.contains('hidden')) return;
+        if (!this.selectedElement || this.selectedElement.type !== 'text') return;
+
+        if (popover.classList.contains('is-open')) {
+            this.closeQuickFontPopover();
+        } else {
+            this.openQuickFontPopover();
+        }
     },
 
     applyQuickOpacityValue(value, shouldApply = true) {
@@ -308,16 +461,17 @@ Object.assign(DesignEditor.prototype, {
         if (!this.selectedElement) return;
 
         const bounds = this.getEditableBounds();
-        const transformed = this.getTransformedBounds(this.selectedElement);
-        const currentCenterX = (transformed.left + transformed.right) / 2;
-        const currentCenterY = (transformed.top + transformed.bottom) / 2;
+        const bbox = this.selectedElement.element.getBBox();
+        const currentCenterX = bbox.x + (bbox.width / 2);
+        const currentCenterY = bbox.y + (bbox.height / 2);
         const targetCenterX = bounds.x + (bounds.width / 2);
         const targetCenterY = bounds.y + (bounds.height / 2);
 
         const deltaX = axis === 'horizontal' ? (targetCenterX - currentCenterX) : 0;
         const deltaY = axis === 'vertical' ? (targetCenterY - currentCenterY) : 0;
 
-        this.moveElementBy(this.selectedElement, deltaX, deltaY);
+        this.offsetElementGeometry(this.selectedElement, deltaX, deltaY);
+        this.applyElementRotation(this.selectedElement);
 
         this.showResizeHandles(this.selectedElement);
         this.updateLayers();
@@ -423,7 +577,9 @@ Object.assign(DesignEditor.prototype, {
         const centerHBtn = document.getElementById('quick-center-h-btn');
         const centerVBtn = document.getElementById('quick-center-v-btn');
         const keepAspectBtn = document.getElementById('quick-keep-aspect-btn');
+        const fontAnchor = document.getElementById('quick-font-anchor');
         const fontBtn = document.getElementById('quick-font-btn');
+        const fontPopover = document.getElementById('quick-font-popover');
         const opacityAnchor = document.getElementById('quick-opacity-anchor');
         const opacityBtn = document.getElementById('quick-opacity-btn');
         const opacityRange = document.getElementById('quick-opacity-range');
@@ -453,6 +609,7 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(centerHBtn, false);
             setHiddenState(centerVBtn, false);
             setHiddenState(keepAspectBtn, false);
+            setHiddenState(fontAnchor, false);
             setHiddenState(fontBtn, false);
             setHiddenState(opacityAnchor, false);
 
@@ -465,10 +622,10 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(opacityBtn, !isImage);
 
             if (fontBtn) {
-                fontBtn.classList.remove('hidden');
-                fontBtn.classList.toggle('active', isText);
+                fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
                 fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
                 fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
+                fontBtn.setAttribute('aria-expanded', String(Boolean(isText && fontPopover?.classList.contains('is-open'))));
             }
 
             if (opacityBtn) {
@@ -487,6 +644,12 @@ Object.assign(DesignEditor.prototype, {
                 if (opacityValue) opacityValue.textContent = '100%';
             }
 
+            if (isText) {
+                this.renderQuickFontPopover();
+            } else {
+                this.closeQuickFontPopover();
+            }
+
             if (!hasSelection && keepAspectBtn) {
                 keepAspectBtn.classList.remove('active');
                 keepAspectBtn.setAttribute('aria-pressed', 'false');
@@ -500,6 +663,7 @@ Object.assign(DesignEditor.prototype, {
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();
+            this.closeQuickFontPopover();
             return;
         }
 
@@ -509,11 +673,13 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(keepAspectBtn, false);
 
         if (fontBtn) {
+            setHiddenState(fontAnchor, !isText);
             setHiddenState(fontBtn, !isText);
             setDisabledState(fontBtn, !isText);
-            fontBtn.classList.toggle('active', isText);
+            fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
             fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
             fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
+            fontBtn.setAttribute('aria-expanded', String(Boolean(isText && fontPopover?.classList.contains('is-open'))));
         }
 
         if (opacityAnchor) {
@@ -531,6 +697,12 @@ Object.assign(DesignEditor.prototype, {
             this.applyQuickOpacityValue(opacityPercent, false);
         } else {
             this.closeQuickOpacityPopover();
+        }
+
+        if (isText) {
+            this.renderQuickFontPopover();
+        } else {
+            this.closeQuickFontPopover();
         }
 
         this.syncKeepAspectControls();

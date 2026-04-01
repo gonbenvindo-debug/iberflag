@@ -160,10 +160,33 @@
                         title="Manter proporcoes" aria-label="Manter proporcoes" aria-pressed="true">
                         <i data-lucide="maximize-2" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-font-btn" type="button" class="context-action context-action--text hidden"
-                        title="Fonte" aria-label="Fonte">
-                        <i data-lucide="type" class="w-4 h-4"></i>
-                    </button>
+                    <div id="quick-font-anchor" class="context-popover-anchor hidden">
+                        <button id="quick-font-btn" type="button" class="context-action context-action--text hidden"
+                            title="Fonte" aria-label="Fonte" aria-expanded="false">
+                            <i data-lucide="type" class="w-4 h-4"></i>
+                        </button>
+                        <div id="quick-font-popover" class="context-popover context-popover--font" aria-hidden="true">
+                            <div class="quick-font-header">
+                                <span class="quick-font-title">Texto</span>
+                                <span id="quick-font-current" class="context-popover-value">Arial</span>
+                            </div>
+                            <div class="quick-font-actions">
+                                <button id="quick-font-size-down-btn" type="button" class="quick-font-action" aria-label="Diminuir tamanho da fonte">
+                                    <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                                </button>
+                                <button id="quick-font-bold-btn" type="button" class="quick-font-action" aria-label="Negrito">
+                                    <span class="quick-font-letter">B</span>
+                                </button>
+                                <button id="quick-font-italic-btn" type="button" class="quick-font-action" aria-label="Italico">
+                                    <span class="quick-font-letter italic">I</span>
+                                </button>
+                                <button id="quick-font-size-up-btn" type="button" class="quick-font-action" aria-label="Aumentar tamanho da fonte">
+                                    <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                            <div id="quick-font-options" class="quick-font-options" aria-label="Fontes disponiveis"></div>
+                        </div>
+                    </div>
                     <div id="quick-opacity-anchor" class="context-popover-anchor hidden">
                         <button id="quick-opacity-btn" type="button" class="context-action context-action--opacity"
                             title="Opacidade" aria-label="Opacidade" aria-expanded="false">
