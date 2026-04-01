@@ -305,6 +305,36 @@ Object.assign(DesignEditor.prototype, {
             this.nudgeSelected(0, nudge);
         }
     },
+
+    getLayerBaseLabel(elementData) {
+        if (!elementData) return 'Camada';
+
+        if (elementData.type === 'text') return 'Texto';
+        if (elementData.type === 'image') {
+            return elementData.imageKind === 'qr' ? 'QR Code' : 'Imagem';
+        }
+
+        if (elementData.type === 'shape') {
+            const shapeType = String(elementData.shapeType || '').toLowerCase();
+            const shapeLabels = {
+                rectangle: 'Quadrado',
+                rounded: 'Quadrado',
+                pill: 'Quadrado',
+                circle: 'Circulo',
+                triangle: 'Triangulo',
+                diamond: 'Losango',
+                line: 'Linha',
+                star: 'Estrela',
+                hexagon: 'Hexagono',
+                arrow: 'Seta',
+                path: 'Forma'
+            };
+
+            return shapeLabels[shapeType] || 'Forma';
+        }
+
+        return 'Camada';
+    },
     
     // ===== LAYERS =====
     updateLayers() {
@@ -317,6 +347,15 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const selectedId = this.selectedElement ? String(this.selectedElement.id) : null;
+        const labelCounters = new Map();
+
+        const getLayerLabel = (elementData) => {
+            const baseLabel = this.getLayerBaseLabel(elementData);
+            const key = baseLabel.toLowerCase();
+            const nextCount = (labelCounters.get(key) || 0) + 1;
+            labelCounters.set(key, nextCount);
+            return `${baseLabel} ${nextCount}`;
+        };
         
         layersList.innerHTML = this.elements.map((el, index) => `
             <div class="layer-item p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${selectedId === String(el.id) ? 'bg-blue-50 border-blue-600' : ''}"
@@ -326,7 +365,7 @@ Object.assign(DesignEditor.prototype, {
                 <div class="flex items-center justify-between">
                     <div class="flex items-center gap-2">
                         <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
-                        <span class="text-sm font-semibold">${el.type === 'text' ? (el.content || 'Texto').substring(0, 20) : el.type === 'image' ? (el.name || (el.imageKind === 'qr' ? 'QR Code' : 'Imagem')) : el.type.charAt(0).toUpperCase() + el.type.slice(1)}</span>
+                        <span class="text-sm font-semibold">${getLayerLabel(el)}</span>
                     </div>
                     <div class="flex gap-1">
                         <button type="button" data-layer-action="up" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
