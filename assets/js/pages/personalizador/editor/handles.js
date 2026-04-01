@@ -857,23 +857,21 @@ Object.assign(DesignEditor.prototype, {
 
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         const rotation = this.selectedElement.rotation || 0;
+        const svgDelta = this.clientDeltaToSvgDelta(
+            e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
+            e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
+        );
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getEditableBounds();
-        const anchorPoint = this.dragStart.anchorCanvasPoint || {
-            x: bbox.x,
-            y: bbox.y
-        };
-
-        const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
-        let localDx = pointerPoint.x - anchorPoint.x;
-        let localDy = pointerPoint.y - anchorPoint.y;
+        let dx = svgDelta.dx;
+        let dy = svgDelta.dy;
 
         if (rotation !== 0) {
             const rotRad = -rotation * Math.PI / 180;
-            const rotatedDx = localDx * Math.cos(rotRad) - localDy * Math.sin(rotRad);
-            const rotatedDy = localDx * Math.sin(rotRad) + localDy * Math.cos(rotRad);
-            localDx = rotatedDx;
-            localDy = rotatedDy;
+            const rotatedDx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
+            const rotatedDy = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
+            dx = rotatedDx;
+            dy = rotatedDy;
         }
         
         let newWidth = bbox.width;
@@ -883,52 +881,52 @@ Object.assign(DesignEditor.prototype, {
         
         switch(this.resizeHandle) {
             case 'se':
-                newWidth = Math.max(20, localDx);
-                newHeight = Math.max(20, localDy);
-                newX = anchorPoint.x;
-                newY = anchorPoint.y;
+                newWidth = Math.max(20, bbox.width + dx);
+                newHeight = Math.max(20, bbox.height + dy);
+                newX = bbox.x;
+                newY = bbox.y;
                 break;
             case 'sw':
-                newWidth = Math.max(20, -localDx);
-                newHeight = Math.max(20, localDy);
-                newX = anchorPoint.x - newWidth;
-                newY = anchorPoint.y;
+                newWidth = Math.max(20, bbox.width - dx);
+                newHeight = Math.max(20, bbox.height + dy);
+                newX = bbox.x + (bbox.width - newWidth);
+                newY = bbox.y;
                 break;
             case 'ne':
-                newWidth = Math.max(20, localDx);
-                newHeight = Math.max(20, -localDy);
-                newX = anchorPoint.x;
-                newY = anchorPoint.y - newHeight;
+                newWidth = Math.max(20, bbox.width + dx);
+                newHeight = Math.max(20, bbox.height - dy);
+                newX = bbox.x;
+                newY = bbox.y + (bbox.height - newHeight);
                 break;
             case 'nw':
-                newWidth = Math.max(20, -localDx);
-                newHeight = Math.max(20, -localDy);
-                newX = anchorPoint.x - newWidth;
-                newY = anchorPoint.y - newHeight;
+                newWidth = Math.max(20, bbox.width - dx);
+                newHeight = Math.max(20, bbox.height - dy);
+                newX = bbox.x + (bbox.width - newWidth);
+                newY = bbox.y + (bbox.height - newHeight);
                 break;
             case 'e':
-                newWidth = Math.max(20, localDx);
+                newWidth = Math.max(20, bbox.width + dx);
                 newHeight = bbox.height;
-                newX = anchorPoint.x;
-                newY = anchorPoint.y - (bbox.height / 2);
+                newX = bbox.x;
+                newY = bbox.y;
                 break;
             case 'w':
-                newWidth = Math.max(20, -localDx);
+                newWidth = Math.max(20, bbox.width - dx);
                 newHeight = bbox.height;
-                newX = anchorPoint.x - newWidth;
-                newY = anchorPoint.y - (bbox.height / 2);
+                newX = bbox.x + (bbox.width - newWidth);
+                newY = bbox.y;
                 break;
             case 's':
-                newHeight = Math.max(20, localDy);
+                newHeight = Math.max(20, bbox.height + dy);
                 newWidth = bbox.width;
-                newX = anchorPoint.x - (bbox.width / 2);
-                newY = anchorPoint.y;
+                newX = bbox.x;
+                newY = bbox.y;
                 break;
             case 'n':
-                newHeight = Math.max(20, -localDy);
+                newHeight = Math.max(20, bbox.height - dy);
                 newWidth = bbox.width;
-                newX = anchorPoint.x - (bbox.width / 2);
-                newY = anchorPoint.y - newHeight;
+                newX = bbox.x;
+                newY = bbox.y + (bbox.height - newHeight);
                 break;
         }
 
@@ -953,7 +951,7 @@ Object.assign(DesignEditor.prototype, {
                 // to avoid frame-by-frame axis switching flicker.
                 const signX = this.resizeHandle.includes('w') ? -1 : 1;
                 const signY = this.resizeHandle.includes('n') ? -1 : 1;
-                const projectedHeightDelta = ((signY * localDy) + ((signX * localDx) / ratio)) / 2;
+                const projectedHeightDelta = ((signY * dy) + ((signX * dx) / ratio)) / 2;
                 const targetHeight = Math.max(20, bbox.height + projectedHeightDelta);
                 const targetWidth = Math.max(20, targetHeight * ratio);
 
@@ -961,11 +959,11 @@ Object.assign(DesignEditor.prototype, {
                 newHeight = targetHeight;
 
                 newX = this.resizeHandle.includes('w')
-                    ? anchorPoint.x - newWidth
-                    : anchorPoint.x;
+                    ? bbox.x + (bbox.width - newWidth)
+                    : bbox.x;
                 newY = this.resizeHandle.includes('n')
-                    ? anchorPoint.y - newHeight
-                    : anchorPoint.y;
+                    ? bbox.y + (bbox.height - newHeight)
+                    : bbox.y;
             }
         }
         
@@ -1064,9 +1062,19 @@ Object.assign(DesignEditor.prototype, {
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
-        }
 
-        this.applyResizeAnchor(this.selectedElement);
+            const measuredBox = this.selectedElement.element.getBBox();
+            const anchorPoint = this.getResizeAnchorPoint(bbox, this.resizeHandle);
+            const centerX = this.resizeHandle.includes('w')
+                ? anchorPoint.x - (measuredBox.width / 2)
+                : anchorPoint.x + (measuredBox.width / 2);
+            const centerY = this.resizeHandle.includes('n')
+                ? anchorPoint.y - (measuredBox.height / 2)
+                : anchorPoint.y + (measuredBox.height / 2);
+
+            this.selectedElement.element.setAttribute('x', centerX);
+            this.selectedElement.element.setAttribute('y', centerY);
+        }
 
         // Never allow rotated elements to grow outside the design canvas.
         // If a resize step crosses the wall, reject that step instead of
@@ -1074,6 +1082,10 @@ Object.assign(DesignEditor.prototype, {
         if (rotation !== 0 && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
             this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
             return;
+        }
+
+        if (rotation !== 0) {
+            this.applyRotatedResizeAnchor(this.selectedElement);
         }
 
         if (this.selectedElement.type === 'text') {
