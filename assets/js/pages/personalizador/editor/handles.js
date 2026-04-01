@@ -844,26 +844,26 @@ Object.assign(DesignEditor.prototype, {
 
         // ===== NORMAL RESIZE =====
 
-        const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
-                e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
-            );
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
-        let dx = svgDelta.dx;
-        let dy = svgDelta.dy;
-        
-        // If element is rotated, convert mouse delta to element's local coordinate space
         const rotation = this.selectedElement.rotation || 0;
-        if (rotation !== 0) {
-            const rotRad = -rotation * Math.PI / 180; // Negative for inverse rotation
-            const rotatedDx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
-            const rotatedDy = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
-            dx = rotatedDx;
-            dy = rotatedDy;
-        }
-        
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getEditableBounds();
+        const anchorPoint = this.dragStart.anchorCanvasPoint || {
+            x: bbox.x,
+            y: bbox.y
+        };
+
+        const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
+        let localDx = pointerPoint.x - anchorPoint.x;
+        let localDy = pointerPoint.y - anchorPoint.y;
+
+        if (rotation !== 0) {
+            const rotRad = -rotation * Math.PI / 180;
+            const rotatedDx = localDx * Math.cos(rotRad) - localDy * Math.sin(rotRad);
+            const rotatedDy = localDx * Math.sin(rotRad) + localDy * Math.cos(rotRad);
+            localDx = rotatedDx;
+            localDy = rotatedDy;
+        }
         
         let newWidth = bbox.width;
         let newHeight = bbox.height;
@@ -872,38 +872,52 @@ Object.assign(DesignEditor.prototype, {
         
         switch(this.resizeHandle) {
             case 'se':
-                newWidth = Math.max(20, bbox.width + dx);
-                newHeight = Math.max(20, bbox.height + dy);
+                newWidth = Math.max(20, localDx);
+                newHeight = Math.max(20, localDy);
+                newX = anchorPoint.x;
+                newY = anchorPoint.y;
                 break;
             case 'sw':
-                newWidth = Math.max(20, bbox.width - dx);
-                newHeight = Math.max(20, bbox.height + dy);
-                newX = bbox.x + dx;
+                newWidth = Math.max(20, -localDx);
+                newHeight = Math.max(20, localDy);
+                newX = anchorPoint.x - newWidth;
+                newY = anchorPoint.y;
                 break;
             case 'ne':
-                newWidth = Math.max(20, bbox.width + dx);
-                newHeight = Math.max(20, bbox.height - dy);
-                newY = bbox.y + dy;
+                newWidth = Math.max(20, localDx);
+                newHeight = Math.max(20, -localDy);
+                newX = anchorPoint.x;
+                newY = anchorPoint.y - newHeight;
                 break;
             case 'nw':
-                newWidth = Math.max(20, bbox.width - dx);
-                newHeight = Math.max(20, bbox.height - dy);
-                newX = bbox.x + dx;
-                newY = bbox.y + dy;
+                newWidth = Math.max(20, -localDx);
+                newHeight = Math.max(20, -localDy);
+                newX = anchorPoint.x - newWidth;
+                newY = anchorPoint.y - newHeight;
                 break;
             case 'e':
-                newWidth = Math.max(20, bbox.width + dx);
+                newWidth = Math.max(20, localDx);
+                newHeight = bbox.height;
+                newX = anchorPoint.x;
+                newY = anchorPoint.y - (bbox.height / 2);
                 break;
             case 'w':
-                newWidth = Math.max(20, bbox.width - dx);
-                newX = bbox.x + dx;
+                newWidth = Math.max(20, -localDx);
+                newHeight = bbox.height;
+                newX = anchorPoint.x - newWidth;
+                newY = anchorPoint.y - (bbox.height / 2);
                 break;
             case 's':
-                newHeight = Math.max(20, bbox.height + dy);
+                newHeight = Math.max(20, localDy);
+                newWidth = bbox.width;
+                newX = anchorPoint.x - (bbox.width / 2);
+                newY = anchorPoint.y;
                 break;
             case 'n':
-                newHeight = Math.max(20, bbox.height - dy);
-                newY = bbox.y + dy;
+                newHeight = Math.max(20, -localDy);
+                newWidth = bbox.width;
+                newX = anchorPoint.x - (bbox.width / 2);
+                newY = anchorPoint.y - newHeight;
                 break;
         }
 
@@ -928,7 +942,7 @@ Object.assign(DesignEditor.prototype, {
                 // to avoid frame-by-frame axis switching flicker.
                 const signX = this.resizeHandle.includes('w') ? -1 : 1;
                 const signY = this.resizeHandle.includes('n') ? -1 : 1;
-                const projectedHeightDelta = ((signY * dy) + ((signX * dx) / ratio)) / 2;
+                const projectedHeightDelta = ((signY * localDy) + ((signX * localDx) / ratio)) / 2;
                 const targetHeight = Math.max(20, bbox.height + projectedHeightDelta);
                 const targetWidth = Math.max(20, targetHeight * ratio);
 
@@ -936,11 +950,11 @@ Object.assign(DesignEditor.prototype, {
                 newHeight = targetHeight;
 
                 newX = this.resizeHandle.includes('w')
-                    ? bbox.x + (bbox.width - newWidth)
-                    : bbox.x;
+                    ? anchorPoint.x - newWidth
+                    : anchorPoint.x;
                 newY = this.resizeHandle.includes('n')
-                    ? bbox.y + (bbox.height - newHeight)
-                    : bbox.y;
+                    ? anchorPoint.y - newHeight
+                    : anchorPoint.y;
             }
         }
         
@@ -1037,34 +1051,24 @@ Object.assign(DesignEditor.prototype, {
             
             const oldFontSize = this.dragStart.fontSize || this.selectedElement.size;
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
-            
-            // Get current baseline position
-            const currentY = this.dragStart.textY ?? parseFloat(this.selectedElement.element.getAttribute('y') || '0');
-            
-            // Calculate how much the baseline should move based on bbox.y change
-            const yOffset = newY - bbox.y;
-            
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
-            this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', currentY + yOffset);
-            
-            // Update stored dimensions
+        }
+
+        this.applyResizeAnchor(this.selectedElement);
+
+        // Never allow rotated elements to grow outside the design canvas.
+        // If a resize step crosses the wall, reject that step instead of
+        // translating the element, which can look like growth on the opposite side.
+        if (rotation !== 0 && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
+            this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
+            return;
+        }
+
+        if (this.selectedElement.type === 'text') {
             const newBBox = this.selectedElement.element.getBBox();
             this.selectedElement.width = newBBox.width;
             this.selectedElement.height = newBBox.height;
-        }
-
-        if (rotation !== 0) {
-            this.applyRotatedResizeAnchor(this.selectedElement);
-
-            // Never allow rotated elements to grow outside the design canvas.
-            // If a resize step crosses the wall, reject that step instead of
-            // translating the element, which can look like growth on the opposite side.
-            if (!this.isElementFullyInsideEditableBounds(this.selectedElement)) {
-                this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
-                return;
-            }
         }
 
         this.updateResizeHandlesPosition(this.selectedElement);

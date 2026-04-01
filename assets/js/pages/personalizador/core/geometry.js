@@ -165,12 +165,12 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
-    applyRotatedResizeAnchor(elementData) {
-        const rotation = elementData.rotation || 0;
-        if (!rotation || !this.dragStart?.anchorCanvasPoint) {
+    applyResizeAnchor(elementData) {
+        if (!this.dragStart?.anchorCanvasPoint || !this.resizeHandle) {
             return;
         }
 
+        const rotation = elementData.rotation || 0;
         this.applyElementRotation(elementData, rotation);
 
         const currentBox = elementData.element.getBBox();
@@ -188,6 +188,10 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.applyElementRotation(elementData, rotation);
+    },
+
+    applyRotatedResizeAnchor(elementData) {
+        this.applyResizeAnchor(elementData);
     },
 
     moveElementFromDragStart(elementData, deltaX, deltaY) {
