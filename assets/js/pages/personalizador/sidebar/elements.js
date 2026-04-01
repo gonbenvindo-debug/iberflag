@@ -584,10 +584,12 @@ Object.assign(DesignEditor.prototype, {
             event.stopPropagation();
             this.toggleQuickFontPopover();
         });
+        const quickFontSelect = document.getElementById('quick-font-select');
         const quickFontSizeDownBtn = document.getElementById('quick-font-size-down-btn');
         const quickFontSizeUpBtn = document.getElementById('quick-font-size-up-btn');
         const quickFontBoldBtn = document.getElementById('quick-font-bold-btn');
         const quickFontItalicBtn = document.getElementById('quick-font-italic-btn');
+        if (quickFontSelect) quickFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
         if (quickFontSizeDownBtn) quickFontSizeDownBtn.addEventListener('click', () => this.stepQuickTextSize(-2));
         if (quickFontSizeUpBtn) quickFontSizeUpBtn.addEventListener('click', () => this.stepQuickTextSize(2));
         if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
@@ -673,7 +675,7 @@ Object.assign(DesignEditor.prototype, {
                 const fontPopover = document.getElementById('quick-font-popover');
                 const anchor = document.getElementById('quick-opacity-anchor');
                 const popover = document.getElementById('quick-opacity-popover');
-                if (fontAnchor && fontPopover && fontPopover.classList.contains('is-open') && !fontAnchor.contains(event.target)) {
+                if (fontAnchor && fontPopover && fontPopover.classList.contains('is-open') && !fontAnchor.contains(event.target) && !fontPopover.contains(event.target)) {
                     this.closeQuickFontPopover();
                 }
                 if (!anchor || !popover || !popover.classList.contains('is-open') || anchor.contains(event.target)) return;

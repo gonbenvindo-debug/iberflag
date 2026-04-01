@@ -136,15 +136,16 @@ Object.assign(DesignEditor.prototype, {
     },
 
     renderQuickFontPopover() {
-        const optionsContainer = document.getElementById('quick-font-options');
         const currentLabel = document.getElementById('quick-font-current');
+        const currentSizeLabel = document.getElementById('quick-font-size-current');
+        const fontSelect = document.getElementById('quick-font-select');
         const boldBtn = document.getElementById('quick-font-bold-btn');
         const italicBtn = document.getElementById('quick-font-italic-btn');
         const sizeDownBtn = document.getElementById('quick-font-size-down-btn');
         const sizeUpBtn = document.getElementById('quick-font-size-up-btn');
         const textFont = document.getElementById('prop-text-font');
         const textSize = document.getElementById('prop-text-size');
-        if (!optionsContainer) return;
+        if (!fontSelect) return;
 
         const fontOptions = this.getQuickFontOptions();
         const hasText = Boolean(this.selectedElement && this.selectedElement.type === 'text');
@@ -158,7 +159,10 @@ Object.assign(DesignEditor.prototype, {
         const isItalic = Boolean(hasText && this.selectedElement.italic);
 
         if (currentLabel) {
-            currentLabel.textContent = `${currentFont} · ${currentSize}px`;
+            currentLabel.textContent = currentFont;
+        }
+        if (currentSizeLabel) {
+            currentSizeLabel.textContent = `${currentSize}px`;
         }
         if (boldBtn) {
             boldBtn.classList.toggle('active', isBold);
@@ -177,32 +181,29 @@ Object.assign(DesignEditor.prototype, {
             sizeUpBtn.classList.toggle('is-disabled', !hasText);
         }
 
-        const previousScrollTop = optionsContainer.scrollTop;
-
-        optionsContainer.innerHTML = fontOptions.map((option) => {
-            const active = option.value === currentFont;
+        fontSelect.disabled = !hasText;
+        fontSelect.classList.toggle('is-disabled', !hasText);
+        fontSelect.innerHTML = fontOptions.map((option) => {
             const safeValue = String(option.value).replace(/"/g, '&quot;');
             const family = String(option.family || option.value).replace(/"/g, '&quot;');
-            return `<button type="button" class="quick-font-option${active ? ' active' : ''}" data-font-value="${safeValue}" style="font-family: ${family};" aria-pressed="${active}" ${hasText ? '' : 'disabled'}>
-                ${option.label}
-            </button>`;
+            const selected = option.value === currentFont;
+            return `<option value="${safeValue}" style="font-family: ${family};" ${selected ? 'selected' : ''}>${option.label}</option>`;
         }).join('');
-
-        optionsContainer.scrollTop = previousScrollTop;
-
-        optionsContainer.querySelectorAll('.quick-font-option').forEach((button) => {
-            button.addEventListener('click', () => {
-                this.selectQuickFontFamily(button.dataset.fontValue);
-            });
-        });
+        fontSelect.value = fontOptions.some((option) => option.value === currentFont)
+            ? currentFont
+            : (fontOptions[0]?.value || '');
     },
 
     selectQuickFontFamily(font) {
         if (!this.selectedElement || this.selectedElement.type !== 'text') return;
 
         const textFont = document.getElementById('prop-text-font');
+        const quickFontSelect = document.getElementById('quick-font-select');
         if (textFont && font) {
             textFont.value = font;
+        }
+        if (quickFontSelect && font) {
+            quickFontSelect.value = font;
         }
         if (font) {
             this.updateTextFont(font);
@@ -238,6 +239,7 @@ Object.assign(DesignEditor.prototype, {
         if (!this.selectedElement || this.selectedElement.type !== 'text') return;
 
         this.renderQuickFontPopover();
+        popover.classList.remove('hidden');
         popover.classList.add('is-open');
         popover.setAttribute('aria-hidden', 'false');
         btn.setAttribute('aria-expanded', 'true');
@@ -611,6 +613,7 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(keepAspectBtn, false);
             setHiddenState(fontAnchor, false);
             setHiddenState(fontBtn, false);
+            setHiddenState(fontPopover, !isText);
             setHiddenState(opacityAnchor, false);
 
             setDisabledState(document.getElementById('quick-delete-btn'), !hasSelection);
@@ -648,6 +651,7 @@ Object.assign(DesignEditor.prototype, {
                 this.renderQuickFontPopover();
             } else {
                 this.closeQuickFontPopover();
+                setHiddenState(fontPopover, true);
             }
 
             if (!hasSelection && keepAspectBtn) {
@@ -675,6 +679,7 @@ Object.assign(DesignEditor.prototype, {
         if (fontBtn) {
             setHiddenState(fontAnchor, !isText);
             setHiddenState(fontBtn, !isText);
+            setHiddenState(fontPopover, !isText);
             setDisabledState(fontBtn, !isText);
             fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
             fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
@@ -703,6 +708,7 @@ Object.assign(DesignEditor.prototype, {
             this.renderQuickFontPopover();
         } else {
             this.closeQuickFontPopover();
+            setHiddenState(fontPopover, true);
         }
 
         this.syncKeepAspectControls();
