@@ -81,8 +81,43 @@ function refreshCartDomReferences() {
 }
 
 function buildCartSidebarMarkup() {
-    if (!cartSidebar || cartSidebar.dataset.cartEnhanced === '1') {
+    if (cartSidebar && cartSidebar.dataset.cartEnhanced === '1') {
         return;
+    }
+
+    if (!cartSidebar) {
+        const sidebar = document.createElement('div');
+        sidebar.id = 'cart-sidebar';
+        sidebar.className = 'fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
+        sidebar.setAttribute('aria-hidden', 'true');
+        sidebar.innerHTML = `
+            <div class="flex flex-col h-full">
+                <div class="flex items-center justify-between p-6 border-b">
+                    <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                    <button id="close-cart" class="text-gray-500 hover:text-gray-700">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+                <div id="cart-items" class="flex-1 overflow-y-auto p-6">
+                    <div class="text-center text-gray-500 py-12">
+                        <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
+                        <p>O seu carrinho está vazio</p>
+                    </div>
+                </div>
+                <div class="border-t p-6">
+                    <div class="flex justify-between mb-4 text-lg font-bold">
+                        <span>Total:</span>
+                        <span id="cart-total">0.00€</span>
+                    </div>
+                    <a href="/checkout.html"
+                        class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
+                        Finalizar Encomenda
+                    </a>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(sidebar);
+        cartSidebar = sidebar;
     }
 
     cartSidebar.dataset.cartEnhanced = '1';
@@ -133,9 +168,16 @@ function buildCartSidebarMarkup() {
     `;
 
     const overlay = document.getElementById('cart-overlay');
-    if (overlay) {
+    if (!overlay) {
+        const nextOverlay = document.createElement('div');
+        nextOverlay.id = 'cart-overlay';
+        nextOverlay.className = 'fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-sm';
+        document.body.appendChild(nextOverlay);
+        cartOverlay = nextOverlay;
+    } else {
         overlay.className = 'fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-sm';
         overlay.style.zIndex = '50';
+        cartOverlay = overlay;
     }
 }
 
@@ -711,6 +753,8 @@ function updateQuantity(index, newQuantity) {
 }
 
 function openCart() {
+    refreshCartDomReferences();
+    buildCartSidebarMarkup();
     refreshCartDomReferences();
     if (cartSidebar && cartOverlay) {
         cartSidebar.classList.add('cart-open');
