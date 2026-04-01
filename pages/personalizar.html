@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260401c">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260401d">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260401f">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260401e">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401h">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260401f">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -90,22 +90,28 @@
                         <div class="elements-group-head">
                             <p class="elements-group-title">Formas</p>
                         </div>
-                        <div class="shape-grid">
-                            <button class="shape-btn shape-tile" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
-                                <span class="shape-tile__icon"><i data-lucide="square" class="w-5 h-5"></i></span>
+                        <div class="elements-grid elements-grid--compact">
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
+                                <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="square" class="w-5 h-5"></i></span>
+                                <span class="tool-tile__label">Retângulo</span>
                             </button>
-                            <button class="shape-btn shape-tile" data-shape="circle" title="Circulo" aria-label="Circulo">
-                                <span class="shape-tile__icon"><i data-lucide="circle" class="w-5 h-5"></i></span>
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="circle" title="Circulo" aria-label="Circulo">
+                                <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="circle" class="w-5 h-5"></i></span>
+                                <span class="tool-tile__label">Círculo</span>
                             </button>
-                            <button class="shape-btn shape-tile" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
-                                <span class="shape-tile__icon"><i data-lucide="triangle" class="w-5 h-5"></i></span>
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
+                                <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="triangle" class="w-5 h-5"></i></span>
+                                <span class="tool-tile__label">Triângulo</span>
                             </button>
-                            <button class="shape-btn shape-tile" data-shape="diamond" title="Diamante" aria-label="Diamante">
-                                <span class="shape-tile__icon"><i data-lucide="diamond" class="w-5 h-5"></i></span>
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="diamond" title="Diamante" aria-label="Diamante">
+                                <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="diamond" class="w-5 h-5"></i></span>
+                                <span class="tool-tile__label">Diamante</span>
                             </button>
                         </div>
                     </div>
+                </div>
 
+                <div id="layers-panel" class="sidebar-section">
                     <div class="elements-group">
                         <div class="elements-group-head">
                             <p class="elements-group-title">Camadas</p>
@@ -417,7 +423,7 @@
     <script src="/assets/js/core/design-svg.js" defer></script>
 
     <!-- Carregar módulos do personalizador em paralelo com defer -->
-    <script src="/assets/js/pages/personalizador/core/core.js?v=20260401b" defer></script>
+    <script src="/assets/js/pages/personalizador/core/core.js?v=20260401c" defer></script>
     <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260401a" defer></script>

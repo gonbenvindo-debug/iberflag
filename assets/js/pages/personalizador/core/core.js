@@ -139,7 +139,10 @@ class DesignEditor {
             sidebarLeft.classList.remove('panel-open');
             sidebarRight.classList.remove('panel-open');
             backdrop.classList.remove('active');
+            document.body.classList.remove('has-layers-panel-open');
             document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
+            document.getElementById('elements-panel')?.classList.remove('hidden');
+            document.getElementById('layers-panel')?.classList.remove('hidden');
         };
 
         backdrop.addEventListener('click', closeAll);
@@ -150,9 +153,14 @@ class DesignEditor {
             closeAll();
             if (!isAlreadyOpen) {
                 const elementsPanel = document.getElementById('elements-panel');
+                const layersPanel = document.getElementById('layers-panel');
                 if (elementsPanel) {
                     elementsPanel.classList.toggle('hidden', panelId !== 'elements-panel');
                 }
+                if (layersPanel) {
+                    layersPanel.classList.toggle('hidden', panelId !== 'layers-panel');
+                }
+                document.body.classList.toggle('has-layers-panel-open', panelId === 'layers-panel');
                 sidebarLeft.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
@@ -165,6 +173,7 @@ class DesignEditor {
             closeAll();
             if (!isAlreadyOpen) {
                 document.getElementById('properties-panel')?.classList.remove('hidden');
+                document.body.classList.remove('has-layers-panel-open');
                 sidebarRight.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
@@ -173,18 +182,7 @@ class DesignEditor {
 
         tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
         tabProperties?.addEventListener('click', () => openRight('mobile-tab-properties'));
-        tabLayers?.addEventListener('click', () => {
-            const isAlreadyOpen = sidebarLeft.classList.contains('panel-open') &&
-                tabLayers?.classList.contains('active');
-            closeAll();
-            if (!isAlreadyOpen) {
-                document.getElementById('elements-panel')?.classList.remove('hidden');
-                sidebarLeft.classList.add('panel-open');
-                backdrop.classList.add('active');
-                tabLayers?.classList.add('active');
-                document.getElementById('layers-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-            }
-        });
+        tabLayers?.addEventListener('click', () => openLeft('layers-panel', 'mobile-tab-layers'));
 
         // Store flag for preventing sidebar closure during element operations
         this.preventSidebarClose = () => {
