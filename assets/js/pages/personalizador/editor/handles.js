@@ -354,7 +354,9 @@ Object.assign(DesignEditor.prototype, {
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
+        const handlePositions = elementData.type === 'text'
+            ? { nw: tl, ne: tr, sw: bl, se: br }
+            : { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
 
         Object.entries(handlePositions).forEach(([pos, point]) => {
             const handle = document.createElement('div');
@@ -419,7 +421,9 @@ Object.assign(DesignEditor.prototype, {
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
+        const handlePositions = elementData.type === 'text'
+            ? { nw: tl, ne: tr, sw: bl, se: br }
+            : { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
         Object.entries(handlePositions).forEach(([pos, point]) => {
             const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
             if (!handle) return;
@@ -427,6 +431,13 @@ Object.assign(DesignEditor.prototype, {
             handle.style.top  = `${point.y - 6}px`;
             handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
         });
+
+        if (elementData.type === 'text') {
+            ['n', 's', 'e', 'w'].forEach((pos) => {
+                const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
+                if (handle) handle.remove();
+            });
+        }
 
         const rotateHandle = handlesContainer.querySelector('.rotate-handle');
         if (rotateHandle) {
