@@ -858,113 +858,125 @@ Object.assign(DesignEditor.prototype, {
 
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         const rotation = this.selectedElement.rotation || 0;
-        const svgDelta = this.clientDeltaToSvgDelta(
-            e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
-            e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
-        );
         const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
         const canvasBounds = this.getEditableBounds();
-        let dx = svgDelta.dx;
-        let dy = svgDelta.dy;
+        const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
+        const centerPoint = {
+            x: bbox.x + (bbox.width / 2),
+            y: bbox.y + (bbox.height / 2)
+        };
+        let localPoint = pointerPoint;
 
         if (rotation !== 0) {
             const rotRad = -rotation * Math.PI / 180;
-            const rotatedDx = dx * Math.cos(rotRad) - dy * Math.sin(rotRad);
-            const rotatedDy = dx * Math.sin(rotRad) + dy * Math.cos(rotRad);
-            dx = rotatedDx;
-            dy = rotatedDy;
-        }
-        
-        let newWidth = bbox.width;
-        let newHeight = bbox.height;
-        let newX = bbox.x;
-        let newY = bbox.y;
-        
-        switch(this.resizeHandle) {
-            case 'se':
-                newWidth = Math.max(20, bbox.width + dx);
-                newHeight = Math.max(20, bbox.height + dy);
-                newX = bbox.x;
-                newY = bbox.y;
-                break;
-            case 'sw':
-                newWidth = Math.max(20, bbox.width - dx);
-                newHeight = Math.max(20, bbox.height + dy);
-                newX = bbox.x + (bbox.width - newWidth);
-                newY = bbox.y;
-                break;
-            case 'ne':
-                newWidth = Math.max(20, bbox.width + dx);
-                newHeight = Math.max(20, bbox.height - dy);
-                newX = bbox.x;
-                newY = bbox.y + (bbox.height - newHeight);
-                break;
-            case 'nw':
-                newWidth = Math.max(20, bbox.width - dx);
-                newHeight = Math.max(20, bbox.height - dy);
-                newX = bbox.x + (bbox.width - newWidth);
-                newY = bbox.y + (bbox.height - newHeight);
-                break;
-            case 'e':
-                newWidth = Math.max(20, bbox.width + dx);
-                newHeight = bbox.height;
-                newX = bbox.x;
-                newY = bbox.y;
-                break;
-            case 'w':
-                newWidth = Math.max(20, bbox.width - dx);
-                newHeight = bbox.height;
-                newX = bbox.x + (bbox.width - newWidth);
-                newY = bbox.y;
-                break;
-            case 's':
-                newHeight = Math.max(20, bbox.height + dy);
-                newWidth = bbox.width;
-                newX = bbox.x;
-                newY = bbox.y;
-                break;
-            case 'n':
-                newHeight = Math.max(20, bbox.height - dy);
-                newWidth = bbox.width;
-                newX = bbox.x;
-                newY = bbox.y + (bbox.height - newHeight);
-                break;
+            const dx = pointerPoint.x - centerPoint.x;
+            const dy = pointerPoint.y - centerPoint.y;
+            localPoint = {
+                x: centerPoint.x + (dx * Math.cos(rotRad) - dy * Math.sin(rotRad)),
+                y: centerPoint.y + (dx * Math.sin(rotRad) + dy * Math.cos(rotRad))
+            };
         }
 
+        const anchorPoint = this.getResizeAnchorPoint(bbox, this.resizeHandle);
+        const minSize = 20;
+
+        const buildBoxFromPoint = () => {
+            switch (this.resizeHandle) {
+                case 'se':
+                    return {
+                        x: anchorPoint.x,
+                        y: anchorPoint.y,
+                        width: Math.max(minSize, localPoint.x - anchorPoint.x),
+                        height: Math.max(minSize, localPoint.y - anchorPoint.y)
+                    };
+                case 'sw':
+                    return {
+                        x: Math.min(localPoint.x, anchorPoint.x - minSize),
+                        y: anchorPoint.y,
+                        width: Math.max(minSize, anchorPoint.x - localPoint.x),
+                        height: Math.max(minSize, localPoint.y - anchorPoint.y)
+                    };
+                case 'ne':
+                    return {
+                        x: anchorPoint.x,
+                        y: Math.min(localPoint.y, anchorPoint.y - minSize),
+                        width: Math.max(minSize, localPoint.x - anchorPoint.x),
+                        height: Math.max(minSize, anchorPoint.y - localPoint.y)
+                    };
+                case 'nw':
+                    return {
+                        x: Math.min(localPoint.x, anchorPoint.x - minSize),
+                        y: Math.min(localPoint.y, anchorPoint.y - minSize),
+                        width: Math.max(minSize, anchorPoint.x - localPoint.x),
+                        height: Math.max(minSize, anchorPoint.y - localPoint.y)
+                    };
+                case 'e':
+                    return {
+                        x: anchorPoint.x,
+                        y: bbox.y,
+                        width: Math.max(minSize, localPoint.x - anchorPoint.x),
+                        height: bbox.height
+                    };
+                case 'w':
+                    return {
+                        x: Math.min(localPoint.x, anchorPoint.x - minSize),
+                        y: bbox.y,
+                        width: Math.max(minSize, anchorPoint.x - localPoint.x),
+                        height: bbox.height
+                    };
+                case 's':
+                    return {
+                        x: bbox.x,
+                        y: anchorPoint.y,
+                        width: bbox.width,
+                        height: Math.max(minSize, localPoint.y - anchorPoint.y)
+                    };
+                case 'n':
+                    return {
+                        x: bbox.x,
+                        y: Math.min(localPoint.y, anchorPoint.y - minSize),
+                        width: bbox.width,
+                        height: Math.max(minSize, anchorPoint.y - localPoint.y)
+                    };
+                default:
+                    return {
+                        x: bbox.x,
+                        y: bbox.y,
+                        width: bbox.width,
+                        height: bbox.height
+                    };
+            }
+        };
+        
+        let { x: newX, y: newY, width: newWidth, height: newHeight } = buildBoxFromPoint();
+
         const shouldKeepRatio = (this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text';
-        if (shouldKeepRatio && bbox.height > 0) {
+        if (shouldKeepRatio && rotation === 0 && bbox.height > 0) {
             const ratio = bbox.width / bbox.height;
 
             if (['e', 'w'].includes(this.resizeHandle)) {
-                newHeight = Math.max(20, newWidth / ratio);
+                newHeight = Math.max(minSize, newWidth / ratio);
                 newY = bbox.y + ((bbox.height - newHeight) / 2);
                 if (this.resizeHandle === 'w') {
-                    newX = bbox.x + (bbox.width - newWidth);
+                    newX = anchorPoint.x - newWidth;
                 }
             } else if (['n', 's'].includes(this.resizeHandle)) {
-                newWidth = Math.max(20, newHeight * ratio);
+                newWidth = Math.max(minSize, newHeight * ratio);
                 newX = bbox.x + ((bbox.width - newWidth) / 2);
                 if (this.resizeHandle === 'n') {
-                    newY = bbox.y + (bbox.height - newHeight);
+                    newY = anchorPoint.y - newHeight;
                 }
             } else {
-                // Corner handles: project mouse delta into one continuous scalar
-                // to avoid frame-by-frame axis switching flicker.
-                const signX = this.resizeHandle.includes('w') ? -1 : 1;
-                const signY = this.resizeHandle.includes('n') ? -1 : 1;
-                const projectedHeightDelta = ((signY * dy) + ((signX * dx) / ratio)) / 2;
-                const targetHeight = Math.max(20, bbox.height + projectedHeightDelta);
-                const targetWidth = Math.max(20, targetHeight * ratio);
-
-                newWidth = targetWidth;
-                newHeight = targetHeight;
-
-                newX = this.resizeHandle.includes('w')
-                    ? bbox.x + (bbox.width - newWidth)
-                    : bbox.x;
-                newY = this.resizeHandle.includes('n')
-                    ? bbox.y + (bbox.height - newHeight)
-                    : bbox.y;
+                const projectedWidth = Math.max(minSize, newWidth);
+                const projectedHeight = Math.max(minSize, projectedWidth / ratio);
+                newWidth = projectedWidth;
+                newHeight = projectedHeight;
+                if (this.resizeHandle.includes('w')) {
+                    newX = anchorPoint.x - newWidth;
+                }
+                if (this.resizeHandle.includes('n')) {
+                    newY = anchorPoint.y - newHeight;
+                }
             }
         }
         
