@@ -623,6 +623,10 @@
                 display: none !important;
             }
 
+            #properties-panel .properties-toolbar-row {
+                display: none !important;
+            }
+
             #properties-panel #no-selection,
             #properties-panel #text-properties,
             #properties-panel #image-properties,

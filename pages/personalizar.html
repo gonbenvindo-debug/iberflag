@@ -13,8 +13,8 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260401c">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260401e">
-<link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260401h">
-<link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401p">
+<link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260401i">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401q">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260401f">
 </head>
 
@@ -228,44 +228,44 @@
                 <div id="properties-panel" class="sidebar-section overflow-y-auto">
                     <p class="section-title">Propriedades</p>
 
-                    <div class="mb-4 flex items-center gap-3">
-                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções">
+                    <div class="properties-toolbar-row">
+                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções"
+                            aria-label="Manter proporções">
                             <span class="slide-button-toggle"></span>
                         </button>
-                        <label class="text-sm text-gray-700 select-none cursor-pointer" for="keep-aspect-ratio">
-                            Manter proporcoes
-                        </label>
-                    </div>
 
-                    <div class="mb-4 editor-zoom-controls">
-                        <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
-                            <i data-lucide="zoom-out" class="w-4 h-4"></i>
-                        </button>
-                        <span id="zoom-level" class="text-sm font-semibold"
-                            style="min-width:3rem;text-align:center;">100%</span>
-                        <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded" title="Aumentar zoom">
-                            <i data-lucide="zoom-in" class="w-4 h-4"></i>
-                        </button>
-                    </div>
+                        <div class="editor-zoom-controls" aria-label="Zoom do editor">
+                            <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
+                                <i data-lucide="zoom-out" class="w-4 h-4"></i>
+                            </button>
+                            <span id="zoom-level" class="text-sm font-semibold"
+                                style="min-width:3rem;text-align:center;">100%</span>
+                            <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded" title="Aumentar zoom">
+                                <i data-lucide="zoom-in" class="w-4 h-4"></i>
+                            </button>
+                        </div>
 
-                    <p class="section-title">Acoes Rapidas</p>
-                    <div class="grid grid-cols-2 gap-2">
-                        <button id="duplicate-element-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="copy" class="w-4 h-4"></i>
-                            Duplicar
-                        </button>
-                        <button id="delete-element-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                            Apagar
-                        </button>
-                        <button id="center-h-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
-                            Centrar H
-                        </button>
-                        <button id="center-v-btn" class="action-btn flex items-center justify-center gap-2">
-                            <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
-                            Centrar V
-                        </button>
+                        <div class="properties-quick-actions" aria-label="Ações rápidas">
+                            <button id="duplicate-element-btn" class="action-btn" title="Duplicar"
+                                aria-label="Duplicar">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Duplicar</span>
+                            </button>
+                            <button id="delete-element-btn" class="action-btn" title="Apagar" aria-label="Apagar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Apagar</span>
+                            </button>
+                            <button id="center-h-btn" class="action-btn" title="Centrar horizontalmente"
+                                aria-label="Centrar horizontalmente">
+                                <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Centrar H</span>
+                            </button>
+                            <button id="center-v-btn" class="action-btn" title="Centrar verticalmente"
+                                aria-label="Centrar verticalmente">
+                                <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Centrar V</span>
+                            </button>
+                        </div>
                     </div>
 
                     <div id="no-selection" class="text-center text-gray-400 py-12">
