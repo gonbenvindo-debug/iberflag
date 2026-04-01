@@ -993,22 +993,20 @@ Object.assign(DesignEditor.prototype, {
             height: newHeight
         };
 
-        const constrainedRect = rotation === 0
-            ? (shouldKeepRatio
-                ? this.constrainResizeRectWithRatio(
-                    startBox,
-                    proposedBox,
-                    this.resizeHandle,
-                    canvasBounds,
-                    bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
-                )
-                : this.constrainResizeRect(
-                    startBox,
-                    proposedBox,
-                    this.resizeHandle,
-                    canvasBounds
-                ))
-            : proposedBox;
+        const constrainedRect = shouldKeepRatio
+            ? this.constrainResizeRectWithRatio(
+                startBox,
+                proposedBox,
+                this.resizeHandle,
+                canvasBounds,
+                bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
+            )
+            : this.constrainResizeRect(
+                startBox,
+                proposedBox,
+                this.resizeHandle,
+                canvasBounds
+            );
 
         newX = constrainedRect.x;
         newY = constrainedRect.y;
@@ -1074,37 +1072,22 @@ Object.assign(DesignEditor.prototype, {
             const nextFontSize = Math.max(8, Math.min(240, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', String(nextFontSize));
             this.selectedElement.size = nextFontSize;
-
-            const textAnchor = String(this.selectedElement.element.getAttribute('text-anchor') || this.dragStart.textAnchor || 'middle').toLowerCase();
             const measuredBox = this.selectedElement.element.getBBox();
-            const anchorX = this.resizeHandle.includes('w')
-                ? (bbox.x + bbox.width)
-                : bbox.x;
-            const anchorY = this.resizeHandle.includes('n')
-                ? (bbox.y + bbox.height)
-                : bbox.y;
+            const fixedCorner = (() => {
+                switch (this.resizeHandle) {
+                    case 'se': return { x: bbox.x, y: bbox.y, mx: measuredBox.x, my: measuredBox.y };
+                    case 'sw': return { x: bbox.x + bbox.width, y: bbox.y, mx: measuredBox.x + measuredBox.width, my: measuredBox.y };
+                    case 'ne': return { x: bbox.x, y: bbox.y + bbox.height, mx: measuredBox.x, my: measuredBox.y + measuredBox.height };
+                    case 'nw': return { x: bbox.x + bbox.width, y: bbox.y + bbox.height, mx: measuredBox.x + measuredBox.width, my: measuredBox.y + measuredBox.height };
+                    default: return { x: bbox.x, y: bbox.y, mx: measuredBox.x, my: measuredBox.y };
+                }
+            })();
 
-            let nextX;
-            if (textAnchor === 'start') {
-                nextX = this.resizeHandle.includes('w')
-                    ? anchorX - measuredBox.width
-                    : anchorX;
-            } else if (textAnchor === 'end') {
-                nextX = this.resizeHandle.includes('w')
-                    ? anchorX
-                    : anchorX + measuredBox.width;
-            } else {
-                nextX = this.resizeHandle.includes('w')
-                    ? anchorX - (measuredBox.width / 2)
-                    : anchorX + (measuredBox.width / 2);
-            }
-
-            const nextY = this.resizeHandle.includes('n')
-                ? (anchorY - measuredBox.height)
-                : anchorY;
-
-            this.selectedElement.element.setAttribute('x', String(nextX));
-            this.selectedElement.element.setAttribute('y', String(nextY + (measuredBox.height / 2)));
+            this.offsetElementGeometry(
+                this.selectedElement,
+                fixedCorner.x - fixedCorner.mx,
+                fixedCorner.y - fixedCorner.my
+            );
         }
 
         // Never allow rotated elements to grow outside the design canvas.
