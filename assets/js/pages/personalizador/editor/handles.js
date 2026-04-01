@@ -1052,25 +1052,47 @@ Object.assign(DesignEditor.prototype, {
                 this.selectedElement.element.setAttribute('points', resized.join(' '));
             }
         } else if (this.selectedElement.type === 'text') {
-            // Calculate scale based on stored dimensions
-            const baseTextWidth = this.dragStart.textWidth || this.selectedElement.width;
-            const baseTextHeight = this.dragStart.textHeight || this.selectedElement.height;
-            const scaleX = newWidth / baseTextWidth;
-            const scaleY = newHeight / baseTextHeight;
-            const scale = Math.min(scaleX, scaleY); // Maintain aspect ratio
-            
-            const oldFontSize = this.dragStart.fontSize || this.selectedElement.size;
-            const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
-            this.selectedElement.element.setAttribute('font-size', newFontSize);
-            this.selectedElement.size = newFontSize;
-            const measuredBox = this.selectedElement.element.getBBox();
-            const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || '0');
-            const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || '0');
-            const deltaX = newX - measuredBox.x;
-            const deltaY = newY - measuredBox.y;
+            const baseTextWidth = this.dragStart.textWidth || this.selectedElement.width || bbox.width;
+            const baseTextHeight = this.dragStart.textHeight || this.selectedElement.height || bbox.height;
+            const scaleX = baseTextWidth > 0 ? (newWidth / baseTextWidth) : 1;
+            const scaleY = baseTextHeight > 0 ? (newHeight / baseTextHeight) : 1;
+            const scale = Math.max(0.15, Math.min(scaleX, scaleY));
 
-            this.selectedElement.element.setAttribute('x', currentX + deltaX);
-            this.selectedElement.element.setAttribute('y', currentY + deltaY);
+            const oldFontSize = this.dragStart.fontSize || this.selectedElement.size || parseFloat(this.selectedElement.element.getAttribute('font-size') || '24');
+            const nextFontSize = Math.max(8, Math.min(240, oldFontSize * scale));
+            this.selectedElement.element.setAttribute('font-size', String(nextFontSize));
+            this.selectedElement.size = nextFontSize;
+
+            const textAnchor = String(this.selectedElement.element.getAttribute('text-anchor') || this.dragStart.textAnchor || 'middle').toLowerCase();
+            const measuredBox = this.selectedElement.element.getBBox();
+            const anchorX = this.resizeHandle.includes('w')
+                ? (bbox.x + bbox.width)
+                : bbox.x;
+            const anchorY = this.resizeHandle.includes('n')
+                ? (bbox.y + bbox.height)
+                : bbox.y;
+
+            let nextX;
+            if (textAnchor === 'start') {
+                nextX = this.resizeHandle.includes('w')
+                    ? anchorX - measuredBox.width
+                    : anchorX;
+            } else if (textAnchor === 'end') {
+                nextX = this.resizeHandle.includes('w')
+                    ? anchorX
+                    : anchorX + measuredBox.width;
+            } else {
+                nextX = this.resizeHandle.includes('w')
+                    ? anchorX - (measuredBox.width / 2)
+                    : anchorX + (measuredBox.width / 2);
+            }
+
+            const nextY = this.resizeHandle.includes('n')
+                ? (anchorY - measuredBox.height)
+                : anchorY;
+
+            this.selectedElement.element.setAttribute('x', String(nextX));
+            this.selectedElement.element.setAttribute('y', String(nextY + (measuredBox.height / 2)));
         }
 
         // Never allow rotated elements to grow outside the design canvas.
