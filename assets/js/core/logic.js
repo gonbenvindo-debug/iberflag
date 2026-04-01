@@ -64,6 +64,7 @@ var cartSidebarCount = document.getElementById('cart-sidebar-count');
 var mobileMenuBtn = document.getElementById('mobile-menu-btn');
 var mobileMenu = document.getElementById('mobile-menu');
 var cartUiListenersReady = false;
+var cartPreviewHeightSyncRaf = null;
 
 function refreshCartDomReferences() {
     productsContainer = document.getElementById('products-container');
@@ -266,6 +267,40 @@ function renderCartItemsList() {
     `).join('');
 }
 
+function syncCartItemPreviewHeights() {
+    if (!cartItemsContainer) return;
+
+    const cards = cartItemsContainer.querySelectorAll('[data-cart-item-index]');
+    cards.forEach((card) => {
+        const details = card.querySelector('[data-cart-details]');
+        const previewLink = card.querySelector('[data-cart-preview-link]');
+        if (!(details instanceof Element) || !(previewLink instanceof HTMLElement)) {
+            return;
+        }
+
+        const detailsHeight = Math.ceil(details.getBoundingClientRect().height);
+        if (!detailsHeight || detailsHeight < 1) {
+            return;
+        }
+
+        previewLink.style.height = `${detailsHeight}px`;
+        previewLink.style.minHeight = `${detailsHeight}px`;
+    });
+}
+
+function scheduleCartItemPreviewHeightSync() {
+    if (cartPreviewHeightSyncRaf) {
+        cancelAnimationFrame(cartPreviewHeightSyncRaf);
+    }
+
+    cartPreviewHeightSyncRaf = requestAnimationFrame(() => {
+        cartPreviewHeightSyncRaf = requestAnimationFrame(() => {
+            cartPreviewHeightSyncRaf = null;
+            syncCartItemPreviewHeights();
+        });
+    });
+}
+
 function handleCartItemsClick(event) {
     const target = event.target instanceof Element ? event.target.closest('[data-cart-action]') : null;
     if (!target || !cartItemsContainer?.contains(target)) {
@@ -305,6 +340,8 @@ function initPageUiInteractions() {
         if (cartBtnMobile) {
             cartBtnMobile.addEventListener('click', openCart);
         }
+
+        window.addEventListener('resize', scheduleCartItemPreviewHeightSync);
 
         if (closeCartBtn) {
             closeCartBtn.addEventListener('click', closeCart);
@@ -650,6 +687,7 @@ function renderProducts(products) {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+    scheduleCartItemPreviewHeightSync();
 }
 
 // ===== FETCH PRODUCTS FROM SUPABASE =====
@@ -777,6 +815,7 @@ function openCart() {
         document.body.style.overflow = 'hidden';
         if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
         if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'true');
+        scheduleCartItemPreviewHeightSync();
     }
 }
 
