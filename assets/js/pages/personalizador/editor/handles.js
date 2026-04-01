@@ -760,6 +760,7 @@ Object.assign(DesignEditor.prototype, {
             fontSize: this.selectedElement.size,
             textX: parseFloat(this.selectedElement.element.getAttribute('x') || '0'),
             textY: parseFloat(this.selectedElement.element.getAttribute('y') || '0'),
+            textAnchor: String(this.selectedElement.element.getAttribute('text-anchor') || 'middle').toLowerCase(),
             anchorCanvasPoint: this.getElementCanvasPoint(
                 this.selectedElement.element,
                 anchorLocalPoint.x,
@@ -1062,18 +1063,16 @@ Object.assign(DesignEditor.prototype, {
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
+            const textAnchor = this.dragStart.textAnchor || String(this.selectedElement.element.getAttribute('text-anchor') || 'middle').toLowerCase();
+            const x = textAnchor === 'start'
+                ? newX
+                : textAnchor === 'end'
+                    ? (newX + newWidth)
+                    : (newX + (newWidth / 2));
+            const y = newY + (newHeight / 2);
 
-            const measuredBox = this.selectedElement.element.getBBox();
-            const anchorPoint = this.getResizeAnchorPoint(bbox, this.resizeHandle);
-            const centerX = this.resizeHandle.includes('w')
-                ? anchorPoint.x - (measuredBox.width / 2)
-                : anchorPoint.x + (measuredBox.width / 2);
-            const centerY = this.resizeHandle.includes('n')
-                ? anchorPoint.y - (measuredBox.height / 2)
-                : anchorPoint.y + (measuredBox.height / 2);
-
-            this.selectedElement.element.setAttribute('x', centerX);
-            this.selectedElement.element.setAttribute('y', centerY);
+            this.selectedElement.element.setAttribute('x', x);
+            this.selectedElement.element.setAttribute('y', y);
         }
 
         // Never allow rotated elements to grow outside the design canvas.
