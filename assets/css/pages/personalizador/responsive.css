@@ -317,7 +317,13 @@
             }
 
             .tool-tile {
+                justify-content: flex-start;
+                gap: 0.7rem;
                 padding: 0.76rem 0.8rem;
+            }
+
+            .tool-tile__label {
+                display: block;
             }
 
             .shape-tile {

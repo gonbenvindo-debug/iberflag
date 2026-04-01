@@ -111,7 +111,7 @@
 
         .editor-body-layout {
             display: grid;
-            grid-template-columns: clamp(17rem, 18vw, 19rem) minmax(0, 1fr);
+            grid-template-columns: clamp(14rem, 15vw, 16rem) minmax(0, 1fr);
             grid-template-rows: auto minmax(0, 1fr);
             gap: 0;
             height: calc(100vh - 4rem - 2.25rem);
@@ -258,4 +258,28 @@
             border-top: 1px solid var(--panel-border);
             position: relative;
             z-index: 2;
+        }
+
+        .tool-tile {
+            justify-content: center;
+            gap: 0;
+            padding: 0.75rem 0.7rem;
+            min-height: 3.4rem;
+        }
+
+        .tool-tile__label {
+            display: none;
+        }
+
+        .tool-tile__icon {
+            width: 2.4rem;
+            height: 2.4rem;
+        }
+
+        .elements-grid--compact {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+
+        .shape-grid {
+            grid-template-columns: repeat(2, minmax(0, 1fr));
         }
