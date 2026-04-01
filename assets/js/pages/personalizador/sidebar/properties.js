@@ -409,8 +409,9 @@ Object.assign(DesignEditor.prototype, {
         ].filter(Boolean);
 
         buttons.forEach((button) => {
-            button.classList.toggle('active', active);
-            button.setAttribute('aria-pressed', String(active));
+            const shouldShowActive = active && !button.disabled;
+            button.classList.toggle('active', shouldShowActive);
+            button.setAttribute('aria-pressed', String(shouldShowActive));
         });
     },
 
@@ -455,6 +456,7 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(fontBtn, false);
             setHiddenState(opacityAnchor, false);
 
+            setDisabledState(document.getElementById('quick-delete-btn'), !hasSelection);
             setDisabledState(duplicateBtn, !hasSelection);
             setDisabledState(centerHBtn, !hasSelection);
             setDisabledState(centerVBtn, !hasSelection);
@@ -483,6 +485,11 @@ Object.assign(DesignEditor.prototype, {
                 this.closeQuickOpacityPopover();
                 if (opacityRange) opacityRange.value = '100';
                 if (opacityValue) opacityValue.textContent = '100%';
+            }
+
+            if (!hasSelection && keepAspectBtn) {
+                keepAspectBtn.classList.remove('active');
+                keepAspectBtn.setAttribute('aria-pressed', 'false');
             }
 
             this.syncKeepAspectControls();
