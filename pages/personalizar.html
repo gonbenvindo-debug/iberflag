@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260401c">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260401e">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260401g">
-<link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401l">
+<link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401m">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260401f">
 </head>
 
@@ -164,10 +164,17 @@
                         title="Fonte" aria-label="Fonte">
                         <i data-lucide="type" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-opacity-btn" type="button" class="context-action context-action--opacity hidden"
-                        title="Opacidade" aria-label="Opacidade">
-                        <i data-lucide="blend" class="w-4 h-4"></i>
-                    </button>
+                    <div id="quick-opacity-anchor" class="context-popover-anchor hidden">
+                        <button id="quick-opacity-btn" type="button" class="context-action context-action--opacity"
+                            title="Opacidade" aria-label="Opacidade" aria-expanded="false">
+                            <i data-lucide="blend" class="w-4 h-4"></i>
+                        </button>
+                        <div id="quick-opacity-popover" class="context-popover context-popover--opacity" aria-hidden="true">
+                            <input type="range" id="quick-opacity-range" min="0" max="100" value="100"
+                                class="context-range-vertical" aria-label="Opacidade">
+                            <span id="quick-opacity-value" class="context-popover-value">100%</span>
+                        </div>
+                    </div>
                 </div>
                 <div class="editor-zoom-controls">
                     <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
@@ -461,10 +468,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260401a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260401c" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260401d" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401b" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260401e" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260401f" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

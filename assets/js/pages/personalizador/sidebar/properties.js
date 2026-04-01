@@ -108,19 +108,75 @@ Object.assign(DesignEditor.prototype, {
     cycleQuickImageOpacity(direction = 1) {
         if (!this.selectedElement || this.selectedElement.type !== 'image') return;
 
-        const opacitySelect = document.getElementById('prop-image-opacity');
-        const opacityValueLabel = document.getElementById('prop-image-opacity-val');
         const presets = [100, 85, 70, 55, 40, 25];
         const currentValue = Math.round((this.selectedElement.opacity ?? 1) * 100);
         const currentIndex = presets.indexOf(currentValue);
         const nextIndex = (currentIndex < 0 ? 0 : currentIndex + direction + presets.length) % presets.length;
         const nextValue = presets[nextIndex];
 
-        if (opacitySelect) opacitySelect.value = String(nextValue);
-        if (opacityValueLabel) opacityValueLabel.textContent = String(nextValue);
+        this.applyQuickOpacityValue(nextValue);
+    },
 
-        this.updateImageOpacity(nextValue / 100);
-        this.updateContextualToolbar(this.selectedElement);
+    applyQuickOpacityValue(value, shouldApply = true) {
+        const nextValue = Math.max(0, Math.min(100, Number(value) || 0));
+        const opacityRange = document.getElementById('quick-opacity-range');
+        const opacityValue = document.getElementById('quick-opacity-value');
+        const opacityBtn = document.getElementById('quick-opacity-btn');
+        const imageOpacity = document.getElementById('prop-image-opacity');
+        const imageOpacityValue = document.getElementById('prop-image-opacity-val');
+
+        if (opacityRange) opacityRange.value = String(nextValue);
+        if (opacityValue) opacityValue.textContent = `${nextValue}%`;
+        if (imageOpacity) imageOpacity.value = String(nextValue);
+        if (imageOpacityValue) imageOpacityValue.textContent = String(nextValue);
+        if (opacityBtn) {
+            opacityBtn.title = `Opacidade: ${nextValue}%`;
+            opacityBtn.setAttribute('aria-label', `Opacidade: ${nextValue}%`);
+            opacityBtn.classList.toggle('active', nextValue < 100);
+        }
+
+        if (shouldApply) {
+            this.updateImageOpacity(nextValue / 100);
+        }
+    },
+
+    openQuickOpacityPopover() {
+        const anchor = document.getElementById('quick-opacity-anchor');
+        const btn = document.getElementById('quick-opacity-btn');
+        const popover = document.getElementById('quick-opacity-popover');
+        if (!anchor || !btn || !popover || anchor.classList.contains('hidden')) return;
+
+        if (this.selectedElement && this.selectedElement.type === 'image') {
+            this.applyQuickOpacityValue(Math.round((this.selectedElement.opacity ?? 1) * 100), false);
+        }
+
+        popover.classList.add('is-open');
+        popover.setAttribute('aria-hidden', 'false');
+        btn.setAttribute('aria-expanded', 'true');
+    },
+
+    closeQuickOpacityPopover() {
+        const btn = document.getElementById('quick-opacity-btn');
+        const popover = document.getElementById('quick-opacity-popover');
+        if (popover) {
+            popover.classList.remove('is-open');
+            popover.setAttribute('aria-hidden', 'true');
+        }
+        if (btn) {
+            btn.setAttribute('aria-expanded', 'false');
+        }
+    },
+
+    toggleQuickOpacityPopover() {
+        const anchor = document.getElementById('quick-opacity-anchor');
+        const popover = document.getElementById('quick-opacity-popover');
+        if (!anchor || !popover || anchor.classList.contains('hidden')) return;
+
+        if (popover.classList.contains('is-open')) {
+            this.closeQuickOpacityPopover();
+        } else {
+            this.openQuickOpacityPopover();
+        }
     },
 
     updateQRCodeContent(value) {
@@ -366,20 +422,23 @@ Object.assign(DesignEditor.prototype, {
         const centerHBtn = document.getElementById('quick-center-h-btn');
         const centerVBtn = document.getElementById('quick-center-v-btn');
         const fontBtn = document.getElementById('quick-font-btn');
+        const opacityAnchor = document.getElementById('quick-opacity-anchor');
         const opacityBtn = document.getElementById('quick-opacity-btn');
         const showToolbar = Boolean(elementData);
 
         toolbar.classList.toggle('hidden', !showToolbar);
 
         if (!showToolbar) {
+            if (opacityAnchor) opacityAnchor.classList.add('hidden');
+            this.closeQuickOpacityPopover();
             if (fontBtn) fontBtn.classList.add('hidden');
-            if (opacityBtn) opacityBtn.classList.add('hidden');
+            if (opacityBtn) opacityBtn.classList.remove('active');
             return;
         }
 
         const isText = elementData.type === 'text';
         const isImage = elementData.type === 'image';
-        const opacityValue = Math.round(((elementData.opacity ?? 1) * 100));
+        const opacityPercent = Math.round(((elementData.opacity ?? 1) * 100));
 
         if (duplicateBtn) duplicateBtn.classList.toggle('hidden', false);
         if (centerHBtn) centerHBtn.classList.toggle('hidden', false);
@@ -394,15 +453,24 @@ Object.assign(DesignEditor.prototype, {
                 fontBtn.classList.remove('active');
             }
         }
+        if (opacityAnchor) {
+            opacityAnchor.classList.toggle('hidden', !isImage);
+        }
         if (opacityBtn) {
-            opacityBtn.classList.toggle('hidden', !isImage);
             if (isImage) {
-                opacityBtn.title = `Opacidade: ${opacityValue}%`;
-                opacityBtn.setAttribute('aria-label', `Opacidade: ${opacityValue}%`);
-                opacityBtn.classList.toggle('active', opacityValue < 100);
+                opacityBtn.title = `Opacidade: ${opacityPercent}%`;
+                opacityBtn.setAttribute('aria-label', `Opacidade: ${opacityPercent}%`);
+                opacityBtn.classList.toggle('active', opacityPercent < 100);
+                opacityBtn.setAttribute('aria-expanded', 'false');
             } else {
                 opacityBtn.classList.remove('active');
+                opacityBtn.setAttribute('aria-expanded', 'false');
             }
+        }
+        if (isImage) {
+            this.applyQuickOpacityValue(opacityPercent, false);
+        } else {
+            this.closeQuickOpacityPopover();
         }
 
         this.syncKeepAspectControls();

@@ -557,7 +557,36 @@ Object.assign(DesignEditor.prototype, {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
         });
-        if (quickOpacityBtn) quickOpacityBtn.addEventListener('click', () => this.cycleQuickImageOpacity(1));
+        const quickOpacityRange = document.getElementById('quick-opacity-range');
+        if (quickOpacityRange) {
+            quickOpacityRange.addEventListener('input', (e) => {
+                this.applyQuickOpacityValue(e.target.value);
+            });
+        }
+
+        if (quickOpacityBtn) quickOpacityBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.toggleQuickOpacityPopover();
+        });
+
+        if (!this._quickOpacityDismissalBound) {
+            document.addEventListener('pointerdown', (event) => {
+                const anchor = document.getElementById('quick-opacity-anchor');
+                const popover = document.getElementById('quick-opacity-popover');
+                if (!anchor || !popover || anchor.classList.contains('hidden')) return;
+                if (anchor.contains(event.target)) return;
+                this.closeQuickOpacityPopover();
+            }, true);
+
+            document.addEventListener('keydown', (event) => {
+                if (event.key === 'Escape') {
+                    this.closeQuickOpacityPopover();
+                }
+            });
+
+            this._quickOpacityDismissalBound = true;
+        }
 
         const qrContent = document.getElementById('prop-qr-content');
         if (qrContent) qrContent.addEventListener('input', (e) => this.updateQRCodeContent(e.target.value));
