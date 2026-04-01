@@ -123,7 +123,12 @@ function buildCartSidebarMarkup() {
     cartSidebar.dataset.cartEnhanced = '1';
     cartSidebar.setAttribute('aria-hidden', 'true');
     cartSidebar.className = 'fixed inset-y-0 right-0 z-50 flex h-full translate-x-full transform border-l border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300';
-    cartSidebar.style.zIndex = '60';
+    cartSidebar.style.zIndex = '9999';
+    cartSidebar.style.right = '0';
+    cartSidebar.style.left = 'auto';
+    cartSidebar.style.top = '0';
+    cartSidebar.style.bottom = '0';
+    cartSidebar.style.boxShadow = '-24px 0 80px rgba(15, 23, 42, 0.18)';
     cartSidebar.innerHTML = `
         <div class="flex h-full w-full flex-col">
             <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
@@ -172,11 +177,12 @@ function buildCartSidebarMarkup() {
         const nextOverlay = document.createElement('div');
         nextOverlay.id = 'cart-overlay';
         nextOverlay.className = 'fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-sm';
+        nextOverlay.style.zIndex = '9998';
         document.body.appendChild(nextOverlay);
         cartOverlay = nextOverlay;
     } else {
         overlay.className = 'fixed inset-0 z-40 hidden bg-slate-950/50 backdrop-blur-sm';
-        overlay.style.zIndex = '50';
+        overlay.style.zIndex = '9998';
         cartOverlay = overlay;
     }
 }
@@ -762,8 +768,11 @@ function openCart() {
         cartSidebar.style.opacity = '1';
         cartSidebar.style.pointerEvents = 'auto';
         cartSidebar.style.transform = 'translateX(0)';
+        cartSidebar.style.zIndex = '9999';
+        cartSidebar.style.right = '0';
         cartSidebar.classList.add('cart-open');
         cartOverlay.classList.remove('hidden');
+        cartOverlay.style.zIndex = '9998';
         cartSidebar.setAttribute('aria-hidden', 'false');
         document.body.style.overflow = 'hidden';
         if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
