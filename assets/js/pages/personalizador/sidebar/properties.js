@@ -961,9 +961,10 @@ Object.assign(DesignEditor.prototype, {
 
             const fallbackWidth = this.initialCanvasSize.width * this.zoom;
             const fallbackHeight = this.initialCanvasSize.height * this.zoom;
-            this.canvasWrapper.style.width = `${fallbackWidth}px`;
-            this.canvasWrapper.style.height = `${fallbackHeight}px`;
-            this.canvasWrapper.style.transform = 'none';
+            this.syncCanvasWrapperToStage?.(fallbackWidth, fallbackHeight);
+            if (this.selectedElement) {
+                this.requestHandlesRefresh?.();
+            }
             return;
         }
 
@@ -986,9 +987,7 @@ Object.assign(DesignEditor.prototype, {
         const scaledWidth = this.initialCanvasSize.width * this.zoom;
         const scaledHeight = this.initialCanvasSize.height * this.zoom;
 
-        this.canvasWrapper.style.width = `${scaledWidth}px`;
-        this.canvasWrapper.style.height = `${scaledHeight}px`;
-        this.canvasWrapper.style.transform = 'none';
+        this.syncCanvasWrapperToStage?.(scaledWidth, scaledHeight);
         this.syncWorkspaceBounds?.();
 
         if (
@@ -1001,12 +1000,19 @@ Object.assign(DesignEditor.prototype, {
             this.loadSVGTemplate(this._loadedSvgTemplateContent, { skipViewportReflow: true });
             this._isReflowingSvgTemplate = false;
         }
+
+        if (this.selectedElement) {
+            this.requestHandlesRefresh?.();
+        }
     },
 
     setZoom(newZoom) {
         this.zoom = Math.max(0.5, Math.min(2, newZoom));
         this.syncCanvasViewport();
         document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
+        if (this.selectedElement) {
+            this.requestHandlesRefresh?.();
+        }
     },
 
     getHistorySnapshot() {

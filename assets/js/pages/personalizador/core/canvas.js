@@ -86,6 +86,27 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
+    syncCanvasWrapperToStage(width, height) {
+        if (!this.canvasWrapper) {
+            return false;
+        }
+
+        const nextWidth = Math.max(1, Math.round(Number(width) || 0));
+        const nextHeight = Math.max(1, Math.round(Number(height) || 0));
+        if (!nextWidth || !nextHeight) {
+            return false;
+        }
+
+        const currentWidth = parseFloat(this.canvasWrapper.style.width || '');
+        const currentHeight = parseFloat(this.canvasWrapper.style.height || '');
+        if (currentWidth !== nextWidth || currentHeight !== nextHeight) {
+            this.canvasWrapper.style.width = `${nextWidth}px`;
+            this.canvasWrapper.style.height = `${nextHeight}px`;
+        }
+        this.canvasWrapper.style.transform = 'none';
+        return true;
+    },
+
     constrainResizeRect(startBox, proposedBox, handle, bounds) {
         const minWidth = 20;
         const minHeight = 20;

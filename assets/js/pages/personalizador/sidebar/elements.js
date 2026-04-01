@@ -462,20 +462,27 @@ Object.assign(DesignEditor.prototype, {
             this.handleMouseUp('mouse');
         });
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        window.addEventListener('resize', () => {
+        const syncViewportAndHandles = () => {
             this._lastViewportStageWidth = null;
             this._lastViewportStageHeight = null;
             this._templateLayoutNeedsReflow = true;
             this.syncCanvasViewport();
-        });
+            if (this.selectedElement) {
+                this.requestHandlesRefresh?.();
+            }
+        };
+
+        window.addEventListener('resize', syncViewportAndHandles);
+
+        if (window.visualViewport) {
+            window.visualViewport.addEventListener('resize', syncViewportAndHandles, { passive: true });
+            window.visualViewport.addEventListener('scroll', syncViewportAndHandles, { passive: true });
+        }
 
         // ResizeObserver: recalcula canvas quando o stage muda de tamanho
         if (this.canvasStage && typeof ResizeObserver !== 'undefined') {
             new ResizeObserver(() => {
-                this._lastViewportStageWidth = null;
-                this._lastViewportStageHeight = null;
-                this._templateLayoutNeedsReflow = true;
-                this.syncCanvasViewport();
+                syncViewportAndHandles();
             }).observe(this.canvasStage);
         }
 
@@ -501,6 +508,9 @@ Object.assign(DesignEditor.prototype, {
                         e.touches[0].clientY - e.touches[1].clientY
                     );
                     this.setZoom(_pinchZoom0 * (d / _pinchDist0));
+                    if (this.selectedElement) {
+                        this.requestHandlesRefresh?.();
+                    }
                 }
             }, { passive: false });
             stage.addEventListener('touchend', (e) => {
