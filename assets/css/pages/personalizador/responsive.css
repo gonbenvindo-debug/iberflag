@@ -285,11 +285,10 @@
             }
 
             .context-range-vertical {
-                -webkit-appearance: slider-vertical;
-                appearance: slider-vertical;
-                writing-mode: bt-lr;
-                width: 2rem;
-                height: 9.5rem;
+                -webkit-appearance: none;
+                appearance: none;
+                width: 9.5rem;
+                height: 2rem;
                 margin: 0;
                 padding: 0;
                 background: transparent;
@@ -298,17 +297,32 @@
                 user-select: none;
                 -webkit-user-select: none;
                 cursor: ns-resize;
+                position: absolute;
+                left: 50%;
+                top: 50%;
+                transform: translate(-50%, -50%) rotate(-90deg);
+                transform-origin: center center;
+            }
+
+            .context-range-shell {
+                position: relative;
+                width: 2rem;
+                height: 9.5rem;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                touch-action: none;
             }
 
             .context-range-vertical::-webkit-slider-runnable-track {
-                width: 5px;
-                background: linear-gradient(180deg, #dbe4f0 0%, #bfdbfe 100%);
+                height: 5px;
+                background: linear-gradient(90deg, #dbe4f0 0%, #bfdbfe 100%);
                 border-radius: 999px;
             }
 
             .context-range-vertical::-moz-range-track {
-                width: 5px;
-                background: linear-gradient(180deg, #dbe4f0 0%, #bfdbfe 100%);
+                height: 5px;
+                background: linear-gradient(90deg, #dbe4f0 0%, #bfdbfe 100%);
                 border-radius: 999px;
             }
 
@@ -321,7 +335,7 @@
                 border: 2px solid #ffffff;
                 background: linear-gradient(180deg, #3b82f6, #2563eb);
                 box-shadow: 0 3px 8px rgba(37, 99, 235, 0.32);
-                margin-left: -6px;
+                margin-top: -6px;
             }
 
             .context-range-vertical::-moz-range-thumb {
@@ -335,6 +349,14 @@
 
             .context-range-vertical:focus {
                 outline: none;
+            }
+
+            .context-range-vertical::-ms-thumb {
+                width: 18px;
+                height: 18px;
+                border-radius: 999px;
+                border: 2px solid #ffffff;
+                background: linear-gradient(180deg, #3b82f6, #2563eb);
             }
 
             .editor-context-toolbar .context-action span {

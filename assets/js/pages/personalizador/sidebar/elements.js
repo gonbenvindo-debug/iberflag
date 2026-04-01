@@ -361,14 +361,6 @@ Object.assign(DesignEditor.prototype, {
         const centerVBtn = document.getElementById('center-v-btn');
         if (centerVBtn) centerVBtn.addEventListener('click', () => this.centerSelected('vertical'));
 
-        const keepAspectBtn = document.getElementById('keep-aspect-ratio');
-        if (keepAspectBtn) {
-            keepAspectBtn.addEventListener('click', () => {
-                keepAspectBtn.classList.toggle('active');
-                this.keepAspectRatio = keepAspectBtn.classList.contains('active');
-            });
-        }
-
         const quickDeleteBtn = document.getElementById('quick-delete-btn');
         if (quickDeleteBtn) quickDeleteBtn.addEventListener('click', () => this.deleteSelected());
 
@@ -380,14 +372,6 @@ Object.assign(DesignEditor.prototype, {
 
         const quickCenterVBtn = document.getElementById('quick-center-v-btn');
         if (quickCenterVBtn) quickCenterVBtn.addEventListener('click', () => this.centerSelected('vertical'));
-
-        const quickKeepAspectBtn = document.getElementById('quick-keep-aspect-btn');
-        if (quickKeepAspectBtn) {
-            quickKeepAspectBtn.addEventListener('click', () => {
-                this.keepAspectRatio = !this.keepAspectRatio;
-                this.syncKeepAspectControls();
-            });
-        }
 
         // Canvas interactions
         this._lastTouchInteractionAt = 0;
@@ -553,6 +537,7 @@ Object.assign(DesignEditor.prototype, {
         // Image properties
         const imageOpacity = document.getElementById('prop-image-opacity');
         const quickOpacityBtn = document.getElementById('quick-opacity-btn');
+        const quickOpacityShell = document.getElementById('quick-opacity-shell');
         if (imageOpacity) imageOpacity.addEventListener('input', (e) => {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
@@ -562,6 +547,53 @@ Object.assign(DesignEditor.prototype, {
             quickOpacityRange.addEventListener('input', (e) => {
                 this.applyQuickOpacityValue(e.target.value);
             });
+        }
+
+        const applyQuickOpacityFromPointer = (clientY, shouldApply = true) => {
+            if (!quickOpacityShell) return;
+            const rect = quickOpacityShell.getBoundingClientRect();
+            if (!rect.height) return;
+            const ratio = 1 - ((clientY - rect.top) / rect.height);
+            const nextValue = Math.round(Math.max(0, Math.min(1, ratio)) * 100);
+            this.applyQuickOpacityValue(nextValue, shouldApply);
+        };
+
+        if (quickOpacityShell) {
+            let quickOpacityPointerId = null;
+            let quickOpacityDragging = false;
+
+            quickOpacityShell.addEventListener('pointerdown', (event) => {
+                if (event.button != null && event.button !== 0) return;
+                if (!this.selectedElement || this.selectedElement.type !== 'image') return;
+                event.preventDefault();
+                event.stopPropagation();
+                quickOpacityDragging = true;
+                quickOpacityPointerId = event.pointerId;
+                quickOpacityShell.setPointerCapture?.(event.pointerId);
+                applyQuickOpacityFromPointer(event.clientY, true);
+                this.openQuickOpacityPopover();
+            }, true);
+
+            quickOpacityShell.addEventListener('pointermove', (event) => {
+                if (!quickOpacityDragging || event.pointerId !== quickOpacityPointerId) return;
+                event.preventDefault();
+                event.stopPropagation();
+                applyQuickOpacityFromPointer(event.clientY, true);
+            }, true);
+
+            const finishOpacityDrag = (event) => {
+                if (!quickOpacityDragging || event.pointerId !== quickOpacityPointerId) return;
+                quickOpacityDragging = false;
+                quickOpacityPointerId = null;
+                try {
+                    quickOpacityShell.releasePointerCapture?.(event.pointerId);
+                } catch {
+                    // ignore pointer capture errors
+                }
+            };
+
+            quickOpacityShell.addEventListener('pointerup', finishOpacityDrag, true);
+            quickOpacityShell.addEventListener('pointercancel', finishOpacityDrag, true);
         }
 
         if (quickOpacityBtn) quickOpacityBtn.addEventListener('click', (event) => {
