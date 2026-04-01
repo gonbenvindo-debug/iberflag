@@ -388,6 +388,8 @@ Object.assign(DesignEditor.prototype, {
     updateLayers() {
         const layersList = document.getElementById('layers-list');
         if (!layersList) return;
+        const previousScrollTop = layersList.scrollTop;
+        const previousScrollLeft = layersList.scrollLeft;
         
         if (this.elements.length === 0) {
             layersList.innerHTML = '<p class="text-sm text-gray-400 text-center py-8">Nenhuma camada ainda</p>';
@@ -494,6 +496,8 @@ Object.assign(DesignEditor.prototype, {
         });
         
         lucide.createIcons();
+        layersList.scrollTop = previousScrollTop;
+        layersList.scrollLeft = previousScrollLeft;
     },
     
     selectElementByIndex(index) {

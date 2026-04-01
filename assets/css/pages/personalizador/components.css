@@ -126,7 +126,8 @@
         }
 
         #elements-panel,
-        #properties-panel {
+        #properties-panel,
+        #layers-panel {
             flex: 1 1 auto;
             min-height: 0;
             scrollbar-gutter: stable both-edges;
@@ -136,9 +137,33 @@
         #elements-panel {
             display: flex;
             flex-direction: column;
-            overflow-y: auto;
+            overflow: visible;
             gap: 1rem;
             justify-content: flex-start;
+            flex: 0 0 auto;
+        }
+
+        #layers-panel {
+            display: flex;
+            flex-direction: column;
+            gap: 0.75rem;
+            overflow: hidden;
+            min-height: 0;
+            padding-bottom: 0.9rem;
+        }
+
+        #layers-panel .elements-group {
+            flex: 1 1 auto;
+            min-height: 0;
+        }
+
+        #layers-list {
+            flex: 1 1 auto;
+            min-height: 0;
+            overflow-y: auto;
+            overflow-x: hidden;
+            padding-right: 0.35rem;
+            padding-bottom: 0.25rem;
         }
 
         #properties-panel {
