@@ -757,6 +757,11 @@ function openCart() {
     buildCartSidebarMarkup();
     refreshCartDomReferences();
     if (cartSidebar && cartOverlay) {
+        cartSidebar.style.display = 'flex';
+        cartSidebar.style.visibility = 'visible';
+        cartSidebar.style.opacity = '1';
+        cartSidebar.style.pointerEvents = 'auto';
+        cartSidebar.style.transform = 'translateX(0)';
         cartSidebar.classList.add('cart-open');
         cartOverlay.classList.remove('hidden');
         cartSidebar.setAttribute('aria-hidden', 'false');
@@ -769,6 +774,10 @@ function openCart() {
 function closeCart() {
     refreshCartDomReferences();
     if (cartSidebar && cartOverlay) {
+        cartSidebar.style.transform = '';
+        cartSidebar.style.opacity = '';
+        cartSidebar.style.visibility = '';
+        cartSidebar.style.pointerEvents = '';
         cartSidebar.classList.remove('cart-open');
         cartOverlay.classList.add('hidden');
         cartSidebar.setAttribute('aria-hidden', 'true');
