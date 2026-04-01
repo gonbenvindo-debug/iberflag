@@ -269,9 +269,12 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.configureCanvasFromSourceBounds(sourceBounds);
+        // Fit the full SVG source box to the workspace height.
+        // The measured outline is useful for diagnostics, but it is too tight
+        // for sizing because it can inflate the rendered item and clip it.
         const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
             this.getWorkspaceBounds?.() || this.getCanvasBounds(),
-            outlineBounds || sourceBounds,
+            sourceBounds,
             { heightRatio: 0.9 }
         );
         const contentBounds = preferredBounds.frameBounds;
