@@ -84,6 +84,45 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    cycleQuickTextFont(direction = 1) {
+        if (!this.selectedElement || this.selectedElement.type !== 'text') return;
+
+        const fontSelect = document.getElementById('prop-text-font');
+        if (!fontSelect || fontSelect.options.length === 0) return;
+
+        const options = Array.from(fontSelect.options)
+            .map((option) => option.value)
+            .filter(Boolean);
+        if (options.length === 0) return;
+
+        const currentFont = this.selectedElement.font || fontSelect.value || options[0];
+        const currentIndex = Math.max(0, options.findIndex((font) => font === currentFont));
+        const nextIndex = (currentIndex + direction + options.length) % options.length;
+        const nextFont = options[nextIndex];
+
+        fontSelect.value = nextFont;
+        this.updateTextFont(nextFont);
+        this.updateContextualToolbar(this.selectedElement);
+    },
+
+    cycleQuickImageOpacity(direction = 1) {
+        if (!this.selectedElement || this.selectedElement.type !== 'image') return;
+
+        const opacitySelect = document.getElementById('prop-image-opacity');
+        const opacityValueLabel = document.getElementById('prop-image-opacity-val');
+        const presets = [100, 85, 70, 55, 40, 25];
+        const currentValue = Math.round((this.selectedElement.opacity ?? 1) * 100);
+        const currentIndex = presets.indexOf(currentValue);
+        const nextIndex = (currentIndex < 0 ? 0 : currentIndex + direction + presets.length) % presets.length;
+        const nextValue = presets[nextIndex];
+
+        if (opacitySelect) opacitySelect.value = String(nextValue);
+        if (opacityValueLabel) opacityValueLabel.textContent = String(nextValue);
+
+        this.updateImageOpacity(nextValue / 100);
+        this.updateContextualToolbar(this.selectedElement);
+    },
+
     updateQRCodeContent(value) {
         if (!this.selectedElement || this.selectedElement.type !== 'image' || this.selectedElement.imageKind !== 'qr') {
             return;
@@ -323,32 +362,47 @@ Object.assign(DesignEditor.prototype, {
         const toolbar = document.getElementById('element-quick-toolbar');
         if (!toolbar) return;
 
-        const fontWrap = document.getElementById('quick-font-wrap');
-        const fontSelect = document.getElementById('quick-font-select');
-        const opacityWrap = document.getElementById('quick-opacity-wrap');
-        const opacityRange = document.getElementById('quick-opacity-range');
+        const duplicateBtn = document.getElementById('quick-duplicate-btn');
+        const centerHBtn = document.getElementById('quick-center-h-btn');
+        const centerVBtn = document.getElementById('quick-center-v-btn');
+        const fontBtn = document.getElementById('quick-font-btn');
+        const opacityBtn = document.getElementById('quick-opacity-btn');
         const showToolbar = Boolean(elementData);
 
         toolbar.classList.toggle('hidden', !showToolbar);
 
         if (!showToolbar) {
-            if (fontWrap) fontWrap.classList.add('hidden');
-            if (opacityWrap) opacityWrap.classList.add('hidden');
+            if (fontBtn) fontBtn.classList.add('hidden');
+            if (opacityBtn) opacityBtn.classList.add('hidden');
             return;
         }
 
         const isText = elementData.type === 'text';
         const isImage = elementData.type === 'image';
+        const opacityValue = Math.round(((elementData.opacity ?? 1) * 100));
 
-        if (fontWrap) fontWrap.classList.toggle('hidden', !isText);
-        if (opacityWrap) opacityWrap.classList.toggle('hidden', !isImage);
-
-        if (fontSelect && isText) {
-            fontSelect.value = elementData.font || 'Arial';
+        if (duplicateBtn) duplicateBtn.classList.toggle('hidden', false);
+        if (centerHBtn) centerHBtn.classList.toggle('hidden', false);
+        if (centerVBtn) centerVBtn.classList.toggle('hidden', false);
+        if (fontBtn) {
+            fontBtn.classList.toggle('hidden', !isText);
+            fontBtn.classList.toggle('active', isText);
+            if (isText) {
+                fontBtn.title = `Fonte: ${elementData.font || 'Arial'}`;
+                fontBtn.setAttribute('aria-label', `Fonte: ${elementData.font || 'Arial'}`);
+            } else {
+                fontBtn.classList.remove('active');
+            }
         }
-
-        if (opacityRange && isImage) {
-            opacityRange.value = Math.round((elementData.opacity ?? 1) * 100);
+        if (opacityBtn) {
+            opacityBtn.classList.toggle('hidden', !isImage);
+            if (isImage) {
+                opacityBtn.title = `Opacidade: ${opacityValue}%`;
+                opacityBtn.setAttribute('aria-label', `Opacidade: ${opacityValue}%`);
+                opacityBtn.classList.toggle('active', opacityValue < 100);
+            } else {
+                opacityBtn.classList.remove('active');
+            }
         }
 
         this.syncKeepAspectControls();

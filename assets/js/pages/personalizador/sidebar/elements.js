@@ -369,6 +369,26 @@ Object.assign(DesignEditor.prototype, {
             });
         }
 
+        const quickDeleteBtn = document.getElementById('quick-delete-btn');
+        if (quickDeleteBtn) quickDeleteBtn.addEventListener('click', () => this.deleteSelected());
+
+        const quickDuplicateBtn = document.getElementById('quick-duplicate-btn');
+        if (quickDuplicateBtn) quickDuplicateBtn.addEventListener('click', () => this.duplicateSelected());
+
+        const quickCenterHBtn = document.getElementById('quick-center-h-btn');
+        if (quickCenterHBtn) quickCenterHBtn.addEventListener('click', () => this.centerSelected('horizontal'));
+
+        const quickCenterVBtn = document.getElementById('quick-center-v-btn');
+        if (quickCenterVBtn) quickCenterVBtn.addEventListener('click', () => this.centerSelected('vertical'));
+
+        const quickKeepAspectBtn = document.getElementById('quick-keep-aspect-btn');
+        if (quickKeepAspectBtn) {
+            quickKeepAspectBtn.addEventListener('click', () => {
+                this.keepAspectRatio = !this.keepAspectRatio;
+                this.syncKeepAspectControls();
+            });
+        }
+
         // Canvas interactions
         this._lastTouchInteractionAt = 0;
         const isRecentTouch = () => (Date.now() - (this._lastTouchInteractionAt || 0)) < 700;
@@ -507,22 +527,14 @@ Object.assign(DesignEditor.prototype, {
         // Text properties
         const textContent = document.getElementById('prop-text-content');
         const textFont = document.getElementById('prop-text-font');
-        const quickFont = document.getElementById('quick-font-select');
+        const quickFontBtn = document.getElementById('quick-font-btn');
         const textSize = document.getElementById('prop-text-size');
         const textColor = document.getElementById('prop-text-color');
         const textBold = document.getElementById('prop-text-bold');
         const textItalic = document.getElementById('prop-text-italic');
 
-        if (textFont && quickFont && !quickFont.options.length) {
-            quickFont.innerHTML = textFont.innerHTML;
-        }
-
         if (textContent) textContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (textFont) textFont.addEventListener('change', (e) => this.updateTextFont(e.target.value));
-        if (quickFont) quickFont.addEventListener('change', (e) => {
-            this.updateTextFont(e.target.value);
-            if (textFont) textFont.value = e.target.value;
-        });
         if (textSize) textSize.addEventListener('input', (e) => {
             this.updateTextSize(e.target.value);
             document.getElementById('prop-text-size-val').textContent = e.target.value;
@@ -530,6 +542,7 @@ Object.assign(DesignEditor.prototype, {
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
+        if (quickFontBtn) quickFontBtn.addEventListener('click', () => this.cycleQuickTextFont(1));
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {
@@ -539,17 +552,12 @@ Object.assign(DesignEditor.prototype, {
 
         // Image properties
         const imageOpacity = document.getElementById('prop-image-opacity');
-        const quickOpacity = document.getElementById('quick-opacity-range');
+        const quickOpacityBtn = document.getElementById('quick-opacity-btn');
         if (imageOpacity) imageOpacity.addEventListener('input', (e) => {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
         });
-        if (quickOpacity) quickOpacity.addEventListener('input', (e) => {
-            this.updateImageOpacity(e.target.value / 100);
-            if (imageOpacity) imageOpacity.value = e.target.value;
-            const imageOpacityVal = document.getElementById('prop-image-opacity-val');
-            if (imageOpacityVal) imageOpacityVal.textContent = e.target.value;
-        });
+        if (quickOpacityBtn) quickOpacityBtn.addEventListener('click', () => this.cycleQuickImageOpacity(1));
 
         const qrContent = document.getElementById('prop-qr-content');
         if (qrContent) qrContent.addEventListener('input', (e) => this.updateQRCodeContent(e.target.value));
