@@ -1063,27 +1063,14 @@ Object.assign(DesignEditor.prototype, {
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
-
             const measuredBox = this.selectedElement.element.getBBox();
-            const textAnchor = this.dragStart.textAnchor || String(this.selectedElement.element.getAttribute('text-anchor') || 'middle').toLowerCase();
-            const fixedLeft = this.resizeHandle.includes('w') ? (newX + newWidth) : newX;
-            const fixedTop = this.resizeHandle.includes('n') ? (newY + newHeight) : newY;
-            const boxX = this.resizeHandle.includes('w')
-                ? fixedLeft - measuredBox.width
-                : fixedLeft;
-            const boxY = this.resizeHandle.includes('n')
-                ? fixedTop - measuredBox.height
-                : fixedTop;
+            const currentX = parseFloat(this.selectedElement.element.getAttribute('x') || '0');
+            const currentY = parseFloat(this.selectedElement.element.getAttribute('y') || '0');
+            const deltaX = newX - measuredBox.x;
+            const deltaY = newY - measuredBox.y;
 
-            const x = textAnchor === 'start'
-                ? boxX
-                : textAnchor === 'end'
-                    ? (boxX + measuredBox.width)
-                    : (boxX + (measuredBox.width / 2));
-            const y = boxY + (measuredBox.height / 2);
-
-            this.selectedElement.element.setAttribute('x', x);
-            this.selectedElement.element.setAttribute('y', y);
+            this.selectedElement.element.setAttribute('x', currentX + deltaX);
+            this.selectedElement.element.setAttribute('y', currentY + deltaY);
         }
 
         // Never allow rotated elements to grow outside the design canvas.
