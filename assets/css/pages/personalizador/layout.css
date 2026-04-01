@@ -110,36 +110,130 @@
         }
 
         .editor-body-layout {
-            display: flex;
+            display: grid;
+            grid-template-columns: clamp(17rem, 18vw, 19rem) minmax(0, 1fr);
+            grid-template-rows: auto minmax(0, 1fr);
+            gap: 0;
             height: calc(100vh - 4rem - 2.25rem);
+            padding: 0;
             overflow: hidden;
+            align-items: stretch;
         }
 
         .editor-sidebar-left {
-            padding: 1rem 0.5rem 1rem 1rem;
+            grid-column: 1;
+            grid-row: 2;
+            padding: 0;
+            min-width: 0;
+            width: 100%;
+            min-height: 0;
         }
 
         .editor-sidebar-right {
-            padding: 1rem 1rem 1rem 0.5rem;
+            grid-column: 1 / -1;
+            grid-row: 1;
+            padding: 0;
+            min-width: 0;
+            width: 100%;
+            min-height: 0;
+            z-index: 10;
+        }
+
+        .editor-sidebar-right .sidebar-shell {
+            border: 0;
+            border-bottom: 1px solid var(--panel-border);
+            border-radius: 0;
+            background: #ffffff;
+            box-shadow: none;
+            backdrop-filter: none;
+            -webkit-backdrop-filter: none;
+            height: auto;
+            min-height: 0;
+        }
+
+        .editor-sidebar-right .drawer-grip {
+            display: none;
+        }
+
+        #properties-panel {
+            position: relative;
+            align-items: center;
+            padding: 0.55rem 1rem;
+        }
+
+        #properties-panel .section-title {
+            display: none;
+        }
+
+        #properties-panel > .mb-4 {
+            margin-bottom: 0 !important;
+        }
+
+        #properties-panel > .grid.grid-cols-2 {
+            display: flex !important;
+            flex-wrap: wrap;
+            gap: 0.5rem !important;
+        }
+
+        #properties-panel > .grid.grid-cols-2 > .action-btn {
+            flex: 0 0 auto;
+            min-width: 9rem;
+        }
+
+        #properties-panel #keep-aspect-ratio {
+            flex: 0 0 auto;
+        }
+
+        #properties-panel #no-selection,
+        #properties-panel #text-properties,
+        #properties-panel #image-properties,
+        #properties-panel #shape-properties {
+            position: absolute;
+            top: calc(100% + 0.5rem);
+            left: 0.75rem;
+            right: 0.75rem;
+            z-index: 20;
+        }
+
+        #properties-panel #no-selection {
+            background: #ffffff;
+            border: 1px solid var(--panel-border);
+            border-radius: 0;
+            box-shadow: none;
+        }
+
+        #properties-panel #text-properties,
+        #properties-panel #image-properties,
+        #properties-panel #shape-properties {
+            background: #ffffff;
+            border: 1px solid var(--panel-border);
+            box-shadow: none;
+            max-height: 42vh;
+            overflow: auto;
         }
 
         .editor-main {
+            grid-column: 2;
+            grid-row: 2;
             flex: 1;
             display: flex;
             flex-direction: column;
-            padding: 0;
+            padding: 0 0 0 0.75rem;
             min-height: 0;
+            min-width: 0;
             overflow: hidden;
             position: relative;
             z-index: 1;
         }
 
         #canvas-stage {
-            flex: 1;
+            flex: 1 1 auto;
             display: flex;
             align-items: center;
             justify-content: center;
             padding: 0;
+            width: 100%;
+            height: auto;
             min-height: 0;
             overflow: hidden;
             position: relative;
@@ -150,6 +244,10 @@
 
         #canvas-wrapper {
             flex: 0 0 auto;
+            width: 100%;
+            height: 100%;
+            min-width: 0;
+            min-height: 0;
         }
 
         .editor-bottom-bar {
@@ -158,4 +256,6 @@
             padding: 0.4rem 0.75rem;
             flex-shrink: 0;
             border-top: 1px solid var(--panel-border);
+            position: relative;
+            z-index: 2;
         }

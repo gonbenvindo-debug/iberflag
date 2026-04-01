@@ -98,7 +98,23 @@ Object.assign(DesignEditor.prototype, {
 
     // Carregar template do Supabase
     async loadTemplate(templateId) {
-        if (!templateId || typeof supabaseClient === 'undefined') return;
+        if (!templateId) return;
+
+        const localTemplate = window.DesignTemplates?.getById?.(templateId);
+        if (localTemplate) {
+            const localSvgMarkup = window.DesignSvgStore?.extractTemplateSvg(localTemplate.elements || localTemplate.elementos, {
+                width: this.baseCanvasSize?.width || 800,
+                height: this.baseCanvasSize?.height || 600
+            });
+
+            if (localSvgMarkup && window.DesignSvgStore?.importSvgIntoEditor) {
+                window.DesignSvgStore.importSvgIntoEditor(this, localSvgMarkup);
+                showToast(`Template "${localTemplate.name}" carregado!`, 'success');
+                return;
+            }
+        }
+
+        if (typeof supabaseClient === 'undefined') return;
 
         try {
             const { data, error } = await supabaseClient
@@ -145,22 +161,20 @@ Object.assign(DesignEditor.prototype, {
             showToast(`Template "${data.nome}" carregado!`, 'success');
         } catch (err) {
             console.error('Erro ao carregar template:', err);
-            // Fallback: tentar carregar de TEMPLATES_DATA local
-            if (typeof TEMPLATES_DATA !== 'undefined') {
-                const allTemplates = Object.values(TEMPLATES_DATA).flat();
-                const template = allTemplates.find(t => t.id === templateId || t.slug === templateId);
-                const fallbackSvg = window.DesignSvgStore?.extractTemplateSvg(
-                    template?.elementos || template?.elements,
+            const fallbackTemplate = window.DesignTemplates?.getById?.(templateId);
+            const fallbackSvg = fallbackTemplate
+                ? window.DesignSvgStore?.extractTemplateSvg(
+                    fallbackTemplate.elements || fallbackTemplate.elementos,
                     {
                         width: this.baseCanvasSize?.width || 800,
                         height: this.baseCanvasSize?.height || 600
                     }
-                );
+                )
+                : '';
 
-                if (template && fallbackSvg && window.DesignSvgStore?.importSvgIntoEditor) {
-                    window.DesignSvgStore.importSvgIntoEditor(this, fallbackSvg);
-                    showToast(`Template "${template.name}" carregado!`, 'success');
-                }
+            if (fallbackTemplate && fallbackSvg && window.DesignSvgStore?.importSvgIntoEditor) {
+                window.DesignSvgStore.importSvgIntoEditor(this, fallbackSvg);
+                showToast(`Template "${fallbackTemplate.name}" carregado!`, 'success');
             }
         }
     },

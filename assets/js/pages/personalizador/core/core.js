@@ -15,6 +15,9 @@ class DesignEditor {
         this.canvasStage = document.getElementById('canvas-stage');
         this.printArea = document.getElementById('print-area-outline');
         this.canvasWrapper = document.getElementById('canvas-wrapper');
+        if (this.canvas) {
+            this.canvas.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        }
         this.elements = [];
         this.selectedElement = null;
         this.history = [];
@@ -146,24 +149,40 @@ class DesignEditor {
                 document.getElementById(tabId)?.classList.contains('active');
             closeAll();
             if (!isAlreadyOpen) {
-                document.getElementById('elements-panel')?.classList.toggle('hidden', panelId !== 'elements-panel');
-                document.getElementById('properties-panel')?.classList.toggle('hidden', panelId !== 'properties-panel');
+                const elementsPanel = document.getElementById('elements-panel');
+                if (elementsPanel) {
+                    elementsPanel.classList.toggle('hidden', panelId !== 'elements-panel');
+                }
                 sidebarLeft.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
             }
         };
 
-        tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
-        tabProperties?.addEventListener('click', () => openLeft('properties-panel', 'mobile-tab-properties'));
-        tabLayers?.addEventListener('click', () => {
+        const openRight = (tabId) => {
             const isAlreadyOpen = sidebarRight.classList.contains('panel-open') &&
+                document.getElementById(tabId)?.classList.contains('active');
+            closeAll();
+            if (!isAlreadyOpen) {
+                document.getElementById('properties-panel')?.classList.remove('hidden');
+                sidebarRight.classList.add('panel-open');
+                backdrop.classList.add('active');
+                document.getElementById(tabId)?.classList.add('active');
+            }
+        };
+
+        tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
+        tabProperties?.addEventListener('click', () => openRight('mobile-tab-properties'));
+        tabLayers?.addEventListener('click', () => {
+            const isAlreadyOpen = sidebarLeft.classList.contains('panel-open') &&
                 tabLayers?.classList.contains('active');
             closeAll();
             if (!isAlreadyOpen) {
-                sidebarRight.classList.add('panel-open');
+                document.getElementById('elements-panel')?.classList.remove('hidden');
+                sidebarLeft.classList.add('panel-open');
                 backdrop.classList.add('active');
                 tabLayers?.classList.add('active');
+                document.getElementById('layers-list')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
             }
         });
 

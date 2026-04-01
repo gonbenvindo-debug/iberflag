@@ -12,3 +12,10 @@ supabase/
 setup-security.js
 audit.js
 audit2.js
+
+# Local test artifacts
+/http-server*.log
+/*-check.png
+/cart-final-visible.png
+/personalizador-*.png
+/*toolbar-check.png

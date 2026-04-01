@@ -46,8 +46,11 @@ Object.assign(DesignEditor.prototype, {
             this.printArea = rect;
         }
 
+        const visibleBounds = this.getEditableBounds?.()
+            || this.getWorkspaceBounds?.()
+            || this.getCanvasBounds();
         const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
-            this.getWorkspaceBounds?.() || this.getCanvasBounds(),
+            visibleBounds,
             this.templateSourceBounds,
             { heightRatio: 0.9 }
         );
@@ -70,6 +73,13 @@ Object.assign(DesignEditor.prototype, {
     configureCanvasFromSourceBounds(sourceBounds) {
         const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
+
+        this.setCanvasViewBoxFromBounds?.({
+            x: Number(sourceBounds?.x) || 0,
+            y: Number(sourceBounds?.y) || 0,
+            width: canvasWidth,
+            height: canvasHeight
+        });
 
         this.templateSourceBounds = {
             x: 0,
@@ -272,8 +282,11 @@ Object.assign(DesignEditor.prototype, {
         // Fit the full SVG source box to the workspace height.
         // The measured outline is useful for diagnostics, but it is too tight
         // for sizing because it can inflate the rendered item and clip it.
+        const visibleBounds = this.getEditableBounds?.()
+            || this.getWorkspaceBounds?.()
+            || this.getCanvasBounds();
         const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
-            this.getWorkspaceBounds?.() || this.getCanvasBounds(),
+            visibleBounds,
             sourceBounds,
             { heightRatio: 0.9 }
         );
@@ -434,8 +447,13 @@ Object.assign(DesignEditor.prototype, {
         return scored.length > 0 ? scored[0].element : candidates[0];
     },
 
-    loadSVGTemplate(svgContent) {
+    loadSVGTemplate(svgContent, options = {}) {
         try {
+            this._loadedSvgTemplateContent = svgContent;
+            if (!options.skipViewportReflow) {
+                this._templateLayoutNeedsReflow = true;
+            }
+
             const parser = new DOMParser();
             const svgDoc = parser.parseFromString(svgContent, 'image/svg+xml');
             const root = svgDoc.documentElement;

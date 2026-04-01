@@ -394,6 +394,7 @@ Object.assign(DesignEditor.prototype, {
         window.addEventListener('resize', () => {
             this._lastViewportStageWidth = null;
             this._lastViewportStageHeight = null;
+            this._templateLayoutNeedsReflow = true;
             this.syncCanvasViewport();
         });
 
@@ -402,6 +403,7 @@ Object.assign(DesignEditor.prototype, {
             new ResizeObserver(() => {
                 this._lastViewportStageWidth = null;
                 this._lastViewportStageHeight = null;
+                this._templateLayoutNeedsReflow = true;
                 this.syncCanvasViewport();
             }).observe(this.canvasStage);
         }

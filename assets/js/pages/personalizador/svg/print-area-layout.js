@@ -104,10 +104,14 @@
         const normalizedWorkspace = normalizeBounds(workspaceBounds, { x: 0, y: 0, width: 800, height: 600 });
         const normalizedSource = normalizeBounds(sourceBounds, normalizedWorkspace);
         const targetHeightRatio = Number.isFinite(options.heightRatio) ? Number(options.heightRatio) : 0.9;
+        const targetWidthRatio = Number.isFinite(options.widthRatio) ? Number(options.widthRatio) : 0.9;
         const targetHeight = normalizedWorkspace.height * targetHeightRatio;
-        const uniformScale = targetHeight / normalizedSource.height;
+        const targetWidth = normalizedWorkspace.width * targetWidthRatio;
+        const heightScale = targetHeight / normalizedSource.height;
+        const widthScale = targetWidth / normalizedSource.width;
+        const uniformScale = Math.min(heightScale, widthScale);
         const renderedWidth = normalizedSource.width * uniformScale;
-        const renderedHeight = targetHeight;
+        const renderedHeight = normalizedSource.height * uniformScale;
         const frameX = normalizedWorkspace.x + ((normalizedWorkspace.width - renderedWidth) / 2);
         const frameY = normalizedWorkspace.y + ((normalizedWorkspace.height - renderedHeight) / 2);
         const offsetX = frameX - (normalizedSource.x * uniformScale);

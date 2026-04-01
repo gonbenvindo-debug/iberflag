@@ -190,9 +190,10 @@ Object.assign(DesignEditor.prototype, {
     },
 
     focusPropertiesPanel() {
-        const panel = document.getElementById('properties-panel');
-        if (!panel) return;
-        panel.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        const drawer = document.getElementById('editor-properties-drawer');
+        if (drawer) {
+            drawer.classList.remove('hidden');
+        }
     },
 
     updateSidebarMode() {
@@ -211,6 +212,7 @@ Object.assign(DesignEditor.prototype, {
         this.selectedElement = null;
         this.hideResizeHandles();
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
+        this.clearPropertiesSections();
 
         // Remove class from body to hide properties tab on mobile
         document.body.classList.remove('has-element-selected');

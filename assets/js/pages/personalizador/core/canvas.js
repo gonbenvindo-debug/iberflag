@@ -288,6 +288,49 @@ Object.assign(DesignEditor.prototype, {
         return { width: fallbackWidth, height: fallbackHeight };
     },
 
+    setCanvasViewBoxFromBounds(bounds) {
+        if (!this.canvas) {
+            return this.getCanvasViewBoxSize();
+        }
+
+        const normalized = {
+            x: Number.isFinite(Number(bounds?.x)) ? Number(bounds.x) : 0,
+            y: Number.isFinite(Number(bounds?.y)) ? Number(bounds.y) : 0,
+            width: Math.max(1, Math.round(Number(bounds?.width) || Number(this.baseCanvasSize?.width) || 800)),
+            height: Math.max(1, Math.round(Number(bounds?.height) || Number(this.baseCanvasSize?.height) || 600))
+        };
+
+        this.canvas.setAttribute('viewBox', `${normalized.x} ${normalized.y} ${normalized.width} ${normalized.height}`);
+        this.baseCanvasSize = {
+            width: normalized.width,
+            height: normalized.height
+        };
+
+        return { width: normalized.width, height: normalized.height };
+    },
+
+    getViewportDrivenCanvasSize(stageWidth = 0) {
+        const viewBox = this.getCanvasViewBoxSize();
+        const viewportHeight = Number(window.visualViewport?.height || window.innerHeight || 0);
+        const heightFromViewport = Math.max(320, Math.round(viewportHeight * 0.8));
+        const aspectRatio = Math.max(0.0001, viewBox.width / viewBox.height);
+        const widthFromViewport = Math.round(heightFromViewport * aspectRatio);
+        const availableWidth = Math.max(0, Number(stageWidth) || 0);
+
+        if (availableWidth > 0 && widthFromViewport > availableWidth) {
+            const scale = availableWidth / widthFromViewport;
+            return {
+                width: Math.max(1, Math.round(widthFromViewport * scale)),
+                height: Math.max(1, Math.round(heightFromViewport * scale))
+            };
+        }
+
+        return {
+            width: Math.max(1, widthFromViewport),
+            height: Math.max(1, heightFromViewport)
+        };
+    },
+
     getInsertionScale() {
         const bounds = this.getEditableBounds();
         const shortSide = Math.max(120, Math.min(bounds.width, bounds.height));

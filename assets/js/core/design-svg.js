@@ -1141,6 +1141,11 @@
             return false;
         }
 
+        const sourceBounds = getSvgSourceBounds(root, editor?.getCanvasViewBoxSize?.() || DEFAULT_SIZE);
+        if (typeof editor?.setCanvasViewBoxFromBounds === 'function') {
+            editor.setCanvasViewBoxFromBounds(sourceBounds);
+        }
+
         if (typeof editor.clearCanvas === 'function') {
             editor.clearCanvas();
         }

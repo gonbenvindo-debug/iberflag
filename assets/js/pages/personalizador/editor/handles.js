@@ -358,6 +358,7 @@ Object.assign(DesignEditor.prototype, {
     },
     
     updatePropertiesPanel(elementData) {
+        const drawer = document.getElementById('editor-properties-drawer');
         // Hide all property panels
         document.getElementById('no-selection').classList.add('hidden');
         document.getElementById('text-properties').classList.add('hidden');
@@ -366,6 +367,7 @@ Object.assign(DesignEditor.prototype, {
         document.getElementById('image-properties').classList.remove('active');
         document.getElementById('shape-properties').classList.add('hidden');
         document.getElementById('shape-properties').classList.remove('active');
+        drawer?.classList.remove('hidden');
         
         if (elementData.type === 'text') {
             document.getElementById('text-properties').classList.remove('hidden');

@@ -454,8 +454,9 @@ Object.assign(DesignEditor.prototype, {
     syncCanvasViewport() {
         if (!this.canvasStage || !this.canvasWrapper) return;
 
-        const stageWidth = this.canvasStage.clientWidth;
-        const stageHeight = this.canvasStage.clientHeight;
+        const stageRect = this.canvasStage.getBoundingClientRect();
+        const stageWidth = Number(stageRect?.width) || this.canvasStage.clientWidth || 0;
+        const stageHeight = Number(stageRect?.height) || this.canvasStage.clientHeight || 0;
         const stageStyle = window.getComputedStyle(this.canvasStage);
         const paddingX = (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0);
         const paddingY = (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0);
@@ -465,8 +466,8 @@ Object.assign(DesignEditor.prototype, {
         if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {
                 this.initialCanvasSize = {
-                    width: Number(this.baseCanvasSize?.width) || 800,
-                    height: Number(this.baseCanvasSize?.height) || 600
+                    width: Math.max(1, stageWidth || Number(this.baseCanvasSize?.width) || 800),
+                    height: Math.max(1, stageHeight || Number(this.baseCanvasSize?.height) || 600)
                 };
             }
 
@@ -501,6 +502,17 @@ Object.assign(DesignEditor.prototype, {
         this.canvasWrapper.style.height = `${scaledHeight}px`;
         this.canvasWrapper.style.transform = 'none';
         this.syncWorkspaceBounds?.();
+
+        if (
+            this._loadedSvgTemplateContent &&
+            this._templateLayoutNeedsReflow &&
+            !this._isReflowingSvgTemplate
+        ) {
+            this._isReflowingSvgTemplate = true;
+            this._templateLayoutNeedsReflow = false;
+            this.loadSVGTemplate(this._loadedSvgTemplateContent, { skipViewportReflow: true });
+            this._isReflowingSvgTemplate = false;
+        }
     },
 
     setZoom(newZoom) {
