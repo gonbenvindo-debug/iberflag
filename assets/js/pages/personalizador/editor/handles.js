@@ -354,38 +354,35 @@ Object.assign(DesignEditor.prototype, {
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        // Only show resize handles for non-text elements
-        if (elementData.type !== 'text') {
-            const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
+        const handlePositions = { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
 
-            Object.entries(handlePositions).forEach(([pos, point]) => {
-                const handle = document.createElement('div');
-                handle.className = 'resize-handle';
-                handle.dataset.position = pos;
-                handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
-                handle.style.left = (point.x - 6) + 'px';
-                handle.style.top  = (point.y - 6) + 'px';
-                handle.style.pointerEvents = 'auto';
+        Object.entries(handlePositions).forEach(([pos, point]) => {
+            const handle = document.createElement('div');
+            handle.className = 'resize-handle';
+            handle.dataset.position = pos;
+            handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
+            handle.style.left = (point.x - 6) + 'px';
+            handle.style.top  = (point.y - 6) + 'px';
+            handle.style.pointerEvents = 'auto';
 
-                handle.addEventListener('mousedown', (e) => {
-                    e.stopPropagation();
-                    e.preventDefault();
-                    this.startResize(e, pos);
-                });
-
-                handle.addEventListener('touchstart', (e) => {
-                    if (e.touches.length !== 1) return;
-                    e.stopPropagation();
-                    e.preventDefault();
-                    const t = e.touches[0];
-                    this._touchGestureActive = true;
-                    this._activeGestureTouchId = t.identifier;
-                    this.startResize({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, pos);
-                }, { passive: false });
-
-                handlesContainer.appendChild(handle);
+            handle.addEventListener('mousedown', (e) => {
+                e.stopPropagation();
+                e.preventDefault();
+                this.startResize(e, pos);
             });
-        }
+
+            handle.addEventListener('touchstart', (e) => {
+                if (e.touches.length !== 1) return;
+                e.stopPropagation();
+                e.preventDefault();
+                const t = e.touches[0];
+                this._touchGestureActive = true;
+                this._activeGestureTouchId = t.identifier;
+                this.startResize({ clientX: t.clientX, clientY: t.clientY, preventDefault: () => {} }, pos);
+            }, { passive: false });
+
+            handlesContainer.appendChild(handle);
+        });
 
         // Rotate handle ÔÇö position computed via getHandlePoints (already done above)
         const rotateHandle = document.createElement('div');
