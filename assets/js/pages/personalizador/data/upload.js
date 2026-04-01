@@ -213,6 +213,7 @@ Object.assign(DesignEditor.prototype, {
         this.hideResizeHandles();
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
         this.clearPropertiesSections();
+        this.updateContextualToolbar?.(null);
 
         // Remove class from body to hide properties tab on mobile
         document.body.classList.remove('has-element-selected');

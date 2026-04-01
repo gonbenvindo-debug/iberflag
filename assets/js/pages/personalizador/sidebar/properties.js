@@ -306,6 +306,54 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    syncKeepAspectControls() {
+        const active = Boolean(this.keepAspectRatio);
+        const buttons = [
+            document.getElementById('keep-aspect-ratio'),
+            document.getElementById('quick-keep-aspect-btn')
+        ].filter(Boolean);
+
+        buttons.forEach((button) => {
+            button.classList.toggle('active', active);
+            button.setAttribute('aria-pressed', String(active));
+        });
+    },
+
+    updateContextualToolbar(elementData) {
+        const toolbar = document.getElementById('element-quick-toolbar');
+        if (!toolbar) return;
+
+        const fontWrap = document.getElementById('quick-font-wrap');
+        const fontSelect = document.getElementById('quick-font-select');
+        const opacityWrap = document.getElementById('quick-opacity-wrap');
+        const opacityRange = document.getElementById('quick-opacity-range');
+        const showToolbar = Boolean(elementData);
+
+        toolbar.classList.toggle('hidden', !showToolbar);
+
+        if (!showToolbar) {
+            if (fontWrap) fontWrap.classList.add('hidden');
+            if (opacityWrap) opacityWrap.classList.add('hidden');
+            return;
+        }
+
+        const isText = elementData.type === 'text';
+        const isImage = elementData.type === 'image';
+
+        if (fontWrap) fontWrap.classList.toggle('hidden', !isText);
+        if (opacityWrap) opacityWrap.classList.toggle('hidden', !isImage);
+
+        if (fontSelect && isText) {
+            fontSelect.value = elementData.font || 'Arial';
+        }
+
+        if (opacityRange && isImage) {
+            opacityRange.value = Math.round((elementData.opacity ?? 1) * 100);
+        }
+
+        this.syncKeepAspectControls();
+    },
+
     getLayerBaseLabel(elementData) {
         if (!elementData) return 'Camada';
 

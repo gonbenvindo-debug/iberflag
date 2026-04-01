@@ -507,13 +507,22 @@ Object.assign(DesignEditor.prototype, {
         // Text properties
         const textContent = document.getElementById('prop-text-content');
         const textFont = document.getElementById('prop-text-font');
+        const quickFont = document.getElementById('quick-font-select');
         const textSize = document.getElementById('prop-text-size');
         const textColor = document.getElementById('prop-text-color');
         const textBold = document.getElementById('prop-text-bold');
         const textItalic = document.getElementById('prop-text-italic');
 
+        if (textFont && quickFont && !quickFont.options.length) {
+            quickFont.innerHTML = textFont.innerHTML;
+        }
+
         if (textContent) textContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (textFont) textFont.addEventListener('change', (e) => this.updateTextFont(e.target.value));
+        if (quickFont) quickFont.addEventListener('change', (e) => {
+            this.updateTextFont(e.target.value);
+            if (textFont) textFont.value = e.target.value;
+        });
         if (textSize) textSize.addEventListener('input', (e) => {
             this.updateTextSize(e.target.value);
             document.getElementById('prop-text-size-val').textContent = e.target.value;
@@ -530,9 +539,16 @@ Object.assign(DesignEditor.prototype, {
 
         // Image properties
         const imageOpacity = document.getElementById('prop-image-opacity');
+        const quickOpacity = document.getElementById('quick-opacity-range');
         if (imageOpacity) imageOpacity.addEventListener('input', (e) => {
             this.updateImageOpacity(e.target.value / 100);
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
+        });
+        if (quickOpacity) quickOpacity.addEventListener('input', (e) => {
+            this.updateImageOpacity(e.target.value / 100);
+            if (imageOpacity) imageOpacity.value = e.target.value;
+            const imageOpacityVal = document.getElementById('prop-image-opacity-val');
+            if (imageOpacityVal) imageOpacityVal.textContent = e.target.value;
         });
 
         const qrContent = document.getElementById('prop-qr-content');
@@ -570,6 +586,25 @@ Object.assign(DesignEditor.prototype, {
         if (cropBtn) {
             cropBtn.addEventListener('click', () => this.startCropMode());
         }
+
+        const keepAspectButtons = [
+            document.getElementById('keep-aspect-ratio'),
+            document.getElementById('quick-keep-aspect-btn')
+        ].filter(Boolean);
+
+        keepAspectButtons.forEach((button) => {
+            button.addEventListener('click', () => {
+                this.keepAspectRatio = !this.keepAspectRatio;
+                this.syncKeepAspectControls();
+            });
+        });
+
+        const quickDeleteBtn = document.getElementById('quick-delete-btn');
+        if (quickDeleteBtn) {
+            quickDeleteBtn.addEventListener('click', () => this.deleteSelected());
+        }
+
+        this.syncKeepAspectControls();
     }
 
 

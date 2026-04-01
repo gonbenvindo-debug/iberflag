@@ -14,7 +14,7 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260401c">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260401d">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260401f">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401h">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260401i">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260401f">
 </head>
 
@@ -139,7 +139,26 @@
 
             <!-- Bottom Toolbar (desktop apenas - em mobile está escondido) -->
             <div class="panel-clean editor-bottom-bar">
-                <div style="display:flex;align-items:center;gap:0.25rem;">
+                <div id="element-quick-toolbar" class="editor-context-toolbar hidden" aria-label="Acoes rapidas do elemento">
+                    <button id="quick-delete-btn" type="button" class="context-action context-action--danger">
+                        <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        <span>Apagar</span>
+                    </button>
+                    <button id="quick-keep-aspect-btn" type="button" class="context-action context-action--toggle"
+                        title="Manter proporcoes" aria-pressed="true">
+                        <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                        <span>Proporcoes</span>
+                    </button>
+                    <label id="quick-font-wrap" class="context-control hidden" for="quick-font-select">
+                        <span>Fonte</span>
+                        <select id="quick-font-select" class="context-select"></select>
+                    </label>
+                    <label id="quick-opacity-wrap" class="context-control hidden" for="quick-opacity-range">
+                        <span>Opacidade</span>
+                        <input type="range" id="quick-opacity-range" min="0" max="100" value="100">
+                    </label>
+                </div>
+                <div class="editor-zoom-controls">
                     <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
                         <i data-lucide="zoom-out" class="w-4 h-4"></i>
                     </button>
@@ -431,10 +450,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260401a" defer></script>
-    <script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260401a" defer></script>
+    <script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260401b" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260401a" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401a" defer></script>
-    <script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260401c" defer></script>
+    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401b" defer></script>
+    <script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260401d" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

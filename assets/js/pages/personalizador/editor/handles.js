@@ -409,6 +409,8 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('prop-shape-rotation').value = shapeRot;
             document.getElementById('prop-shape-rotation-val').textContent = shapeRot;
         }
+
+        this.updateContextualToolbar?.(elementData);
     },
     
     // ===== DRAG & DROP =====
