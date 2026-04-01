@@ -147,7 +147,7 @@
             }
 
             .editor-zoom-controls {
-                display: flex;
+                display: none !important;
                 align-items: center;
                 justify-content: center;
                 gap: 0.25rem;
