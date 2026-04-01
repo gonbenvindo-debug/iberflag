@@ -444,6 +444,7 @@ Object.assign(DesignEditor.prototype, {
             'preserveAspectRatio',
             objectFit === 'contain' ? 'xMidYMid meet' : objectFit === 'fill' ? 'none' : 'xMidYMid slice'
         );
+        imageElement.dataset.objectFit = objectFit;
 
         if (data.borderRadius) {
             imageElement.dataset.borderRadius = String(data.borderRadius);

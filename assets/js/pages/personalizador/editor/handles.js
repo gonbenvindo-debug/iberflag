@@ -884,6 +884,22 @@ Object.assign(DesignEditor.prototype, {
         newY = constrainedRect.y;
         newWidth = constrainedRect.width;
         newHeight = constrainedRect.height;
+
+        if (this.selectedElement.type === 'image' && this.selectedElement.imageKind !== 'qr') {
+            const currentFit = this.getImageObjectFitMode?.(this.selectedElement) || 'contain';
+            if (shouldKeepRatio) {
+                if (this.selectedElement._freeResizeObjectFitBackup) {
+                    this.setImageObjectFitMode?.(this.selectedElement, this.selectedElement._freeResizeObjectFitBackup);
+                }
+            } else {
+                if (!this.selectedElement._freeResizeObjectFitBackup) {
+                    this.selectedElement._freeResizeObjectFitBackup = currentFit;
+                }
+                if (currentFit !== 'fill') {
+                    this.setImageObjectFitMode?.(this.selectedElement, 'fill');
+                }
+            }
+        }
         
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
             // Apply new values

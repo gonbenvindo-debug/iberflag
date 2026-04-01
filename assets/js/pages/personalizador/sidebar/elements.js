@@ -56,6 +56,18 @@ Object.assign(DesignEditor.prototype, {
             data.originalSrc = node.dataset.originalSrc || '';
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
+            const preserveAspectRatio = String(node.getAttribute('preserveAspectRatio') || '').trim().toLowerCase();
+            if (node.dataset.objectFit) {
+                data.objectFit = String(node.dataset.objectFit).trim().toLowerCase();
+            } else if (preserveAspectRatio.includes('slice')) {
+                data.objectFit = 'cover';
+            } else if (preserveAspectRatio.includes('meet')) {
+                data.objectFit = 'contain';
+            } else if (preserveAspectRatio === 'none') {
+                data.objectFit = 'fill';
+            } else {
+                data.objectFit = 'contain';
+            }
             data.x = parseFloat(node.getAttribute('x') || '0');
             data.y = parseFloat(node.getAttribute('y') || '0');
             data.width = parseFloat(node.getAttribute('width') || '0');
@@ -150,6 +162,11 @@ Object.assign(DesignEditor.prototype, {
         if (elementData.type === 'image') {
             elementData.element.dataset.name = elementData.name || 'Imagem';
             elementData.element.dataset.imageKind = elementData.imageKind || 'image';
+            if (elementData.objectFit) {
+                elementData.element.dataset.objectFit = String(elementData.objectFit).trim().toLowerCase();
+            } else {
+                delete elementData.element.dataset.objectFit;
+            }
             if (elementData.originalSrc) {
                 elementData.element.dataset.originalSrc = elementData.originalSrc;
             } else {
@@ -258,6 +275,42 @@ Object.assign(DesignEditor.prototype, {
                 console.error('Error loading existing design:', error);
             }
         }
+    },
+
+    getImageObjectFitMode(elementData) {
+        if (!elementData?.element || elementData.type !== 'image') {
+            return null;
+        }
+
+        const datasetFit = String(elementData.element.dataset.objectFit || elementData.objectFit || '').trim().toLowerCase();
+        if (datasetFit) {
+            return datasetFit;
+        }
+
+        const preserveAspectRatio = String(elementData.element.getAttribute('preserveAspectRatio') || '').trim().toLowerCase();
+        if (preserveAspectRatio.includes('slice')) return 'cover';
+        if (preserveAspectRatio.includes('meet')) return 'contain';
+        if (preserveAspectRatio === 'none') return 'fill';
+        return 'contain';
+    },
+
+    setImageObjectFitMode(elementData, objectFit) {
+        if (!elementData?.element || elementData.type !== 'image') return;
+
+        const normalized = String(objectFit || '').trim().toLowerCase();
+        const nextFit = normalized === 'fill' || normalized === 'cover' || normalized === 'contain'
+            ? normalized
+            : 'contain';
+
+        const nextPreserveAspectRatio = nextFit === 'fill'
+            ? 'none'
+            : nextFit === 'cover'
+                ? 'xMidYMid slice'
+                : 'xMidYMid meet';
+
+        elementData.objectFit = nextFit;
+        elementData.element.dataset.objectFit = nextFit;
+        elementData.element.setAttribute('preserveAspectRatio', nextPreserveAspectRatio);
     },
 
     loadAutosaveDesign() {

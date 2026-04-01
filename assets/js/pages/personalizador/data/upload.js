@@ -972,6 +972,7 @@ Object.assign(DesignEditor.prototype, {
         const fullHeight = options.fullHeight || height;
         const originalSrc = options.originalSrc || src;
         const cropSourceData = options.cropSourceData || null;
+        const objectFit = String(options.objectFit || 'contain').toLowerCase();
         const x = center.x - (fitted.width / 2);
         const y = center.y - (fitted.height / 2);
 
@@ -982,10 +983,14 @@ Object.assign(DesignEditor.prototype, {
         img.setAttribute('height', String(fitted.height));
         img.setAttribute('href', src);
         img.setAttribute('data-editable', 'true');
-        img.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        img.setAttribute(
+            'preserveAspectRatio',
+            objectFit === 'fill' ? 'none' : objectFit === 'cover' ? 'xMidYMid slice' : 'xMidYMid meet'
+        );
         img.dataset.name = name;
         img.dataset.imageKind = imageKind;
         img.dataset.originalSrc = originalSrc;
+        img.dataset.objectFit = objectFit;
         img.dataset.baseX = String(x);
         img.dataset.baseY = String(y);
         img.dataset.baseWidth = String(fitted.width);
