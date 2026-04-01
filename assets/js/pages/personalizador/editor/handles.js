@@ -1063,13 +1063,24 @@ Object.assign(DesignEditor.prototype, {
             const newFontSize = Math.max(12, Math.min(120, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', newFontSize);
             this.selectedElement.size = newFontSize;
+
+            const measuredBox = this.selectedElement.element.getBBox();
             const textAnchor = this.dragStart.textAnchor || String(this.selectedElement.element.getAttribute('text-anchor') || 'middle').toLowerCase();
+            const fixedLeft = this.resizeHandle.includes('w') ? (newX + newWidth) : newX;
+            const fixedTop = this.resizeHandle.includes('n') ? (newY + newHeight) : newY;
+            const boxX = this.resizeHandle.includes('w')
+                ? fixedLeft - measuredBox.width
+                : fixedLeft;
+            const boxY = this.resizeHandle.includes('n')
+                ? fixedTop - measuredBox.height
+                : fixedTop;
+
             const x = textAnchor === 'start'
-                ? newX
+                ? boxX
                 : textAnchor === 'end'
-                    ? (newX + newWidth)
-                    : (newX + (newWidth / 2));
-            const y = newY + (newHeight / 2);
+                    ? (boxX + measuredBox.width)
+                    : (boxX + (measuredBox.width / 2));
+            const y = boxY + (measuredBox.height / 2);
 
             this.selectedElement.element.setAttribute('x', x);
             this.selectedElement.element.setAttribute('y', y);
