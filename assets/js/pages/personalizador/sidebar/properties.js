@@ -463,12 +463,14 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(opacityBtn, !isImage);
 
             if (fontBtn) {
+                fontBtn.classList.remove('hidden');
                 fontBtn.classList.toggle('active', isText);
                 fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
                 fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
             }
 
             if (opacityBtn) {
+                if (opacityAnchor) opacityAnchor.classList.remove('hidden');
                 opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
                 opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
                 opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
