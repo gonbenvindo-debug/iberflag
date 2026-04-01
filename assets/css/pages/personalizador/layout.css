@@ -251,13 +251,35 @@
         }
 
         .editor-bottom-bar {
+            display: none !important;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .editor-context-toolbar {
+            display: none !important;
+        }
+
+        #properties-panel .editor-zoom-controls {
             display: flex;
             align-items: center;
-            padding: 0.4rem 0.75rem;
-            flex-shrink: 0;
-            border-top: 1px solid var(--panel-border);
-            position: relative;
-            z-index: 2;
+            justify-content: space-between;
+            gap: 0.5rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            background: #ffffff;
+        }
+
+        #properties-panel .editor-zoom-controls button {
+            flex: 0 0 auto;
+        }
+
+        #properties-panel .editor-zoom-controls #zoom-level {
+            flex: 1 1 auto;
+            text-align: center;
         }
 
         .editor-bottom-bar > .context-popover {

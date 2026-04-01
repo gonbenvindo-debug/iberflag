@@ -701,53 +701,9 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        toolbar.classList.toggle('hidden', !hasSelection);
-
-        if (!hasSelection) {
-            this.closeQuickOpacityPopover();
-            this.closeQuickFontPopover();
-            return;
-        }
-
-        setDisabledState(duplicateBtn, false);
-        setDisabledState(centerHBtn, false);
-        setDisabledState(centerVBtn, false);
-        setDisabledState(keepAspectBtn, false);
-
-        if (fontBtn) {
-            setHiddenState(fontAnchor, !isText);
-            setHiddenState(fontBtn, !isText);
-            setHiddenState(fontPopover, !(isText && fontPopover?.classList.contains('is-open')));
-            setDisabledState(fontBtn, !isText);
-            fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
-            fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
-            fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
-            fontBtn.setAttribute('aria-expanded', String(Boolean(isText && fontPopover?.classList.contains('is-open'))));
-        }
-
-        if (opacityAnchor) {
-            setHiddenState(opacityAnchor, !isImage);
-        }
-        if (opacityBtn) {
-            setDisabledState(opacityBtn, !isImage);
-            opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
-            opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
-            opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
-            opacityBtn.setAttribute('aria-expanded', 'false');
-        }
-
-        if (isImage) {
-            this.applyQuickOpacityValue(opacityPercent, false);
-        } else {
-            this.closeQuickOpacityPopover();
-        }
-
-        if (isText) {
-            this.renderQuickFontPopover();
-        } else {
-            this.closeQuickFontPopover();
-        }
-
+        toolbar.classList.add('hidden');
+        this.closeQuickOpacityPopover();
+        this.closeQuickFontPopover();
         this.syncKeepAspectControls();
     },
 
