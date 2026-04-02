@@ -49,7 +49,7 @@ class DesignEditor {
         this.legacyCartStorageKeys = ['iberflag_cart', 'cart'];
         this.editorState = {
             mode: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
-            activeMobilePanel: 'elements',
+            activeMobilePanel: null,
             selectionType: null,
             quickFontOpen: false,
             quickOpacityOpen: false

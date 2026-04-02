@@ -191,7 +191,6 @@ Object.assign(DesignEditor.prototype, {
 
     focusPropertiesPanel() {
         if (this.isMobileViewport?.()) {
-            this.openMobilePanel?.('properties');
             return;
         }
 
@@ -209,7 +208,14 @@ Object.assign(DesignEditor.prototype, {
         document.body.classList.toggle('editor-mode-desktop', !isMobile);
 
         if (isMobile) {
-            this.openMobilePanel?.(this.editorState.activeMobilePanel || 'elements');
+            const leftOpen = document.getElementById('editor-sidebar-left')?.classList.contains('panel-open');
+            const rightOpen = document.getElementById('editor-sidebar-right')?.classList.contains('panel-open');
+            const hasOpenPanel = Boolean(leftOpen || rightOpen);
+            if (hasOpenPanel && this.editorState.activeMobilePanel) {
+                this.openMobilePanel?.(this.editorState.activeMobilePanel);
+            } else {
+                this.closeMobilePanels?.();
+            }
         } else {
             this.closeMobilePanels?.();
         }
