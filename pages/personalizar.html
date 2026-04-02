@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260402e">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260402e">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402f">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402h">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -141,7 +141,28 @@
             <div id="editor-floating-context-bar" class="panel-clean editor-floating-context-bar hidden"
                 aria-label="Opcoes contextuais do elemento">
                 <div class="editor-floating-context-inner">
-                    <span class="editor-floating-chip">Selecionado</span>
+                    <div class="editor-floating-actions" role="group" aria-label="Acoes do elemento">
+                        <button id="top-duplicate-btn" type="button" class="editor-floating-btn" title="Duplicar" aria-label="Duplicar">
+                            <i data-lucide="copy" class="w-4 h-4"></i>
+                            <span>Duplicar</span>
+                        </button>
+                        <button id="top-delete-btn" type="button" class="editor-floating-btn editor-floating-btn--danger" title="Apagar" aria-label="Apagar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            <span>Apagar</span>
+                        </button>
+                        <button id="top-center-h-btn" type="button" class="editor-floating-btn" title="Centrar horizontalmente" aria-label="Centrar horizontalmente">
+                            <i data-lucide="align-center-horizontal" class="w-4 h-4"></i>
+                            <span>Centrar H</span>
+                        </button>
+                        <button id="top-center-v-btn" type="button" class="editor-floating-btn" title="Centrar verticalmente" aria-label="Centrar verticalmente">
+                            <i data-lucide="align-center-vertical" class="w-4 h-4"></i>
+                            <span>Centrar V</span>
+                        </button>
+                        <button id="top-keep-aspect-btn" type="button" class="editor-floating-btn editor-floating-btn--toggle" title="Manter proporcoes" aria-label="Manter proporcoes" aria-pressed="true">
+                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                            <span>Proporcao</span>
+                        </button>
+                    </div>
                     <div id="top-font-group" class="editor-floating-text-group hidden">
                         <select id="top-font-select" class="quick-font-select" aria-label="Escolher fonte"></select>
                         <div class="editor-floating-size" role="group" aria-label="Tamanho da fonte">
@@ -149,23 +170,18 @@
                             <span id="top-text-size-label" class="editor-floating-size-value">24</span>
                             <button id="top-text-size-increase" type="button" class="editor-floating-step" aria-label="Aumentar fonte">+</button>
                         </div>
-                        <button id="top-font-bold-btn" type="button" class="context-action context-action--icon" aria-label="Negrito">
+                        <button id="top-font-bold-btn" type="button" class="editor-floating-font-btn" aria-label="Negrito">
                             <span class="quick-font-letter">B</span>
                         </button>
-                        <button id="top-font-italic-btn" type="button" class="context-action context-action--icon" aria-label="Italico">
+                        <button id="top-font-italic-btn" type="button" class="editor-floating-font-btn" aria-label="Italico">
                             <span class="quick-font-letter italic">I</span>
                         </button>
-                        <button id="top-font-underline-btn" type="button" class="context-action context-action--icon" aria-label="Sublinhar">
+                        <button id="top-font-underline-btn" type="button" class="editor-floating-font-btn" aria-label="Sublinhar">
                             <span class="quick-font-letter">U</span>
                         </button>
-                        <button id="top-font-caps-btn" type="button" class="context-action context-action--icon" aria-label="Caps Lock">
+                        <button id="top-font-caps-btn" type="button" class="editor-floating-font-btn" aria-label="Caps Lock">
                             <span class="quick-font-letter">Aa</span>
                         </button>
-                    </div>
-                    <div class="editor-floating-meta-group" aria-hidden="true">
-                        <span class="editor-floating-meta">Efeitos</span>
-                        <span class="editor-floating-meta">Animar</span>
-                        <span class="editor-floating-meta">Posicao</span>
                     </div>
                 </div>
             </div>
@@ -519,10 +535,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260402a" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260402b" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401c" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260402a" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260402b" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

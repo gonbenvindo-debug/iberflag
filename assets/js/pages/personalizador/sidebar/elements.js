@@ -434,9 +434,22 @@ Object.assign(DesignEditor.prototype, {
         const quickCenterVBtn = document.getElementById('quick-center-v-btn');
         if (quickCenterVBtn) quickCenterVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
 
+        const topDeleteBtn = document.getElementById('top-delete-btn');
+        if (topDeleteBtn) topDeleteBtn.addEventListener('click', () => this.executeEditorCommand('delete'));
+
+        const topDuplicateBtn = document.getElementById('top-duplicate-btn');
+        if (topDuplicateBtn) topDuplicateBtn.addEventListener('click', () => this.executeEditorCommand('duplicate'));
+
+        const topCenterHBtn = document.getElementById('top-center-h-btn');
+        if (topCenterHBtn) topCenterHBtn.addEventListener('click', () => this.executeEditorCommand('center-horizontal'));
+
+        const topCenterVBtn = document.getElementById('top-center-v-btn');
+        if (topCenterVBtn) topCenterVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
+
         const keepAspectButtons = [
             document.getElementById('keep-aspect-ratio'),
-            document.getElementById('quick-keep-aspect-btn')
+            document.getElementById('quick-keep-aspect-btn'),
+            document.getElementById('top-keep-aspect-btn')
         ].filter(Boolean);
         keepAspectButtons.forEach((button) => {
             button.addEventListener('click', (event) => {

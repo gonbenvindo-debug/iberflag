@@ -317,18 +317,18 @@ body.app-page {
 
 .editor-floating-context-bar {
     position: absolute;
-    top: 10px;
+    top: 12px;
     left: 50%;
     transform: translateX(-50%);
     z-index: 35;
     width: max-content;
-    max-width: calc(100% - 24px);
-    padding: 8px 10px;
-    border: 1px solid #2f3441 !important;
-    border-radius: 14px !important;
-    background: #161a24 !important;
-    color: #f4f6fb !important;
-    box-shadow: 0 12px 28px rgba(7, 10, 18, 0.35) !important;
+    max-width: calc(100% - 20px);
+    padding: 6px 8px;
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 8px !important;
+    background: #ffffff !important;
+    color: var(--iber-text) !important;
+    box-shadow: 0 8px 22px rgba(15, 23, 42, 0.08) !important;
 }
 
 .editor-floating-context-inner {
@@ -336,26 +336,73 @@ body.app-page {
     align-items: center;
     gap: 10px;
     min-width: 0;
+    max-width: 100%;
+    overflow-x: auto;
+    scrollbar-width: none;
 }
 
-.editor-floating-chip {
+.editor-floating-context-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.editor-floating-actions {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
+}
+
+.editor-floating-btn {
     height: 34px;
-    padding: 0 12px;
-    border: 1px solid #353c4c;
-    border-radius: 10px;
-    background: #202737;
-    color: #f2f4fa;
-    font-size: 13px;
+    min-height: 34px;
+    padding: 0 10px;
+    border: 1px solid transparent;
+    border-radius: 6px;
+    background: transparent;
+    color: var(--iber-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    font-size: 12px;
     font-weight: 700;
+    line-height: 1;
     white-space: nowrap;
+}
+
+.editor-floating-btn:hover {
+    background: var(--iber-accent-soft);
+    color: var(--iber-accent);
+    border-color: rgba(239, 72, 37, 0.24);
+}
+
+.editor-floating-btn.active,
+.editor-floating-btn[aria-pressed="true"] {
+    background: var(--iber-accent-soft);
+    color: var(--iber-accent);
+    border-color: rgba(239, 72, 37, 0.32);
+}
+
+.editor-floating-btn--danger:hover {
+    color: #b42318;
+    border-color: rgba(180, 35, 24, 0.3);
+    background: #fff1ef;
+}
+
+.editor-floating-btn:disabled,
+.editor-floating-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
+    color: var(--iber-subtext);
+    border-color: transparent;
+    background: transparent;
 }
 
 .editor-floating-text-group {
     display: inline-flex;
     align-items: center;
     gap: 6px;
+    padding-left: 10px;
+    border-left: 1px solid var(--iber-border);
 }
 
 .editor-floating-size {
@@ -364,24 +411,26 @@ body.app-page {
     gap: 6px;
     height: 34px;
     padding: 0 8px;
-    border: 1px solid #353c4c;
-    border-radius: 10px;
-    background: #202737;
+    border: 1px solid var(--iber-border);
+    border-radius: 6px;
+    background: #fff;
 }
 
 .editor-floating-step {
-    width: 18px;
-    height: 18px;
-    border: 0;
-    border-radius: 6px;
+    width: 20px;
+    height: 20px;
+    border: 1px solid transparent;
+    border-radius: 4px;
     background: transparent;
-    color: #f2f4fa;
+    color: var(--iber-text);
     font-weight: 700;
     line-height: 1;
 }
 
 .editor-floating-step:hover {
-    background: rgba(255, 255, 255, 0.1);
+    color: var(--iber-accent);
+    border-color: rgba(239, 72, 37, 0.24);
+    background: var(--iber-accent-soft);
 }
 
 .editor-floating-step.is-disabled {
@@ -390,77 +439,49 @@ body.app-page {
 }
 
 .editor-floating-size-value {
-    min-width: 22px;
+    min-width: 24px;
     text-align: center;
     font-size: 12px;
     font-weight: 700;
-    color: #f4f6fb;
-}
-
-.editor-floating-meta-group {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-}
-
-.editor-floating-meta {
-    display: inline-flex;
-    align-items: center;
-    height: 34px;
-    padding: 0 10px;
-    border-left: 1px solid #31394b;
-    color: #cad1df;
-    font-size: 13px;
-    font-weight: 600;
-    white-space: nowrap;
+    color: var(--iber-text);
 }
 
 .editor-floating-context-bar .quick-font-select {
     min-width: 170px;
     height: 34px;
-    border: 1px solid #353c4c !important;
-    border-radius: 10px !important;
-    background: #202737 !important;
-    color: #f4f6fb !important;
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 6px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
 }
 
-.editor-floating-context-bar .context-action {
+.editor-floating-font-btn {
     height: 34px;
     min-height: 34px;
-    border: 1px solid #353c4c !important;
-    background: #202737 !important;
-    color: #f4f6fb !important;
+    min-width: 34px;
+    padding: 0 8px;
+    border: 1px solid var(--iber-border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--iber-text);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.editor-floating-context-bar .context-action:hover,
-.editor-floating-context-bar .context-action.active,
-.editor-floating-context-bar .context-action[aria-pressed="true"] {
-    border-color: #ef4825 !important;
-    background: rgba(239, 72, 37, 0.14) !important;
-    color: #ff9b83 !important;
+.editor-floating-font-btn:hover,
+.editor-floating-font-btn.active,
+.editor-floating-font-btn[aria-pressed="true"] {
+    border-color: rgba(239, 72, 37, 0.32);
+    background: var(--iber-accent-soft);
+    color: var(--iber-accent);
 }
 
-#editor-floating-context-bar #quick-font-popover {
-    position: absolute !important;
-    top: calc(100% + 8px) !important;
-    left: 0 !important;
-    width: 290px;
-    border: 1px solid #353c4c !important;
-    border-radius: 12px !important;
-    background: #161a24 !important;
-    color: #f4f6fb !important;
-    box-shadow: 0 12px 28px rgba(7, 10, 18, 0.35) !important;
-}
-
-#editor-floating-context-bar .quick-font-label {
-    color: #c6ccda !important;
-}
-
-#editor-floating-context-bar .quick-font-textarea {
-    border: 1px solid #353c4c !important;
-    border-radius: 10px !important;
-    background: #202737 !important;
-    color: #f4f6fb !important;
+.editor-floating-font-btn:disabled,
+.editor-floating-font-btn.is-disabled {
+    opacity: 0.45;
+    cursor: not-allowed;
 }
 
 #editor-bottom-context-bar.hidden {

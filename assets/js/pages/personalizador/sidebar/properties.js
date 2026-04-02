@@ -678,7 +678,8 @@ Object.assign(DesignEditor.prototype, {
         const active = Boolean(this.keepAspectRatio);
         const buttons = [
             document.getElementById('keep-aspect-ratio'),
-            document.getElementById('quick-keep-aspect-btn')
+            document.getElementById('quick-keep-aspect-btn'),
+            document.getElementById('top-keep-aspect-btn')
         ].filter(Boolean);
 
         buttons.forEach((button) => {
@@ -694,6 +695,11 @@ Object.assign(DesignEditor.prototype, {
         const floatingBar = document.getElementById('editor-floating-context-bar');
         const bottomBar = document.getElementById('editor-bottom-context-bar');
         const topFontGroup = document.getElementById('top-font-group');
+        const topDeleteBtn = document.getElementById('top-delete-btn');
+        const topDuplicateBtn = document.getElementById('top-duplicate-btn');
+        const topCenterHBtn = document.getElementById('top-center-h-btn');
+        const topCenterVBtn = document.getElementById('top-center-v-btn');
+        const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -749,6 +755,11 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(keepAspectBtn, !hasSelection);
             setDisabledState(fontBtn, !isText);
             setDisabledState(opacityBtn, !isImage);
+            setDisabledState(topDeleteBtn, !hasSelection);
+            setDisabledState(topDuplicateBtn, !hasSelection);
+            setDisabledState(topCenterHBtn, !hasSelection);
+            setDisabledState(topCenterVBtn, !hasSelection);
+            setDisabledState(topKeepAspectBtn, !hasSelection);
 
             if (fontBtn) {
                 fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
@@ -800,6 +811,11 @@ Object.assign(DesignEditor.prototype, {
             this.closeQuickFontPopover();
             this.editorState.quickFontOpen = false;
             this.editorState.quickOpacityOpen = false;
+            setDisabledState(topDeleteBtn, true);
+            setDisabledState(topDuplicateBtn, true);
+            setDisabledState(topCenterHBtn, true);
+            setDisabledState(topCenterVBtn, true);
+            setDisabledState(topKeepAspectBtn, true);
             this.syncKeepAspectControls();
             return;
         }
@@ -809,6 +825,11 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(centerHBtn, false);
         setDisabledState(centerVBtn, false);
         setDisabledState(keepAspectBtn, false);
+        setDisabledState(topDeleteBtn, false);
+        setDisabledState(topDuplicateBtn, false);
+        setDisabledState(topCenterHBtn, false);
+        setDisabledState(topCenterVBtn, false);
+        setDisabledState(topKeepAspectBtn, false);
 
         if (fontBtn) {
             setHiddenState(fontAnchor, !isText);
