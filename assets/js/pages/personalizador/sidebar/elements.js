@@ -642,6 +642,14 @@ Object.assign(DesignEditor.prototype, {
         const topFontCapsBtn = document.getElementById('top-font-caps-btn');
         const topSizeDecreaseBtn = document.getElementById('top-text-size-decrease');
         const topSizeIncreaseBtn = document.getElementById('top-text-size-increase');
+        const desktopFontSelect = document.getElementById('desktop-font-select');
+        const desktopFontBoldBtn = document.getElementById('desktop-font-bold-btn');
+        const desktopFontItalicBtn = document.getElementById('desktop-font-italic-btn');
+        const desktopFontUnderlineBtn = document.getElementById('desktop-font-underline-btn');
+        const desktopFontCapsBtn = document.getElementById('desktop-font-caps-btn');
+        const desktopSizeDecreaseBtn = document.getElementById('desktop-text-size-decrease');
+        const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
+        const desktopOpacityRange = document.getElementById('desktop-opacity-range');
         if (quickTextContent) quickTextContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (quickFontSelect) quickFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
         if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
@@ -657,6 +665,14 @@ Object.assign(DesignEditor.prototype, {
         if (topFontCapsBtn) topFontCapsBtn.addEventListener('click', () => this.toggleTextCapsLock());
         if (topSizeDecreaseBtn) topSizeDecreaseBtn.addEventListener('click', () => this.stepQuickTextSize(-1));
         if (topSizeIncreaseBtn) topSizeIncreaseBtn.addEventListener('click', () => this.stepQuickTextSize(1));
+        if (desktopFontSelect) desktopFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
+        if (desktopFontBoldBtn) desktopFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
+        if (desktopFontItalicBtn) desktopFontItalicBtn.addEventListener('click', () => this.toggleTextItalic());
+        if (desktopFontUnderlineBtn) desktopFontUnderlineBtn.addEventListener('click', () => this.updateTextUnderline(!this.selectedElement?.underline));
+        if (desktopFontCapsBtn) desktopFontCapsBtn.addEventListener('click', () => this.toggleTextCapsLock());
+        if (desktopSizeDecreaseBtn) desktopSizeDecreaseBtn.addEventListener('click', () => this.stepQuickTextSize(-1));
+        if (desktopSizeIncreaseBtn) desktopSizeIncreaseBtn.addEventListener('click', () => this.stepQuickTextSize(1));
+        if (desktopOpacityRange) desktopOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {

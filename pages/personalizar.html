@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260402e">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260402e">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402i">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402j">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -308,6 +308,33 @@
                                 <span class="action-btn__label">Centrar V</span>
                             </button>
                         </div>
+                        <div id="desktop-selection-toolbar" class="desktop-selection-toolbar hidden" aria-label="Propriedades contextuais">
+                            <div id="desktop-text-group" class="desktop-context-group hidden">
+                                <select id="desktop-font-select" class="desktop-inline-select" aria-label="Escolher fonte"></select>
+                                <div class="desktop-inline-size" role="group" aria-label="Tamanho da fonte">
+                                    <button id="desktop-text-size-decrease" type="button" class="desktop-inline-step" aria-label="Diminuir fonte">-</button>
+                                    <span id="desktop-text-size-label" class="desktop-inline-size-value">24</span>
+                                    <button id="desktop-text-size-increase" type="button" class="desktop-inline-step" aria-label="Aumentar fonte">+</button>
+                                </div>
+                                <button id="desktop-font-bold-btn" type="button" class="desktop-inline-font-btn" aria-label="Negrito">
+                                    <span class="quick-font-letter">B</span>
+                                </button>
+                                <button id="desktop-font-italic-btn" type="button" class="desktop-inline-font-btn" aria-label="Italico">
+                                    <span class="quick-font-letter italic">I</span>
+                                </button>
+                                <button id="desktop-font-underline-btn" type="button" class="desktop-inline-font-btn" aria-label="Sublinhar">
+                                    <span class="quick-font-letter">U</span>
+                                </button>
+                                <button id="desktop-font-caps-btn" type="button" class="desktop-inline-font-btn" aria-label="Caps Lock">
+                                    <span class="quick-font-letter">Aa</span>
+                                </button>
+                            </div>
+                            <div id="desktop-image-group" class="desktop-context-group hidden">
+                                <span class="desktop-inline-label">Opacidade</span>
+                                <input id="desktop-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
+                                <span id="desktop-opacity-value" class="desktop-inline-value">100%</span>
+                            </div>
+                        </div>
                     </div>
 
                     <div id="no-selection" class="text-center text-gray-400 py-12">
@@ -535,10 +562,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260402b" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260402c" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401c" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260402c" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260402d" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

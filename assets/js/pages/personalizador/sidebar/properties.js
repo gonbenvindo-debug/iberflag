@@ -185,6 +185,14 @@ Object.assign(DesignEditor.prototype, {
         const topSizeLabel = document.getElementById('top-text-size-label');
         const topSizeDecreaseBtn = document.getElementById('top-text-size-decrease');
         const topSizeIncreaseBtn = document.getElementById('top-text-size-increase');
+        const desktopFontSelect = document.getElementById('desktop-font-select');
+        const desktopBoldBtn = document.getElementById('desktop-font-bold-btn');
+        const desktopItalicBtn = document.getElementById('desktop-font-italic-btn');
+        const desktopUnderlineBtn = document.getElementById('desktop-font-underline-btn');
+        const desktopCapsBtn = document.getElementById('desktop-font-caps-btn');
+        const desktopSizeLabel = document.getElementById('desktop-text-size-label');
+        const desktopSizeDecreaseBtn = document.getElementById('desktop-text-size-decrease');
+        const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
         const quickSizeDecreaseBtn = document.getElementById('quick-text-size-decrease');
         const quickSizeIncreaseBtn = document.getElementById('quick-text-size-increase');
         const textFont = document.getElementById('prop-text-font');
@@ -220,6 +228,12 @@ Object.assign(DesignEditor.prototype, {
             topBoldBtn.disabled = !hasText;
             topBoldBtn.classList.toggle('is-disabled', !hasText);
         }
+        if (desktopBoldBtn) {
+            desktopBoldBtn.classList.toggle('active', isBold);
+            desktopBoldBtn.setAttribute('aria-pressed', String(isBold));
+            desktopBoldBtn.disabled = !hasText;
+            desktopBoldBtn.classList.toggle('is-disabled', !hasText);
+        }
         if (italicBtn) {
             italicBtn.classList.toggle('active', isItalic);
             italicBtn.setAttribute('aria-pressed', String(isItalic));
@@ -229,6 +243,12 @@ Object.assign(DesignEditor.prototype, {
             topItalicBtn.setAttribute('aria-pressed', String(isItalic));
             topItalicBtn.disabled = !hasText;
             topItalicBtn.classList.toggle('is-disabled', !hasText);
+        }
+        if (desktopItalicBtn) {
+            desktopItalicBtn.classList.toggle('active', isItalic);
+            desktopItalicBtn.setAttribute('aria-pressed', String(isItalic));
+            desktopItalicBtn.disabled = !hasText;
+            desktopItalicBtn.classList.toggle('is-disabled', !hasText);
         }
         if (underlineBtn) {
             underlineBtn.classList.toggle('active', isUnderline);
@@ -242,6 +262,12 @@ Object.assign(DesignEditor.prototype, {
             topUnderlineBtn.disabled = !hasText;
             topUnderlineBtn.classList.toggle('is-disabled', !hasText);
         }
+        if (desktopUnderlineBtn) {
+            desktopUnderlineBtn.classList.toggle('active', isUnderline);
+            desktopUnderlineBtn.setAttribute('aria-pressed', String(isUnderline));
+            desktopUnderlineBtn.disabled = !hasText;
+            desktopUnderlineBtn.classList.toggle('is-disabled', !hasText);
+        }
         if (capsBtn) {
             capsBtn.classList.toggle('active', isCapsLock);
             capsBtn.setAttribute('aria-pressed', String(isCapsLock));
@@ -254,8 +280,17 @@ Object.assign(DesignEditor.prototype, {
             topCapsBtn.disabled = !hasText;
             topCapsBtn.classList.toggle('is-disabled', !hasText);
         }
+        if (desktopCapsBtn) {
+            desktopCapsBtn.classList.toggle('active', isCapsLock);
+            desktopCapsBtn.setAttribute('aria-pressed', String(isCapsLock));
+            desktopCapsBtn.disabled = !hasText;
+            desktopCapsBtn.classList.toggle('is-disabled', !hasText);
+        }
         if (topSizeLabel) {
             topSizeLabel.textContent = String(sizeValue);
+        }
+        if (desktopSizeLabel) {
+            desktopSizeLabel.textContent = String(sizeValue);
         }
         if (quickSizeDecreaseBtn) {
             quickSizeDecreaseBtn.disabled = !hasText;
@@ -272,6 +307,14 @@ Object.assign(DesignEditor.prototype, {
         if (topSizeIncreaseBtn) {
             topSizeIncreaseBtn.disabled = !hasText;
             topSizeIncreaseBtn.classList.toggle('is-disabled', !hasText);
+        }
+        if (desktopSizeDecreaseBtn) {
+            desktopSizeDecreaseBtn.disabled = !hasText;
+            desktopSizeDecreaseBtn.classList.toggle('is-disabled', !hasText);
+        }
+        if (desktopSizeIncreaseBtn) {
+            desktopSizeIncreaseBtn.disabled = !hasText;
+            desktopSizeIncreaseBtn.classList.toggle('is-disabled', !hasText);
         }
 
         fontSelect.disabled = !hasText;
@@ -292,6 +335,12 @@ Object.assign(DesignEditor.prototype, {
             topFontSelect.innerHTML = optionsHtml;
             topFontSelect.value = fontSelect.value;
         }
+        if (desktopFontSelect) {
+            desktopFontSelect.disabled = !hasText;
+            desktopFontSelect.classList.toggle('is-disabled', !hasText);
+            desktopFontSelect.innerHTML = optionsHtml;
+            desktopFontSelect.value = fontSelect.value;
+        }
     },
 
     selectQuickFontFamily(font) {
@@ -300,6 +349,7 @@ Object.assign(DesignEditor.prototype, {
         const textFont = document.getElementById('prop-text-font');
         const quickFontSelect = document.getElementById('quick-font-select');
         const topFontSelect = document.getElementById('top-font-select');
+        const desktopFontSelect = document.getElementById('desktop-font-select');
         if (textFont && font) {
             textFont.value = font;
         }
@@ -308,6 +358,9 @@ Object.assign(DesignEditor.prototype, {
         }
         if (topFontSelect && font) {
             topFontSelect.value = font;
+        }
+        if (desktopFontSelect && font) {
+            desktopFontSelect.value = font;
         }
         if (font) {
             this.updateTextFont(font);
@@ -334,6 +387,10 @@ Object.assign(DesignEditor.prototype, {
         const topSizeValue = document.getElementById('top-text-size-label');
         if (topSizeValue) {
             topSizeValue.textContent = String(nextSize);
+        }
+        const desktopSizeValue = document.getElementById('desktop-text-size-label');
+        if (desktopSizeValue) {
+            desktopSizeValue.textContent = String(nextSize);
         }
         this.renderQuickFontPopover();
         this.updateContextualToolbar(this.selectedElement);
@@ -392,11 +449,15 @@ Object.assign(DesignEditor.prototype, {
         const opacityBtn = document.getElementById('quick-opacity-btn');
         const imageOpacity = document.getElementById('prop-image-opacity');
         const imageOpacityValue = document.getElementById('prop-image-opacity-val');
+        const desktopOpacityRange = document.getElementById('desktop-opacity-range');
+        const desktopOpacityValue = document.getElementById('desktop-opacity-value');
 
         if (opacityRange) opacityRange.value = String(nextValue);
         if (opacityValue) opacityValue.textContent = `${nextValue}%`;
         if (imageOpacity) imageOpacity.value = String(nextValue);
         if (imageOpacityValue) imageOpacityValue.textContent = String(nextValue);
+        if (desktopOpacityRange) desktopOpacityRange.value = String(nextValue);
+        if (desktopOpacityValue) desktopOpacityValue.textContent = `${nextValue}%`;
         if (opacityBtn) {
             opacityBtn.title = `Opacidade: ${nextValue}%`;
             opacityBtn.setAttribute('aria-label', `Opacidade: ${nextValue}%`);
@@ -705,6 +766,10 @@ Object.assign(DesignEditor.prototype, {
         const panelCenterHBtn = document.getElementById('center-h-btn');
         const panelCenterVBtn = document.getElementById('center-v-btn');
         const panelKeepAspectBtn = document.getElementById('keep-aspect-ratio');
+        const desktopSelectionToolbar = document.getElementById('desktop-selection-toolbar');
+        const desktopTextGroup = document.getElementById('desktop-text-group');
+        const desktopImageGroup = document.getElementById('desktop-image-group');
+        const panelQuickActions = document.querySelector('#properties-panel .properties-quick-actions');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -743,6 +808,10 @@ Object.assign(DesignEditor.prototype, {
             if (bottomBar) bottomBar.classList.toggle('hidden', !hasSelection);
             toolbar.classList.toggle('hidden', !hasSelection);
             setHiddenState(topFontGroup, !isText);
+            setHiddenState(desktopSelectionToolbar, true);
+            setHiddenState(desktopTextGroup, true);
+            setHiddenState(desktopImageGroup, true);
+            setHiddenState(panelQuickActions, false);
 
             setHiddenState(duplicateBtn, false);
             setHiddenState(centerHBtn, false);
@@ -815,6 +884,10 @@ Object.assign(DesignEditor.prototype, {
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
         setHiddenState(topFontGroup, true);
+        setHiddenState(desktopSelectionToolbar, !(hasSelection && (isText || isImage)));
+        setHiddenState(desktopTextGroup, !isText);
+        setHiddenState(desktopImageGroup, !isImage);
+        setHiddenState(panelQuickActions, !hasSelection);
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();
@@ -831,6 +904,7 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(panelCenterHBtn, true);
             setDisabledState(panelCenterVBtn, true);
             setDisabledState(panelKeepAspectBtn, true);
+            this.applyQuickOpacityValue(100, false);
             this.syncKeepAspectControls();
             return;
         }
@@ -850,6 +924,13 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(panelCenterHBtn, false);
         setDisabledState(panelCenterVBtn, false);
         setDisabledState(panelKeepAspectBtn, false);
+
+        if (isImage) {
+            this.applyQuickOpacityValue(opacityPercent, false);
+        }
+        if (isText) {
+            this.renderQuickFontPopover();
+        }
 
         if (fontBtn) {
             setHiddenState(fontAnchor, true);
