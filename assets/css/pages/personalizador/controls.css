@@ -1,59 +1,312 @@
+:root {
+    --iber-bg: #ffffff;
+    --iber-surface: #ffffff;
+    --iber-muted: #f5f6f8;
+    --iber-border: #e6e8ec;
+    --iber-text: #111111;
+    --iber-subtext: #5f6673;
+    --iber-accent: #ef4825;
+    --iber-accent-soft: #fff1ec;
+}
 
-        /* Slide Button Style */
-        .slide-button {
-            display: inline-flex;
-            align-items: center;
-            position: relative;
-            width: 52px;
-            height: 30px;
-            background: linear-gradient(180deg, #cbd5e1 0%, #b8c3d3 100%);
-            border: 1px solid rgba(148, 163, 184, 0.25);
-            border-radius: 9999px;
-            cursor: pointer;
-            transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
-            padding: 2px;
-            box-sizing: border-box;
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08);
-        }
+body.app-page {
+    background: var(--iber-bg) !important;
+    color: var(--iber-text) !important;
+}
 
-        .slide-button:focus-visible {
-            outline: 2px solid rgba(37, 99, 235, 0.45);
-            outline-offset: 2px;
-        }
+#editor-nav {
+    background: var(--iber-surface) !important;
+    border-bottom: 1px solid var(--iber-border) !important;
+    box-shadow: none !important;
+}
 
-        .slide-button.active {
-            background: linear-gradient(180deg, #2563eb 0%, #1d4ed8 100%);
-            border-color: rgba(37, 99, 235, 0.35);
-            box-shadow: inset 0 1px 2px rgba(15, 23, 42, 0.08), 0 6px 14px rgba(37, 99, 235, 0.18);
-        }
+#editor-nav button:not(#add-to-cart-btn),
+#editor-nav a[title="Fechar editor"] {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
 
-        .slide-button-toggle {
-            width: 26px;
-            height: 26px;
-            background-color: white;
-            border-radius: 12px;
-            transition: transform 0.3s ease;
-            box-shadow: 0 3px 8px rgba(15, 23, 42, 0.16);
-        }
+#editor-nav button:not(#add-to-cart-btn):hover,
+#editor-nav a[title="Fechar editor"]:hover {
+    border-color: var(--iber-accent) !important;
+    color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+}
 
-        .slide-button.active .slide-button-toggle {
-            transform: translateX(22px);
-        }
+#add-to-cart-btn {
+    background: var(--iber-accent) !important;
+    border: 1px solid var(--iber-accent) !important;
+    border-radius: 10px !important;
+    color: #fff !important;
+    box-shadow: none !important;
+}
 
-        @media (max-width: 1023px) {
-            .slide-button {
-                width: 46px;
-                height: 28px;
-                padding: 2px;
-                flex: 0 0 auto;
-            }
+#add-to-cart-btn:hover {
+    filter: brightness(0.96);
+}
 
-            .slide-button-toggle {
-                width: 22px;
-                height: 22px;
-            }
+#editor-info-bar {
+    background: var(--iber-surface) !important;
+    border-bottom: 1px solid var(--iber-border) !important;
+    color: var(--iber-text) !important;
+}
 
-            .slide-button.active .slide-button-toggle {
-                transform: translateX(18px);
-            }
-        }
+.editor-info-name,
+.editor-info-price {
+    color: var(--iber-text) !important;
+}
+
+.editor-body-layout {
+    background: #f7f8fa !important;
+    gap: 12px !important;
+    padding: 12px !important;
+}
+
+.editor-sidebar-left,
+.editor-sidebar-right {
+    background: var(--iber-surface) !important;
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 12px !important;
+    box-shadow: none !important;
+}
+
+.sidebar-shell,
+.sidebar-section {
+    background: transparent !important;
+}
+
+.drawer-grip {
+    background: var(--iber-border) !important;
+}
+
+.elements-group-title,
+.section-title {
+    color: #1f232b !important;
+    letter-spacing: 0.08em !important;
+}
+
+.tool-tile,
+.shape-btn {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+.tool-tile__icon {
+    border-radius: 8px !important;
+    background: #f8f9fb !important;
+    color: var(--iber-text) !important;
+}
+
+.tool-tile:hover,
+.shape-btn:hover {
+    border-color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+    color: var(--iber-accent) !important;
+    box-shadow: none !important;
+}
+
+.layer-item {
+    border: 1px solid var(--iber-border) !important;
+    border-left: 2px solid transparent !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+.layer-item:hover {
+    border-left-color: var(--iber-accent) !important;
+    background: #fff !important;
+}
+
+.layer-item.bg-blue-50 {
+    background: var(--iber-accent-soft) !important;
+    border-left-color: var(--iber-accent) !important;
+}
+
+.action-btn {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+.action-btn:hover {
+    border-color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+    color: var(--iber-accent) !important;
+}
+
+#no-selection,
+#text-properties,
+#image-properties,
+#shape-properties {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+#properties-panel input:not([type="range"]):not([type="color"]),
+#properties-panel select,
+#properties-panel textarea {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+#properties-panel input[type="range"] {
+    accent-color: var(--iber-accent) !important;
+}
+
+/* Slide Button Style */
+.slide-button {
+    display: inline-flex;
+    align-items: center;
+    position: relative;
+    width: 52px;
+    height: 30px;
+    background: #dadfe7;
+    border: 1px solid #cdd3dd;
+    border-radius: 9999px;
+    cursor: pointer;
+    transition: background-color 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+    padding: 2px;
+    box-sizing: border-box;
+    box-shadow: none;
+}
+
+.slide-button:focus-visible {
+    outline: 2px solid rgba(239, 72, 37, 0.35);
+    outline-offset: 2px;
+}
+
+.slide-button.active {
+    background: var(--iber-accent);
+    border-color: var(--iber-accent);
+    box-shadow: none;
+}
+
+.slide-button-toggle {
+    width: 26px;
+    height: 26px;
+    background-color: #fff;
+    border-radius: 12px;
+    transition: transform 0.3s ease;
+    box-shadow: none;
+}
+
+.slide-button.active .slide-button-toggle {
+    transform: translateX(22px);
+}
+
+.editor-main {
+    border-radius: 12px !important;
+    background: #fff !important;
+}
+
+.canvas-container {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+#canvas-stage {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.editor-bottom-bar {
+    border-top: 1px solid var(--iber-border) !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+.context-action {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+    box-shadow: none !important;
+}
+
+.context-action:hover,
+.context-action.active,
+.context-action[aria-pressed="true"] {
+    border-color: var(--iber-accent) !important;
+    color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+}
+
+.context-popover {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    box-shadow: none !important;
+}
+
+.quick-font-textarea,
+.quick-font-select {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 10px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+}
+
+.quick-font-action {
+    border: 1px solid var(--iber-border) !important;
+    border-radius: 8px !important;
+    background: #fff !important;
+    color: var(--iber-text) !important;
+}
+
+.quick-font-action:hover,
+.quick-font-action.active {
+    border-color: var(--iber-accent) !important;
+    color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+}
+
+.editor-mobile-tabs {
+    border-top: 1px solid var(--iber-border) !important;
+    background: #fff !important;
+}
+
+.editor-mobile-tab {
+    color: var(--iber-subtext) !important;
+}
+
+.editor-mobile-tab.active {
+    color: var(--iber-accent) !important;
+}
+
+@media (max-width: 1023px) {
+    .slide-button {
+        width: 46px;
+        height: 28px;
+        padding: 2px;
+        flex: 0 0 auto;
+    }
+
+    .slide-button-toggle {
+        width: 22px;
+        height: 22px;
+    }
+
+    .slide-button.active .slide-button-toggle {
+        transform: translateX(18px);
+    }
+}
