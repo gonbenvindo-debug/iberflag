@@ -805,8 +805,8 @@ Object.assign(DesignEditor.prototype, {
 
         if (isMobile) {
             if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
-            if (bottomBar) bottomBar.classList.toggle('hidden', !hasSelection);
-            toolbar.classList.toggle('hidden', !hasSelection);
+            if (bottomBar) bottomBar.classList.add('hidden');
+            toolbar.classList.add('hidden');
             setHiddenState(topFontGroup, !isText);
             setHiddenState(desktopSelectionToolbar, true);
             setHiddenState(desktopTextGroup, true);
@@ -817,10 +817,10 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(centerHBtn, false);
             setHiddenState(centerVBtn, false);
             setHiddenState(keepAspectBtn, false);
-            setHiddenState(fontAnchor, false);
-            setHiddenState(fontBtn, false);
-            setHiddenState(fontPopover, !(isText && fontPopover?.classList.contains('is-open')));
-            setHiddenState(opacityAnchor, false);
+            setHiddenState(fontAnchor, true);
+            setHiddenState(fontBtn, true);
+            setHiddenState(fontPopover, true);
+            setHiddenState(opacityAnchor, true);
 
             setDisabledState(document.getElementById('quick-delete-btn'), !hasSelection);
             setDisabledState(duplicateBtn, !hasSelection);
@@ -841,24 +841,17 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(panelKeepAspectBtn, !hasSelection);
 
             if (fontBtn) {
-                fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
-                fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte';
-                fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Fonte');
-                fontBtn.setAttribute('aria-expanded', String(Boolean(isText && fontPopover?.classList.contains('is-open'))));
+                fontBtn.classList.remove('active');
+                fontBtn.setAttribute('aria-expanded', 'false');
             }
-
             if (opacityBtn) {
-                if (opacityAnchor) opacityAnchor.classList.remove('hidden');
-                opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
-                opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
-                opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
+                opacityBtn.classList.remove('active');
                 opacityBtn.setAttribute('aria-expanded', 'false');
             }
 
             if (isImage) {
                 this.applyQuickOpacityValue(opacityPercent, false);
             } else {
-                this.closeQuickOpacityPopover();
                 if (opacityRange) opacityRange.value = '100';
                 if (opacityValue) opacityValue.textContent = '100%';
             }
@@ -866,8 +859,10 @@ Object.assign(DesignEditor.prototype, {
             if (isText) {
                 this.renderQuickFontPopover();
             } else {
-                this.closeQuickFontPopover();
+                this.renderQuickFontPopover();
             }
+            this.closeQuickOpacityPopover();
+            this.closeQuickFontPopover();
 
             if (!hasSelection && keepAspectBtn) {
                 keepAspectBtn.classList.remove('active');
