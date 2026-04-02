@@ -207,6 +207,7 @@ class DesignEditor {
             document.getElementById('elements-panel')?.classList.remove('hidden');
             document.getElementById('layers-panel')?.classList.remove('hidden');
             this.editorState.activeMobilePanel = null;
+            this.updateContextualToolbar?.(this.selectedElement);
         };
 
         backdrop.addEventListener('click', closeAll);
@@ -229,6 +230,7 @@ class DesignEditor {
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
                 this.editorState.activeMobilePanel = panelId === 'layers-panel' ? 'layers' : 'elements';
+                this.updateContextualToolbar?.(this.selectedElement);
             }
         };
 
@@ -245,6 +247,7 @@ class DesignEditor {
                     document.getElementById(tabId)?.classList.add('active');
                 }
                 this.editorState.activeMobilePanel = 'properties';
+                this.updateContextualToolbar?.(this.selectedElement);
             }
         };
 
@@ -269,6 +272,16 @@ class DesignEditor {
                 return;
             }
             openLeft('elements-panel', 'mobile-tab-elements');
+        };
+
+        this.toggleMobilePropertiesPanel = () => {
+            if (!this.isMobileViewport()) return;
+            const isRightOpen = sidebarRight.classList.contains('panel-open');
+            if (isRightOpen) {
+                closeAll();
+                return;
+            }
+            openRight();
         };
     }
 

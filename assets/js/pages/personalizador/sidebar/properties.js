@@ -761,6 +761,7 @@ Object.assign(DesignEditor.prototype, {
         const topCenterHBtn = document.getElementById('top-center-h-btn');
         const topCenterVBtn = document.getElementById('top-center-v-btn');
         const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
+        const topMoreBtn = document.getElementById('top-more-btn');
         const panelDeleteBtn = document.getElementById('delete-element-btn');
         const panelDuplicateBtn = document.getElementById('duplicate-element-btn');
         const panelCenterHBtn = document.getElementById('center-h-btn');
@@ -807,7 +808,7 @@ Object.assign(DesignEditor.prototype, {
             if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
             if (bottomBar) bottomBar.classList.add('hidden');
             toolbar.classList.add('hidden');
-            setHiddenState(topFontGroup, !isText);
+            setHiddenState(topFontGroup, true);
             setHiddenState(desktopSelectionToolbar, true);
             setHiddenState(desktopTextGroup, true);
             setHiddenState(desktopImageGroup, true);
@@ -834,11 +835,17 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, !hasSelection);
             setDisabledState(topCenterVBtn, !hasSelection);
             setDisabledState(topKeepAspectBtn, !hasSelection);
+            setDisabledState(topMoreBtn, !hasSelection);
             setDisabledState(panelDeleteBtn, !hasSelection);
             setDisabledState(panelDuplicateBtn, !hasSelection);
             setDisabledState(panelCenterHBtn, !hasSelection);
             setDisabledState(panelCenterVBtn, !hasSelection);
             setDisabledState(panelKeepAspectBtn, !hasSelection);
+            if (topMoreBtn) {
+                const mobileDetailsOpen = Boolean(document.getElementById('editor-sidebar-right')?.classList.contains('panel-open'));
+                topMoreBtn.classList.toggle('active', hasSelection && mobileDetailsOpen);
+                topMoreBtn.setAttribute('aria-expanded', String(hasSelection && mobileDetailsOpen));
+            }
 
             if (fontBtn) {
                 fontBtn.classList.remove('active');
@@ -894,12 +901,17 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, true);
             setDisabledState(topCenterVBtn, true);
             setDisabledState(topKeepAspectBtn, true);
+            setDisabledState(topMoreBtn, true);
             setDisabledState(panelDeleteBtn, true);
             setDisabledState(panelDuplicateBtn, true);
             setDisabledState(panelCenterHBtn, true);
             setDisabledState(panelCenterVBtn, true);
             setDisabledState(panelKeepAspectBtn, true);
             this.applyQuickOpacityValue(100, false);
+            if (topMoreBtn) {
+                topMoreBtn.classList.remove('active');
+                topMoreBtn.setAttribute('aria-expanded', 'false');
+            }
             this.syncKeepAspectControls();
             return;
         }
@@ -914,11 +926,16 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
         setDisabledState(topKeepAspectBtn, false);
+        setDisabledState(topMoreBtn, true);
         setDisabledState(panelDeleteBtn, false);
         setDisabledState(panelDuplicateBtn, false);
         setDisabledState(panelCenterHBtn, false);
         setDisabledState(panelCenterVBtn, false);
         setDisabledState(panelKeepAspectBtn, false);
+        if (topMoreBtn) {
+            topMoreBtn.classList.remove('active');
+            topMoreBtn.setAttribute('aria-expanded', 'false');
+        }
 
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);

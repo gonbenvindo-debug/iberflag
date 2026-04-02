@@ -446,6 +446,14 @@ Object.assign(DesignEditor.prototype, {
         const topCenterVBtn = document.getElementById('top-center-v-btn');
         if (topCenterVBtn) topCenterVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
 
+        const topMoreBtn = document.getElementById('top-more-btn');
+        if (topMoreBtn) topMoreBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.toggleMobilePropertiesPanel?.();
+            this.updateContextualToolbar?.(this.selectedElement);
+        });
+
         const keepAspectButtons = [
             document.getElementById('keep-aspect-ratio'),
             document.getElementById('quick-keep-aspect-btn'),

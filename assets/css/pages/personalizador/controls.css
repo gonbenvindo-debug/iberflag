@@ -510,6 +510,10 @@ body.app-page {
     background: #fff1ef;
 }
 
+.editor-floating-btn--more {
+    border-color: rgba(239, 72, 37, 0.22);
+}
+
 .editor-floating-btn:disabled,
 .editor-floating-btn.is-disabled {
     opacity: 0.45;
@@ -630,9 +634,19 @@ body.editor-mode-desktop #editor-floating-context-bar {
         max-width: calc(100% - 12px);
     }
 
+    #top-font-group {
+        display: none !important;
+    }
+
+    .editor-floating-actions {
+        gap: 2px;
+    }
+
     .editor-floating-actions .editor-floating-btn {
-        width: 34px;
-        min-width: 34px;
+        width: 32px;
+        min-width: 32px;
+        height: 32px;
+        min-height: 32px;
         padding: 0;
         gap: 0;
     }
