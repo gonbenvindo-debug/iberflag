@@ -190,6 +190,11 @@ Object.assign(DesignEditor.prototype, {
     },
 
     focusPropertiesPanel() {
+        if (this.isMobileViewport?.()) {
+            this.openMobilePanel?.('properties');
+            return;
+        }
+
         const drawer = document.getElementById('editor-properties-drawer');
         if (drawer) {
             drawer.classList.remove('hidden');
@@ -197,7 +202,19 @@ Object.assign(DesignEditor.prototype, {
     },
 
     updateSidebarMode() {
-        return;
+        const isMobile = Boolean(this.isMobileViewport?.());
+        this.editorState = this.editorState || {};
+        this.editorState.mode = isMobile ? 'mobile' : 'desktop';
+        document.body.classList.toggle('editor-mode-mobile', isMobile);
+        document.body.classList.toggle('editor-mode-desktop', !isMobile);
+
+        if (isMobile) {
+            this.openMobilePanel?.(this.editorState.activeMobilePanel || 'elements');
+        } else {
+            this.closeMobilePanels?.();
+        }
+
+        this.updateContextualToolbar?.(this.selectedElement);
     },
 
     clearPropertiesSections() {
@@ -213,6 +230,8 @@ Object.assign(DesignEditor.prototype, {
             this.closeInlineTextEditor?.(true);
         }
         this.selectedElement = null;
+        this.editorState = this.editorState || {};
+        this.editorState.selectionType = null;
         this.hideResizeHandles();
         this.elements.forEach(el => el.element.classList.remove('element-selected'));
         this.clearPropertiesSections();

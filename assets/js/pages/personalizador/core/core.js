@@ -47,6 +47,14 @@ class DesignEditor {
         this.selectedBaseId = null;
         this.cartStorageKey = 'iberflag_cart';
         this.legacyCartStorageKeys = ['iberflag_cart', 'cart'];
+        this.editorState = {
+            mode: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
+            activeMobilePanel: 'elements',
+            selectionType: null,
+            quickFontOpen: false,
+            quickOpacityOpen: false
+        };
+        this.mobileUI = null;
         // Start with the full checkerboard area; templates can still override
         // this later, but the default editor workspace should not feel inset.
         this.printAreaBounds = { x: 0, y: 0, width: 800, height: 600 };
@@ -80,6 +88,10 @@ class DesignEditor {
         this.cartStepsDesignPreview = '';
 
         this.init();
+    }
+
+    isMobileViewport() {
+        return window.matchMedia('(max-width: 767px)').matches;
     }
 
     async init() {
@@ -132,6 +144,15 @@ class DesignEditor {
 
         if (!backdrop || !sidebarLeft || !sidebarRight) return;
 
+        this.mobileUI = {
+            backdrop,
+            sidebarLeft,
+            sidebarRight,
+            tabElements,
+            tabProperties,
+            tabLayers
+        };
+
         let isClosingProgrammatically = false;
 
         const closeAll = () => {
@@ -143,6 +164,7 @@ class DesignEditor {
             document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('elements-panel')?.classList.remove('hidden');
             document.getElementById('layers-panel')?.classList.remove('hidden');
+            this.editorState.activeMobilePanel = null;
         };
 
         backdrop.addEventListener('click', closeAll);
@@ -164,6 +186,7 @@ class DesignEditor {
                 sidebarLeft.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
+                this.editorState.activeMobilePanel = panelId === 'layers-panel' ? 'layers' : 'elements';
             }
         };
 
@@ -177,6 +200,7 @@ class DesignEditor {
                 sidebarRight.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
+                this.editorState.activeMobilePanel = 'properties';
             }
         };
 
@@ -188,6 +212,20 @@ class DesignEditor {
         this.preventSidebarClose = () => {
             isClosingProgrammatically = true;
             setTimeout(() => { isClosingProgrammatically = false; }, 100);
+        };
+
+        this.closeMobilePanels = closeAll;
+        this.openMobilePanel = (panelName) => {
+            if (!this.isMobileViewport()) return;
+            if (panelName === 'properties') {
+                openRight('mobile-tab-properties');
+                return;
+            }
+            if (panelName === 'layers') {
+                openLeft('layers-panel', 'mobile-tab-layers');
+                return;
+            }
+            openLeft('elements-panel', 'mobile-tab-elements');
         };
     }
 

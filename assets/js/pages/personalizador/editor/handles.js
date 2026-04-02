@@ -159,6 +159,8 @@ Object.assign(DesignEditor.prototype, {
         });
         
         this.selectedElement = elementData;
+        this.editorState = this.editorState || {};
+        this.editorState.selectionType = elementData?.type || null;
         elementData.element.classList.add('element-selected');
         
         // Add class to body for mobile tab visibility

@@ -466,6 +466,7 @@ Object.assign(DesignEditor.prototype, {
             this._lastViewportStageWidth = null;
             this._lastViewportStageHeight = null;
             this._templateLayoutNeedsReflow = true;
+            this.updateSidebarMode?.();
             this.syncCanvasViewport();
             if (this.selectedElement) {
                 this.requestHandlesRefresh?.();

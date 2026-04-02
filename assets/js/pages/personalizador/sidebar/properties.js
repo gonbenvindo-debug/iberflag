@@ -614,6 +614,9 @@ Object.assign(DesignEditor.prototype, {
         const toolbar = document.getElementById('element-quick-toolbar');
         if (!toolbar) return;
 
+        this.editorState = this.editorState || {};
+        this.editorState.selectionType = elementData?.type || null;
+
         const duplicateBtn = document.getElementById('quick-duplicate-btn');
         const centerHBtn = document.getElementById('quick-center-h-btn');
         const centerVBtn = document.getElementById('quick-center-v-btn');
@@ -697,6 +700,8 @@ Object.assign(DesignEditor.prototype, {
                 keepAspectBtn.setAttribute('aria-pressed', 'false');
             }
 
+            this.editorState.quickFontOpen = Boolean(isText && fontPopover?.classList.contains('is-open'));
+            this.editorState.quickOpacityOpen = Boolean(isImage && opacityBtn?.getAttribute('aria-expanded') === 'true');
             this.syncKeepAspectControls();
             return;
         }
@@ -704,6 +709,8 @@ Object.assign(DesignEditor.prototype, {
         toolbar.classList.add('hidden');
         this.closeQuickOpacityPopover();
         this.closeQuickFontPopover();
+        this.editorState.quickFontOpen = false;
+        this.editorState.quickOpacityOpen = false;
         this.syncKeepAspectControls();
     },
 
