@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260402e">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260402e">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260403a">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260403b">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -271,8 +271,13 @@
         <aside class="w-64 editor-sidebar-right" id="editor-sidebar-right">
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
-                <div id="properties-panel" class="sidebar-section overflow-y-auto">
-                    <p class="section-title">Propriedades</p>
+                <div id="properties-panel" class="sidebar-section">
+                    <div class="properties-panel-header">
+                        <p class="properties-panel-title">Propriedades</p>
+                        <button id="properties-close-btn" type="button" class="properties-panel-close" title="Fechar painel" aria-label="Fechar painel">
+                            <i data-lucide="x" class="w-4 h-4"></i>
+                        </button>
+                    </div>
 
                     <div class="properties-toolbar-row">
                         <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções"
@@ -311,6 +316,11 @@
                                 <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Centrar V</span>
                             </button>
+                            <button id="center-both-btn" class="action-btn" title="Centrar no canvas"
+                                aria-label="Centrar no canvas">
+                                <i data-lucide="crosshair" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Centrar</span>
+                            </button>
                         </div>
                         <div id="desktop-selection-toolbar" class="desktop-selection-toolbar hidden" aria-label="Propriedades contextuais">
                             <div id="desktop-text-group" class="desktop-context-group hidden">
@@ -338,6 +348,31 @@
                                 <input id="desktop-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
                                 <span id="desktop-opacity-value" class="desktop-inline-value">100%</span>
                             </div>
+                        </div>
+                    </div>
+
+                    <div class="properties-advanced-row">
+                        <div class="properties-order-actions" role="group" aria-label="Ordenacao da camada">
+                            <button id="move-layer-up-btn" type="button" class="action-btn" title="Subir camada" aria-label="Subir camada">
+                                <i data-lucide="arrow-up" class="w-4 h-4"></i>
+                            </button>
+                            <button id="move-layer-down-btn" type="button" class="action-btn" title="Descer camada" aria-label="Descer camada">
+                                <i data-lucide="arrow-down" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="properties-nudge-grid" role="group" aria-label="Ajustar posicao fina">
+                            <button id="nudge-up-btn" type="button" class="action-btn" title="Mover para cima" aria-label="Mover para cima">
+                                <i data-lucide="chevron-up" class="w-4 h-4"></i>
+                            </button>
+                            <button id="nudge-left-btn" type="button" class="action-btn" title="Mover para a esquerda" aria-label="Mover para a esquerda">
+                                <i data-lucide="chevron-left" class="w-4 h-4"></i>
+                            </button>
+                            <button id="nudge-right-btn" type="button" class="action-btn" title="Mover para a direita" aria-label="Mover para a direita">
+                                <i data-lucide="chevron-right" class="w-4 h-4"></i>
+                            </button>
+                            <button id="nudge-down-btn" type="button" class="action-btn" title="Mover para baixo" aria-label="Mover para baixo">
+                                <i data-lucide="chevron-down" class="w-4 h-4"></i>
+                            </button>
                         </div>
                     </div>
 
@@ -384,6 +419,10 @@
                                 class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
                             <button id="prop-text-italic"
                                 class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
+                            <button id="prop-text-underline"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">U</button>
+                            <button id="prop-text-caps"
+                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">Aa</button>
                         </div>
                         <div>
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
@@ -395,6 +434,20 @@
 
                     <div id="image-properties" class="space-y-4 hidden">
                         <h3 class="font-bold text-lg mb-4">Propriedades da Imagem</h3>
+                        <div class="property-fit-row" role="group" aria-label="Ajuste da imagem">
+                            <button id="prop-image-fit-contain" data-fit="contain" type="button" class="action-btn" title="Conter" aria-label="Conter imagem">
+                                <i data-lucide="maximize" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Conter</span>
+                            </button>
+                            <button id="prop-image-fit-cover" data-fit="cover" type="button" class="action-btn" title="Cobrir" aria-label="Cobrir area">
+                                <i data-lucide="square-dashed" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Cobrir</span>
+                            </button>
+                            <button id="prop-image-fit-fill" data-fit="fill" type="button" class="action-btn" title="Esticar" aria-label="Esticar imagem">
+                                <i data-lucide="stretch-horizontal" class="w-4 h-4"></i>
+                                <span class="action-btn__label">Esticar</span>
+                            </button>
+                        </div>
                         <div id="qr-properties" class="hidden">
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
                             <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2"
@@ -419,7 +472,7 @@
                                 class="w-full">
                         </div>
                         <button id="crop-image-btn"
-                            class="w-full bg-purple-600 text-white py-2 rounded-lg hover:bg-purple-700 transition font-semibold flex items-center justify-center gap-2 mt-4">
+                            class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition font-semibold flex items-center justify-center gap-2 mt-4">
                             <i data-lucide="crop" class="w-4 h-4"></i>
                             Cortar Imagem
                         </button>
@@ -558,7 +611,7 @@
     <script src="/assets/js/core/design-svg.js?v=20260402a" defer></script>
 
     <!-- Carregar módulos do personalizador em paralelo com defer -->
-    <script src="/assets/js/pages/personalizador/core/core.js?v=20260403a" defer></script>
+    <script src="/assets/js/pages/personalizador/core/core.js?v=20260403b" defer></script>
     <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260401a" defer></script>
@@ -566,10 +619,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260403a" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260403b" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401c" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260403a" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260403b" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

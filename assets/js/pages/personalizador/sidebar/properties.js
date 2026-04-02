@@ -74,6 +74,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.underline = isEnabled;
             this.saveHistory();
             this.renderQuickFontPopover?.();
+            this.syncExpandedPropertiesControls?.(this.selectedElement);
         }
     },
     
@@ -85,6 +86,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.bold = newWeight === 'bold';
             this.saveHistory();
             this.renderQuickFontPopover?.();
+            this.syncExpandedPropertiesControls?.(this.selectedElement);
         }
     },
 
@@ -102,6 +104,7 @@ Object.assign(DesignEditor.prototype, {
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
             this.renderQuickFontPopover?.();
+            this.syncExpandedPropertiesControls?.(this.selectedElement);
         }
     },
     
@@ -113,6 +116,7 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.italic = newStyle === 'italic';
             this.saveHistory();
             this.renderQuickFontPopover?.();
+            this.syncExpandedPropertiesControls?.(this.selectedElement);
         }
     },
     
@@ -583,6 +587,87 @@ Object.assign(DesignEditor.prototype, {
             this.queueHistorySave();
         }
     },
+
+    updateImageObjectFit(objectFit) {
+        if (!this.selectedElement || this.selectedElement.type !== 'image') return;
+        this.setImageObjectFitMode?.(this.selectedElement, objectFit);
+        this.showResizeHandles(this.selectedElement);
+        this.saveHistory();
+        this.updatePropertiesPanel?.(this.selectedElement);
+    },
+
+    centerSelectedBoth() {
+        if (!this.selectedElement) return;
+
+        const bounds = this.getEditableBounds();
+        const bbox = this.selectedElement.element.getBBox();
+        const currentCenterX = bbox.x + (bbox.width / 2);
+        const currentCenterY = bbox.y + (bbox.height / 2);
+        const targetCenterX = bounds.x + (bounds.width / 2);
+        const targetCenterY = bounds.y + (bounds.height / 2);
+
+        const deltaX = targetCenterX - currentCenterX;
+        const deltaY = targetCenterY - currentCenterY;
+
+        this.offsetElementGeometry(this.selectedElement, deltaX, deltaY);
+        this.applyElementRotation(this.selectedElement);
+        this.showResizeHandles(this.selectedElement);
+        this.updateLayers();
+        this.saveHistory();
+    },
+
+    moveSelectedLayer(direction = 1) {
+        if (!this.selectedElement) return;
+        const selectedId = String(this.selectedElement.id);
+        const currentIndex = this.elements.findIndex((el) => String(el.id) === selectedId);
+        if (!Number.isInteger(currentIndex) || currentIndex < 0) return;
+
+        const targetIndex = currentIndex + Number(direction || 0);
+        if (targetIndex < 0 || targetIndex >= this.elements.length) return;
+
+        this.moveLayer(currentIndex, direction);
+        this.selectElementById(selectedId);
+    },
+
+    syncExpandedPropertiesControls(elementData) {
+        const hasSelection = Boolean(elementData);
+        const isText = hasSelection && elementData.type === 'text';
+        const isImage = hasSelection && elementData.type === 'image';
+
+        const setDisabled = (id, disabled) => {
+            const button = document.getElementById(id);
+            if (!button) return;
+            button.disabled = disabled;
+            button.classList.toggle('is-disabled', disabled);
+            button.setAttribute('aria-disabled', String(disabled));
+        };
+
+        const setActive = (id, active) => {
+            const button = document.getElementById(id);
+            if (!button) return;
+            button.classList.toggle('active', Boolean(active));
+            button.setAttribute('aria-pressed', String(Boolean(active)));
+        };
+
+        ['move-layer-up-btn', 'move-layer-down-btn', 'nudge-up-btn', 'nudge-left-btn', 'nudge-right-btn', 'nudge-down-btn', 'center-both-btn']
+            .forEach((id) => setDisabled(id, !hasSelection));
+
+        ['prop-text-bold', 'prop-text-italic', 'prop-text-underline', 'prop-text-caps']
+            .forEach((id) => setDisabled(id, !isText));
+
+        ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
+            .forEach((id) => setDisabled(id, !isImage));
+
+        setActive('prop-text-bold', isText && Boolean(elementData.bold));
+        setActive('prop-text-italic', isText && Boolean(elementData.italic));
+        setActive('prop-text-underline', isText && Boolean(elementData.underline));
+        setActive('prop-text-caps', isText && Boolean(elementData.capsLock));
+
+        const imageFit = isImage ? (this.getImageObjectFitMode?.(elementData) || 'contain') : null;
+        setActive('prop-image-fit-contain', isImage && imageFit === 'contain');
+        setActive('prop-image-fit-cover', isImage && imageFit === 'cover');
+        setActive('prop-image-fit-fill', isImage && imageFit === 'fill');
+    },
     
     // ===== DELETE =====
     deleteSelected() {
@@ -791,6 +876,8 @@ Object.assign(DesignEditor.prototype, {
         const isText = hasSelection && elementData.type === 'text';
         const isImage = hasSelection && elementData.type === 'image';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
+
+        this.syncExpandedPropertiesControls?.(elementData);
 
         const setDisabledState = (button, disabled) => {
             if (!button) return;

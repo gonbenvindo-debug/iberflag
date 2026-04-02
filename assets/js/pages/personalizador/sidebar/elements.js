@@ -421,6 +421,23 @@ Object.assign(DesignEditor.prototype, {
 
         const centerVBtn = document.getElementById('center-v-btn');
         if (centerVBtn) centerVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
+        const centerBothBtn = document.getElementById('center-both-btn');
+        if (centerBothBtn) centerBothBtn.addEventListener('click', () => this.centerSelectedBoth?.());
+
+        const moveLayerUpBtn = document.getElementById('move-layer-up-btn');
+        if (moveLayerUpBtn) moveLayerUpBtn.addEventListener('click', () => this.moveSelectedLayer?.(-1));
+        const moveLayerDownBtn = document.getElementById('move-layer-down-btn');
+        if (moveLayerDownBtn) moveLayerDownBtn.addEventListener('click', () => this.moveSelectedLayer?.(1));
+
+        const nudgeStep = 2;
+        const nudgeUpBtn = document.getElementById('nudge-up-btn');
+        if (nudgeUpBtn) nudgeUpBtn.addEventListener('click', () => this.nudgeSelected?.(0, -nudgeStep));
+        const nudgeLeftBtn = document.getElementById('nudge-left-btn');
+        if (nudgeLeftBtn) nudgeLeftBtn.addEventListener('click', () => this.nudgeSelected?.(-nudgeStep, 0));
+        const nudgeRightBtn = document.getElementById('nudge-right-btn');
+        if (nudgeRightBtn) nudgeRightBtn.addEventListener('click', () => this.nudgeSelected?.(nudgeStep, 0));
+        const nudgeDownBtn = document.getElementById('nudge-down-btn');
+        if (nudgeDownBtn) nudgeDownBtn.addEventListener('click', () => this.nudgeSelected?.(0, nudgeStep));
 
         const quickDeleteBtn = document.getElementById('quick-delete-btn');
         if (quickDeleteBtn) quickDeleteBtn.addEventListener('click', () => this.executeEditorCommand('delete'));
@@ -620,6 +637,8 @@ Object.assign(DesignEditor.prototype, {
         const textColor = document.getElementById('prop-text-color');
         const textBold = document.getElementById('prop-text-bold');
         const textItalic = document.getElementById('prop-text-italic');
+        const textUnderline = document.getElementById('prop-text-underline');
+        const textCaps = document.getElementById('prop-text-caps');
 
         if (textContent) textContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (textFont) textFont.addEventListener('change', (e) => this.updateTextFont(e.target.value));
@@ -630,6 +649,8 @@ Object.assign(DesignEditor.prototype, {
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());
         if (textItalic) textItalic.addEventListener('click', () => this.toggleTextItalic());
+        if (textUnderline) textUnderline.addEventListener('click', () => this.updateTextUnderline(!this.selectedElement?.underline));
+        if (textCaps) textCaps.addEventListener('click', () => this.toggleTextCapsLock());
         const quickTextContent = document.getElementById('quick-text-content');
         if (quickFontBtn) quickFontBtn.addEventListener('click', (event) => {
             event.preventDefault();
@@ -796,6 +817,13 @@ Object.assign(DesignEditor.prototype, {
             this.updateRotation(e.target.value);
             document.getElementById('prop-image-rotation-val').textContent = e.target.value;
         });
+
+        const imageFitContainBtn = document.getElementById('prop-image-fit-contain');
+        const imageFitCoverBtn = document.getElementById('prop-image-fit-cover');
+        const imageFitFillBtn = document.getElementById('prop-image-fit-fill');
+        if (imageFitContainBtn) imageFitContainBtn.addEventListener('click', () => this.updateImageObjectFit?.('contain'));
+        if (imageFitCoverBtn) imageFitCoverBtn.addEventListener('click', () => this.updateImageObjectFit?.('cover'));
+        if (imageFitFillBtn) imageFitFillBtn.addEventListener('click', () => this.updateImageObjectFit?.('fill'));
 
         // Shape properties
         const shapeFill = document.getElementById('prop-shape-fill');

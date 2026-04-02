@@ -184,6 +184,8 @@ class DesignEditor {
         const sidebarRight = document.getElementById('editor-sidebar-right');
         const tabElements = document.getElementById('mobile-tab-elements');
         const tabLayers = document.getElementById('mobile-tab-layers');
+        const propertiesCloseBtn = document.getElementById('properties-close-btn');
+        const rightGrip = sidebarRight?.querySelector('.drawer-grip');
 
         if (!backdrop || !sidebarLeft || !sidebarRight) return;
 
@@ -201,6 +203,9 @@ class DesignEditor {
             if (isClosingProgrammatically) return;
             sidebarLeft.classList.remove('panel-open');
             sidebarRight.classList.remove('panel-open');
+            sidebarRight.classList.remove('panel-compact', 'panel-expanded', 'is-dragging');
+            sidebarRight.style.transform = '';
+            sidebarRight.style.transition = '';
             backdrop.classList.remove('active');
             document.body.classList.remove('has-layers-panel-open');
             document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
@@ -242,6 +247,9 @@ class DesignEditor {
                 document.getElementById('properties-panel')?.classList.remove('hidden');
                 document.body.classList.remove('has-layers-panel-open');
                 sidebarRight.classList.add('panel-open');
+                sidebarRight.classList.add('panel-expanded');
+                sidebarRight.classList.remove('panel-compact');
+                sidebarRight.style.transform = '';
                 backdrop.classList.add('active');
                 if (tabId) {
                     document.getElementById(tabId)?.classList.add('active');
@@ -253,12 +261,94 @@ class DesignEditor {
 
         tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
         tabLayers?.addEventListener('click', () => openLeft('layers-panel', 'mobile-tab-layers'));
+        propertiesCloseBtn?.addEventListener('click', () => closeAll());
 
         // Store flag for preventing sidebar closure during element operations
         this.preventSidebarClose = () => {
             isClosingProgrammatically = true;
             setTimeout(() => { isClosingProgrammatically = false; }, 100);
         };
+
+        let rightSheetDrag = null;
+        let rightSheetDidMove = false;
+
+        const beginRightSheetDrag = (event) => {
+            if (!this.isMobileViewport()) return;
+            if (!sidebarRight.classList.contains('panel-open')) return;
+            if (event.button != null && event.button !== 0) return;
+
+            rightSheetDidMove = false;
+            rightSheetDrag = {
+                startY: event.clientY,
+                lastY: event.clientY
+            };
+            sidebarRight.classList.add('is-dragging');
+            sidebarRight.style.transition = 'none';
+            rightGrip?.setPointerCapture?.(event.pointerId);
+            event.preventDefault();
+        };
+
+        const moveRightSheetDrag = (event) => {
+            if (!rightSheetDrag) return;
+
+            const deltaY = event.clientY - rightSheetDrag.startY;
+            rightSheetDrag.lastY = event.clientY;
+            rightSheetDidMove = rightSheetDidMove || Math.abs(deltaY) > 6;
+
+            if (deltaY < -48) {
+                sidebarRight.classList.add('panel-expanded');
+                sidebarRight.classList.remove('panel-compact');
+            }
+
+            sidebarRight.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+            event.preventDefault();
+        };
+
+        const endRightSheetDrag = (event) => {
+            if (!rightSheetDrag) return;
+
+            const fallbackY = Number.isFinite(Number(event?.clientY)) ? event.clientY : rightSheetDrag.lastY;
+            const deltaY = fallbackY - rightSheetDrag.startY;
+            rightSheetDrag = null;
+
+            sidebarRight.classList.remove('is-dragging');
+            sidebarRight.style.transition = '';
+            sidebarRight.style.transform = '';
+
+            if (deltaY > 140) {
+                closeAll();
+                return;
+            }
+
+            if (deltaY > 72) {
+                sidebarRight.classList.add('panel-compact');
+                sidebarRight.classList.remove('panel-expanded');
+            } else if (deltaY < -24) {
+                sidebarRight.classList.add('panel-expanded');
+                sidebarRight.classList.remove('panel-compact');
+            }
+
+            this.updateContextualToolbar?.(this.selectedElement);
+        };
+
+        rightGrip?.addEventListener('pointerdown', beginRightSheetDrag);
+        rightGrip?.addEventListener('pointermove', moveRightSheetDrag);
+        rightGrip?.addEventListener('pointerup', endRightSheetDrag);
+        rightGrip?.addEventListener('pointercancel', endRightSheetDrag);
+        rightGrip?.addEventListener('click', (event) => {
+            if (!this.isMobileViewport()) return;
+            if (!sidebarRight.classList.contains('panel-open')) return;
+            if (rightSheetDidMove) {
+                rightSheetDidMove = false;
+                return;
+            }
+
+            const shouldCompact = !sidebarRight.classList.contains('panel-compact');
+            sidebarRight.classList.toggle('panel-compact', shouldCompact);
+            sidebarRight.classList.toggle('panel-expanded', !shouldCompact);
+            this.updateContextualToolbar?.(this.selectedElement);
+            event.preventDefault();
+        });
 
         this.closeMobilePanels = closeAll;
         this.openMobilePanel = (panelName) => {

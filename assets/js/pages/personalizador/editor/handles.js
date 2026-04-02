@@ -517,6 +517,7 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('prop-shape-rotation-val').textContent = shapeRot;
         }
 
+        this.syncExpandedPropertiesControls?.(elementData);
         this.updateContextualToolbar?.(elementData);
     },
     
