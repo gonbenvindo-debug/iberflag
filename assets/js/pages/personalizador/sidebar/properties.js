@@ -700,6 +700,11 @@ Object.assign(DesignEditor.prototype, {
         const topCenterHBtn = document.getElementById('top-center-h-btn');
         const topCenterVBtn = document.getElementById('top-center-v-btn');
         const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
+        const panelDeleteBtn = document.getElementById('delete-element-btn');
+        const panelDuplicateBtn = document.getElementById('duplicate-element-btn');
+        const panelCenterHBtn = document.getElementById('center-h-btn');
+        const panelCenterVBtn = document.getElementById('center-v-btn');
+        const panelKeepAspectBtn = document.getElementById('keep-aspect-ratio');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -734,10 +739,10 @@ Object.assign(DesignEditor.prototype, {
         };
 
         if (isMobile) {
-            if (floatingBar) floatingBar.classList.add('hidden');
+            if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
             if (bottomBar) bottomBar.classList.toggle('hidden', !hasSelection);
-            toolbar.classList.remove('hidden');
-            setHiddenState(topFontGroup, true);
+            toolbar.classList.toggle('hidden', !hasSelection);
+            setHiddenState(topFontGroup, !isText);
 
             setHiddenState(duplicateBtn, false);
             setHiddenState(centerHBtn, false);
@@ -760,6 +765,11 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, !hasSelection);
             setDisabledState(topCenterVBtn, !hasSelection);
             setDisabledState(topKeepAspectBtn, !hasSelection);
+            setDisabledState(panelDeleteBtn, !hasSelection);
+            setDisabledState(panelDuplicateBtn, !hasSelection);
+            setDisabledState(panelCenterHBtn, !hasSelection);
+            setDisabledState(panelCenterVBtn, !hasSelection);
+            setDisabledState(panelKeepAspectBtn, !hasSelection);
 
             if (fontBtn) {
                 fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
@@ -801,10 +811,10 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
-        if (bottomBar) bottomBar.classList.toggle('hidden', !hasSelection);
-        toolbar.classList.toggle('hidden', !hasSelection);
-        setHiddenState(topFontGroup, !isText);
+        if (floatingBar) floatingBar.classList.add('hidden');
+        if (bottomBar) bottomBar.classList.add('hidden');
+        toolbar.classList.add('hidden');
+        setHiddenState(topFontGroup, true);
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();
@@ -816,54 +826,50 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, true);
             setDisabledState(topCenterVBtn, true);
             setDisabledState(topKeepAspectBtn, true);
+            setDisabledState(panelDeleteBtn, true);
+            setDisabledState(panelDuplicateBtn, true);
+            setDisabledState(panelCenterHBtn, true);
+            setDisabledState(panelCenterVBtn, true);
+            setDisabledState(panelKeepAspectBtn, true);
             this.syncKeepAspectControls();
             return;
         }
 
-        setDisabledState(document.getElementById('quick-delete-btn'), false);
-        setDisabledState(duplicateBtn, false);
-        setDisabledState(centerHBtn, false);
-        setDisabledState(centerVBtn, false);
-        setDisabledState(keepAspectBtn, false);
+        setDisabledState(document.getElementById('quick-delete-btn'), true);
+        setDisabledState(duplicateBtn, true);
+        setDisabledState(centerHBtn, true);
+        setDisabledState(centerVBtn, true);
+        setDisabledState(keepAspectBtn, true);
         setDisabledState(topDeleteBtn, false);
         setDisabledState(topDuplicateBtn, false);
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
         setDisabledState(topKeepAspectBtn, false);
+        setDisabledState(panelDeleteBtn, false);
+        setDisabledState(panelDuplicateBtn, false);
+        setDisabledState(panelCenterHBtn, false);
+        setDisabledState(panelCenterVBtn, false);
+        setDisabledState(panelKeepAspectBtn, false);
 
         if (fontBtn) {
-            setHiddenState(fontAnchor, !isText);
-            setHiddenState(fontBtn, !isText);
-            setHiddenState(fontPopover, !(isText && fontPopover?.classList.contains('is-open')));
-            setDisabledState(fontBtn, !isText);
-            fontBtn.classList.toggle('active', Boolean(isText && fontPopover?.classList.contains('is-open')));
-            fontBtn.title = isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Texto';
-            fontBtn.setAttribute('aria-label', isText ? `Fonte: ${elementData.font || 'Arial'}` : 'Texto');
-            fontBtn.setAttribute('aria-expanded', String(Boolean(isText && fontPopover?.classList.contains('is-open'))));
+            setHiddenState(fontAnchor, true);
+            setHiddenState(fontBtn, true);
+            setHiddenState(fontPopover, true);
+            setDisabledState(fontBtn, true);
+            fontBtn.classList.remove('active');
+            fontBtn.setAttribute('aria-expanded', 'false');
         }
 
         if (opacityAnchor) {
-            setHiddenState(opacityAnchor, !isImage);
+            setHiddenState(opacityAnchor, true);
         }
         if (opacityBtn) {
-            setDisabledState(opacityBtn, !isImage);
-            opacityBtn.classList.toggle('active', isImage && opacityPercent < 100);
-            opacityBtn.title = isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade';
-            opacityBtn.setAttribute('aria-label', isImage ? `Opacidade: ${opacityPercent}%` : 'Opacidade');
-            opacityBtn.setAttribute('aria-expanded', String(Boolean(isImage && this.editorState.quickOpacityOpen)));
+            setDisabledState(opacityBtn, true);
+            opacityBtn.classList.remove('active');
+            opacityBtn.setAttribute('aria-expanded', 'false');
         }
-
-        if (isImage) {
-            this.applyQuickOpacityValue(opacityPercent, false);
-        } else {
-            this.closeQuickOpacityPopover();
-        }
-
-        if (isText) {
-            this.renderQuickFontPopover();
-        } else {
-            this.closeQuickFontPopover();
-        }
+        this.closeQuickOpacityPopover();
+        this.closeQuickFontPopover();
 
         this.syncKeepAspectControls();
     },

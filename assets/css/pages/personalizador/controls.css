@@ -492,9 +492,14 @@ body.app-page {
     margin-top: 10px;
 }
 
+body.editor-mode-desktop #editor-floating-context-bar {
+    display: none !important;
+}
+
 @media (max-width: 767px) {
     #editor-floating-context-bar {
-        display: none !important;
+        top: 8px;
+        max-width: calc(100% - 12px);
     }
 
     #editor-bottom-context-bar {
