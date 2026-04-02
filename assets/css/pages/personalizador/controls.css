@@ -708,7 +708,7 @@ body.editor-mode-desktop #editor-floating-context-bar {
     display: flex !important;
     align-items: center !important;
     flex-wrap: wrap !important;
-    gap: 6px !important;
+    gap: 8px !important;
     width: 100% !important;
     min-width: 0 !important;
 }
@@ -723,16 +723,17 @@ body.editor-mode-desktop #editor-floating-context-bar {
 #properties-panel .properties-quick-actions {
     display: inline-flex !important;
     align-items: center !important;
-    gap: 6px !important;
+    gap: 8px !important;
     flex: 1 1 auto !important;
     min-width: 0 !important;
     overflow: visible !important;
+    justify-content: center !important;
 }
 
 #properties-panel .properties-quick-actions .action-btn {
-    min-width: 34px;
-    height: 34px;
-    padding: 0 10px !important;
+    min-width: 40px;
+    height: 40px;
+    padding: 0 12px !important;
     border-radius: 4px !important;
 }
 
@@ -811,6 +812,8 @@ body.editor-mode-desktop #editor-floating-context-bar {
     background: #fff !important;
     box-shadow: none !important;
     padding: 12px !important;
+    flex: 0 0 auto !important;
+    min-width: 0 !important;
 }
 
 #properties-panel #no-selection {
@@ -834,13 +837,13 @@ body.editor-mode-desktop #editor-floating-context-bar {
 #properties-panel .property-fit-row {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 6px;
+    gap: 8px;
 }
 
 #properties-panel .property-fit-row .action-btn {
     justify-content: center;
     gap: 6px;
-    height: 34px;
+    height: 40px;
     border-radius: 4px !important;
 }
 
@@ -913,18 +916,52 @@ body.editor-mode-desktop #editor-floating-context-bar {
 
     #properties-panel .editor-zoom-controls {
         display: inline-flex !important;
-    }
-
-    #properties-panel .properties-quick-actions .action-btn__label,
-    #properties-panel .property-fit-row .action-btn__label {
-        display: none !important;
+        margin-inline: auto !important;
     }
 
     #properties-panel .properties-quick-actions .action-btn,
     #properties-panel .property-fit-row .action-btn {
-        width: 34px;
-        min-width: 34px;
-        height: 34px;
-        padding: 0 !important;
+        min-height: 42px;
+        border-radius: 6px !important;
+    }
+
+    #properties-panel .properties-quick-actions {
+        width: 100%;
+        justify-content: center !important;
+    }
+
+    #properties-panel .properties-quick-actions .action-btn__label {
+        display: none !important;
+    }
+
+    #properties-panel .property-fit-row .action-btn {
+        width: 100%;
+        min-width: 0;
+        padding: 0 8px !important;
+        gap: 6px;
+    }
+
+    #properties-panel .property-fit-row .action-btn__label {
+        display: inline !important;
+        font-size: 11px;
+        font-weight: 700;
+    }
+
+    #properties-panel #text-properties,
+    #properties-panel #image-properties,
+    #properties-panel #shape-properties {
+        padding: 14px !important;
+    }
+
+    #properties-panel #image-properties label,
+    #properties-panel #text-properties label,
+    #properties-panel #shape-properties label {
+        display: block;
+        margin-bottom: 8px;
+    }
+
+    #properties-panel input[type="range"] {
+        margin-top: 4px;
+        margin-bottom: 10px;
     }
 }
