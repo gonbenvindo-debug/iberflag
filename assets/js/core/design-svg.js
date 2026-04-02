@@ -548,6 +548,15 @@
         };
     }
 
+    function parseBoundsAttribute(value, fallback = null) {
+        if (!value) return fallback;
+        const parts = String(value).trim().split(/[\s,]+/).map(Number);
+        if (parts.length !== 4 || !parts.every(Number.isFinite)) return fallback;
+        const [x, y, width, height] = parts;
+        if (width <= 0 || height <= 0) return fallback;
+        return { x, y, width, height };
+    }
+
     function pickMaskNode(root) {
         if (!root) return null;
 
@@ -714,6 +723,19 @@
                 width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
                 height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
             };
+        }
+
+        const explicitBounds = [
+            root.getAttribute('data-personalizable-bounds'),
+            root.getAttribute('data-template-bounds'),
+            root.getAttribute('data-print-area-bounds'),
+            root.dataset?.personalizableBounds,
+            root.dataset?.templateBounds,
+            root.dataset?.printAreaBounds
+        ].map((value) => parseBoundsAttribute(value, null)).find(Boolean);
+
+        if (explicitBounds) {
+            return explicitBounds;
         }
 
         const viewBoxAttr = String(root.getAttribute('viewBox') || '').trim();

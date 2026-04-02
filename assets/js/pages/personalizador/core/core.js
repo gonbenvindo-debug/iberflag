@@ -94,6 +94,50 @@ class DesignEditor {
         return window.matchMedia('(max-width: 767px)').matches;
     }
 
+    executeEditorCommand(command, payload = null) {
+        switch (command) {
+            case 'add-text':
+                return this.addText();
+            case 'add-image':
+                return document.getElementById('image-upload')?.click();
+            case 'add-qr':
+                return this.handleAddQRCode?.();
+            case 'add-shape':
+                return this.addShape?.(payload);
+            case 'zoom-in':
+                return this.setZoom?.(this.zoom + 0.1);
+            case 'zoom-out':
+                return this.setZoom?.(this.zoom - 0.1);
+            case 'undo':
+                return this.undo?.();
+            case 'redo':
+                return this.redo?.();
+            case 'delete':
+                return this.deleteSelected?.();
+            case 'duplicate':
+                return this.duplicateSelected?.();
+            case 'center-horizontal':
+                return this.centerSelected?.('horizontal');
+            case 'center-vertical':
+                return this.centerSelected?.('vertical');
+            case 'add-to-cart':
+                if (this.isAdminMode) {
+                    return this.saveDesignAsTemplate?.();
+                }
+                return this.openCartStepsModal?.();
+            case 'toggle-keep-aspect':
+                this.keepAspectRatio = !this.keepAspectRatio;
+                this.syncKeepAspectControls?.();
+                return this.keepAspectRatio;
+            case 'toggle-quick-font':
+                return this.toggleQuickFontPopover?.();
+            case 'toggle-quick-opacity':
+                return this.toggleQuickOpacityPopover?.();
+            default:
+                return null;
+        }
+    }
+
     async init() {
         // Mostrar loading state
         this.showLoadingState();

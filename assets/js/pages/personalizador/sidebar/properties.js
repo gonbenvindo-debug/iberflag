@@ -282,6 +282,8 @@ Object.assign(DesignEditor.prototype, {
         popover.setAttribute('aria-hidden', 'false');
         btn.setAttribute('aria-expanded', 'true');
         btn.classList.add('active');
+        this.editorState = this.editorState || {};
+        this.editorState.quickFontOpen = true;
     },
 
     closeQuickFontPopover() {
@@ -296,6 +298,8 @@ Object.assign(DesignEditor.prototype, {
             btn.setAttribute('aria-expanded', 'false');
             btn.classList.remove('active');
         }
+        this.editorState = this.editorState || {};
+        this.editorState.quickFontOpen = false;
     },
 
     toggleQuickFontPopover() {
@@ -347,6 +351,8 @@ Object.assign(DesignEditor.prototype, {
         popover.classList.add('is-open');
         popover.setAttribute('aria-hidden', 'false');
         btn.setAttribute('aria-expanded', 'true');
+        this.editorState = this.editorState || {};
+        this.editorState.quickOpacityOpen = true;
     },
 
     closeQuickOpacityPopover() {
@@ -359,6 +365,8 @@ Object.assign(DesignEditor.prototype, {
         if (btn) {
             btn.setAttribute('aria-expanded', 'false');
         }
+        this.editorState = this.editorState || {};
+        this.editorState.quickOpacityOpen = false;
     },
 
     toggleQuickOpacityPopover() {

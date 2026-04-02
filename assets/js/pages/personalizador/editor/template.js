@@ -89,6 +89,52 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
+    parseBoundsString(value, fallback = null) {
+        if (!value) return fallback;
+        const parts = String(value).trim().split(/[\s,]+/).map(Number);
+        if (parts.length !== 4 || !parts.every(Number.isFinite)) return fallback;
+        const [x, y, width, height] = parts;
+        if (width <= 0 || height <= 0) return fallback;
+        return { x, y, width, height };
+    },
+
+    getExplicitTemplateBounds(root, fallbackBounds) {
+        const candidates = [
+            root?.getAttribute?.('data-personalizable-bounds'),
+            root?.getAttribute?.('data-template-bounds'),
+            root?.dataset?.personalizableBounds,
+            root?.dataset?.templateBounds
+        ];
+
+        for (const candidate of candidates) {
+            const parsed = this.parseBoundsString(candidate, null);
+            if (parsed) {
+                return parsed;
+            }
+        }
+
+        return fallbackBounds;
+    },
+
+    findExplicitTemplateOutlineElement(root) {
+        if (!root) return null;
+
+        const selectors = [
+            '[data-personalizable="true"]',
+            '[data-print-area="true"]',
+            '[data-template-area="true"]',
+            '[data-editable-area="true"]',
+            '[data-personalizable-outline="true"]'
+        ];
+
+        for (const selector of selectors) {
+            const found = root.querySelector(selector);
+            if (found) return found;
+        }
+
+        return null;
+    },
+
     bringPrintAreaOverlaysToFront() {
         if (!this.canvas) return;
 
@@ -474,7 +520,9 @@ Object.assign(DesignEditor.prototype, {
                 }
             }
 
-            const areaElement = this.findTemplateOutlineElement(root, sourceBounds);
+            sourceBounds = this.getExplicitTemplateBounds(root, sourceBounds);
+            const explicitAreaElement = this.findExplicitTemplateOutlineElement(root);
+            const areaElement = explicitAreaElement || this.findTemplateOutlineElement(root, sourceBounds);
             const outlineBounds = areaElement
                 ? window.DesignEditorPrintAreaLayout.measureElementBounds(areaElement, sourceBounds)
                 : sourceBounds;
@@ -482,6 +530,15 @@ Object.assign(DesignEditor.prototype, {
             logTemplateDebug('loadSVGTemplate', {
                 sourceBounds,
                 rootViewBox: root.getAttribute('viewBox') || '',
+                explicitBounds: sourceBounds,
+                explicitArea: explicitAreaElement ? {
+                    tag: String(explicitAreaElement.tagName || '').toLowerCase(),
+                    id: explicitAreaElement.getAttribute?.('id') || '',
+                    class: explicitAreaElement.getAttribute?.('class') || '',
+                    transform: explicitAreaElement.getAttribute?.('transform'),
+                    d: explicitAreaElement.getAttribute?.('d'),
+                    points: explicitAreaElement.getAttribute?.('points')
+                } : null,
                 outlineBounds,
                 outline: areaElement ? {
                     tag: String(areaElement.tagName || '').toLowerCase(),

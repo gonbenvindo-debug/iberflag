@@ -383,62 +383,67 @@ Object.assign(DesignEditor.prototype, {
     // ===== EVENT LISTENERS =====
     setupEventListeners() {
         // Add elements
-        document.getElementById('add-text-btn').addEventListener('click', () => this.addText());
+        document.getElementById('add-text-btn').addEventListener('click', () => this.executeEditorCommand('add-text'));
         document.getElementById('add-image-btn').addEventListener('click', () => {
-            document.getElementById('image-upload')?.click();
+            this.executeEditorCommand('add-image');
         });
         document.getElementById('image-upload').addEventListener('change', (e) => this.handleImageUpload(e));
         const addQrBtn = document.getElementById('add-qr-btn');
         if (addQrBtn) {
-            addQrBtn.addEventListener('click', () => this.handleAddQRCode());
+            addQrBtn.addEventListener('click', () => this.executeEditorCommand('add-qr'));
         }
 
         // Shapes
         document.querySelectorAll('.shape-btn').forEach(btn => {
-            btn.addEventListener('click', () => this.addShape(btn.dataset.shape));
+            btn.addEventListener('click', () => this.executeEditorCommand('add-shape', btn.dataset.shape));
         });
 
         // Zoom
-        document.getElementById('zoom-in').addEventListener('click', () => this.setZoom(this.zoom + 0.1));
-        document.getElementById('zoom-out').addEventListener('click', () => this.setZoom(this.zoom - 0.1));
+        document.getElementById('zoom-in').addEventListener('click', () => this.executeEditorCommand('zoom-in'));
+        document.getElementById('zoom-out').addEventListener('click', () => this.executeEditorCommand('zoom-out'));
 
         // Undo/Redo
-        document.getElementById('undo-btn').addEventListener('click', () => this.undo());
-        document.getElementById('redo-btn').addEventListener('click', () => this.redo());
+        document.getElementById('undo-btn').addEventListener('click', () => this.executeEditorCommand('undo'));
+        document.getElementById('redo-btn').addEventListener('click', () => this.executeEditorCommand('redo'));
 
         // Add to cart / Save design (admin mode)
-        document.getElementById('add-to-cart-btn').addEventListener('click', () => {
-            if (this.isAdminMode) {
-                this.saveDesignAsTemplate();
-            } else {
-                this.openCartStepsModal();
-            }
-        });
+        document.getElementById('add-to-cart-btn').addEventListener('click', () => this.executeEditorCommand('add-to-cart'));
 
         // Delete element
-        document.getElementById('delete-element-btn').addEventListener('click', () => this.deleteSelected());
+        document.getElementById('delete-element-btn').addEventListener('click', () => this.executeEditorCommand('delete'));
 
         // Quick actions
         const duplicateBtn = document.getElementById('duplicate-element-btn');
-        if (duplicateBtn) duplicateBtn.addEventListener('click', () => this.duplicateSelected());
+        if (duplicateBtn) duplicateBtn.addEventListener('click', () => this.executeEditorCommand('duplicate'));
 
         const centerHBtn = document.getElementById('center-h-btn');
-        if (centerHBtn) centerHBtn.addEventListener('click', () => this.centerSelected('horizontal'));
+        if (centerHBtn) centerHBtn.addEventListener('click', () => this.executeEditorCommand('center-horizontal'));
 
         const centerVBtn = document.getElementById('center-v-btn');
-        if (centerVBtn) centerVBtn.addEventListener('click', () => this.centerSelected('vertical'));
+        if (centerVBtn) centerVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
 
         const quickDeleteBtn = document.getElementById('quick-delete-btn');
-        if (quickDeleteBtn) quickDeleteBtn.addEventListener('click', () => this.deleteSelected());
+        if (quickDeleteBtn) quickDeleteBtn.addEventListener('click', () => this.executeEditorCommand('delete'));
 
         const quickDuplicateBtn = document.getElementById('quick-duplicate-btn');
-        if (quickDuplicateBtn) quickDuplicateBtn.addEventListener('click', () => this.duplicateSelected());
+        if (quickDuplicateBtn) quickDuplicateBtn.addEventListener('click', () => this.executeEditorCommand('duplicate'));
 
         const quickCenterHBtn = document.getElementById('quick-center-h-btn');
-        if (quickCenterHBtn) quickCenterHBtn.addEventListener('click', () => this.centerSelected('horizontal'));
+        if (quickCenterHBtn) quickCenterHBtn.addEventListener('click', () => this.executeEditorCommand('center-horizontal'));
 
         const quickCenterVBtn = document.getElementById('quick-center-v-btn');
-        if (quickCenterVBtn) quickCenterVBtn.addEventListener('click', () => this.centerSelected('vertical'));
+        if (quickCenterVBtn) quickCenterVBtn.addEventListener('click', () => this.executeEditorCommand('center-vertical'));
+
+        const keepAspectButtons = [
+            document.getElementById('keep-aspect-ratio'),
+            document.getElementById('quick-keep-aspect-btn')
+        ].filter(Boolean);
+        keepAspectButtons.forEach((button) => {
+            button.addEventListener('click', (event) => {
+                event.preventDefault();
+                this.executeEditorCommand('toggle-keep-aspect');
+            });
+        });
 
         // Canvas interactions
         this._lastTouchInteractionAt = 0;
@@ -608,7 +613,7 @@ Object.assign(DesignEditor.prototype, {
         if (quickFontBtn) quickFontBtn.addEventListener('click', (event) => {
             event.preventDefault();
             event.stopPropagation();
-            this.toggleQuickFontPopover();
+            this.executeEditorCommand('toggle-quick-font');
         });
         const quickFontSelect = document.getElementById('quick-font-select');
         const quickFontBoldBtn = document.getElementById('quick-font-bold-btn');
@@ -637,6 +642,12 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('prop-image-opacity-val').textContent = e.target.value;
         });
         const quickOpacityRange = document.getElementById('quick-opacity-range');
+        if (quickOpacityBtn) quickOpacityBtn.addEventListener('click', (event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            this.executeEditorCommand('toggle-quick-opacity');
+        });
+
         if (quickOpacityRange) {
             quickOpacityRange.addEventListener('input', (e) => {
                 this.applyQuickOpacityValue(e.target.value);
@@ -753,23 +764,6 @@ Object.assign(DesignEditor.prototype, {
         const cropBtn = document.getElementById('crop-image-btn');
         if (cropBtn) {
             cropBtn.addEventListener('click', () => this.startCropMode());
-        }
-
-        const keepAspectButtons = [
-            document.getElementById('keep-aspect-ratio'),
-            document.getElementById('quick-keep-aspect-btn')
-        ].filter(Boolean);
-
-        keepAspectButtons.forEach((button) => {
-            button.addEventListener('click', () => {
-                this.keepAspectRatio = !this.keepAspectRatio;
-                this.syncKeepAspectControls();
-            });
-        });
-
-        const quickDeleteBtn = document.getElementById('quick-delete-btn');
-        if (quickDeleteBtn) {
-            quickDeleteBtn.addEventListener('click', () => this.deleteSelected());
         }
 
         this.syncKeepAspectControls();
