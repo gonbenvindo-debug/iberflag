@@ -985,16 +985,6 @@
                 grid-template-columns: repeat(3, 1fr) !important;
             }
 
-            /* Esconder botao propriedades quando nao ha selecao */
-            #mobile-tab-properties {
-                display: none !important;
-            }
-
-            /* Mostrar botao propriedades quando ha elemento selecionado */
-            body.has-element-selected #mobile-tab-properties {
-                display: flex !important;
-            }
-
             #text-properties,
             #image-properties,
             #shape-properties {

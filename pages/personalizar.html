@@ -14,8 +14,8 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260401c">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260402e">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260402e">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402e">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402e">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402f">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260402f">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -138,7 +138,38 @@
             </div>
 
             <!-- Bottom Toolbar (desktop apenas - em mobile está escondido) -->
-            <div class="panel-clean editor-bottom-bar">
+            <div id="editor-floating-context-bar" class="panel-clean editor-floating-context-bar hidden"
+                aria-label="Opcoes contextuais do elemento">
+                <div class="editor-floating-context-inner">
+                    <span class="editor-floating-chip">Selecionado</span>
+                    <div id="top-font-group" class="editor-floating-text-group hidden">
+                        <select id="top-font-select" class="quick-font-select" aria-label="Escolher fonte"></select>
+                        <div class="editor-floating-size" role="group" aria-label="Tamanho da fonte">
+                            <button id="top-text-size-decrease" type="button" class="editor-floating-step" aria-label="Diminuir fonte">-</button>
+                            <span id="top-text-size-label" class="editor-floating-size-value">24</span>
+                            <button id="top-text-size-increase" type="button" class="editor-floating-step" aria-label="Aumentar fonte">+</button>
+                        </div>
+                        <button id="top-font-bold-btn" type="button" class="context-action context-action--icon" aria-label="Negrito">
+                            <span class="quick-font-letter">B</span>
+                        </button>
+                        <button id="top-font-italic-btn" type="button" class="context-action context-action--icon" aria-label="Italico">
+                            <span class="quick-font-letter italic">I</span>
+                        </button>
+                        <button id="top-font-underline-btn" type="button" class="context-action context-action--icon" aria-label="Sublinhar">
+                            <span class="quick-font-letter">U</span>
+                        </button>
+                        <button id="top-font-caps-btn" type="button" class="context-action context-action--icon" aria-label="Caps Lock">
+                            <span class="quick-font-letter">Aa</span>
+                        </button>
+                    </div>
+                    <div class="editor-floating-meta-group" aria-hidden="true">
+                        <span class="editor-floating-meta">Efeitos</span>
+                        <span class="editor-floating-meta">Animar</span>
+                        <span class="editor-floating-meta">Posicao</span>
+                    </div>
+                </div>
+            </div>
+            <div id="editor-bottom-context-bar" class="panel-clean editor-bottom-bar hidden">
                 <div id="quick-font-popover" class="context-popover context-popover--font hidden" aria-hidden="true">
                     <label class="quick-font-label" for="quick-text-content">Texto</label>
                     <textarea id="quick-text-content" class="quick-font-textarea" rows="2" placeholder="Editar texto"></textarea>
@@ -208,11 +239,6 @@
                     data-panel="elements-panel">
                     <i data-lucide="plus-square" class="w-5 h-5 mx-auto"></i>
                     <span>Adicionar</span>
-                </button>
-                <button class="editor-mobile-tab" id="mobile-tab-properties" data-sidebar="editor-sidebar-left"
-                    data-panel="properties-panel">
-                    <i data-lucide="sliders-horizontal" class="w-5 h-5 mx-auto"></i>
-                    <span>Propriedades</span>
                 </button>
                 <button class="editor-mobile-tab" id="mobile-tab-layers" data-sidebar="editor-sidebar-right">
                     <i data-lucide="layers" class="w-5 h-5 mx-auto"></i>
@@ -485,7 +511,7 @@
     <script src="/assets/js/core/design-svg.js?v=20260402a" defer></script>
 
     <!-- Carregar módulos do personalizador em paralelo com defer -->
-    <script src="/assets/js/pages/personalizador/core/core.js?v=20260401d" defer></script>
+    <script src="/assets/js/pages/personalizador/core/core.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260401a" defer></script>
@@ -493,10 +519,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-    <script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260401g" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260401b" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401c" defer></script>
-    <script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260401j" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260402a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->

@@ -480,10 +480,6 @@
                 padding: 0.5rem 0.5rem calc(0.5rem + env(safe-area-inset-bottom, 0px));
             }
 
-            body.has-element-selected .editor-mobile-tabs {
-                grid-template-columns: repeat(3, minmax(0, 1fr));
-            }
-
             /* Compact Mobile Panels */
             .sidebar-section {
                 padding: 0.85rem 0.85rem 1rem;
@@ -605,17 +601,7 @@
                 grid-template-columns: repeat(3, 1fr) !important;
             }
 
-            /* Esconder botao propriedades quando nao ha selecao */
-            #mobile-tab-properties {
-                display: none !important;
-            }
-
             #mobile-tab-layers {
-                display: flex !important;
-            }
-
-            /* Mostrar botao propriedades quando ha elemento selecionado */
-            body.has-element-selected #mobile-tab-properties {
                 display: flex !important;
             }
 

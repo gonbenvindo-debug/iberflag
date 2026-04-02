@@ -183,7 +183,6 @@ class DesignEditor {
         const sidebarLeft = document.getElementById('editor-sidebar-left');
         const sidebarRight = document.getElementById('editor-sidebar-right');
         const tabElements = document.getElementById('mobile-tab-elements');
-        const tabProperties = document.getElementById('mobile-tab-properties');
         const tabLayers = document.getElementById('mobile-tab-layers');
 
         if (!backdrop || !sidebarLeft || !sidebarRight) return;
@@ -193,7 +192,6 @@ class DesignEditor {
             sidebarLeft,
             sidebarRight,
             tabElements,
-            tabProperties,
             tabLayers
         };
 
@@ -234,22 +232,23 @@ class DesignEditor {
             }
         };
 
-        const openRight = (tabId) => {
+        const openRight = (tabId = null) => {
             const isAlreadyOpen = sidebarRight.classList.contains('panel-open') &&
-                document.getElementById(tabId)?.classList.contains('active');
+                (tabId ? document.getElementById(tabId)?.classList.contains('active') : false);
             closeAll();
             if (!isAlreadyOpen) {
                 document.getElementById('properties-panel')?.classList.remove('hidden');
                 document.body.classList.remove('has-layers-panel-open');
                 sidebarRight.classList.add('panel-open');
                 backdrop.classList.add('active');
-                document.getElementById(tabId)?.classList.add('active');
+                if (tabId) {
+                    document.getElementById(tabId)?.classList.add('active');
+                }
                 this.editorState.activeMobilePanel = 'properties';
             }
         };
 
         tabElements?.addEventListener('click', () => openLeft('elements-panel', 'mobile-tab-elements'));
-        tabProperties?.addEventListener('click', () => openRight('mobile-tab-properties'));
         tabLayers?.addEventListener('click', () => openLeft('layers-panel', 'mobile-tab-layers'));
 
         // Store flag for preventing sidebar closure during element operations
@@ -262,7 +261,7 @@ class DesignEditor {
         this.openMobilePanel = (panelName) => {
             if (!this.isMobileViewport()) return;
             if (panelName === 'properties') {
-                openRight('mobile-tab-properties');
+                openRight();
                 return;
             }
             if (panelName === 'layers') {
