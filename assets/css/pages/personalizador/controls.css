@@ -26,7 +26,7 @@ body.app-page {
 
 #editor-body-layout {
     position: relative;
-    z-index: var(--z-base);
+    z-index: auto;
 }
 
 #resize-handles {
