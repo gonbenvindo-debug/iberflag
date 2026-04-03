@@ -545,6 +545,8 @@ body.is-camera-panning #canvas-stage {
     display: inline-flex;
     align-items: center;
     gap: 4px;
+    flex: 0 0 auto;
+    min-width: max-content;
 }
 
 .editor-floating-btn {
@@ -599,6 +601,12 @@ body.is-camera-panning #canvas-stage {
     gap: 6px;
     padding-left: 10px;
     border-left: 1px solid var(--iber-border);
+    flex: 0 0 auto;
+    min-width: max-content;
+}
+
+.editor-floating-text-group.hidden {
+    display: none !important;
 }
 
 .editor-floating-size {
@@ -707,6 +715,8 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
+        width: 100%;
+        justify-content: flex-start;
         padding-bottom: 2px;
     }
 
