@@ -1319,7 +1319,9 @@ Object.assign(DesignEditor.prototype, {
         const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };
         const viewBoxWidth = Math.max(1, Number(viewBox.width) || 800);
         const viewBoxHeight = Math.max(1, Number(viewBox.height) || 600);
-        const canvasAspectRatio = viewBoxWidth / viewBoxHeight;
+        // Wrapper deve ocupar todo o stage; por isso usamos o aspeto do próprio stage.
+        const stageAspectRatio = availableWidth / Math.max(1, availableHeight);
+        const canvasAspectRatio = stageAspectRatio;
 
         if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {
@@ -1348,9 +1350,8 @@ Object.assign(DesignEditor.prototype, {
         );
 
         if (needsResizeRecalc) {
-            const stageAspectRatio = availableWidth / Math.max(1, availableHeight);
-            let baseWidth = availableWidth;
-            let baseHeight = availableHeight;
+            let baseWidth = Math.max(1, availableWidth);
+            let baseHeight = Math.max(1, availableHeight);
 
             if (stageAspectRatio > canvasAspectRatio) {
                 // Stage mais largo: altura limita, manter proporção real do design-canvas.
