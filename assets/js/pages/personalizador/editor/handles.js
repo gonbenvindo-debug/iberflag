@@ -530,6 +530,7 @@ Object.assign(DesignEditor.prototype, {
     // ===== DRAG & DROP =====
     startDrag(e, elementData) {
         this.beginHistoryGesture();
+        this.hideGuideLines?.();
         this.isDragging = true;
 
         // Store the mouse position at drag start
@@ -694,8 +695,8 @@ Object.assign(DesignEditor.prototype, {
             this.commitHistoryGesture();
         }
         
-        // Limpar guides
-        this.hideGuideLines();
+        // Limpar guides (inclui fallback para linhas orfas no SVG)
+        this.hideGuideLines?.();
         
         this.isDragging = false;
         this.isResizing = false;
@@ -739,6 +740,9 @@ Object.assign(DesignEditor.prototype, {
         if (wasPanningCamera && this.selectedElement) {
             this.requestHandlesRefresh?.();
         }
+
+        // Garantia extra contra residuos visuais apos qualquer gesto.
+        this.hideGuideLines?.();
     },
     
     handleCanvasMouseDown(e) {
@@ -774,6 +778,7 @@ Object.assign(DesignEditor.prototype, {
         if (!this.selectedElement) return;
 
         this.beginHistoryGesture();
+        this.hideGuideLines?.();
         this.isResizing = true;
         this.resizeHandle = position;
         const bbox = this.selectedElement.element.getBBox();
@@ -1153,6 +1158,7 @@ Object.assign(DesignEditor.prototype, {
     startRotate(e, elementData) {
         if (e.preventDefault) e.preventDefault();
         this.beginHistoryGesture();
+        this.hideGuideLines?.();
         this.isDragging = false;
         this.isResizing = false;
         this.isRotating = true;

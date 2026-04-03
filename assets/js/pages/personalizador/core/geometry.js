@@ -345,8 +345,34 @@ Object.assign(DesignEditor.prototype, {
         return snaps;
     },
 
+    clearGuideLineArtifacts() {
+        const trackedLines = Array.isArray(this.guideLines) ? this.guideLines : [];
+        trackedLines.forEach((line) => {
+            try {
+                line?.remove?.();
+            } catch {
+                // ignore stale nodes
+            }
+        });
+        this.guideLines = [];
+
+        if (!this.canvas?.querySelectorAll) {
+            return;
+        }
+
+        this.canvas.querySelectorAll('.guide-line').forEach((line) => {
+            try {
+                line.remove();
+            } catch {
+                // ignore stale nodes
+            }
+        });
+    },
+
     showGuideLines(snaps) {
-        this.hideGuideLines();
+        this.clearGuideLineArtifacts();
+
+        if (!this.showGuides) return;
 
         if (!snaps.x && !snaps.y) return;
 
@@ -391,8 +417,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     hideGuideLines() {
-        this.guideLines.forEach(line => line.remove());
-        this.guideLines = [];
+        this.clearGuideLineArtifacts();
     },
 
     getRotationGuideSnap(rotation, threshold = 4) {
@@ -413,7 +438,9 @@ Object.assign(DesignEditor.prototype, {
     },
 
     showRotationGuideLine(rotation, center) {
-        this.hideGuideLines();
+        this.clearGuideLineArtifacts();
+
+        if (!this.showGuides) return;
 
         if (!Number.isFinite(rotation) || !center) return;
 

@@ -235,6 +235,7 @@ Object.assign(DesignEditor.prototype, {
         if (this._inlineTextEditorState) {
             this.closeInlineTextEditor?.(true);
         }
+        this.hideGuideLines?.();
         this.selectedElement = null;
         this.editorState = this.editorState || {};
         this.editorState.selectionType = null;
