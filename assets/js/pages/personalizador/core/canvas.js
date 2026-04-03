@@ -103,8 +103,55 @@ Object.assign(DesignEditor.prototype, {
             this.canvasWrapper.style.width = `${nextWidth}px`;
             this.canvasWrapper.style.height = `${nextHeight}px`;
         }
-        this.canvasWrapper.style.transform = 'none';
+        this.clampCameraOffset?.(nextWidth, nextHeight);
+        this.applyCameraTransform?.();
         return true;
+    },
+
+    clampCameraOffset(wrapperWidth = null, wrapperHeight = null) {
+        if (!this.canvasStage) {
+            this.cameraOffset = { x: 0, y: 0 };
+            return this.cameraOffset;
+        }
+
+        const stageRect = this.canvasStage.getBoundingClientRect();
+        const stageWidth = Number(stageRect?.width) || this.canvasStage.clientWidth || 0;
+        const stageHeight = Number(stageRect?.height) || this.canvasStage.clientHeight || 0;
+        const currentWrapperWidth = Math.max(
+            1,
+            Number(wrapperWidth) || parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1
+        );
+        const currentWrapperHeight = Math.max(
+            1,
+            Number(wrapperHeight) || parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1
+        );
+
+        const maxX = Math.max(0, (currentWrapperWidth - stageWidth) / 2);
+        const maxY = Math.max(0, (currentWrapperHeight - stageHeight) / 2);
+
+        const nextX = Math.min(maxX, Math.max(-maxX, Number(this.cameraOffset?.x) || 0));
+        const nextY = Math.min(maxY, Math.max(-maxY, Number(this.cameraOffset?.y) || 0));
+        this.cameraOffset = { x: nextX, y: nextY };
+        return this.cameraOffset;
+    },
+
+    applyCameraTransform() {
+        if (!this.canvasWrapper) return;
+        const offsetX = Math.round(Number(this.cameraOffset?.x) || 0);
+        const offsetY = Math.round(Number(this.cameraOffset?.y) || 0);
+        this.canvasWrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+    },
+
+    setCameraOffset(x, y, options = {}) {
+        this.cameraOffset = {
+            x: Number(x) || 0,
+            y: Number(y) || 0
+        };
+        this.clampCameraOffset?.();
+        this.applyCameraTransform?.();
+        if (options.refreshHandles && this.selectedElement) {
+            this.requestHandlesRefresh?.();
+        }
     },
 
     constrainResizeRect(startBox, proposedBox, handle, bounds) {

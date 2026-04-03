@@ -395,6 +395,11 @@ body.app-page {
     box-shadow: none !important;
 }
 
+#canvas-stage.is-camera-panning,
+body.is-camera-panning #canvas-stage {
+    cursor: grabbing !important;
+}
+
 .editor-bottom-bar {
     border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;

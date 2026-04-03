@@ -1374,9 +1374,45 @@ Object.assign(DesignEditor.prototype, {
         this.updateDesktopFloatingToolbarPosition?.();
     },
 
-    setZoom(newZoom) {
-        this.zoom = Math.max(0.5, Math.min(2, newZoom));
+    setZoom(newZoom, options = {}) {
+        const nextZoom = Math.max(0.5, Math.min(2, Number(newZoom) || (Number(this.zoom) || 1)));
+        const hasAnchor = Number.isFinite(Number(options?.clientX)) && Number.isFinite(Number(options?.clientY));
+
+        let anchorData = null;
+        if (hasAnchor && this.canvasStage) {
+            const stageRect = this.canvasStage.getBoundingClientRect();
+            const wrapperWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
+            const wrapperHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const offsetX = Number(this.cameraOffset?.x) || 0;
+            const offsetY = Number(this.cameraOffset?.y) || 0;
+            const stageLocalX = Number(options.clientX) - stageRect.left;
+            const stageLocalY = Number(options.clientY) - stageRect.top;
+            const wrapperStartX = ((stageRect.width - wrapperWidth) / 2) + offsetX;
+            const wrapperStartY = ((stageRect.height - wrapperHeight) / 2) + offsetY;
+            anchorData = {
+                stageRect,
+                stageLocalX,
+                stageLocalY,
+                ratioX: (stageLocalX - wrapperStartX) / wrapperWidth,
+                ratioY: (stageLocalY - wrapperStartY) / wrapperHeight
+            };
+        }
+
+        this.zoom = nextZoom;
         this.syncCanvasViewport();
+
+        if (anchorData && this.canvasStage) {
+            const nextWrapperWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
+            const nextWrapperHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const nextOffsetX = anchorData.stageLocalX
+                - ((anchorData.stageRect.width - nextWrapperWidth) / 2)
+                - (anchorData.ratioX * nextWrapperWidth);
+            const nextOffsetY = anchorData.stageLocalY
+                - ((anchorData.stageRect.height - nextWrapperHeight) / 2)
+                - (anchorData.ratioY * nextWrapperHeight);
+            this.setCameraOffset?.(nextOffsetX, nextOffsetY, { refreshHandles: Boolean(this.selectedElement) });
+        }
+
         document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
         if (this.selectedElement) {
             this.requestHandlesRefresh?.();

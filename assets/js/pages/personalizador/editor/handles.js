@@ -586,6 +586,17 @@ Object.assign(DesignEditor.prototype, {
     },
 
     processMouseMove(e) {
+        if (this.isPanningCamera && this.cameraPanStart) {
+            const deltaX = e.clientX - this.cameraPanStart.clientX;
+            const deltaY = e.clientY - this.cameraPanStart.clientY;
+            this.setCameraOffset?.(
+                this.cameraPanStart.offsetX + deltaX,
+                this.cameraPanStart.offsetY + deltaY,
+                { refreshHandles: Boolean(this.selectedElement) }
+            );
+            return;
+        }
+
         if (this.isDragging && this.selectedElement) {
             // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
             const svgDelta = this.clientDeltaToSvgDelta(
@@ -664,13 +675,14 @@ Object.assign(DesignEditor.prototype, {
         const wasRotating = this.isRotating;
         const wasDragging = this.isDragging;
         const wasResizing = this.isResizing;
+        const wasPanningCamera = this.isPanningCamera;
 
         if (this.moveFrameRequest !== null) {
             cancelAnimationFrame(this.moveFrameRequest);
             this.moveFrameRequest = null;
         }
 
-        if (this.pendingMoveEvent && (this.isDragging || this.isResizing || this.isRotating)) {
+        if (this.pendingMoveEvent && (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera)) {
             const pendingEvent = this.pendingMoveEvent;
             this.pendingMoveEvent = null;
             this.processMouseMove(pendingEvent);
@@ -688,9 +700,13 @@ Object.assign(DesignEditor.prototype, {
         this.isDragging = false;
         this.isResizing = false;
         this.isRotating = false;
+        this.isPanningCamera = false;
+        this.cameraPanStart = null;
         this.resizeHandle = null;
         this.rotationCenterClient = null;
         this.rotationHandleRadiusClient = null;
+        document.body.classList.remove('is-camera-panning');
+        this.canvasStage?.classList.remove('is-camera-panning');
 
         // Reset handles container CSS transform so showResizeHandles can reposition cleanly.
         const handlesContainer = document.getElementById('resize-handles');
@@ -718,6 +734,10 @@ Object.assign(DesignEditor.prototype, {
             if (!this.cropMode) {
                 this.showResizeHandles(this.selectedElement);
             }
+        }
+
+        if (wasPanningCamera && this.selectedElement) {
+            this.requestHandlesRefresh?.();
         }
     },
     

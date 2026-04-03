@@ -29,6 +29,9 @@ class DesignEditor {
         this.activeHistoryGestureSnapshot = null;
         this.layerDragIndex = null;
         this.zoom = 1;
+        this.cameraOffset = { x: 0, y: 0 };
+        this.isPanningCamera = false;
+        this.cameraPanStart = null;
         this.isDragging = false;
         this.isResizing = false;
         this.isRotating = false;

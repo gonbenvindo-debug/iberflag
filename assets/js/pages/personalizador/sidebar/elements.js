@@ -535,6 +535,45 @@ Object.assign(DesignEditor.prototype, {
         let _pinchZoom0 = 1;
         const stage = this.canvasStage;
         if (stage) {
+            const shouldStartCameraPan = (event) => {
+                if (window.matchMedia('(max-width: 767px)').matches) return false;
+                if (event.button != null && event.button !== 0) return false;
+                if (this.isDragging || this.isResizing || this.isRotating || this.cropMode) return false;
+                const target = event.target;
+                if (!(target instanceof Element)) return false;
+                if (target.closest('.resize-handle, .rotate-handle')) return false;
+                if (target.closest('[data-editable="true"]')) return false;
+                if (target.closest('button, input, select, textarea, label, a')) return false;
+                return true;
+            };
+
+            stage.addEventListener('mousedown', (event) => {
+                if (!shouldStartCameraPan(event)) return;
+                event.preventDefault();
+                event.stopPropagation();
+                this.isPanningCamera = true;
+                this.cameraPanStart = {
+                    clientX: event.clientX,
+                    clientY: event.clientY,
+                    offsetX: Number(this.cameraOffset?.x) || 0,
+                    offsetY: Number(this.cameraOffset?.y) || 0
+                };
+                stage.classList.add('is-camera-panning');
+                document.body.classList.add('is-camera-panning');
+            }, true);
+
+            stage.addEventListener('wheel', (event) => {
+                if (window.matchMedia('(max-width: 767px)').matches) return;
+                if (event.ctrlKey || event.metaKey || event.altKey) return;
+                event.preventDefault();
+                const delta = Number(event.deltaY) || 0;
+                const zoomStep = delta < 0 ? 0.08 : -0.08;
+                this.setZoom((Number(this.zoom) || 1) + zoomStep, {
+                    clientX: event.clientX,
+                    clientY: event.clientY
+                });
+            }, { passive: false });
+
             stage.addEventListener('touchstart', (e) => {
                 if (e.touches.length === 2) {
                     _pinchDist0 = Math.hypot(
