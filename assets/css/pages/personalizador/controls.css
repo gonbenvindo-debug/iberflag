@@ -1099,17 +1099,19 @@ body.editor-mode-desktop #editor-floating-context-bar {
     }
 
     #editor-sidebar-right {
-        position: absolute !important;
-        top: 10px;
-        left: 50%;
-        right: auto;
-        width: max-content !important;
-        max-width: calc(100vw - 24px);
+        position: relative !important;
+        grid-column: 2 !important;
+        grid-row: 1 !important;
+        justify-self: stretch;
+        align-self: start;
+        width: 100% !important;
+        max-width: 100%;
         min-width: 0;
         min-height: 0;
-        padding: 0 !important;
+        padding: 10px 0 0 !important;
         margin: 0;
-        display: block;
+        display: flex;
+        justify-content: center;
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
@@ -1117,13 +1119,13 @@ body.editor-mode-desktop #editor-floating-context-bar {
         z-index: var(--z-desktop-toolbar);
         pointer-events: none;
         opacity: 0;
-        transform: translate(-50%, -8px);
+        transform: translateY(-8px);
         transition: opacity 180ms ease, transform 180ms ease;
     }
 
     #editor-sidebar-right .sidebar-shell {
         width: fit-content;
-        max-width: calc(100vw - 24px);
+        max-width: calc(100% - 8px);
         border: 1px solid var(--iber-border) !important;
         border-radius: 10px !important;
         background: #ffffff !important;
@@ -1137,7 +1139,7 @@ body.editor-mode-desktop #editor-floating-context-bar {
 
     #editor-sidebar-right.toolbar-visible {
         opacity: 1;
-        transform: translate(-50%, 0);
+        transform: translateY(0);
         pointer-events: auto;
     }
 
