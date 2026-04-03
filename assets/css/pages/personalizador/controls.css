@@ -720,7 +720,7 @@ body.is-camera-panning #canvas-stage {
         top: 8px;
         width: calc(100% - 12px);
         max-width: calc(100% - 12px);
-        padding: 6px;
+        padding: 5px;
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
@@ -751,19 +751,26 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar.is-text-selection .editor-floating-actions {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 4px;
+        gap: 3px;
     }
 
     #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn {
         width: 100%;
         min-width: 0;
+        height: 30px;
+        min-height: 30px;
+        border: 0 !important;
+        border-radius: 6px;
+        padding: 0;
+        background: transparent;
+        box-shadow: none !important;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group {
         display: grid;
         grid-template-columns: repeat(4, minmax(0, 1fr));
         align-items: center;
-        gap: 4px;
+        gap: 3px;
         padding-left: 0;
         border-left: 0;
     }
@@ -772,19 +779,29 @@ body.is-camera-panning #canvas-stage {
         grid-column: span 2;
         width: 100%;
         min-width: 0;
+        height: 30px;
+        min-height: 30px;
+        padding: 0 8px;
+        font-size: 14px;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-size {
         grid-column: span 2;
         width: 100%;
         min-width: 0;
+        height: 30px;
+        padding: 0 6px;
         justify-content: space-between;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-font-btn {
         width: 100%;
         min-width: 0;
+        height: 30px;
+        min-height: 30px;
         padding: 0;
+        border: 0;
+        border-radius: 6px;
     }
 
     .editor-floating-actions {
@@ -792,12 +809,18 @@ body.is-camera-panning #canvas-stage {
     }
 
     .editor-floating-actions .editor-floating-btn {
-        width: 32px;
-        min-width: 32px;
-        height: 32px;
-        min-height: 32px;
+        width: 30px;
+        min-width: 30px;
+        height: 30px;
+        min-height: 30px;
         padding: 0;
         gap: 0;
+    }
+
+    .editor-floating-actions .editor-floating-btn i,
+    .editor-floating-actions .editor-floating-btn svg {
+        width: 14px;
+        height: 14px;
     }
 
     .editor-floating-actions .editor-floating-btn > span {
