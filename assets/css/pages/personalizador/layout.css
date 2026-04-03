@@ -49,7 +49,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 110;
+            z-index: var(--z-mobile-backdrop);
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
@@ -136,7 +136,7 @@
             min-width: 0;
             width: 100%;
             min-height: 0;
-            z-index: 10;
+            z-index: var(--z-desktop-toolbar);
         }
 
         .editor-sidebar-right .sidebar-shell {
@@ -191,7 +191,7 @@
             top: calc(100% + 0.5rem);
             left: 0.75rem;
             right: 0.75rem;
-            z-index: 20;
+            z-index: var(--z-properties-popover);
         }
 
         #properties-panel #no-selection {
@@ -222,7 +222,7 @@
             min-width: 0;
             overflow: hidden;
             position: relative;
-            z-index: 1;
+            z-index: var(--z-main);
         }
 
         #canvas-stage {
@@ -236,7 +236,7 @@
             min-height: 0;
             overflow: hidden;
             position: relative;
-            z-index: 1;
+            z-index: var(--z-canvas-stage);
             border: none;
             box-shadow: none;
         }
@@ -280,7 +280,7 @@
             transition: opacity 180ms ease, transform 180ms ease;
             transform: translateY(0.85rem) scale(0.98);
             transform-origin: bottom center;
-            z-index: 30;
+            z-index: var(--z-mobile-popover);
         }
 
         .editor-bottom-bar > .context-popover.is-open {

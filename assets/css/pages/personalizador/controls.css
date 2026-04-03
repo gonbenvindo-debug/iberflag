@@ -15,6 +15,28 @@ body.app-page {
 }
 
 #editor-nav {
+    position: relative;
+    z-index: var(--z-top-nav);
+}
+
+#editor-info-bar {
+    position: relative;
+    z-index: var(--z-top-info);
+}
+
+#editor-body-layout {
+    position: relative;
+    z-index: var(--z-base);
+}
+
+#resize-handles {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: var(--z-resize-handles) !important;
+    pointer-events: none !important;
+}
+
+#editor-nav {
     background: var(--iber-surface) !important;
     border-bottom: 1px solid var(--iber-border) !important;
     box-shadow: none !important;
@@ -455,6 +477,8 @@ body.is-camera-panning #canvas-stage {
 .editor-mobile-tabs {
     border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;
+    position: relative;
+    z-index: var(--z-mobile-tabs);
 }
 
 .editor-mobile-tab {
@@ -463,6 +487,10 @@ body.is-camera-panning #canvas-stage {
 
 .editor-mobile-tab.active {
     color: var(--iber-accent) !important;
+}
+
+#editor-loading {
+    z-index: var(--z-loading) !important;
 }
 
 @media (max-width: 1023px) {
@@ -483,7 +511,7 @@ body.is-camera-panning #canvas-stage {
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: 35;
+    z-index: var(--z-floating-context);
     width: max-content;
     max-width: calc(100% - 20px);
     padding: 6px 8px;
@@ -1086,7 +1114,7 @@ body.editor-mode-desktop #editor-floating-context-bar {
         border: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        z-index: 1605;
+        z-index: var(--z-desktop-toolbar);
         pointer-events: none;
         opacity: 0;
         transform: translate(-50%, -8px);
