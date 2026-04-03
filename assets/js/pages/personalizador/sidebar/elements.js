@@ -613,6 +613,14 @@ Object.assign(DesignEditor.prototype, {
         let _pinchZoom0 = 1;
         const stage = this.canvasStage;
         if (stage) {
+            const getPinchDistance = (touches) => Math.hypot(
+                touches[0].clientX - touches[1].clientX,
+                touches[0].clientY - touches[1].clientY
+            );
+            const getPinchCenter = (touches) => ({
+                x: (touches[0].clientX + touches[1].clientX) / 2,
+                y: (touches[0].clientY + touches[1].clientY) / 2
+            });
             const shouldStartCameraPan = (event) => {
                 const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
                 if (isMobileViewport) {
@@ -620,7 +628,7 @@ Object.assign(DesignEditor.prototype, {
                 } else if (event.button != null && event.button !== 0) {
                     return false;
                 }
-                if (this.isDragging || this.isResizing || this.isRotating || this.cropMode) return false;
+                if (this.isDragging || this.isResizing || this.isRotating || this.cropMode || this.isPinchZooming) return false;
                 const target = event.target;
                 if (!(target instanceof Element)) return false;
                 if (target.closest('.resize-handle, .rotate-handle')) return false;
@@ -657,6 +665,19 @@ Object.assign(DesignEditor.prototype, {
             }, { passive: false });
 
             stage.addEventListener('touchstart', (e) => {
+                if (e.touches.length >= 2) {
+                    this._lastTouchInteractionAt = Date.now();
+                    this.isPinchZooming = true;
+                    _pinchDist0 = getPinchDistance(e.touches);
+                    _pinchZoom0 = Number(this.zoom) || 1;
+                    if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
+                        this.handleMouseUp('touch');
+                    }
+                    this._touchGestureActive = false;
+                    this._activeGestureTouchId = null;
+                    e.preventDefault();
+                    return;
+                }
                 if (e.touches.length === 1 && shouldStartCameraPan(e)) {
                     const t = e.touches[0];
                     this._lastTouchInteractionAt = Date.now();
@@ -674,29 +695,34 @@ Object.assign(DesignEditor.prototype, {
                     e.preventDefault();
                     return;
                 }
-                if (e.touches.length === 2) {
-                    _pinchDist0 = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-                    _pinchZoom0 = this.zoom;
-                }
             }, { passive: false });
             stage.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && _pinchDist0) {
+                    this.isPinchZooming = true;
                     e.preventDefault();
-                    const d = Math.hypot(
-                        e.touches[0].clientX - e.touches[1].clientX,
-                        e.touches[0].clientY - e.touches[1].clientY
-                    );
-                    this.setZoom(_pinchZoom0 * (d / _pinchDist0));
+                    const d = getPinchDistance(e.touches);
+                    const center = getPinchCenter(e.touches);
+                    this.setZoom(_pinchZoom0 * (d / _pinchDist0), {
+                        clientX: center.x,
+                        clientY: center.y
+                    });
                     if (this.selectedElement) {
                         this.requestHandlesRefresh?.();
                     }
                 }
             }, { passive: false });
             stage.addEventListener('touchend', (e) => {
-                if (e.touches.length < 2) _pinchDist0 = null;
+                if (e.touches.length === 2) {
+                    _pinchDist0 = getPinchDistance(e.touches);
+                    _pinchZoom0 = Number(this.zoom) || 1;
+                    this.isPinchZooming = true;
+                    return;
+                }
+                if (e.touches.length < 2) {
+                    _pinchDist0 = null;
+                    _pinchZoom0 = Number(this.zoom) || 1;
+                    this.isPinchZooming = false;
+                }
             }, { passive: true });
         }
 
@@ -713,6 +739,9 @@ Object.assign(DesignEditor.prototype, {
 
         document.addEventListener('touchmove', (e) => {
             this._lastTouchInteractionAt = Date.now();
+            if (this.isPinchZooming || e.touches.length >= 2) {
+                return;
+            }
             if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
                     || (e.touches.length > 0 ? e.touches[0] : null);
@@ -725,6 +754,11 @@ Object.assign(DesignEditor.prototype, {
 
         document.addEventListener('touchend', (e) => {
             this._lastTouchInteractionAt = Date.now();
+            if (this.isPinchZooming && e.touches.length >= 1) {
+                this._touchGestureActive = false;
+                this._activeGestureTouchId = null;
+                return;
+            }
             if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 const releasedTrackedTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this._activeGestureTouchId);
                 if (releasedTrackedTouch) {
@@ -735,6 +769,9 @@ Object.assign(DesignEditor.prototype, {
                     return;
                 }
             }
+            if (e.touches.length === 0) {
+                this.isPinchZooming = false;
+            }
             this._touchGestureActive = false;
             this._activeGestureTouchId = null;
         }, { passive: false });
@@ -744,6 +781,7 @@ Object.assign(DesignEditor.prototype, {
             if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 this.handleMouseUp('touch');
             }
+            this.isPinchZooming = false;
             this._touchGestureActive = false;
             this._activeGestureTouchId = null;
         }, { passive: false });

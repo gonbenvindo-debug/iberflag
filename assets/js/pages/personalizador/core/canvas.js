@@ -90,6 +90,8 @@ Object.assign(DesignEditor.prototype, {
             this.canvasWrapper.style.width = `${nextWidth}px`;
             this.canvasWrapper.style.height = `${nextHeight}px`;
         }
+        const checkerSize = Math.max(12, Math.min(56, (Number(this.zoom) || 1) * 20));
+        this.canvasWrapper.style.setProperty('--checker-size', `${checkerSize.toFixed(2)}px`);
         this.clampCameraOffset?.(nextWidth, nextHeight);
         this.applyCameraTransform?.();
         return true;
@@ -124,9 +126,9 @@ Object.assign(DesignEditor.prototype, {
 
     applyCameraTransform() {
         if (!this.canvasWrapper) return;
-        const offsetX = Math.round(Number(this.cameraOffset?.x) || 0);
-        const offsetY = Math.round(Number(this.cameraOffset?.y) || 0);
-        this.canvasWrapper.style.transform = `translate(${offsetX}px, ${offsetY}px)`;
+        const offsetX = Number(this.cameraOffset?.x) || 0;
+        const offsetY = Number(this.cameraOffset?.y) || 0;
+        this.canvasWrapper.style.transform = `translate3d(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px, 0)`;
     },
 
     setCameraOffset(x, y, options = {}) {

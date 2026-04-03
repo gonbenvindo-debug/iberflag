@@ -31,6 +31,7 @@ class DesignEditor {
         this.zoom = 0.9;
         this.cameraOffset = { x: 0, y: 0 };
         this.isPanningCamera = false;
+        this.isPinchZooming = false;
         this.cameraPanStart = null;
         this.isDragging = false;
         this.isResizing = false;
