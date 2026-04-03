@@ -224,11 +224,11 @@ Object.assign(DesignEditor.prototype, {
     },
 
     clearPropertiesSections() {
-        document.getElementById('no-selection').classList.remove('hidden');
-        document.getElementById('text-properties').classList.add('hidden');
-        document.getElementById('image-properties').classList.add('hidden');
-        document.getElementById('qr-properties').classList.add('hidden');
-        document.getElementById('shape-properties').classList.add('hidden');
+        document.getElementById('no-selection')?.classList.remove('hidden');
+        document.getElementById('text-properties')?.classList.add('hidden');
+        document.getElementById('image-properties')?.classList.add('hidden');
+        document.getElementById('qr-properties')?.classList.add('hidden');
+        document.getElementById('shape-properties')?.classList.add('hidden');
     },
 
     clearSelection() {

@@ -459,14 +459,20 @@ Object.assign(DesignEditor.prototype, {
     
     updatePropertiesPanel(elementData) {
         const drawer = document.getElementById('editor-properties-drawer');
+        const propertiesPanel = document.getElementById('properties-panel');
+        if (!propertiesPanel) {
+            this.syncExpandedPropertiesControls?.(elementData);
+            this.updateContextualToolbar?.(elementData);
+            return;
+        }
         // Hide all property panels
-        document.getElementById('no-selection').classList.add('hidden');
-        document.getElementById('text-properties').classList.add('hidden');
-        document.getElementById('text-properties').classList.remove('active');
-        document.getElementById('image-properties').classList.add('hidden');
-        document.getElementById('image-properties').classList.remove('active');
-        document.getElementById('shape-properties').classList.add('hidden');
-        document.getElementById('shape-properties').classList.remove('active');
+        document.getElementById('no-selection')?.classList.add('hidden');
+        document.getElementById('text-properties')?.classList.add('hidden');
+        document.getElementById('text-properties')?.classList.remove('active');
+        document.getElementById('image-properties')?.classList.add('hidden');
+        document.getElementById('image-properties')?.classList.remove('active');
+        document.getElementById('shape-properties')?.classList.add('hidden');
+        document.getElementById('shape-properties')?.classList.remove('active');
         drawer?.classList.remove('hidden');
         
         if (elementData.type === 'text') {

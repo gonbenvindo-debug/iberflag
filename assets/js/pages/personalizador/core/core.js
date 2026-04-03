@@ -243,11 +243,13 @@ class DesignEditor {
         };
 
         const openRight = (tabId = null) => {
+            const propertiesPanel = document.getElementById('properties-panel');
+            if (!propertiesPanel) return;
             const isAlreadyOpen = sidebarRight.classList.contains('panel-open') &&
                 (tabId ? document.getElementById(tabId)?.classList.contains('active') : false);
             closeAll();
             if (!isAlreadyOpen) {
-                document.getElementById('properties-panel')?.classList.remove('hidden');
+                propertiesPanel.classList.remove('hidden');
                 document.body.classList.remove('has-layers-panel-open');
                 sidebarRight.classList.add('panel-open');
                 sidebarRight.classList.add('panel-expanded');

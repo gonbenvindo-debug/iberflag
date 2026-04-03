@@ -399,8 +399,10 @@ Object.assign(DesignEditor.prototype, {
         });
 
         // Zoom
-        document.getElementById('zoom-in').addEventListener('click', () => this.executeEditorCommand('zoom-in'));
-        document.getElementById('zoom-out').addEventListener('click', () => this.executeEditorCommand('zoom-out'));
+        const zoomInBtn = document.getElementById('zoom-in');
+        const zoomOutBtn = document.getElementById('zoom-out');
+        if (zoomInBtn) zoomInBtn.addEventListener('click', () => this.executeEditorCommand('zoom-in'));
+        if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => this.executeEditorCommand('zoom-out'));
 
         // Undo/Redo
         document.getElementById('undo-btn').addEventListener('click', () => this.executeEditorCommand('undo'));
@@ -410,7 +412,8 @@ Object.assign(DesignEditor.prototype, {
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.executeEditorCommand('add-to-cart'));
 
         // Delete element
-        document.getElementById('delete-element-btn').addEventListener('click', () => this.executeEditorCommand('delete'));
+        const deleteElementBtn = document.getElementById('delete-element-btn');
+        if (deleteElementBtn) deleteElementBtn.addEventListener('click', () => this.executeEditorCommand('delete'));
 
         // Quick actions
         const duplicateBtn = document.getElementById('duplicate-element-btn');

@@ -268,7 +268,7 @@
         </main>
 
         <!-- Right Sidebar - Properties -->
-        <aside class="w-64 editor-sidebar-right" id="editor-sidebar-right">
+        <aside class="w-64 editor-sidebar-right hidden" id="editor-sidebar-right" aria-hidden="true">
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
                 <div id="properties-panel" class="sidebar-section">
@@ -579,6 +579,12 @@
     <script>
         window.SUPABASE_URL = 'https://nzwfquivulxkmxrwqalz.supabase.co';
         window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
+    </script>
+    <script>
+        const propertiesPanel = document.getElementById('properties-panel');
+        if (propertiesPanel) {
+            propertiesPanel.remove();
+        }
     </script>
     <script src="/assets/js/templates-data.js" defer></script>
     <script src="/assets/js/core/cart-assets.js?v=20260401a" defer></script>

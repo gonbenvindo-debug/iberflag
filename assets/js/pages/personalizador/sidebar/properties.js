@@ -1447,7 +1447,10 @@ Object.assign(DesignEditor.prototype, {
             this.setCameraOffset?.(nextOffsetX, nextOffsetY, { refreshHandles: Boolean(this.selectedElement) });
         }
 
-        document.getElementById('zoom-level').textContent = Math.round(this.zoom * 100) + '%';
+        const zoomLevel = document.getElementById('zoom-level');
+        if (zoomLevel) {
+            zoomLevel.textContent = Math.round(this.zoom * 100) + '%';
+        }
         if (this.selectedElement) {
             this.requestHandlesRefresh?.();
         }
