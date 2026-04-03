@@ -67,24 +67,7 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
 
-        // Fallback visual: área interna branca para diferenciar do checkerboard externo.
-        let printAreaBackground = this.canvas.querySelector('#print-area-background');
-        if (!printAreaBackground || String(printAreaBackground.tagName || '').toLowerCase() !== 'rect') {
-            if (printAreaBackground) {
-                printAreaBackground.remove();
-            }
-            printAreaBackground = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            printAreaBackground.setAttribute('id', 'print-area-background');
-            printAreaBackground.setAttribute('pointer-events', 'none');
-            this.canvas.prepend(printAreaBackground);
-        }
-        printAreaBackground.setAttribute('x', String(this.printAreaBounds.x));
-        printAreaBackground.setAttribute('y', String(this.printAreaBounds.y));
-        printAreaBackground.setAttribute('width', String(this.printAreaBounds.width));
-        printAreaBackground.setAttribute('height', String(this.printAreaBounds.height));
-        printAreaBackground.setAttribute('fill', '#ffffff');
-        printAreaBackground.removeAttribute('stroke');
-        printAreaBackground.removeAttribute('transform');
+        this.removePrintAreaBackground?.();
 
         this.bringPrintAreaOverlaysToFront();
     },
@@ -154,8 +137,39 @@ Object.assign(DesignEditor.prototype, {
         return null;
     },
 
+    removePrintAreaBackground() {
+        if (!this.canvas) return;
+        const printAreaBackground = this.canvas.querySelector('#print-area-background');
+        if (printAreaBackground) {
+            printAreaBackground.remove();
+        }
+    },
+
     bringPrintAreaOverlaysToFront() {
         if (!this.canvas) return;
+
+        this.removePrintAreaBackground?.();
+
+        if (this.printArea && this.printArea.parentNode === this.canvas) {
+            this.canvas.appendChild(this.printArea);
+        }
+
+        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
+        if (shapeOutline) {
+            const insertionAnchor = Array.from(this.canvas.children).find((node) => {
+                if (!node || node === shapeOutline || node === this.printArea) return false;
+                const tagName = String(node.tagName || '').toLowerCase();
+                const nodeId = node.getAttribute?.('id') || '';
+                if (tagName === 'defs') return false;
+                return nodeId !== 'print-area-outside-overlay' && nodeId !== 'print-area-outside-grid';
+            });
+
+            if (insertionAnchor) {
+                this.canvas.insertBefore(shapeOutline, insertionAnchor);
+            } else {
+                this.canvas.appendChild(shapeOutline);
+            }
+        }
 
         const outsideOverlay = this.canvas.querySelector('#print-area-outside-overlay');
         if (outsideOverlay) {
@@ -165,15 +179,6 @@ Object.assign(DesignEditor.prototype, {
         const outsideGridOverlay = this.canvas.querySelector('#print-area-outside-grid');
         if (outsideGridOverlay) {
             this.canvas.appendChild(outsideGridOverlay);
-        }
-
-        if (this.printArea && this.printArea.parentNode === this.canvas) {
-            this.canvas.appendChild(this.printArea);
-        }
-
-        const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
-        if (shapeOutline) {
-            this.canvas.appendChild(shapeOutline);
         }
     },
 
@@ -287,51 +292,6 @@ Object.assign(DesignEditor.prototype, {
         outsideGrid.setAttribute('mask', 'url(#print-area-outside-mask)');
     },
 
-    upsertPrintAreaBackground(maskShapeNode, transform = '') {
-        if (!this.canvas || !maskShapeNode) return;
-
-        let printAreaBackground = this.canvas.querySelector('#print-area-background');
-        if (!printAreaBackground) {
-            printAreaBackground = document.importNode(maskShapeNode, true);
-            printAreaBackground.setAttribute('id', 'print-area-background');
-            printAreaBackground.setAttribute('pointer-events', 'none');
-            if (this.canvas.firstChild) {
-                this.canvas.insertBefore(printAreaBackground, this.canvas.firstChild);
-            } else {
-                this.canvas.appendChild(printAreaBackground);
-            }
-        }
-
-        const refreshedBackground = document.importNode(maskShapeNode, true);
-        Array.from(refreshedBackground.attributes).forEach((attribute) => {
-            printAreaBackground.setAttribute(attribute.name, attribute.value);
-        });
-
-        while (printAreaBackground.firstChild) {
-            printAreaBackground.removeChild(printAreaBackground.firstChild);
-        }
-
-        Array.from(refreshedBackground.childNodes).forEach((childNode) => {
-            printAreaBackground.appendChild(childNode.cloneNode(true));
-        });
-
-        printAreaBackground.removeAttribute('stroke');
-        printAreaBackground.removeAttribute('stroke-width');
-        printAreaBackground.removeAttribute('stroke-dasharray');
-        printAreaBackground.removeAttribute('opacity');
-        printAreaBackground.setAttribute('fill', '#ffffff');
-        if (transform) {
-            printAreaBackground.setAttribute('transform', transform);
-        } else {
-            printAreaBackground.removeAttribute('transform');
-        }
-        printAreaBackground.setAttribute('pointer-events', 'none');
-
-        if (this.canvas.firstChild !== printAreaBackground) {
-            this.canvas.insertBefore(printAreaBackground, this.canvas.firstChild);
-        }
-    },
-
     updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds = sourceBounds) {
         this.setDefaultPrintArea();
 
@@ -391,11 +351,12 @@ Object.assign(DesignEditor.prototype, {
 
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
-        visualArea.setAttribute('fill', 'none');
+        visualArea.setAttribute('fill', '#ffffff');
         visualArea.setAttribute('stroke', '#3b82f6');
         visualArea.setAttribute('stroke-width', '2');
+        visualArea.setAttribute('stroke-opacity', '0.75');
         visualArea.setAttribute('vector-effect', 'non-scaling-stroke');
-        visualArea.setAttribute('opacity', '0.75');
+        visualArea.setAttribute('opacity', '1');
         visualArea.setAttribute('pointer-events', 'none');
         visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
 
@@ -404,8 +365,7 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('width', String(contentBounds.width));
         this.printArea.setAttribute('height', String(contentBounds.height));
 
-        // Área do produto branca (com forma real do SVG) para destacar do fundo quadriculado.
-        this.upsertPrintAreaBackground(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
+        this.removePrintAreaBackground?.();
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
     },

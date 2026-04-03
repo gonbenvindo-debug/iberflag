@@ -7,6 +7,7 @@
     const EXCLUDED_IDS = new Set([
         'print-area-outline',
         'print-area-shape-outline',
+        'print-area-background',
         'print-area-outside-overlay',
         'print-area-outside-grid',
         'resize-handles'

@@ -380,7 +380,11 @@ Object.assign(DesignEditor.prototype, {
         Array.from(this.canvas.children)
             .filter((node) => {
                 const id = node.getAttribute('id');
-                return id !== 'print-area-outline' && id !== 'print-area-shape-outline' && id !== 'print-area-outside-overlay' && id !== 'print-area-outside-grid';
+                return id !== 'print-area-outline'
+                    && id !== 'print-area-shape-outline'
+                    && id !== 'print-area-background'
+                    && id !== 'print-area-outside-overlay'
+                    && id !== 'print-area-outside-grid';
             })
             .forEach((node) => {
                 clippedGroup.appendChild(node.cloneNode(true));
