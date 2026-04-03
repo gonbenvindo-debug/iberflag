@@ -1316,12 +1316,16 @@ Object.assign(DesignEditor.prototype, {
         const paddingY = (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0);
         const availableWidth = Math.max(0, stageWidth - paddingX);
         const availableHeight = Math.max(0, stageHeight - paddingY);
+        const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };
+        const viewBoxWidth = Math.max(1, Number(viewBox.width) || 800);
+        const viewBoxHeight = Math.max(1, Number(viewBox.height) || 600);
+        const canvasAspectRatio = viewBoxWidth / viewBoxHeight;
 
         if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {
                 this.initialCanvasSize = {
-                    width: Math.max(1, stageWidth || Number(this.baseCanvasSize?.width) || 800),
-                    height: Math.max(1, stageHeight || Number(this.baseCanvasSize?.height) || 600)
+                    width: viewBoxWidth,
+                    height: viewBoxHeight
                 };
             }
 
@@ -1342,9 +1346,23 @@ Object.assign(DesignEditor.prototype, {
         );
 
         if (needsResizeRecalc) {
+            const stageAspectRatio = availableWidth / Math.max(1, availableHeight);
+            let baseWidth = availableWidth;
+            let baseHeight = availableHeight;
+
+            if (stageAspectRatio > canvasAspectRatio) {
+                // Stage mais largo: altura limita, manter proporção real do design-canvas.
+                baseHeight = availableHeight;
+                baseWidth = baseHeight * canvasAspectRatio;
+            } else {
+                // Stage mais alto/estreito: largura limita.
+                baseWidth = availableWidth;
+                baseHeight = baseWidth / canvasAspectRatio;
+            }
+
             this.initialCanvasSize = {
-                width: Math.max(1, availableWidth),
-                height: Math.max(1, availableHeight)
+                width: Math.max(1, baseWidth),
+                height: Math.max(1, baseHeight)
             };
             this._lastViewportStageWidth = stageWidth;
             this._lastViewportStageHeight = stageHeight;

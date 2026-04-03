@@ -182,66 +182,57 @@ Object.assign(DesignEditor.prototype, {
     },
     
     getTransformedBounds(elementData) {
-        // Calculate the actual bounding box of an element after transformation
         const bbox = elementData.element.getBBox();
-        const ctm = elementData.element.getScreenCTM();
-        
-        if (!ctm) {
-            // If no CTM, return element's local bounds
-            return {
-                left: bbox.x,
-                right: bbox.x + bbox.width,
-                top: bbox.y,
-                bottom: bbox.y + bbox.height
-            };
+        const baseBounds = {
+            left: bbox.x,
+            right: bbox.x + bbox.width,
+            top: bbox.y,
+            bottom: bbox.y + bbox.height
+        };
+
+        const rotation = Number(elementData?.rotation || 0);
+        if (!rotation) {
+            return baseBounds;
         }
-        
-        // Transform all 4 corners of the bounding box
+
+        const cx = bbox.x + (bbox.width / 2);
+        const cy = bbox.y + (bbox.height / 2);
+        const rad = rotation * Math.PI / 180;
+        const cos = Math.cos(rad);
+        const sin = Math.sin(rad);
+
+        const rotatePoint = (x, y) => {
+            const dx = x - cx;
+            const dy = y - cy;
+            return {
+                x: cx + (dx * cos) - (dy * sin),
+                y: cy + (dx * sin) + (dy * cos)
+            };
+        };
+
         const corners = [
-            new DOMPoint(bbox.x, bbox.y),
-            new DOMPoint(bbox.x + bbox.width, bbox.y),
-            new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height),
-            new DOMPoint(bbox.x, bbox.y + bbox.height)
+            rotatePoint(bbox.x, bbox.y),
+            rotatePoint(bbox.x + bbox.width, bbox.y),
+            rotatePoint(bbox.x + bbox.width, bbox.y + bbox.height),
+            rotatePoint(bbox.x, bbox.y + bbox.height)
         ];
-        
-        const transformedCorners = corners.map(corner => corner.matrixTransform(ctm));
-        
-        // Find min/max of transformed corners (in SVG coordinates)
-        const metrics = this.getCanvasViewportMetrics?.();
-        const svgRect = metrics?.rect || this.canvas.getBoundingClientRect();
-        if (!svgRect.width || !svgRect.height || !metrics?.scale) {
-            return {
-                left: bbox.x,
-                right: bbox.x + bbox.width,
-                top: bbox.y,
-                bottom: bbox.y + bbox.height
-            };
-        }
-        
-        let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
-        
-        transformedCorners.forEach(corner => {
-            // Convert from client coords to SVG coords using the same
-            // viewport metrics used by the rest of the editor.
-            const svgPoint = this.clientToSvgPoint?.(corner.x, corner.y) || null;
-            const svgX = Number(svgPoint?.x);
-            const svgY = Number(svgPoint?.y);
-            if (!Number.isFinite(svgX) || !Number.isFinite(svgY)) return;
-            minX = Math.min(minX, svgX);
-            maxX = Math.max(maxX, svgX);
-            minY = Math.min(minY, svgY);
-            maxY = Math.max(maxY, svgY);
+
+        let minX = Infinity;
+        let maxX = -Infinity;
+        let minY = Infinity;
+        let maxY = -Infinity;
+
+        corners.forEach((corner) => {
+            minX = Math.min(minX, corner.x);
+            maxX = Math.max(maxX, corner.x);
+            minY = Math.min(minY, corner.y);
+            maxY = Math.max(maxY, corner.y);
         });
 
         if (![minX, maxX, minY, maxY].every(Number.isFinite)) {
-            return {
-                left: bbox.x,
-                right: bbox.x + bbox.width,
-                top: bbox.y,
-                bottom: bbox.y + bbox.height
-            };
+            return baseBounds;
         }
-        
+
         return {
             left: minX,
             right: maxX,
@@ -301,6 +292,8 @@ Object.assign(DesignEditor.prototype, {
         const bbox = elementData.element.getBBox();
         const metrics = this.getCanvasViewportMetrics();
         const scale = metrics.scale || 1;
+        const vbX = Number(metrics.vb?.x) || 0;
+        const vbY = Number(metrics.vb?.y) || 0;
 
         const rotation = (elementData.rotation || 0) * Math.PI / 180;
         const cx = bbox.x + bbox.width  / 2;
@@ -310,15 +303,15 @@ Object.assign(DesignEditor.prototype, {
         const toWrapper = (px, py) => {
             if (!rotation) {
                 return {
-                    x: metrics.offsetX + (px * scale),
-                    y: metrics.offsetY + (py * scale)
+                    x: metrics.offsetX + ((px - vbX) * scale),
+                    y: metrics.offsetY + ((py - vbY) * scale)
                 };
             }
             const dx = px - cx;
             const dy = py - cy;
             return {
-                x: metrics.offsetX + ((cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * scale),
-                y: metrics.offsetY + ((cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * scale)
+                x: metrics.offsetX + (((cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) - vbX) * scale),
+                y: metrics.offsetY + (((cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) - vbY) * scale)
             };
         };
 

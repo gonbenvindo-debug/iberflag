@@ -13,8 +13,8 @@ Object.assign(DesignEditor.prototype, {
     getCanvasBounds() {
         const vb = this.getCanvasViewBoxSize();
         return {
-            x: 0,
-            y: 0,
+            x: Number(vb.x) || 0,
+            y: Number(vb.y) || 0,
             width: vb.width,
             height: vb.height
         };
@@ -317,12 +317,12 @@ Object.assign(DesignEditor.prototype, {
         const viewBoxAttr = this.canvas?.getAttribute('viewBox') || '';
         const parts = viewBoxAttr.trim().split(/\s+/).map(Number);
         if (parts.length === 4 && parts.every(Number.isFinite) && parts[2] > 0 && parts[3] > 0) {
-            return { width: parts[2], height: parts[3] };
+            return { x: parts[0], y: parts[1], width: parts[2], height: parts[3] };
         }
 
         const fallbackWidth = Number(this.baseCanvasSize?.width) || 800;
         const fallbackHeight = Number(this.baseCanvasSize?.height) || 600;
-        return { width: fallbackWidth, height: fallbackHeight };
+        return { x: 0, y: 0, width: fallbackWidth, height: fallbackHeight };
     },
 
     setCanvasViewBoxFromBounds(bounds) {
@@ -395,8 +395,8 @@ Object.assign(DesignEditor.prototype, {
         const rect = metrics.rect;
 
         return {
-            x: ((clientX - rect.left - metrics.offsetX) / metrics.scale),
-            y: ((clientY - rect.top - metrics.offsetY) / metrics.scale)
+            x: (Number(metrics.vb?.x) || 0) + ((clientX - rect.left - metrics.offsetX) / metrics.scale),
+            y: (Number(metrics.vb?.y) || 0) + ((clientY - rect.top - metrics.offsetY) / metrics.scale)
         };
     },
 
