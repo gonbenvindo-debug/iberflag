@@ -528,6 +528,7 @@ body.is-camera-panning #canvas-stage {
     display: flex;
     align-items: center;
     gap: 10px;
+    width: max-content;
     min-width: 0;
     max-width: 100%;
     overflow-x: auto;
@@ -603,6 +604,10 @@ body.is-camera-panning #canvas-stage {
     border-left: 1px solid var(--iber-border);
     flex: 0 0 auto;
     min-width: max-content;
+}
+
+#top-shape-group {
+    gap: 8px;
 }
 
 .editor-floating-text-group.hidden {
@@ -718,13 +723,14 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar {
         top: 8px;
-        width: calc(100% - 12px);
+        width: fit-content;
         max-width: calc(100% - 12px);
         padding: 5px;
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
-        width: 100%;
+        width: max-content;
+        max-width: 100%;
         justify-content: flex-start;
         padding-bottom: 2px;
     }

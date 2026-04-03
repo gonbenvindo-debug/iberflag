@@ -612,8 +612,6 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.stroke = nextStroke;
             const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
             if (desktopShapeStrokeColor) desktopShapeStrokeColor.value = nextStroke;
-            const topShapeStrokeColor = document.getElementById('top-shape-stroke-color');
-            if (topShapeStrokeColor) topShapeStrokeColor.value = nextStroke;
             this.queueHistorySave();
         }
     },
@@ -1059,9 +1057,7 @@ Object.assign(DesignEditor.prototype, {
         }
         if (isShape) {
             const topShapeFillColor = document.getElementById('top-shape-fill-color');
-            const topShapeStrokeColor = document.getElementById('top-shape-stroke-color');
             if (topShapeFillColor) topShapeFillColor.value = this.sanitizeColorValue(elementData.fill, '#3b82f6');
-            if (topShapeStrokeColor) topShapeStrokeColor.value = this.sanitizeColorValue(elementData.stroke, '#000000');
         }
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);
