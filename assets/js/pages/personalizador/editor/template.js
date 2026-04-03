@@ -172,6 +172,7 @@ Object.assign(DesignEditor.prototype, {
         borderOverlay.setAttribute('opacity', '1');
         borderOverlay.setAttribute('pointer-events', 'none');
         borderOverlay.removeAttribute('style');
+        borderOverlay.removeAttribute('class');
         borderOverlay.removeAttribute('data-editable');
         borderOverlay.removeAttribute('data-element-id');
         this.canvas.appendChild(borderOverlay);
@@ -184,24 +185,26 @@ Object.assign(DesignEditor.prototype, {
         this.removePrintAreaBackground?.();
         this.removePrintAreaBorderOverlay?.();
 
+        const defsNode = this.canvas.querySelector('defs');
+        const insertBaseLayer = (node) => {
+            if (!node || node.parentNode !== this.canvas) return;
+            if (defsNode && defsNode.parentNode === this.canvas) {
+                this.canvas.insertBefore(node, defsNode.nextSibling);
+                return;
+            }
+            this.canvas.prepend(node);
+        };
+
         if (this.printArea && this.printArea.parentNode === this.canvas) {
-            this.canvas.appendChild(this.printArea);
+            insertBaseLayer(this.printArea);
         }
 
         const shapeOutline = this.canvas.querySelector('#print-area-shape-outline');
         if (shapeOutline) {
-            const insertionAnchor = Array.from(this.canvas.children).find((node) => {
-                if (!node || node === shapeOutline || node === this.printArea) return false;
-                const tagName = String(node.tagName || '').toLowerCase();
-                const nodeId = node.getAttribute?.('id') || '';
-                if (tagName === 'defs') return false;
-                return nodeId !== 'print-area-outside-overlay' && nodeId !== 'print-area-outside-grid';
-            });
-
-            if (insertionAnchor) {
-                this.canvas.insertBefore(shapeOutline, insertionAnchor);
+            if (this.printArea && this.printArea.parentNode === this.canvas) {
+                this.canvas.insertBefore(shapeOutline, this.printArea.nextSibling);
             } else {
-                this.canvas.appendChild(shapeOutline);
+                insertBaseLayer(shapeOutline);
             }
         }
 
@@ -389,6 +392,10 @@ Object.assign(DesignEditor.prototype, {
 
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
+        visualArea.removeAttribute('style');
+        visualArea.removeAttribute('class');
+        visualArea.removeAttribute('data-editable');
+        visualArea.removeAttribute('data-element-id');
         visualArea.setAttribute('fill', '#ffffff');
         visualArea.setAttribute('stroke', 'none');
         visualArea.setAttribute('stroke-width', '0');
