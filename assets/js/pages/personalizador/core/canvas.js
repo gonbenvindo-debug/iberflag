@@ -5,40 +5,67 @@ Object.assign(DesignEditor.prototype, {
 
     getEditableBounds() {
         const stageRect = this.canvasStage?.getBoundingClientRect?.();
-        const metrics = this.getCanvasViewportMetrics?.();
+        const vb = this.getCanvasViewBoxSize();
+        const wrapperWidth = Math.max(
+            1,
+            parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 0
+        );
+        const wrapperHeight = Math.max(
+            1,
+            parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 0
+        );
 
         if (
-            stageRect &&
-            Number.isFinite(stageRect.width) &&
-            Number.isFinite(stageRect.height) &&
-            stageRect.width > 0 &&
-            stageRect.height > 0 &&
-            metrics &&
-            metrics.rect &&
-            Number.isFinite(metrics.rect.width) &&
-            Number.isFinite(metrics.rect.height) &&
-            metrics.rect.width > 0 &&
-            metrics.rect.height > 0 &&
-            Number.isFinite(metrics.scale) &&
-            metrics.scale > 0
+            !stageRect ||
+            !Number.isFinite(stageRect.width) ||
+            !Number.isFinite(stageRect.height) ||
+            stageRect.width <= 0 ||
+            stageRect.height <= 0 ||
+            !Number.isFinite(vb.width) ||
+            !Number.isFinite(vb.height) ||
+            vb.width <= 0 ||
+            vb.height <= 0 ||
+            wrapperWidth <= 0 ||
+            wrapperHeight <= 0
         ) {
-            // Use the actual canvas-stage bounds, mapped into SVG coordinates.
-            // This keeps drag/resize limits aligned with the full checkerboard
-            // area, not just the rendered SVG element box.
-            const left = ((stageRect.left - metrics.rect.left) - metrics.offsetX) / metrics.scale;
-            const top = ((stageRect.top - metrics.rect.top) - metrics.offsetY) / metrics.scale;
-            const right = ((stageRect.right - metrics.rect.left) - metrics.offsetX) / metrics.scale;
-            const bottom = ((stageRect.bottom - metrics.rect.top) - metrics.offsetY) / metrics.scale;
-
-            return {
-                x: left,
-                y: top,
-                width: right - left,
-                height: bottom - top
-            };
+            return this.getWorkspaceBounds();
         }
 
-        return this.getWorkspaceBounds();
+        const preserveAspectRatio = String(this.canvas?.getAttribute?.('preserveAspectRatio') || '').toLowerCase();
+        const useSlice = preserveAspectRatio.includes('slice');
+        const scale = (useSlice
+            ? Math.max(wrapperWidth / vb.width, wrapperHeight / vb.height)
+            : Math.min(wrapperWidth / vb.width, wrapperHeight / vb.height)) || 1;
+        if (!Number.isFinite(scale) || scale <= 0) {
+            return this.getWorkspaceBounds();
+        }
+
+        const renderedWidth = vb.width * scale;
+        const renderedHeight = vb.height * scale;
+        const offsetX = (wrapperWidth - renderedWidth) / 2;
+        const offsetY = (wrapperHeight - renderedHeight) / 2;
+
+        const cameraOffsetX = Number(this.cameraOffset?.x) || 0;
+        const cameraOffsetY = Number(this.cameraOffset?.y) || 0;
+        const wrapperOriginXInStage = ((stageRect.width - wrapperWidth) / 2) + cameraOffsetX;
+        const wrapperOriginYInStage = ((stageRect.height - wrapperHeight) / 2) + cameraOffsetY;
+
+        const left = ((0 - wrapperOriginXInStage) - offsetX) / scale;
+        const top = ((0 - wrapperOriginYInStage) - offsetY) / scale;
+        const right = ((stageRect.width - wrapperOriginXInStage) - offsetX) / scale;
+        const bottom = ((stageRect.height - wrapperOriginYInStage) - offsetY) / scale;
+
+        const clampedLeft = Math.max(0, Math.min(vb.width, left));
+        const clampedTop = Math.max(0, Math.min(vb.height, top));
+        const clampedRight = Math.max(0, Math.min(vb.width, right));
+        const clampedBottom = Math.max(0, Math.min(vb.height, bottom));
+
+        return {
+            x: Math.min(clampedLeft, clampedRight),
+            y: Math.min(clampedTop, clampedBottom),
+            width: Math.abs(clampedRight - clampedLeft),
+            height: Math.abs(clampedBottom - clampedTop)
+        };
     },
 
     getCanvasBounds() {
