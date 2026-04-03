@@ -30,10 +30,7 @@ function logTemplateDebug(channel, details) {
 Object.assign(DesignEditor.prototype, {
 
     setDefaultPrintArea() {
-        const existingVisualArea = this.canvas.querySelector('#print-area-shape-outline');
-        if (existingVisualArea) {
-            existingVisualArea.remove();
-        }
+        this.canvas.querySelectorAll?.('#print-area-shape-outline')?.forEach((node) => node.remove());
         this.removePrintAreaBorderOverlay?.();
 
         if (!this.printArea || this.printArea.tagName.toLowerCase() !== 'rect' || this.printArea.ownerSVGElement !== this.canvas) {
@@ -140,18 +137,12 @@ Object.assign(DesignEditor.prototype, {
 
     removePrintAreaBackground() {
         if (!this.canvas) return;
-        const printAreaBackground = this.canvas.querySelector('#print-area-background');
-        if (printAreaBackground) {
-            printAreaBackground.remove();
-        }
+        this.canvas.querySelectorAll('#print-area-background').forEach((node) => node.remove());
     },
 
     removePrintAreaBorderOverlay() {
         if (!this.canvas) return;
-        const printAreaBorderOverlay = this.canvas.querySelector('#print-area-shape-outline-border');
-        if (printAreaBorderOverlay) {
-            printAreaBorderOverlay.remove();
-        }
+        this.canvas.querySelectorAll('#print-area-shape-outline-border').forEach((node) => node.remove());
     },
 
     upsertPrintAreaBorderOverlay(shapeOutline) {
@@ -390,6 +381,7 @@ Object.assign(DesignEditor.prototype, {
             printAreaBounds: this.printAreaBounds
         });
 
+        this.canvas.querySelectorAll?.('#print-area-shape-outline')?.forEach((node) => node.remove());
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
         visualArea.removeAttribute('style');
