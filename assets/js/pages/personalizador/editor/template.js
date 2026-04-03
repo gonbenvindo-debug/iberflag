@@ -156,7 +156,7 @@ Object.assign(DesignEditor.prototype, {
         const borderOverlay = document.importNode(shapeOutline, true);
         borderOverlay.setAttribute('id', 'print-area-shape-outline-border');
         borderOverlay.setAttribute('fill', 'none');
-        borderOverlay.setAttribute('stroke', '#3b82f6');
+        borderOverlay.setAttribute('stroke', '#ef4825');
         borderOverlay.setAttribute('stroke-width', '2');
         borderOverlay.setAttribute('stroke-opacity', '0.9');
         borderOverlay.setAttribute('vector-effect', 'non-scaling-stroke');
