@@ -998,7 +998,10 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(topFontGroup, !isText);
         setHiddenState(topShapeGroup, !isShape);
         setHiddenState(topImageGroup, !isImage);
-        if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
+        if (floatingBar) {
+            floatingBar.classList.toggle('hidden', !hasSelection);
+            floatingBar.classList.toggle('is-text-selection', hasSelection && isText);
+        }
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();

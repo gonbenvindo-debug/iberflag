@@ -410,6 +410,36 @@ Object.assign(DesignEditor.prototype, {
 
         // Add to cart / Save design (admin mode)
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.executeEditorCommand('add-to-cart'));
+        const closeEditorLink = document.querySelector('#editor-nav a[title="Fechar editor"]');
+        if (closeEditorLink) {
+            closeEditorLink.addEventListener('click', (event) => {
+                event.preventDefault();
+
+                const targetHref = closeEditorLink.getAttribute('href') || '/produtos.html';
+                const clearAutosaveAndExit = () => {
+                    const saveKeys = [this.getAutosaveKey?.(), ...(this.getLegacyAutosaveKeys?.() || [])]
+                        .filter(Boolean);
+                    saveKeys.forEach((key) => localStorage.removeItem(key));
+                    window.location.href = targetHref;
+                };
+
+                if (!Array.isArray(this.elements) || this.elements.length === 0) {
+                    clearAutosaveAndExit();
+                    return;
+                }
+
+                const shouldSaveBeforeExit = window.confirm(
+                    'Quer guardar este design no carrinho antes de sair? Pode sempre alterar mais tarde.\n\nOK = Guardar no carrinho\nCancelar = Descartar design'
+                );
+
+                if (shouldSaveBeforeExit) {
+                    this.executeEditorCommand('add-to-cart');
+                    return;
+                }
+
+                clearAutosaveAndExit();
+            });
+        }
 
         // Delete element
         const deleteElementBtn = document.getElementById('delete-element-btn');

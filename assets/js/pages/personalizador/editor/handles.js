@@ -9,15 +9,13 @@ Object.assign(DesignEditor.prototype, {
         // Prevent text selection on element
         elementData.element.style.userSelect = 'none';
         elementData.element.style.webkitUserSelect = 'none';
-        const isMobile = window.matchMedia('(max-width: 767px)').matches;
-        
         const handleElementPress = () => {
             this.selectElement(elementData);
         };
         
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
-            if (elementData.type === 'text' && !isMobile && e.detail === 2) {
+            if (elementData.type === 'text' && e.detail === 2) {
                 e.preventDefault();
                 this.selectElement(elementData);
                 this.openInlineTextEditor?.(elementData);
@@ -32,6 +30,17 @@ Object.assign(DesignEditor.prototype, {
             if (e.touches.length !== 1) return;
             e.stopPropagation();
             e.preventDefault();
+            const now = Date.now();
+            if (elementData.type === 'text') {
+                const lastTap = this._lastTextTap || { id: null, time: 0 };
+                const isDoubleTap = lastTap.id === elementData.id && (now - lastTap.time) <= 320;
+                this._lastTextTap = isDoubleTap ? { id: null, time: 0 } : { id: elementData.id, time: now };
+                if (isDoubleTap) {
+                    this.selectElement(elementData);
+                    this.openInlineTextEditor?.(elementData);
+                    return;
+                }
+            }
             const t = e.touches[0];
             this._touchGestureActive = true;
             this._activeGestureTouchId = t.identifier;
@@ -42,14 +51,6 @@ Object.assign(DesignEditor.prototype, {
 
     openInlineTextEditor(elementData) {
         if (!elementData || elementData.type !== 'text') return;
-        if (window.matchMedia('(max-width: 767px)').matches) {
-            const textContent = document.getElementById('prop-text-content');
-            if (textContent) {
-                textContent.focus();
-                textContent.select();
-            }
-            return;
-        }
 
         this.closeInlineTextEditor(false);
 

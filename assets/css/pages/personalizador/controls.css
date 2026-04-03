@@ -729,6 +729,34 @@ body.is-camera-panning #canvas-stage {
         padding-bottom: 2px;
     }
 
+    #editor-floating-context-bar.is-text-selection .editor-floating-context-inner {
+        display: grid;
+        grid-template-columns: 1fr;
+        gap: 6px;
+        overflow-x: hidden;
+    }
+
+    #editor-floating-context-bar.is-text-selection .editor-floating-actions,
+    #editor-floating-context-bar.is-text-selection #top-font-group {
+        width: 100%;
+        min-width: 0;
+        overflow-x: auto;
+        overflow-y: hidden;
+        -webkit-overflow-scrolling: touch;
+        touch-action: pan-x;
+        scrollbar-width: none;
+    }
+
+    #editor-floating-context-bar.is-text-selection .editor-floating-actions::-webkit-scrollbar,
+    #editor-floating-context-bar.is-text-selection #top-font-group::-webkit-scrollbar {
+        display: none;
+    }
+
+    #editor-floating-context-bar.is-text-selection #top-font-group {
+        padding-left: 0;
+        border-left: 0;
+    }
+
     .editor-floating-actions {
         gap: 2px;
     }
