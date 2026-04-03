@@ -561,8 +561,12 @@ Object.assign(DesignEditor.prototype, {
         const stage = this.canvasStage;
         if (stage) {
             const shouldStartCameraPan = (event) => {
-                if (window.matchMedia('(max-width: 767px)').matches) return false;
-                if (event.button != null && event.button !== 0) return false;
+                const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
+                if (isMobileViewport) {
+                    if ((Number(this.zoom) || 1) <= 1.01) return false;
+                } else if (event.button != null && event.button !== 0) {
+                    return false;
+                }
                 if (this.isDragging || this.isResizing || this.isRotating || this.cropMode) return false;
                 const target = event.target;
                 if (!(target instanceof Element)) return false;
@@ -600,6 +604,23 @@ Object.assign(DesignEditor.prototype, {
             }, { passive: false });
 
             stage.addEventListener('touchstart', (e) => {
+                if (e.touches.length === 1 && shouldStartCameraPan(e)) {
+                    const t = e.touches[0];
+                    this._lastTouchInteractionAt = Date.now();
+                    this._touchGestureActive = true;
+                    this._activeGestureTouchId = t.identifier;
+                    this.isPanningCamera = true;
+                    this.cameraPanStart = {
+                        clientX: t.clientX,
+                        clientY: t.clientY,
+                        offsetX: Number(this.cameraOffset?.x) || 0,
+                        offsetY: Number(this.cameraOffset?.y) || 0
+                    };
+                    stage.classList.add('is-camera-panning');
+                    document.body.classList.add('is-camera-panning');
+                    e.preventDefault();
+                    return;
+                }
                 if (e.touches.length === 2) {
                     _pinchDist0 = Math.hypot(
                         e.touches[0].clientX - e.touches[1].clientX,
@@ -607,7 +628,7 @@ Object.assign(DesignEditor.prototype, {
                     );
                     _pinchZoom0 = this.zoom;
                 }
-            }, { passive: true });
+            }, { passive: false });
             stage.addEventListener('touchmove', (e) => {
                 if (e.touches.length === 2 && _pinchDist0) {
                     e.preventDefault();
@@ -639,7 +660,7 @@ Object.assign(DesignEditor.prototype, {
 
         document.addEventListener('touchmove', (e) => {
             this._lastTouchInteractionAt = Date.now();
-            if (this.isDragging || this.isResizing || this.isRotating) {
+            if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
                     || (e.touches.length > 0 ? e.touches[0] : null);
                 if (!trackedTouch) return;
@@ -651,10 +672,15 @@ Object.assign(DesignEditor.prototype, {
 
         document.addEventListener('touchend', (e) => {
             this._lastTouchInteractionAt = Date.now();
-            if (this.isDragging || this.isResizing || this.isRotating) {
+            if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 const releasedTrackedTouch = Array.from(e.changedTouches).find((touch) => touch.identifier === this._activeGestureTouchId);
-                if (!releasedTrackedTouch) return;
-                this.handleMouseUp('touch', { clientX: releasedTrackedTouch.clientX, clientY: releasedTrackedTouch.clientY });
+                if (releasedTrackedTouch) {
+                    this.handleMouseUp('touch', { clientX: releasedTrackedTouch.clientX, clientY: releasedTrackedTouch.clientY });
+                } else if (e.touches.length === 0) {
+                    this.handleMouseUp('touch');
+                } else {
+                    return;
+                }
             }
             this._touchGestureActive = false;
             this._activeGestureTouchId = null;
@@ -662,7 +688,7 @@ Object.assign(DesignEditor.prototype, {
 
         document.addEventListener('touchcancel', () => {
             this._lastTouchInteractionAt = Date.now();
-            if (this.isDragging || this.isResizing || this.isRotating) {
+            if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 this.handleMouseUp('touch');
             }
             this._touchGestureActive = false;
