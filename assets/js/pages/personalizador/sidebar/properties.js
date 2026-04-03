@@ -165,7 +165,25 @@ Object.assign(DesignEditor.prototype, {
 
     getQuickFontOptions() {
         const fontSelect = document.getElementById('prop-text-font');
-        if (!fontSelect) return [];
+        if (!fontSelect) {
+            const fallbackFonts = [
+                'Arial',
+                'Helvetica',
+                'Georgia',
+                'Times New Roman',
+                'Courier New',
+                'Verdana',
+                'Impact',
+                'Comic Sans MS',
+                'Trebuchet MS',
+                'Tahoma'
+            ];
+            return fallbackFonts.map((font) => ({
+                value: font,
+                label: font,
+                family: font
+            }));
+        }
 
         return Array.from(fontSelect.options)
             .map((option) => ({
@@ -902,6 +920,9 @@ Object.assign(DesignEditor.prototype, {
         const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
         const sidebarRight = document.getElementById('editor-sidebar-right');
+        const backdrop = this.mobileUI?.backdrop || document.getElementById('mobile-panel-backdrop');
+        const mobileTabElements = document.getElementById('mobile-tab-elements');
+        const mobileTabLayers = document.getElementById('mobile-tab-layers');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -917,10 +938,8 @@ Object.assign(DesignEditor.prototype, {
         const opacityBtn = document.getElementById('quick-opacity-btn');
         const opacityRange = document.getElementById('quick-opacity-range');
         const opacityValue = document.getElementById('quick-opacity-value');
-        const isMobile = window.matchMedia('(max-width: 767px)').matches;
         const hasSelection = Boolean(elementData);
         const isText = hasSelection && elementData.type === 'text';
-        const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
@@ -938,119 +957,37 @@ Object.assign(DesignEditor.prototype, {
             item.classList.toggle('hidden', hidden);
         };
 
-        if (isMobile) {
-            if (sidebarRight) {
-                sidebarRight.classList.remove('toolbar-visible');
-                sidebarRight.removeAttribute('aria-hidden');
-                sidebarRight.style.left = '';
-            }
-            if (floatingBar) floatingBar.classList.add('hidden');
-            if (bottomBar) bottomBar.classList.add('hidden');
-            toolbar.classList.add('hidden');
-            setHiddenState(topFontGroup, true);
-            setHiddenState(desktopSelectionToolbar, true);
-            setHiddenState(desktopTextGroup, true);
-            setHiddenState(desktopShapeGroup, true);
-            setHiddenState(desktopImageGroup, true);
-            setHiddenState(desktopCommonActions, true);
-
-            setHiddenState(duplicateBtn, false);
-            setHiddenState(centerHBtn, false);
-            setHiddenState(centerVBtn, false);
-            setHiddenState(keepAspectBtn, false);
-            setHiddenState(fontAnchor, true);
-            setHiddenState(fontBtn, true);
-            setHiddenState(fontPopover, true);
-            setHiddenState(opacityAnchor, true);
-
-            setDisabledState(document.getElementById('quick-delete-btn'), !hasSelection);
-            setDisabledState(duplicateBtn, !hasSelection);
-            setDisabledState(centerHBtn, !hasSelection);
-            setDisabledState(centerVBtn, !hasSelection);
-            setDisabledState(keepAspectBtn, !hasSelection);
-            setDisabledState(fontBtn, !isText);
-            setDisabledState(opacityBtn, !isImage);
-            setDisabledState(topDeleteBtn, !hasSelection);
-            setDisabledState(topDuplicateBtn, !hasSelection);
-            setDisabledState(topCenterHBtn, !hasSelection);
-            setDisabledState(topCenterVBtn, !hasSelection);
-            setDisabledState(topKeepAspectBtn, !hasSelection);
-            setDisabledState(topMoreBtn, !hasSelection);
-            setDisabledState(panelDeleteBtn, !hasSelection);
-            setDisabledState(panelDuplicateBtn, !hasSelection);
-            setDisabledState(panelCenterHBtn, !hasSelection);
-            setDisabledState(panelCenterVBtn, !hasSelection);
-            setDisabledState(panelKeepAspectBtn, !hasSelection);
-            if (topMoreBtn) {
-                topMoreBtn.classList.remove('active');
-                topMoreBtn.setAttribute('aria-expanded', 'false');
-            }
-
-            if (fontBtn) {
-                fontBtn.classList.remove('active');
-                fontBtn.setAttribute('aria-expanded', 'false');
-            }
-            if (opacityBtn) {
-                opacityBtn.classList.remove('active');
-                opacityBtn.setAttribute('aria-expanded', 'false');
-            }
-
-            if (isImage) {
-                this.applyQuickOpacityValue(opacityPercent, false);
-            } else {
-                if (opacityRange) opacityRange.value = '100';
-                if (opacityValue) opacityValue.textContent = '100%';
-            }
-
-            if (isText) {
-                this.renderQuickFontPopover();
-            } else {
-                this.renderQuickFontPopover();
-            }
-            this.closeQuickOpacityPopover();
-            this.closeQuickFontPopover();
-
-            if (!hasSelection && keepAspectBtn) {
-                keepAspectBtn.classList.remove('active');
-                keepAspectBtn.setAttribute('aria-pressed', 'false');
-            }
-
-            this.editorState.quickFontOpen = Boolean(isText && fontPopover?.classList.contains('is-open'));
-            this.editorState.quickOpacityOpen = Boolean(isImage && opacityBtn?.getAttribute('aria-expanded') === 'true');
-            this.syncKeepAspectControls();
-            if (hasSelection && sidebarRight && !sidebarRight.classList.contains('panel-open')) {
-                const sidebarLeft = this.mobileUI?.sidebarLeft || document.getElementById('editor-sidebar-left');
-                const backdrop = this.mobileUI?.backdrop || document.getElementById('mobile-panel-backdrop');
-                const mobileTabElements = document.getElementById('mobile-tab-elements');
-                const mobileTabLayers = document.getElementById('mobile-tab-layers');
-
-                if (sidebarLeft) sidebarLeft.classList.remove('panel-open');
-                sidebarRight.classList.add('panel-open', 'panel-expanded');
-                sidebarRight.classList.remove('panel-compact');
-                sidebarRight.style.transform = '';
-                if (backdrop) backdrop.classList.add('active');
-                document.body.classList.remove('has-layers-panel-open');
-                if (mobileTabElements) mobileTabElements.classList.remove('active');
-                if (mobileTabLayers) mobileTabLayers.classList.remove('active');
-                this.editorState.activeMobilePanel = 'properties';
-            }
-            return;
+        if (sidebarRight) {
+            sidebarRight.classList.remove('panel-open', 'panel-expanded', 'panel-compact', 'toolbar-visible', 'is-dragging');
+            sidebarRight.classList.add('hidden');
+            sidebarRight.setAttribute('aria-hidden', 'true');
+            sidebarRight.style.left = '';
+            sidebarRight.style.transform = '';
         }
+        if (backdrop) backdrop.classList.remove('active');
+        document.body.classList.remove('has-layers-panel-open');
+        if (mobileTabElements) mobileTabElements.classList.remove('active');
+        if (mobileTabLayers) mobileTabLayers.classList.remove('active');
+        this.editorState.activeMobilePanel = null;
 
-        if (floatingBar) floatingBar.classList.add('hidden');
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
-        this.updateDesktopFloatingToolbarPosition?.();
-        if (sidebarRight) {
-            sidebarRight.classList.toggle('toolbar-visible', hasSelection);
-            sidebarRight.setAttribute('aria-hidden', String(!hasSelection));
-        }
-        setHiddenState(topFontGroup, true);
-        setHiddenState(desktopCommonActions, !hasSelection);
-        setHiddenState(desktopSelectionToolbar, !hasSelection);
-        setHiddenState(desktopTextGroup, !isText);
-        setHiddenState(desktopShapeGroup, !isShape);
-        setHiddenState(desktopImageGroup, !isImage);
+        setHiddenState(desktopSelectionToolbar, true);
+        setHiddenState(desktopTextGroup, true);
+        setHiddenState(desktopShapeGroup, true);
+        setHiddenState(desktopImageGroup, true);
+        setHiddenState(desktopCommonActions, true);
+        setHiddenState(duplicateBtn, true);
+        setHiddenState(centerHBtn, true);
+        setHiddenState(centerVBtn, true);
+        setHiddenState(keepAspectBtn, true);
+        setHiddenState(fontAnchor, true);
+        setHiddenState(fontBtn, true);
+        setHiddenState(fontPopover, true);
+        setHiddenState(opacityAnchor, true);
+        setHiddenState(topMoreBtn, true);
+        setHiddenState(topFontGroup, !isText);
+        if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();
@@ -1098,24 +1035,22 @@ Object.assign(DesignEditor.prototype, {
             topMoreBtn.setAttribute('aria-expanded', 'false');
         }
 
-        if (isImage) {
-            this.applyQuickOpacityValue(opacityPercent, false);
-        }
         if (isText) {
             this.renderQuickFontPopover();
+        } else {
+            this.closeQuickFontPopover();
+        }
+        if (isImage) {
+            this.applyQuickOpacityValue(opacityPercent, false);
+        } else {
+            if (opacityRange) opacityRange.value = '100';
+            if (opacityValue) opacityValue.textContent = '100%';
         }
 
         if (fontBtn) {
-            setHiddenState(fontAnchor, true);
-            setHiddenState(fontBtn, true);
-            setHiddenState(fontPopover, true);
             setDisabledState(fontBtn, true);
             fontBtn.classList.remove('active');
             fontBtn.setAttribute('aria-expanded', 'false');
-        }
-
-        if (opacityAnchor) {
-            setHiddenState(opacityAnchor, true);
         }
         if (opacityBtn) {
             setDisabledState(opacityBtn, true);
@@ -1123,8 +1058,6 @@ Object.assign(DesignEditor.prototype, {
             opacityBtn.setAttribute('aria-expanded', 'false');
         }
         this.closeQuickOpacityPopover();
-        this.closeQuickFontPopover();
-
         this.syncKeepAspectControls();
     },
 

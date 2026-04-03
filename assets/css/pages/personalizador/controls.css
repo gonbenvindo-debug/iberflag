@@ -687,7 +687,7 @@ body.is-camera-panning #canvas-stage {
     margin-top: 10px;
 }
 
-body.editor-mode-desktop #editor-floating-context-bar {
+#editor-floating-context-bar.hidden {
     display: none !important;
 }
 
@@ -701,10 +701,6 @@ body.editor-mode-desktop #editor-floating-context-bar {
     #editor-floating-context-bar {
         top: 8px;
         max-width: calc(100% - 12px);
-    }
-
-    #top-font-group {
-        display: none !important;
     }
 
     .editor-floating-actions {
@@ -1178,7 +1174,6 @@ body.editor-mode-desktop #editor-floating-context-bar {
 }
 
 @media (max-width: 1023px) {
-    #editor-floating-context-bar,
     #editor-bottom-context-bar {
         display: none !important;
         visibility: hidden !important;
@@ -1272,4 +1267,9 @@ body.editor-mode-desktop #editor-floating-context-bar {
         margin-top: 4px;
         margin-bottom: 10px;
     }
+}
+
+/* Personalizador sem painel direito: fica sempre oculto */
+#editor-sidebar-right {
+    display: none !important;
 }
