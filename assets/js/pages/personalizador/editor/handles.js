@@ -291,8 +291,7 @@ Object.assign(DesignEditor.prototype, {
     getHandlePoints(elementData) {
         const bbox = elementData.element.getBBox();
         const metrics = this.getCanvasViewportMetrics();
-        const scaleX = Number(metrics.scaleX) || Number(metrics.scale) || 1;
-        const scaleY = Number(metrics.scaleY) || Number(metrics.scale) || 1;
+        const scale = metrics.scale || 1;
 
         const rotation = (elementData.rotation || 0) * Math.PI / 180;
         const cx = bbox.x + bbox.width  / 2;
@@ -302,15 +301,15 @@ Object.assign(DesignEditor.prototype, {
         const toWrapper = (px, py) => {
             if (!rotation) {
                 return {
-                    x: metrics.offsetX + (px * scaleX),
-                    y: metrics.offsetY + (py * scaleY)
+                    x: metrics.offsetX + (px * scale),
+                    y: metrics.offsetY + (py * scale)
                 };
             }
             const dx = px - cx;
             const dy = py - cy;
             return {
-                x: metrics.offsetX + ((cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * scaleX),
-                y: metrics.offsetY + ((cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * scaleY)
+                x: metrics.offsetX + ((cx + dx * Math.cos(rotation) - dy * Math.sin(rotation)) * scale),
+                y: metrics.offsetY + ((cy + dx * Math.sin(rotation) + dy * Math.cos(rotation)) * scale)
             };
         };
 

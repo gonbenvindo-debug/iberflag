@@ -16,8 +16,7 @@ class DesignEditor {
         this.printArea = document.getElementById('print-area-outline');
         this.canvasWrapper = document.getElementById('canvas-wrapper');
         if (this.canvas) {
-            // Preencher toda a área disponível do stage.
-            this.canvas.setAttribute('preserveAspectRatio', 'none');
+            this.canvas.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         }
         this.elements = [];
         this.selectedElement = null;
