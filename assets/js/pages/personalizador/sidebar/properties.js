@@ -1319,7 +1319,11 @@ Object.assign(DesignEditor.prototype, {
         const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };
         const viewBoxWidth = Math.max(1, Number(viewBox.width) || 800);
         const viewBoxHeight = Math.max(1, Number(viewBox.height) || 600);
-        const canvasAspectRatio = viewBoxWidth / viewBoxHeight;
+        const preserveAspectRatio = String(this.canvas?.getAttribute?.('preserveAspectRatio') || '').toLowerCase();
+        const stretchToStage = preserveAspectRatio.includes('none');
+        const canvasAspectRatio = stretchToStage
+            ? (availableWidth / Math.max(1, availableHeight))
+            : (viewBoxWidth / viewBoxHeight);
 
         if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {

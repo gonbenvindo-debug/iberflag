@@ -32,6 +32,8 @@ Object.assign(DesignEditor.prototype, {
                 rect: rect || { left: 0, top: 0, width: 0, height: 0 },
                 vb,
                 scale: 1,
+                scaleX: 1,
+                scaleY: 1,
                 offsetX: 0,
                 offsetY: 0,
                 renderedWidth: rect?.width || 0,
@@ -40,7 +42,25 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const preserveAspectRatio = String(this.canvas?.getAttribute?.('preserveAspectRatio') || '').toLowerCase();
+        const useNone = preserveAspectRatio.includes('none');
         const useSlice = preserveAspectRatio.includes('slice');
+
+        if (useNone) {
+            const scaleX = (rect.width / vb.width) || 1;
+            const scaleY = (rect.height / vb.height) || 1;
+            return {
+                rect,
+                vb,
+                scale: Math.min(scaleX, scaleY) || 1,
+                scaleX,
+                scaleY,
+                renderedWidth: rect.width,
+                renderedHeight: rect.height,
+                offsetX: 0,
+                offsetY: 0
+            };
+        }
+
         const scale = (useSlice
             ? Math.max(rect.width / vb.width, rect.height / vb.height)
             : Math.min(rect.width / vb.width, rect.height / vb.height)) || 1;
@@ -51,6 +71,8 @@ Object.assign(DesignEditor.prototype, {
             rect,
             vb,
             scale,
+            scaleX: scale,
+            scaleY: scale,
             renderedWidth,
             renderedHeight,
             offsetX: (rect.width - renderedWidth) / 2,
@@ -402,22 +424,26 @@ Object.assign(DesignEditor.prototype, {
     clientToSvgPoint(clientX, clientY) {
         const metrics = this.getCanvasViewportMetrics();
         const rect = metrics.rect;
+        const scaleX = Number(metrics.scaleX) || Number(metrics.scale) || 1;
+        const scaleY = Number(metrics.scaleY) || Number(metrics.scale) || 1;
 
         return {
-            x: ((clientX - rect.left - metrics.offsetX) / metrics.scale),
-            y: ((clientY - rect.top - metrics.offsetY) / metrics.scale)
+            x: ((clientX - rect.left - metrics.offsetX) / scaleX),
+            y: ((clientY - rect.top - metrics.offsetY) / scaleY)
         };
     },
 
     clientDeltaToSvgDelta(deltaClientX, deltaClientY) {
         const metrics = this.getCanvasViewportMetrics();
-        if (!metrics.rect.width || !metrics.rect.height || !metrics.scale) {
+        const scaleX = Number(metrics.scaleX) || Number(metrics.scale) || 0;
+        const scaleY = Number(metrics.scaleY) || Number(metrics.scale) || 0;
+        if (!metrics.rect.width || !metrics.rect.height || !scaleX || !scaleY) {
             return { dx: 0, dy: 0 };
         }
 
         return {
-            dx: deltaClientX / metrics.scale,
-            dy: deltaClientY / metrics.scale
+            dx: deltaClientX / scaleX,
+            dy: deltaClientY / scaleY
         };
     },
 
