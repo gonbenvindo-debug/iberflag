@@ -1096,6 +1096,15 @@ body.editor-mode-desktop #editor-floating-context-bar {
 @media (min-width: 1024px) {
     #editor-body-layout {
         position: relative;
+        grid-template-rows: minmax(0, 1fr) !important;
+    }
+
+    .editor-sidebar-left {
+        grid-row: 1 !important;
+    }
+
+    .editor-main {
+        grid-row: 1 !important;
     }
 
     #editor-sidebar-right {
