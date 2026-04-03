@@ -147,6 +147,7 @@ body.app-page {
 .properties-toolbar-row {
     display: flex;
     align-items: center;
+    justify-content: center;
     flex-wrap: nowrap;
     gap: 10px;
     width: 100%;
@@ -742,6 +743,7 @@ body.editor-mode-desktop #editor-floating-context-bar {
 #properties-panel .properties-toolbar-row {
     display: flex !important;
     align-items: center !important;
+    justify-content: center !important;
     flex-wrap: nowrap !important;
     gap: 10px !important;
     width: 100% !important;
@@ -761,6 +763,25 @@ body.editor-mode-desktop #editor-floating-context-bar {
 #properties-panel .properties-toolbar-row:focus-within {
     outline: none !important;
     box-shadow: none !important;
+}
+
+#properties-panel .properties-toolbar-row .toolbar-btn:focus,
+#properties-panel .properties-toolbar-row .toolbar-btn:focus-visible,
+#properties-panel .properties-toolbar-row .desktop-inline-font-btn:focus,
+#properties-panel .properties-toolbar-row .desktop-inline-font-btn:focus-visible,
+#properties-panel .properties-toolbar-row .desktop-image-fit-btn:focus,
+#properties-panel .properties-toolbar-row .desktop-image-fit-btn:focus-visible,
+#properties-panel .properties-toolbar-row .desktop-inline-step:focus,
+#properties-panel .properties-toolbar-row .desktop-inline-step:focus-visible,
+#properties-panel .properties-toolbar-row .desktop-inline-select:focus,
+#properties-panel .properties-toolbar-row .desktop-inline-select:focus-visible,
+#properties-panel .properties-toolbar-row .desktop-inline-color:focus,
+#properties-panel .properties-toolbar-row .desktop-inline-color:focus-visible,
+#properties-panel .properties-toolbar-row #keep-aspect-ratio:focus,
+#properties-panel .properties-toolbar-row #keep-aspect-ratio:focus-visible {
+    outline: none !important;
+    box-shadow: none !important;
+    border-style: solid !important;
 }
 
 #properties-panel .toolbar-group {
@@ -855,8 +876,8 @@ body.editor-mode-desktop #editor-floating-context-bar {
 }
 
 #keep-aspect-ratio:focus-visible {
-    outline: 2px solid rgba(239, 72, 37, 0.24) !important;
-    outline-offset: 2px;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
 .desktop-inline-color-wrap {
