@@ -711,30 +711,123 @@ body.editor-mode-desktop #editor-floating-context-bar {
     gap: 8px !important;
     width: 100% !important;
     min-width: 0 !important;
+    border: 0 !important;
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-#properties-panel .editor-zoom-controls {
-    min-width: 126px !important;
-    border-radius: 4px !important;
-    height: 34px;
-    padding: 0 6px !important;
+#properties-panel .properties-toolbar-row:focus,
+#properties-panel .properties-toolbar-row:focus-within {
+    outline: none !important;
+    box-shadow: none !important;
 }
 
-#properties-panel .properties-quick-actions {
-    display: inline-flex !important;
-    align-items: center !important;
-    gap: 8px !important;
-    flex: 1 1 auto !important;
-    min-width: 0 !important;
-    overflow: visible !important;
-    justify-content: center !important;
+#properties-panel .toolbar-btn {
+    min-width: 36px;
+    height: 36px;
+    padding: 0 10px !important;
+    border-radius: 6px !important;
 }
 
-#properties-panel .properties-quick-actions .action-btn {
-    min-width: 40px;
-    height: 40px;
-    padding: 0 12px !important;
-    border-radius: 4px !important;
+#properties-panel .toolbar-btn--zoom {
+    min-width: 34px;
+    width: 34px;
+    padding: 0 !important;
+}
+
+#properties-panel .toolbar-zoom-level {
+    min-width: 54px;
+    height: 36px;
+    padding: 0 10px;
+    border: 1px solid var(--iber-border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--iber-text);
+    font-size: 13px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+#keep-aspect-ratio.slide-button {
+    width: auto !important;
+    min-width: 184px;
+    height: 36px;
+    padding: 0 10px;
+    border-radius: 6px !important;
+    display: inline-flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 8px;
+    background: #fff;
+    border: 1px solid var(--iber-border);
+    color: var(--iber-text);
+}
+
+#keep-aspect-ratio .slide-button-label {
+    font-size: 12px;
+    font-weight: 700;
+    line-height: 1;
+    color: inherit;
+    white-space: nowrap;
+}
+
+#keep-aspect-ratio .slide-button-track {
+    margin-left: auto;
+    width: 40px;
+    height: 22px;
+    border-radius: 999px;
+    padding: 2px;
+    border: 1px solid #cdd3dd;
+    background: #dadfe7;
+    display: inline-flex;
+    align-items: center;
+}
+
+#keep-aspect-ratio .slide-button-toggle {
+    width: 18px;
+    height: 18px;
+    border-radius: 999px;
+    background: #fff;
+    transform: translateX(0);
+    transition: transform 0.2s ease;
+}
+
+#keep-aspect-ratio.active .slide-button-track {
+    background: var(--iber-accent);
+    border-color: var(--iber-accent);
+}
+
+#keep-aspect-ratio.active .slide-button-toggle {
+    transform: translateX(18px);
+}
+
+#keep-aspect-ratio:focus-visible {
+    outline: 2px solid rgba(239, 72, 37, 0.24) !important;
+    outline-offset: 2px;
+}
+
+.desktop-inline-color-wrap {
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--iber-border);
+    border-radius: 6px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+}
+
+.desktop-inline-color {
+    width: 22px;
+    height: 22px;
+    border: 0;
+    border-radius: 4px;
+    padding: 0;
+    background: transparent;
+    cursor: pointer;
 }
 
 #properties-panel .properties-advanced-row {
@@ -934,24 +1027,24 @@ body.editor-mode-desktop #editor-floating-context-bar {
         display: inline-flex;
     }
 
-    #properties-panel .editor-zoom-controls {
-        display: inline-flex !important;
-        margin-inline: auto !important;
-    }
-
-    #properties-panel .properties-quick-actions .action-btn,
+    #properties-panel .toolbar-btn,
     #properties-panel .property-fit-row .action-btn {
         min-height: 42px;
         border-radius: 6px !important;
     }
 
-    #properties-panel .properties-quick-actions {
-        width: 100%;
-        justify-content: center !important;
+    #properties-panel .toolbar-btn .action-btn__label {
+        display: none !important;
     }
 
-    #properties-panel .properties-quick-actions .action-btn__label {
-        display: none !important;
+    #properties-panel .toolbar-zoom-level {
+        min-width: 52px;
+        height: 42px;
+    }
+
+    #keep-aspect-ratio.slide-button {
+        width: 100% !important;
+        min-width: 0;
     }
 
     #properties-panel .property-fit-row .action-btn {

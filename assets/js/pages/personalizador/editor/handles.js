@@ -484,6 +484,8 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('prop-text-size').value = elementData.size;
             document.getElementById('prop-text-size-val').textContent = elementData.size;
             document.getElementById('prop-text-color').value = elementData.color;
+            const desktopTextColor = document.getElementById('desktop-text-color');
+            if (desktopTextColor) desktopTextColor.value = elementData.color;
             const textRot = this.normalizeRotation(elementData.rotation || 0);
             document.getElementById('prop-text-rotation').value = textRot;
             document.getElementById('prop-text-rotation-val').textContent = textRot;
@@ -510,6 +512,10 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('shape-properties').classList.add('active');
             document.getElementById('prop-shape-fill').value = this.sanitizeColorValue(elementData.fill, '#3b82f6');
             document.getElementById('prop-shape-stroke').value = this.sanitizeColorValue(elementData.stroke, '#000000');
+            const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
+            const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
+            if (desktopShapeFillColor) desktopShapeFillColor.value = this.sanitizeColorValue(elementData.fill, '#3b82f6');
+            if (desktopShapeStrokeColor) desktopShapeStrokeColor.value = this.sanitizeColorValue(elementData.stroke, '#000000');
             document.getElementById('prop-shape-stroke-width').value = elementData.strokeWidth;
             document.getElementById('prop-shape-stroke-val').textContent = elementData.strokeWidth;
             const shapeRot = this.normalizeRotation(elementData.rotation || 0);
@@ -1075,6 +1081,15 @@ Object.assign(DesignEditor.prototype, {
             const nextFontSize = Math.max(8, Math.min(240, oldFontSize * scale));
             this.selectedElement.element.setAttribute('font-size', String(nextFontSize));
             this.selectedElement.size = nextFontSize;
+            const roundedSize = Math.round(nextFontSize);
+            const propSize = document.getElementById('prop-text-size');
+            const propSizeVal = document.getElementById('prop-text-size-val');
+            const topSizeLabel = document.getElementById('top-text-size-label');
+            const desktopSizeLabel = document.getElementById('desktop-text-size-label');
+            if (propSize) propSize.value = String(roundedSize);
+            if (propSizeVal) propSizeVal.textContent = String(roundedSize);
+            if (topSizeLabel) topSizeLabel.textContent = String(roundedSize);
+            if (desktopSizeLabel) desktopSizeLabel.textContent = String(roundedSize);
             const measuredBox = this.selectedElement.element.getBBox();
             const fixedCorner = (() => {
                 switch (this.resizeHandle) {

@@ -58,6 +58,8 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('fill', value);
             this.selectedElement.color = value;
+            const desktopTextColor = document.getElementById('desktop-text-color');
+            if (desktopTextColor) desktopTextColor.value = value;
             this.queueHistorySave();
             this.renderQuickFontPopover?.();
         }
@@ -197,6 +199,7 @@ Object.assign(DesignEditor.prototype, {
         const desktopSizeLabel = document.getElementById('desktop-text-size-label');
         const desktopSizeDecreaseBtn = document.getElementById('desktop-text-size-decrease');
         const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
+        const desktopTextColor = document.getElementById('desktop-text-color');
         const quickSizeDecreaseBtn = document.getElementById('quick-text-size-decrease');
         const quickSizeIncreaseBtn = document.getElementById('quick-text-size-increase');
         const textFont = document.getElementById('prop-text-font');
@@ -319,6 +322,11 @@ Object.assign(DesignEditor.prototype, {
         if (desktopSizeIncreaseBtn) {
             desktopSizeIncreaseBtn.disabled = !hasText;
             desktopSizeIncreaseBtn.classList.toggle('is-disabled', !hasText);
+        }
+        if (desktopTextColor) {
+            desktopTextColor.disabled = !hasText;
+            desktopTextColor.classList.toggle('is-disabled', !hasText);
+            desktopTextColor.value = hasText ? (this.selectedElement.color || '#000000') : '#000000';
         }
 
         fontSelect.disabled = !hasText;
@@ -567,6 +575,8 @@ Object.assign(DesignEditor.prototype, {
             const nextFill = this.sanitizeColorValue(value, '#3b82f6');
             this.selectedElement.element.setAttribute('fill', nextFill);
             this.selectedElement.fill = nextFill;
+            const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
+            if (desktopShapeFillColor) desktopShapeFillColor.value = nextFill;
             this.queueHistorySave();
         }
     },
@@ -576,6 +586,8 @@ Object.assign(DesignEditor.prototype, {
             const nextStroke = this.sanitizeColorValue(value, '#000000');
             this.selectedElement.element.setAttribute('stroke', nextStroke);
             this.selectedElement.stroke = nextStroke;
+            const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
+            if (desktopShapeStrokeColor) desktopShapeStrokeColor.value = nextStroke;
             this.queueHistorySave();
         }
     },
@@ -654,9 +666,11 @@ Object.assign(DesignEditor.prototype, {
 
         ['prop-text-bold', 'prop-text-italic', 'prop-text-underline', 'prop-text-caps']
             .forEach((id) => setDisabled(id, !isText));
+        ['desktop-text-color'].forEach((id) => setDisabled(id, !isText));
 
         ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
             .forEach((id) => setDisabled(id, !isImage));
+        ['desktop-shape-fill-color', 'desktop-shape-stroke-color'].forEach((id) => setDisabled(id, !hasSelection || !elementData || elementData.type !== 'shape'));
 
         setActive('prop-text-bold', isText && Boolean(elementData.bold));
         setActive('prop-text-italic', isText && Boolean(elementData.italic));
@@ -854,6 +868,7 @@ Object.assign(DesignEditor.prototype, {
         const panelKeepAspectBtn = document.getElementById('keep-aspect-ratio');
         const desktopSelectionToolbar = document.getElementById('desktop-selection-toolbar');
         const desktopTextGroup = document.getElementById('desktop-text-group');
+        const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
         const panelQuickActions = document.querySelector('#properties-panel .properties-quick-actions');
 
@@ -874,6 +889,7 @@ Object.assign(DesignEditor.prototype, {
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
         const hasSelection = Boolean(elementData);
         const isText = hasSelection && elementData.type === 'text';
+        const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
@@ -898,6 +914,7 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(topFontGroup, true);
             setHiddenState(desktopSelectionToolbar, true);
             setHiddenState(desktopTextGroup, true);
+            setHiddenState(desktopShapeGroup, true);
             setHiddenState(desktopImageGroup, true);
             setHiddenState(panelQuickActions, false);
 
@@ -973,8 +990,9 @@ Object.assign(DesignEditor.prototype, {
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
         setHiddenState(topFontGroup, true);
-        setHiddenState(desktopSelectionToolbar, !(hasSelection && (isText || isImage)));
+        setHiddenState(desktopSelectionToolbar, !(hasSelection && (isText || isImage || isShape)));
         setHiddenState(desktopTextGroup, !isText);
+        setHiddenState(desktopShapeGroup, !isShape);
         setHiddenState(desktopImageGroup, !isImage);
         setHiddenState(panelQuickActions, !hasSelection);
 

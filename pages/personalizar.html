@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260402e">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260402e">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260403d">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260403e">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -280,48 +280,46 @@
                     </div>
 
                     <div class="properties-toolbar-row">
-                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporções"
-                            aria-label="Manter proporções">
-                            <span class="slide-button-toggle"></span>
+                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporcoes"
+                            aria-label="Manter proporcoes">
+                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                            <span class="slide-button-label">Manter proporcoes</span>
+                            <span class="slide-button-track"><span class="slide-button-toggle"></span></span>
                         </button>
 
-                        <div class="editor-zoom-controls" aria-label="Zoom do editor">
-                            <button id="zoom-out" class="p-2 hover:bg-gray-100 rounded" title="Reduzir zoom">
+                            <button id="zoom-out" class="action-btn toolbar-btn toolbar-btn--zoom" title="Reduzir zoom" aria-label="Reduzir zoom">
                                 <i data-lucide="zoom-out" class="w-4 h-4"></i>
                             </button>
-                            <span id="zoom-level" class="text-sm font-semibold"
-                                style="min-width:3rem;text-align:center;">100%</span>
-                            <button id="zoom-in" class="p-2 hover:bg-gray-100 rounded" title="Aumentar zoom">
+                            <span id="zoom-level" class="toolbar-zoom-level"
+                                aria-label="Nivel de zoom">100%</span>
+                            <button id="zoom-in" class="action-btn toolbar-btn toolbar-btn--zoom" title="Aumentar zoom" aria-label="Aumentar zoom">
                                 <i data-lucide="zoom-in" class="w-4 h-4"></i>
                             </button>
-                        </div>
 
-                        <div class="properties-quick-actions" aria-label="Ações rápidas">
-                            <button id="duplicate-element-btn" class="action-btn" title="Duplicar"
+                            <button id="duplicate-element-btn" class="action-btn toolbar-btn" title="Duplicar"
                                 aria-label="Duplicar">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Duplicar</span>
                             </button>
-                            <button id="delete-element-btn" class="action-btn" title="Apagar" aria-label="Apagar">
+                            <button id="delete-element-btn" class="action-btn toolbar-btn" title="Apagar" aria-label="Apagar">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Apagar</span>
                             </button>
-                            <button id="center-h-btn" class="action-btn" title="Centrar horizontalmente"
+                            <button id="center-h-btn" class="action-btn toolbar-btn" title="Centrar horizontalmente"
                                 aria-label="Centrar horizontalmente">
                                 <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Centrar H</span>
                             </button>
-                            <button id="center-v-btn" class="action-btn" title="Centrar verticalmente"
+                            <button id="center-v-btn" class="action-btn toolbar-btn" title="Centrar verticalmente"
                                 aria-label="Centrar verticalmente">
                                 <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Centrar V</span>
                             </button>
-                            <button id="center-both-btn" class="action-btn" title="Centrar no canvas"
+                            <button id="center-both-btn" class="action-btn toolbar-btn" title="Centrar no canvas"
                                 aria-label="Centrar no canvas">
                                 <i data-lucide="crosshair" class="w-4 h-4"></i>
                                 <span class="action-btn__label">Centrar</span>
                             </button>
-                        </div>
                         <div id="desktop-selection-toolbar" class="desktop-selection-toolbar hidden" aria-label="Propriedades contextuais">
                             <div id="desktop-text-group" class="desktop-context-group hidden">
                                 <select id="desktop-font-select" class="desktop-inline-select" aria-label="Escolher fonte"></select>
@@ -342,6 +340,18 @@
                                 <button id="desktop-font-caps-btn" type="button" class="desktop-inline-font-btn" aria-label="Caps Lock">
                                     <span class="quick-font-letter">Aa</span>
                                 </button>
+                                <label class="desktop-inline-color-wrap" title="Cor do texto" aria-label="Cor do texto">
+                                    <input id="desktop-text-color" type="color" class="desktop-inline-color" value="#000000">
+                                </label>
+                            </div>
+                            <div id="desktop-shape-group" class="desktop-context-group hidden">
+                                <span class="desktop-inline-label">Cor</span>
+                                <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
+                                    <input id="desktop-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
+                                </label>
+                                <label class="desktop-inline-color-wrap" title="Contorno" aria-label="Contorno">
+                                    <input id="desktop-shape-stroke-color" type="color" class="desktop-inline-color" value="#000000">
+                                </label>
                             </div>
                             <div id="desktop-image-group" class="desktop-context-group hidden">
                                 <span class="desktop-inline-label">Opacidade</span>
@@ -594,10 +604,10 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260403b" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260403c" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260402a" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260401c" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260403b" defer></script>
+    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260403d" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260403c" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->
