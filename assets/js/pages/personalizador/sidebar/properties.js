@@ -874,7 +874,23 @@ Object.assign(DesignEditor.prototype, {
             const shouldShowActive = active && !button.disabled;
             button.classList.toggle('active', shouldShowActive);
             button.setAttribute('aria-pressed', String(shouldShowActive));
+            button.setAttribute('data-keep-aspect-state', shouldShowActive ? 'locked' : 'unlocked');
+            button.setAttribute(
+                'aria-label',
+                shouldShowActive ? 'Manter proporcoes ativo' : 'Manter proporcoes desativo'
+            );
+            button.setAttribute(
+                'title',
+                shouldShowActive ? 'Manter proporcoes: ligado' : 'Manter proporcoes: desligado'
+            );
         });
+
+        const topKeepAspectIcon = document.getElementById('top-keep-aspect-icon');
+        const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
+        if (topKeepAspectIcon) {
+            const topIsLocked = Boolean(active && topKeepAspectBtn && !topKeepAspectBtn.disabled);
+            topKeepAspectIcon.textContent = topIsLocked ? '🔒' : '🔓';
+        }
     },
 
     updateDesktopFloatingToolbarPosition() {

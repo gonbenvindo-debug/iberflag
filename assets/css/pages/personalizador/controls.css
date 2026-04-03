@@ -568,6 +568,17 @@ body.is-camera-panning #canvas-stage {
     white-space: nowrap;
 }
 
+.keep-aspect-lock-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    font-style: normal;
+    font-size: 13px;
+    line-height: 1;
+}
+
 .editor-floating-btn:hover {
     background: var(--iber-accent-soft);
     color: var(--iber-accent);
@@ -827,6 +838,26 @@ body.is-camera-panning #canvas-stage {
     .editor-floating-actions .editor-floating-btn svg {
         width: 14px;
         height: 14px;
+    }
+
+    #top-keep-aspect-btn {
+        border-radius: 6px;
+    }
+
+    #top-keep-aspect-btn[aria-pressed="false"] {
+        background: transparent !important;
+        color: var(--iber-text) !important;
+    }
+
+    #top-keep-aspect-btn[aria-pressed="true"] {
+        background: var(--iber-accent-soft) !important;
+        color: var(--iber-accent) !important;
+    }
+
+    #top-keep-aspect-btn:focus,
+    #top-keep-aspect-btn:focus-visible {
+        outline: none !important;
+        box-shadow: none !important;
     }
 
     .editor-floating-actions .editor-floating-btn > span {
