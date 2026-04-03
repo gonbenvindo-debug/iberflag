@@ -41,7 +41,7 @@
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 <span class="editor-cart-text">Adicionar ao Carrinho</span>
             </button>
-            <a href="/produtos.html" class="p-2 hover:bg-gray-100 rounded" title="Fechar editor">
+            <a id="close-editor-btn" href="/produtos.html" class="p-2 hover:bg-gray-100 rounded" title="Fechar editor">
                 <i data-lucide="x" class="w-5 h-5"></i>
             </a>
         </div>
@@ -569,6 +569,20 @@
                         class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar
                         ao carrinho</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="exit-editor-modal" class="editor-exit-modal hidden" aria-hidden="true">
+        <div class="editor-exit-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="exit-editor-title" aria-describedby="exit-editor-desc">
+            <div class="editor-exit-modal__header">
+                <h3 id="exit-editor-title">Sair do editor?</h3>
+                <p id="exit-editor-desc">Pode guardar este design no carrinho e continuar depois, ou sair sem guardar.</p>
+            </div>
+            <div class="editor-exit-modal__actions">
+                <button id="exit-editor-cancel" type="button" class="editor-exit-btn editor-exit-btn--ghost">Continuar a editar</button>
+                <button id="exit-editor-discard" type="button" class="editor-exit-btn editor-exit-btn--danger">Descartar e sair</button>
+                <button id="exit-editor-save" type="button" class="editor-exit-btn editor-exit-btn--primary">Guardar e sair</button>
             </div>
         </div>
     </div>

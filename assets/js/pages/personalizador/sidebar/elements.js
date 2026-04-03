@@ -410,9 +410,9 @@ Object.assign(DesignEditor.prototype, {
 
         // Add to cart / Save design (admin mode)
         document.getElementById('add-to-cart-btn').addEventListener('click', () => this.executeEditorCommand('add-to-cart'));
-        const closeEditorLink = document.querySelector('#editor-nav a[title="Fechar editor"]');
+        const closeEditorLink = document.getElementById('close-editor-btn');
         if (closeEditorLink) {
-            closeEditorLink.addEventListener('click', (event) => {
+            closeEditorLink.addEventListener('click', async (event) => {
                 event.preventDefault();
 
                 const targetHref = closeEditorLink.getAttribute('href') || '/produtos.html';
@@ -428,16 +428,69 @@ Object.assign(DesignEditor.prototype, {
                     return;
                 }
 
-                const shouldSaveBeforeExit = window.confirm(
-                    'Quer guardar este design no carrinho antes de sair? Pode sempre alterar mais tarde.\n\nOK = Guardar no carrinho\nCancelar = Descartar design'
-                );
+                const askExitAction = () => new Promise((resolve) => {
+                    const modal = document.getElementById('exit-editor-modal');
+                    const cancelBtn = document.getElementById('exit-editor-cancel');
+                    const discardBtn = document.getElementById('exit-editor-discard');
+                    const saveBtn = document.getElementById('exit-editor-save');
 
-                if (shouldSaveBeforeExit) {
+                    if (!modal || !cancelBtn || !discardBtn || !saveBtn) {
+                        const shouldSaveFallback = window.confirm(
+                            'Quer guardar este design no carrinho antes de sair? Pode sempre alterar mais tarde.\n\nOK = Guardar no carrinho\nCancelar = Descartar design'
+                        );
+                        resolve(shouldSaveFallback ? 'save' : 'discard');
+                        return;
+                    }
+
+                    const cleanup = () => {
+                        modal.classList.add('hidden');
+                        modal.setAttribute('aria-hidden', 'true');
+                        document.removeEventListener('keydown', onKeyDown, true);
+                        modal.removeEventListener('click', onBackdropClick, true);
+                        cancelBtn.removeEventListener('click', onCancel);
+                        discardBtn.removeEventListener('click', onDiscard);
+                        saveBtn.removeEventListener('click', onSave);
+                    };
+
+                    const finish = (action) => {
+                        cleanup();
+                        resolve(action);
+                    };
+
+                    const onCancel = () => finish('cancel');
+                    const onDiscard = () => finish('discard');
+                    const onSave = () => finish('save');
+                    const onBackdropClick = (clickEvent) => {
+                        if (clickEvent.target === modal) {
+                            finish('cancel');
+                        }
+                    };
+                    const onKeyDown = (keyEvent) => {
+                        if (keyEvent.key === 'Escape') {
+                            keyEvent.preventDefault();
+                            finish('cancel');
+                        }
+                    };
+
+                    cancelBtn.addEventListener('click', onCancel);
+                    discardBtn.addEventListener('click', onDiscard);
+                    saveBtn.addEventListener('click', onSave);
+                    modal.addEventListener('click', onBackdropClick, true);
+                    document.addEventListener('keydown', onKeyDown, true);
+                    modal.classList.remove('hidden');
+                    modal.setAttribute('aria-hidden', 'false');
+                });
+
+                const exitAction = await askExitAction();
+
+                if (exitAction === 'save') {
                     this.executeEditorCommand('add-to-cart');
                     return;
                 }
 
-                clearAutosaveAndExit();
+                if (exitAction === 'discard') {
+                    clearAutosaveAndExit();
+                }
             });
         }
 
