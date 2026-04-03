@@ -1068,28 +1068,29 @@ body.editor-mode-desktop #editor-floating-context-bar {
     #editor-sidebar-right {
         position: absolute !important;
         top: 10px;
-        left: 0;
-        right: 0;
-        width: auto !important;
+        left: 50%;
+        right: auto;
+        width: max-content !important;
+        max-width: calc(100vw - 24px);
         min-width: 0;
         min-height: 0;
         padding: 0 !important;
-        margin: 0 auto;
-        display: flex;
-        justify-content: center;
+        margin: 0;
+        display: block;
         background: transparent !important;
         border: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        z-index: 38;
+        z-index: 1605;
         pointer-events: none;
         opacity: 0;
-        transform: translateY(-8px);
+        transform: translate(-50%, -8px);
         transition: opacity 180ms ease, transform 180ms ease;
     }
 
     #editor-sidebar-right .sidebar-shell {
-        width: min(980px, calc(100% - 24px));
+        width: fit-content;
+        max-width: calc(100vw - 24px);
         border: 1px solid var(--iber-border) !important;
         border-radius: 10px !important;
         background: #ffffff !important;
@@ -1103,7 +1104,7 @@ body.editor-mode-desktop #editor-floating-context-bar {
 
     #editor-sidebar-right.toolbar-visible {
         opacity: 1;
-        transform: translateY(0);
+        transform: translate(-50%, 0);
         pointer-events: auto;
     }
 
@@ -1127,6 +1128,8 @@ body.editor-mode-desktop #editor-floating-context-bar {
 
     #properties-panel .properties-toolbar-row {
         margin: 0 !important;
+        width: max-content !important;
+        max-width: calc(100vw - 56px) !important;
     }
 }
 

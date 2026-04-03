@@ -859,6 +859,26 @@ Object.assign(DesignEditor.prototype, {
         });
     },
 
+    updateDesktopFloatingToolbarPosition() {
+        const isDesktop = !window.matchMedia('(max-width: 767px)').matches;
+        if (!isDesktop) return;
+
+        const sidebarRight = document.getElementById('editor-sidebar-right');
+        const editorBodyLayout = document.getElementById('editor-body-layout');
+        const stage = this.canvasStage || document.getElementById('canvas-stage');
+        const canvas = this.canvas || document.getElementById('design-canvas');
+        if (!sidebarRight || !editorBodyLayout || !stage) return;
+
+        const layoutRect = editorBodyLayout.getBoundingClientRect();
+        const stageRect = stage.getBoundingClientRect();
+        const canvasRect = canvas?.getBoundingClientRect?.();
+        const referenceRect = canvasRect && canvasRect.width > 0 ? canvasRect : stageRect;
+        const centerX = referenceRect.left + (referenceRect.width / 2);
+        const relativeLeft = centerX - layoutRect.left;
+
+        sidebarRight.style.left = `${relativeLeft}px`;
+    },
+
     updateContextualToolbar(elementData) {
         const toolbar = document.getElementById('element-quick-toolbar');
         if (!toolbar) return;
@@ -924,6 +944,7 @@ Object.assign(DesignEditor.prototype, {
             if (sidebarRight) {
                 sidebarRight.classList.remove('toolbar-visible');
                 sidebarRight.removeAttribute('aria-hidden');
+                sidebarRight.style.left = '';
             }
             if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
             if (bottomBar) bottomBar.classList.add('hidden');
@@ -1007,6 +1028,7 @@ Object.assign(DesignEditor.prototype, {
         if (floatingBar) floatingBar.classList.add('hidden');
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
+        this.updateDesktopFloatingToolbarPosition?.();
         if (sidebarRight) {
             sidebarRight.classList.toggle('toolbar-visible', hasSelection);
             sidebarRight.setAttribute('aria-hidden', String(!hasSelection));
@@ -1309,6 +1331,7 @@ Object.assign(DesignEditor.prototype, {
             if (this.selectedElement) {
                 this.requestHandlesRefresh?.();
             }
+            this.updateDesktopFloatingToolbarPosition?.();
             return;
         }
 
@@ -1348,6 +1371,7 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement) {
             this.requestHandlesRefresh?.();
         }
+        this.updateDesktopFloatingToolbarPosition?.();
     },
 
     setZoom(newZoom) {
