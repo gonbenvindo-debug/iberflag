@@ -34,6 +34,7 @@ Object.assign(DesignEditor.prototype, {
         if (existingVisualArea) {
             existingVisualArea.remove();
         }
+        this.removePrintAreaBorderOverlay?.();
 
         if (!this.printArea || this.printArea.tagName.toLowerCase() !== 'rect' || this.printArea.ownerSVGElement !== this.canvas) {
             const rect = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
@@ -145,10 +146,43 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    removePrintAreaBorderOverlay() {
+        if (!this.canvas) return;
+        const printAreaBorderOverlay = this.canvas.querySelector('#print-area-shape-outline-border');
+        if (printAreaBorderOverlay) {
+            printAreaBorderOverlay.remove();
+        }
+    },
+
+    upsertPrintAreaBorderOverlay(shapeOutline) {
+        if (!this.canvas || !shapeOutline) {
+            this.removePrintAreaBorderOverlay?.();
+            return null;
+        }
+
+        this.removePrintAreaBorderOverlay?.();
+
+        const borderOverlay = document.importNode(shapeOutline, true);
+        borderOverlay.setAttribute('id', 'print-area-shape-outline-border');
+        borderOverlay.setAttribute('fill', 'none');
+        borderOverlay.setAttribute('stroke', '#3b82f6');
+        borderOverlay.setAttribute('stroke-width', '2');
+        borderOverlay.setAttribute('stroke-opacity', '0.9');
+        borderOverlay.setAttribute('vector-effect', 'non-scaling-stroke');
+        borderOverlay.setAttribute('opacity', '1');
+        borderOverlay.setAttribute('pointer-events', 'none');
+        borderOverlay.removeAttribute('style');
+        borderOverlay.removeAttribute('data-editable');
+        borderOverlay.removeAttribute('data-element-id');
+        this.canvas.appendChild(borderOverlay);
+        return borderOverlay;
+    },
+
     bringPrintAreaOverlaysToFront() {
         if (!this.canvas) return;
 
         this.removePrintAreaBackground?.();
+        this.removePrintAreaBorderOverlay?.();
 
         if (this.printArea && this.printArea.parentNode === this.canvas) {
             this.canvas.appendChild(this.printArea);
@@ -179,6 +213,10 @@ Object.assign(DesignEditor.prototype, {
         const outsideGridOverlay = this.canvas.querySelector('#print-area-outside-grid');
         if (outsideGridOverlay) {
             this.canvas.appendChild(outsideGridOverlay);
+        }
+
+        if (shapeOutline) {
+            this.upsertPrintAreaBorderOverlay?.(shapeOutline);
         }
     },
 
@@ -352,10 +390,10 @@ Object.assign(DesignEditor.prototype, {
         const visualArea = document.importNode(areaElement, true);
         visualArea.setAttribute('id', 'print-area-shape-outline');
         visualArea.setAttribute('fill', '#ffffff');
-        visualArea.setAttribute('stroke', '#3b82f6');
-        visualArea.setAttribute('stroke-width', '2');
-        visualArea.setAttribute('stroke-opacity', '0.75');
-        visualArea.setAttribute('vector-effect', 'non-scaling-stroke');
+        visualArea.setAttribute('stroke', 'none');
+        visualArea.setAttribute('stroke-width', '0');
+        visualArea.removeAttribute('stroke-opacity');
+        visualArea.removeAttribute('vector-effect');
         visualArea.setAttribute('opacity', '1');
         visualArea.setAttribute('pointer-events', 'none');
         visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);

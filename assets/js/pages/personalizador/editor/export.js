@@ -382,6 +382,7 @@ Object.assign(DesignEditor.prototype, {
                 const id = node.getAttribute('id');
                 return id !== 'print-area-outline'
                     && id !== 'print-area-shape-outline'
+                    && id !== 'print-area-shape-outline-border'
                     && id !== 'print-area-background'
                     && id !== 'print-area-outside-overlay'
                     && id !== 'print-area-outside-grid';
