@@ -885,14 +885,12 @@ Object.assign(DesignEditor.prototype, {
             );
         });
 
-        const topKeepAspectIcon = document.getElementById('top-keep-aspect-icon');
-        const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
-        if (topKeepAspectIcon) {
-            const topIsLocked = Boolean(active && topKeepAspectBtn && !topKeepAspectBtn.disabled);
-            const shacklePath = topIsLocked
+        const renderKeepAspectIcon = (targetIcon, isLocked) => {
+            if (!targetIcon) return;
+            const shacklePath = isLocked
                 ? 'M8.5 10.5V8.5a3.5 3.5 0 0 1 7 0v2'
                 : 'M8.5 10.5V8.7a3.5 3.5 0 0 1 6.9-.7';
-            topKeepAspectIcon.innerHTML = `
+            targetIcon.innerHTML = `
                 <span class="keep-aspect-icon-stack" aria-hidden="true">
                     <svg class="keep-aspect-base-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
                         <polyline points="9 3 3 3 3 9"></polyline>
@@ -906,7 +904,17 @@ Object.assign(DesignEditor.prototype, {
                     </svg>
                 </span>
             `;
-        }
+        };
+
+        const topKeepAspectIcon = document.getElementById('top-keep-aspect-icon');
+        const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
+        const topIsLocked = Boolean(active && topKeepAspectBtn && !topKeepAspectBtn.disabled);
+        renderKeepAspectIcon(topKeepAspectIcon, topIsLocked);
+
+        const quickKeepAspectIcon = document.getElementById('quick-keep-aspect-icon');
+        const quickKeepAspectBtn = document.getElementById('quick-keep-aspect-btn');
+        const quickIsLocked = Boolean(active && quickKeepAspectBtn && !quickKeepAspectBtn.disabled);
+        renderKeepAspectIcon(quickKeepAspectIcon, quickIsLocked);
     },
 
     updateDesktopFloatingToolbarPosition() {

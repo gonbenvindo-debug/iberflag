@@ -652,8 +652,8 @@ body.is-camera-panning #canvas-stage {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     font-size: 0;
     line-height: 0;
     font-style: normal;
@@ -662,23 +662,23 @@ body.is-camera-panning #canvas-stage {
 .keep-aspect-icon-stack {
     position: relative;
     display: inline-flex;
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
     align-items: center;
     justify-content: center;
 }
 
 .keep-aspect-base-icon {
-    width: 14px;
-    height: 14px;
+    width: 16px;
+    height: 16px;
 }
 
 .keep-aspect-state-icon {
     position: absolute;
-    top: -3px;
-    right: -3px;
-    width: 10px;
-    height: 10px;
+    top: -4px;
+    right: -4px;
+    width: 12px;
+    height: 12px;
     border-radius: 999px;
     background: #fff;
     color: currentColor;
@@ -946,13 +946,13 @@ body.is-camera-panning #canvas-stage {
     }
 
     #top-keep-aspect-btn .keep-aspect-base-icon {
-        width: 14px !important;
-        height: 14px !important;
+        width: 16px !important;
+        height: 16px !important;
     }
 
     #top-keep-aspect-btn .keep-aspect-state-icon {
-        width: 10px !important;
-        height: 10px !important;
+        width: 12px !important;
+        height: 12px !important;
     }
 
     #top-keep-aspect-btn {
@@ -960,13 +960,25 @@ body.is-camera-panning #canvas-stage {
     }
 
     #top-keep-aspect-btn[aria-pressed="false"] {
-        background: transparent !important;
-        color: var(--iber-text) !important;
+        background: #f8fafc !important;
+        color: #475569 !important;
+        border-color: #dbe4f0 !important;
     }
 
     #top-keep-aspect-btn[aria-pressed="true"] {
-        background: var(--iber-accent-soft) !important;
-        color: var(--iber-accent) !important;
+        background: var(--iber-accent) !important;
+        color: #ffffff !important;
+        border-color: var(--iber-accent) !important;
+    }
+
+    #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon {
+        background: #ffffff;
+        color: var(--iber-accent);
+    }
+
+    #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon {
+        background: #ffffff;
+        color: #64748b;
     }
 
     #top-keep-aspect-btn:focus,
@@ -975,8 +987,42 @@ body.is-camera-panning #canvas-stage {
         box-shadow: none !important;
     }
 
+    #editor-floating-context-bar:not(.is-text-selection) #top-keep-aspect-btn {
+        width: auto !important;
+        min-width: 74px;
+        padding: 0 8px;
+        gap: 6px;
+    }
+
+    #editor-floating-context-bar:not(.is-text-selection) #top-keep-aspect-btn > span {
+        display: inline-flex !important;
+        align-items: center;
+        font-size: 10px;
+        font-weight: 800;
+        letter-spacing: 0.02em;
+        text-transform: uppercase;
+    }
+
     .editor-floating-actions .editor-floating-btn > span {
         display: none !important;
+    }
+
+    #quick-keep-aspect-btn .keep-aspect-base-icon {
+        width: 15px;
+        height: 15px;
+    }
+
+    #quick-keep-aspect-btn .keep-aspect-state-icon {
+        width: 11px;
+        height: 11px;
+        top: -4px;
+        right: -4px;
+    }
+
+    #quick-keep-aspect-btn[aria-pressed="true"] {
+        background: var(--iber-accent-soft) !important;
+        color: var(--iber-accent) !important;
+        border-color: rgba(239, 72, 37, 0.38) !important;
     }
 
     #top-image-group .desktop-inline-range {
