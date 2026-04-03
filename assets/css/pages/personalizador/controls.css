@@ -574,9 +574,34 @@ body.is-camera-panning #canvas-stage {
     justify-content: center;
     width: 14px;
     height: 14px;
+    font-size: 0;
+    line-height: 0;
     font-style: normal;
-    font-size: 13px;
-    line-height: 1;
+}
+
+.keep-aspect-icon-stack {
+    position: relative;
+    display: inline-flex;
+    width: 14px;
+    height: 14px;
+    align-items: center;
+    justify-content: center;
+}
+
+.keep-aspect-base-icon {
+    width: 14px;
+    height: 14px;
+}
+
+.keep-aspect-state-icon {
+    position: absolute;
+    top: -3px;
+    right: -3px;
+    width: 10px;
+    height: 10px;
+    border-radius: 999px;
+    background: #fff;
+    color: currentColor;
 }
 
 .editor-floating-btn:hover {
@@ -838,6 +863,16 @@ body.is-camera-panning #canvas-stage {
     .editor-floating-actions .editor-floating-btn svg {
         width: 14px;
         height: 14px;
+    }
+
+    #top-keep-aspect-btn .keep-aspect-base-icon {
+        width: 14px !important;
+        height: 14px !important;
+    }
+
+    #top-keep-aspect-btn .keep-aspect-state-icon {
+        width: 10px !important;
+        height: 10px !important;
     }
 
     #top-keep-aspect-btn {

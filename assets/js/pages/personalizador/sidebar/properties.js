@@ -889,7 +889,23 @@ Object.assign(DesignEditor.prototype, {
         const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
         if (topKeepAspectIcon) {
             const topIsLocked = Boolean(active && topKeepAspectBtn && !topKeepAspectBtn.disabled);
-            topKeepAspectIcon.textContent = topIsLocked ? '🔒' : '🔓';
+            const shacklePath = topIsLocked
+                ? 'M8.5 10.5V8.5a3.5 3.5 0 0 1 7 0v2'
+                : 'M8.5 10.5V8.7a3.5 3.5 0 0 1 6.9-.7';
+            topKeepAspectIcon.innerHTML = `
+                <span class="keep-aspect-icon-stack" aria-hidden="true">
+                    <svg class="keep-aspect-base-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="9 3 3 3 3 9"></polyline>
+                        <polyline points="15 3 21 3 21 9"></polyline>
+                        <polyline points="21 15 21 21 15 21"></polyline>
+                        <polyline points="9 21 3 21 3 15"></polyline>
+                    </svg>
+                    <svg class="keep-aspect-state-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">
+                        <rect x="6.5" y="10.5" width="11" height="9" rx="2"></rect>
+                        <path d="${shacklePath}"></path>
+                    </svg>
+                </span>
+            `;
         }
     },
 
