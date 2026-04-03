@@ -929,6 +929,7 @@ Object.assign(DesignEditor.prototype, {
         const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
         const sidebarRight = document.getElementById('editor-sidebar-right');
+        const sidebarLeft = document.getElementById('editor-sidebar-left');
         const backdrop = this.mobileUI?.backdrop || document.getElementById('mobile-panel-backdrop');
         const mobileTabElements = document.getElementById('mobile-tab-elements');
         const mobileTabLayers = document.getElementById('mobile-tab-layers');
@@ -974,11 +975,23 @@ Object.assign(DesignEditor.prototype, {
             sidebarRight.style.left = '';
             sidebarRight.style.transform = '';
         }
-        if (backdrop) backdrop.classList.remove('active');
-        document.body.classList.remove('has-layers-panel-open');
-        if (mobileTabElements) mobileTabElements.classList.remove('active');
-        if (mobileTabLayers) mobileTabLayers.classList.remove('active');
-        this.editorState.activeMobilePanel = null;
+        const isLeftPanelOpen = Boolean(sidebarLeft?.classList.contains('panel-open'));
+        const activeMobilePanel = this.editorState.activeMobilePanel;
+        const showLayersPanel = isLeftPanelOpen && activeMobilePanel === 'layers';
+        const showElementsPanel = isLeftPanelOpen && activeMobilePanel === 'elements';
+
+        if (isLeftPanelOpen) {
+            if (backdrop) backdrop.classList.add('active');
+            document.body.classList.toggle('has-layers-panel-open', showLayersPanel);
+            if (mobileTabElements) mobileTabElements.classList.toggle('active', showElementsPanel);
+            if (mobileTabLayers) mobileTabLayers.classList.toggle('active', showLayersPanel);
+        } else {
+            if (backdrop) backdrop.classList.remove('active');
+            document.body.classList.remove('has-layers-panel-open');
+            if (mobileTabElements) mobileTabElements.classList.remove('active');
+            if (mobileTabLayers) mobileTabLayers.classList.remove('active');
+            this.editorState.activeMobilePanel = null;
+        }
 
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
