@@ -645,6 +645,8 @@ Object.assign(DesignEditor.prototype, {
         const hasSelection = Boolean(elementData);
         const isText = hasSelection && elementData.type === 'text';
         const isImage = hasSelection && elementData.type === 'image';
+        const isImageWithFit = isImage && elementData.imageKind !== 'qr';
+        const isShape = hasSelection && elementData.type === 'shape';
 
         const setDisabled = (id, disabled) => {
             const button = document.getElementById(id);
@@ -670,7 +672,12 @@ Object.assign(DesignEditor.prototype, {
 
         ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
             .forEach((id) => setDisabled(id, !isImage));
-        ['desktop-shape-fill-color', 'desktop-shape-stroke-color'].forEach((id) => setDisabled(id, !hasSelection || !elementData || elementData.type !== 'shape'));
+        ['desktop-image-fit-contain', 'desktop-image-fit-cover', 'desktop-image-fit-fill']
+            .forEach((id) => setDisabled(id, !isImageWithFit));
+        ['desktop-opacity-range']
+            .forEach((id) => setDisabled(id, !isImage));
+        ['desktop-shape-fill-color', 'desktop-shape-stroke-color']
+            .forEach((id) => setDisabled(id, !isShape));
 
         setActive('prop-text-bold', isText && Boolean(elementData.bold));
         setActive('prop-text-italic', isText && Boolean(elementData.italic));
@@ -681,6 +688,9 @@ Object.assign(DesignEditor.prototype, {
         setActive('prop-image-fit-contain', isImage && imageFit === 'contain');
         setActive('prop-image-fit-cover', isImage && imageFit === 'cover');
         setActive('prop-image-fit-fill', isImage && imageFit === 'fill');
+        setActive('desktop-image-fit-contain', isImageWithFit && imageFit === 'contain');
+        setActive('desktop-image-fit-cover', isImageWithFit && imageFit === 'cover');
+        setActive('desktop-image-fit-fill', isImageWithFit && imageFit === 'fill');
     },
     
     // ===== DELETE =====
@@ -866,11 +876,12 @@ Object.assign(DesignEditor.prototype, {
         const panelCenterHBtn = document.getElementById('center-h-btn');
         const panelCenterVBtn = document.getElementById('center-v-btn');
         const panelKeepAspectBtn = document.getElementById('keep-aspect-ratio');
+        const desktopCommonActions = document.getElementById('desktop-common-actions');
         const desktopSelectionToolbar = document.getElementById('desktop-selection-toolbar');
         const desktopTextGroup = document.getElementById('desktop-text-group');
         const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
-        const panelQuickActions = document.querySelector('#properties-panel .properties-quick-actions');
+        const desktopImageFitGroup = document.getElementById('desktop-image-fit-group');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -891,6 +902,7 @@ Object.assign(DesignEditor.prototype, {
         const isText = hasSelection && elementData.type === 'text';
         const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
+        const isImageWithFit = isImage && elementData.imageKind !== 'qr';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
         this.syncExpandedPropertiesControls?.(elementData);
@@ -916,7 +928,8 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(desktopTextGroup, true);
             setHiddenState(desktopShapeGroup, true);
             setHiddenState(desktopImageGroup, true);
-            setHiddenState(panelQuickActions, false);
+            setHiddenState(desktopCommonActions, true);
+            setHiddenState(desktopImageFitGroup, true);
 
             setHiddenState(duplicateBtn, false);
             setHiddenState(centerHBtn, false);
@@ -990,11 +1003,12 @@ Object.assign(DesignEditor.prototype, {
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
         setHiddenState(topFontGroup, true);
-        setHiddenState(desktopSelectionToolbar, !(hasSelection && (isText || isImage || isShape)));
+        setHiddenState(desktopCommonActions, !hasSelection);
+        setHiddenState(desktopSelectionToolbar, !hasSelection);
         setHiddenState(desktopTextGroup, !isText);
         setHiddenState(desktopShapeGroup, !isShape);
         setHiddenState(desktopImageGroup, !isImage);
-        setHiddenState(panelQuickActions, !hasSelection);
+        setHiddenState(desktopImageFitGroup, !isImageWithFit);
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();
@@ -1011,7 +1025,7 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(panelDuplicateBtn, true);
             setDisabledState(panelCenterHBtn, true);
             setDisabledState(panelCenterVBtn, true);
-            setDisabledState(panelKeepAspectBtn, true);
+            setDisabledState(panelKeepAspectBtn, false);
             this.applyQuickOpacityValue(100, false);
             if (topMoreBtn) {
                 topMoreBtn.classList.remove('active');

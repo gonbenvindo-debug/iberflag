@@ -279,48 +279,40 @@
                         </button>
                     </div>
 
-                    <div class="properties-toolbar-row">
-                        <button id="keep-aspect-ratio" class="slide-button active" title="Manter proporcoes"
-                            aria-label="Manter proporcoes">
-                            <i data-lucide="maximize-2" class="w-4 h-4"></i>
-                            <span class="slide-button-label">Manter proporcoes</span>
-                            <span class="slide-button-track"><span class="slide-button-toggle"></span></span>
-                        </button>
-
+                    <div class="properties-toolbar-row" aria-label="Acoes e propriedades rapidas">
+                        <div class="toolbar-group toolbar-group--global" id="desktop-global-toolbar">
                             <button id="zoom-out" class="action-btn toolbar-btn toolbar-btn--zoom" title="Reduzir zoom" aria-label="Reduzir zoom">
                                 <i data-lucide="zoom-out" class="w-4 h-4"></i>
                             </button>
-                            <span id="zoom-level" class="toolbar-zoom-level"
-                                aria-label="Nivel de zoom">100%</span>
+                            <span id="zoom-level" class="toolbar-zoom-level" aria-label="Nivel de zoom">100%</span>
                             <button id="zoom-in" class="action-btn toolbar-btn toolbar-btn--zoom" title="Aumentar zoom" aria-label="Aumentar zoom">
                                 <i data-lucide="zoom-in" class="w-4 h-4"></i>
                             </button>
+                            <button id="keep-aspect-ratio" class="slide-button toolbar-btn toolbar-btn--icon active" title="Manter proporcoes"
+                                aria-label="Manter proporcoes" aria-pressed="true">
+                                <i data-lucide="maximize-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
 
-                            <button id="duplicate-element-btn" class="action-btn toolbar-btn" title="Duplicar"
-                                aria-label="Duplicar">
+                        <div id="desktop-common-actions" class="toolbar-group toolbar-group--actions hidden" aria-label="Acoes do elemento">
+                            <button id="duplicate-element-btn" class="action-btn toolbar-btn" title="Duplicar" aria-label="Duplicar">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
-                                <span class="action-btn__label">Duplicar</span>
                             </button>
                             <button id="delete-element-btn" class="action-btn toolbar-btn" title="Apagar" aria-label="Apagar">
                                 <i data-lucide="trash-2" class="w-4 h-4"></i>
-                                <span class="action-btn__label">Apagar</span>
                             </button>
-                            <button id="center-h-btn" class="action-btn toolbar-btn" title="Centrar horizontalmente"
-                                aria-label="Centrar horizontalmente">
+                            <button id="center-h-btn" class="action-btn toolbar-btn" title="Centrar horizontalmente" aria-label="Centrar horizontalmente">
                                 <i data-lucide="align-horizontal-space-around" class="w-4 h-4"></i>
-                                <span class="action-btn__label">Centrar H</span>
                             </button>
-                            <button id="center-v-btn" class="action-btn toolbar-btn" title="Centrar verticalmente"
-                                aria-label="Centrar verticalmente">
+                            <button id="center-v-btn" class="action-btn toolbar-btn" title="Centrar verticalmente" aria-label="Centrar verticalmente">
                                 <i data-lucide="align-vertical-space-around" class="w-4 h-4"></i>
-                                <span class="action-btn__label">Centrar V</span>
                             </button>
-                            <button id="center-both-btn" class="action-btn toolbar-btn" title="Centrar no canvas"
-                                aria-label="Centrar no canvas">
+                            <button id="center-both-btn" class="action-btn toolbar-btn" title="Centrar no canvas" aria-label="Centrar no canvas">
                                 <i data-lucide="crosshair" class="w-4 h-4"></i>
-                                <span class="action-btn__label">Centrar</span>
                             </button>
-                        <div id="desktop-selection-toolbar" class="desktop-selection-toolbar hidden" aria-label="Propriedades contextuais">
+                        </div>
+
+                        <div id="desktop-selection-toolbar" class="toolbar-group toolbar-group--context hidden" aria-label="Propriedades contextuais">
                             <div id="desktop-text-group" class="desktop-context-group hidden">
                                 <select id="desktop-font-select" class="desktop-inline-select" aria-label="Escolher fonte"></select>
                                 <div class="desktop-inline-size" role="group" aria-label="Tamanho da fonte">
@@ -345,7 +337,6 @@
                                 </label>
                             </div>
                             <div id="desktop-shape-group" class="desktop-context-group hidden">
-                                <span class="desktop-inline-label">Cor</span>
                                 <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
                                     <input id="desktop-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
                                 </label>
@@ -354,9 +345,19 @@
                                 </label>
                             </div>
                             <div id="desktop-image-group" class="desktop-context-group hidden">
-                                <span class="desktop-inline-label">Opacidade</span>
                                 <input id="desktop-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
                                 <span id="desktop-opacity-value" class="desktop-inline-value">100%</span>
+                                <div id="desktop-image-fit-group" class="desktop-inline-fit-group">
+                                    <button id="desktop-image-fit-contain" type="button" class="desktop-image-fit-btn" title="Conter" aria-label="Conter imagem">
+                                        <i data-lucide="maximize" class="w-4 h-4"></i>
+                                    </button>
+                                    <button id="desktop-image-fit-cover" type="button" class="desktop-image-fit-btn" title="Cobrir" aria-label="Cobrir area">
+                                        <i data-lucide="square-dashed" class="w-4 h-4"></i>
+                                    </button>
+                                    <button id="desktop-image-fit-fill" type="button" class="desktop-image-fit-btn" title="Esticar" aria-label="Esticar imagem">
+                                        <i data-lucide="stretch-horizontal" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
