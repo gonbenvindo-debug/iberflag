@@ -4,10 +4,26 @@
 Object.assign(DesignEditor.prototype, {
 
     getEditableBounds() {
-        // Limites de edição = design-canvas inteiro (viewBox completo).
-        // Isto mantém drag/resize sempre dentro da área total do canvas,
-        // independentemente de zoom/pan/viewport visível.
-        return this.getCanvasBounds();
+        // Limites de edição em tempo real baseados no canvas-wrapper atual.
+        // Isto evita depender da área inicial e acompanha mudanças de viewport/layout.
+        const metrics = this.getCanvasViewportMetrics?.();
+        const wrapperRect = this.canvasWrapper?.getBoundingClientRect?.();
+        const vb = this.getCanvasViewBoxSize?.();
+
+        if (!metrics || !wrapperRect || !vb || !metrics.scale) {
+            return this.getCanvasBounds();
+        }
+
+        const left = (wrapperRect.left - metrics.rect.left - metrics.offsetX) / metrics.scale + (Number(vb.x) || 0);
+        const top = (wrapperRect.top - metrics.rect.top - metrics.offsetY) / metrics.scale + (Number(vb.y) || 0);
+        const width = wrapperRect.width / metrics.scale;
+        const height = wrapperRect.height / metrics.scale;
+
+        if (![left, top, width, height].every(Number.isFinite) || width <= 0 || height <= 0) {
+            return this.getCanvasBounds();
+        }
+
+        return { x: left, y: top, width, height };
     },
 
     getCanvasBounds() {
