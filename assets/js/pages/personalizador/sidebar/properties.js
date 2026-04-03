@@ -1342,7 +1342,9 @@ Object.assign(DesignEditor.prototype, {
         const needsResizeRecalc = (
             !this.initialCanvasSize ||
             this._lastViewportStageWidth !== stageWidth ||
-            this._lastViewportStageHeight !== stageHeight
+            this._lastViewportStageHeight !== stageHeight ||
+            this._lastViewportViewBoxWidth !== viewBoxWidth ||
+            this._lastViewportViewBoxHeight !== viewBoxHeight
         );
 
         if (needsResizeRecalc) {
@@ -1366,6 +1368,8 @@ Object.assign(DesignEditor.prototype, {
             };
             this._lastViewportStageWidth = stageWidth;
             this._lastViewportStageHeight = stageHeight;
+            this._lastViewportViewBoxWidth = viewBoxWidth;
+            this._lastViewportViewBoxHeight = viewBoxHeight;
         }
 
         // Apply zoom to base size

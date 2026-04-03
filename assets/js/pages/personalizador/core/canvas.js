@@ -13,8 +13,11 @@ Object.assign(DesignEditor.prototype, {
     getCanvasBounds() {
         const vb = this.getCanvasViewBoxSize();
         return {
-            x: Number(vb.x) || 0,
-            y: Number(vb.y) || 0,
+            // O editor trabalha em coordenadas internas normalizadas (0..W / 0..H).
+            // Mesmo que o SVG de origem tenha viewBox com x/y diferentes de 0,
+            // os limites de edição devem ocupar o design-canvas inteiro.
+            x: 0,
+            y: 0,
             width: vb.width,
             height: vb.height
         };
@@ -343,6 +346,12 @@ Object.assign(DesignEditor.prototype, {
             height: normalized.height
         };
 
+        // Força recalcular viewport/câmara com a nova geometria do canvas.
+        this.initialCanvasSize = null;
+        this._lastViewportViewBoxWidth = null;
+        this._lastViewportViewBoxHeight = null;
+        this.syncCanvasViewport?.();
+
         return { width: normalized.width, height: normalized.height };
     },
 
@@ -395,8 +404,8 @@ Object.assign(DesignEditor.prototype, {
         const rect = metrics.rect;
 
         return {
-            x: (Number(metrics.vb?.x) || 0) + ((clientX - rect.left - metrics.offsetX) / metrics.scale),
-            y: (Number(metrics.vb?.y) || 0) + ((clientY - rect.top - metrics.offsetY) / metrics.scale)
+            x: ((clientX - rect.left - metrics.offsetX) / metrics.scale),
+            y: ((clientY - rect.top - metrics.offsetY) / metrics.scale)
         };
     },
 
