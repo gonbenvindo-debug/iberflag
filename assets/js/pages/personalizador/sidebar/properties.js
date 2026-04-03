@@ -481,6 +481,8 @@ Object.assign(DesignEditor.prototype, {
         const imageOpacityValue = document.getElementById('prop-image-opacity-val');
         const desktopOpacityRange = document.getElementById('desktop-opacity-range');
         const desktopOpacityValue = document.getElementById('desktop-opacity-value');
+        const topOpacityRange = document.getElementById('top-opacity-range');
+        const topOpacityValue = document.getElementById('top-opacity-value');
 
         if (opacityRange) opacityRange.value = String(nextValue);
         if (opacityValue) opacityValue.textContent = `${nextValue}%`;
@@ -488,6 +490,8 @@ Object.assign(DesignEditor.prototype, {
         if (imageOpacityValue) imageOpacityValue.textContent = String(nextValue);
         if (desktopOpacityRange) desktopOpacityRange.value = String(nextValue);
         if (desktopOpacityValue) desktopOpacityValue.textContent = `${nextValue}%`;
+        if (topOpacityRange) topOpacityRange.value = String(nextValue);
+        if (topOpacityValue) topOpacityValue.textContent = `${nextValue}%`;
         if (opacityBtn) {
             opacityBtn.title = `Opacidade: ${nextValue}%`;
             opacityBtn.setAttribute('aria-label', `Opacidade: ${nextValue}%`);
@@ -595,6 +599,8 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.fill = nextFill;
             const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
             if (desktopShapeFillColor) desktopShapeFillColor.value = nextFill;
+            const topShapeFillColor = document.getElementById('top-shape-fill-color');
+            if (topShapeFillColor) topShapeFillColor.value = nextFill;
             this.queueHistorySave();
         }
     },
@@ -606,6 +612,8 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.stroke = nextStroke;
             const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
             if (desktopShapeStrokeColor) desktopShapeStrokeColor.value = nextStroke;
+            const topShapeStrokeColor = document.getElementById('top-shape-stroke-color');
+            if (topShapeStrokeColor) topShapeStrokeColor.value = nextStroke;
             this.queueHistorySave();
         }
     },
@@ -903,6 +911,8 @@ Object.assign(DesignEditor.prototype, {
         const floatingBar = document.getElementById('editor-floating-context-bar');
         const bottomBar = document.getElementById('editor-bottom-context-bar');
         const topFontGroup = document.getElementById('top-font-group');
+        const topShapeGroup = document.getElementById('top-shape-group');
+        const topImageGroup = document.getElementById('top-image-group');
         const topDeleteBtn = document.getElementById('top-delete-btn');
         const topDuplicateBtn = document.getElementById('top-duplicate-btn');
         const topCenterHBtn = document.getElementById('top-center-h-btn');
@@ -939,6 +949,7 @@ Object.assign(DesignEditor.prototype, {
         const opacityValue = document.getElementById('quick-opacity-value');
         const hasSelection = Boolean(elementData);
         const isText = hasSelection && elementData.type === 'text';
+        const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
@@ -985,6 +996,8 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(fontPopover, true);
         setHiddenState(opacityAnchor, true);
         setHiddenState(topFontGroup, !isText);
+        setHiddenState(topShapeGroup, !isShape);
+        setHiddenState(topImageGroup, !isImage);
         if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
 
         if (!hasSelection) {
@@ -1027,6 +1040,12 @@ Object.assign(DesignEditor.prototype, {
             this.renderQuickFontPopover();
         } else {
             this.closeQuickFontPopover();
+        }
+        if (isShape) {
+            const topShapeFillColor = document.getElementById('top-shape-fill-color');
+            const topShapeStrokeColor = document.getElementById('top-shape-stroke-color');
+            if (topShapeFillColor) topShapeFillColor.value = this.sanitizeColorValue(elementData.fill, '#3b82f6');
+            if (topShapeStrokeColor) topShapeStrokeColor.value = this.sanitizeColorValue(elementData.stroke, '#000000');
         }
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);

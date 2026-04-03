@@ -713,9 +713,12 @@ Object.assign(DesignEditor.prototype, {
         const desktopSizeDecreaseBtn = document.getElementById('desktop-text-size-decrease');
         const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
         const desktopOpacityRange = document.getElementById('desktop-opacity-range');
+        const topOpacityRange = document.getElementById('top-opacity-range');
         const desktopTextColor = document.getElementById('desktop-text-color');
         const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
         const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
+        const topShapeFillColor = document.getElementById('top-shape-fill-color');
+        const topShapeStrokeColor = document.getElementById('top-shape-stroke-color');
         if (quickTextContent) quickTextContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (quickFontSelect) quickFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
         if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
@@ -739,9 +742,12 @@ Object.assign(DesignEditor.prototype, {
         if (desktopSizeDecreaseBtn) desktopSizeDecreaseBtn.addEventListener('click', () => this.stepQuickTextSize(-1));
         if (desktopSizeIncreaseBtn) desktopSizeIncreaseBtn.addEventListener('click', () => this.stepQuickTextSize(1));
         if (desktopOpacityRange) desktopOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
+        if (topOpacityRange) topOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
         if (desktopTextColor) desktopTextColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (desktopShapeFillColor) desktopShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
         if (desktopShapeStrokeColor) desktopShapeStrokeColor.addEventListener('input', (e) => this.updateShapeStroke(e.target.value));
+        if (topShapeFillColor) topShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
+        if (topShapeStrokeColor) topShapeStrokeColor.addEventListener('input', (e) => this.updateShapeStroke(e.target.value));
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {

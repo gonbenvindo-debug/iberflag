@@ -609,6 +609,15 @@ body.is-camera-panning #canvas-stage {
     display: none !important;
 }
 
+#top-image-group .desktop-inline-range {
+    width: 120px;
+    min-width: 120px;
+}
+
+#top-image-group .desktop-inline-value {
+    min-width: 44px;
+}
+
 .editor-floating-size {
     display: inline-flex;
     align-items: center;
@@ -735,6 +744,11 @@ body.is-camera-panning #canvas-stage {
 
     .editor-floating-actions .editor-floating-btn > span {
         display: none !important;
+    }
+
+    #top-image-group .desktop-inline-range {
+        width: 94px;
+        min-width: 94px;
     }
 
 }
