@@ -869,6 +869,12 @@ Object.assign(DesignEditor.prototype, {
         const canvas = this.canvas || document.getElementById('design-canvas');
         if (!sidebarRight || !editorBodyLayout || !stage) return;
 
+        const sidebarPosition = window.getComputedStyle(sidebarRight).position;
+        if (sidebarPosition !== 'absolute') {
+            sidebarRight.style.left = '';
+            return;
+        }
+
         const layoutRect = editorBodyLayout.getBoundingClientRect();
         const stageRect = stage.getBoundingClientRect();
         const canvasRect = canvas?.getBoundingClientRect?.();
