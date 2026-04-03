@@ -168,6 +168,13 @@ body.app-page {
     min-width: 0;
 }
 
+.toolbar-group.hidden,
+.desktop-selection-toolbar.hidden,
+.desktop-context-group.hidden,
+.desktop-inline-fit-group.hidden {
+    display: none !important;
+}
+
 .toolbar-group--context {
     gap: 8px;
 }
@@ -762,6 +769,14 @@ body.editor-mode-desktop #editor-floating-context-bar {
     gap: 6px !important;
     flex: 0 0 auto !important;
     min-width: 0 !important;
+}
+
+#properties-panel .toolbar-group.hidden,
+#properties-panel .desktop-selection-toolbar.hidden,
+#properties-panel .desktop-context-group.hidden,
+#properties-panel .desktop-inline-fit-group.hidden,
+#properties-panel .properties-toolbar-row .toolbar-btn.hidden {
+    display: none !important;
 }
 
 #properties-panel .toolbar-btn {
