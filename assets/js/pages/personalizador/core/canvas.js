@@ -13,11 +13,10 @@ Object.assign(DesignEditor.prototype, {
     getCanvasBounds() {
         const vb = this.getCanvasViewBoxSize();
         return {
-            // O editor trabalha em coordenadas internas normalizadas (0..W / 0..H).
-            // Mesmo que o SVG de origem tenha viewBox com x/y diferentes de 0,
-            // os limites de edição devem ocupar o design-canvas inteiro.
-            x: 0,
-            y: 0,
+            // Limites em coordenadas reais do viewBox (inclui origem x/y).
+            // Isto evita "encolher/deslocar" limites quando o template não começa em 0 0.
+            x: Number(vb.x) || 0,
+            y: Number(vb.y) || 0,
             width: vb.width,
             height: vb.height
         };
@@ -404,8 +403,8 @@ Object.assign(DesignEditor.prototype, {
         const rect = metrics.rect;
 
         return {
-            x: ((clientX - rect.left - metrics.offsetX) / metrics.scale),
-            y: ((clientY - rect.top - metrics.offsetY) / metrics.scale)
+            x: (Number(metrics.vb?.x) || 0) + ((clientX - rect.left - metrics.offsetX) / metrics.scale),
+            y: (Number(metrics.vb?.y) || 0) + ((clientY - rect.top - metrics.offsetY) / metrics.scale)
         };
     },
 
