@@ -645,7 +645,6 @@ Object.assign(DesignEditor.prototype, {
         const hasSelection = Boolean(elementData);
         const isText = hasSelection && elementData.type === 'text';
         const isImage = hasSelection && elementData.type === 'image';
-        const isImageWithFit = isImage && elementData.imageKind !== 'qr';
         const isShape = hasSelection && elementData.type === 'shape';
 
         const setDisabled = (id, disabled) => {
@@ -672,8 +671,6 @@ Object.assign(DesignEditor.prototype, {
 
         ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
             .forEach((id) => setDisabled(id, !isImage));
-        ['desktop-image-fit-contain', 'desktop-image-fit-cover', 'desktop-image-fit-fill']
-            .forEach((id) => setDisabled(id, !isImageWithFit));
         ['desktop-opacity-range']
             .forEach((id) => setDisabled(id, !isImage));
         ['desktop-shape-fill-color', 'desktop-shape-stroke-color']
@@ -688,9 +685,6 @@ Object.assign(DesignEditor.prototype, {
         setActive('prop-image-fit-contain', isImage && imageFit === 'contain');
         setActive('prop-image-fit-cover', isImage && imageFit === 'cover');
         setActive('prop-image-fit-fill', isImage && imageFit === 'fill');
-        setActive('desktop-image-fit-contain', isImageWithFit && imageFit === 'contain');
-        setActive('desktop-image-fit-cover', isImageWithFit && imageFit === 'cover');
-        setActive('desktop-image-fit-fill', isImageWithFit && imageFit === 'fill');
     },
     
     // ===== DELETE =====
@@ -907,7 +901,6 @@ Object.assign(DesignEditor.prototype, {
         const desktopTextGroup = document.getElementById('desktop-text-group');
         const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
-        const desktopImageFitGroup = document.getElementById('desktop-image-fit-group');
         const sidebarRight = document.getElementById('editor-sidebar-right');
 
         this.editorState = this.editorState || {};
@@ -929,7 +922,6 @@ Object.assign(DesignEditor.prototype, {
         const isText = hasSelection && elementData.type === 'text';
         const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
-        const isImageWithFit = isImage && elementData.imageKind !== 'qr';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
         this.syncExpandedPropertiesControls?.(elementData);
@@ -952,7 +944,7 @@ Object.assign(DesignEditor.prototype, {
                 sidebarRight.removeAttribute('aria-hidden');
                 sidebarRight.style.left = '';
             }
-            if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
+            if (floatingBar) floatingBar.classList.add('hidden');
             if (bottomBar) bottomBar.classList.add('hidden');
             toolbar.classList.add('hidden');
             setHiddenState(topFontGroup, true);
@@ -961,7 +953,6 @@ Object.assign(DesignEditor.prototype, {
             setHiddenState(desktopShapeGroup, true);
             setHiddenState(desktopImageGroup, true);
             setHiddenState(desktopCommonActions, true);
-            setHiddenState(desktopImageFitGroup, true);
 
             setHiddenState(duplicateBtn, false);
             setHiddenState(centerHBtn, false);
@@ -991,9 +982,8 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(panelCenterVBtn, !hasSelection);
             setDisabledState(panelKeepAspectBtn, !hasSelection);
             if (topMoreBtn) {
-                const mobileDetailsOpen = Boolean(document.getElementById('editor-sidebar-right')?.classList.contains('panel-open'));
-                topMoreBtn.classList.toggle('active', hasSelection && mobileDetailsOpen);
-                topMoreBtn.setAttribute('aria-expanded', String(hasSelection && mobileDetailsOpen));
+                topMoreBtn.classList.remove('active');
+                topMoreBtn.setAttribute('aria-expanded', 'false');
             }
 
             if (fontBtn) {
@@ -1028,6 +1018,22 @@ Object.assign(DesignEditor.prototype, {
             this.editorState.quickFontOpen = Boolean(isText && fontPopover?.classList.contains('is-open'));
             this.editorState.quickOpacityOpen = Boolean(isImage && opacityBtn?.getAttribute('aria-expanded') === 'true');
             this.syncKeepAspectControls();
+            if (hasSelection && sidebarRight && !sidebarRight.classList.contains('panel-open')) {
+                const sidebarLeft = this.mobileUI?.sidebarLeft || document.getElementById('editor-sidebar-left');
+                const backdrop = this.mobileUI?.backdrop || document.getElementById('mobile-panel-backdrop');
+                const mobileTabElements = document.getElementById('mobile-tab-elements');
+                const mobileTabLayers = document.getElementById('mobile-tab-layers');
+
+                if (sidebarLeft) sidebarLeft.classList.remove('panel-open');
+                sidebarRight.classList.add('panel-open', 'panel-expanded');
+                sidebarRight.classList.remove('panel-compact');
+                sidebarRight.style.transform = '';
+                if (backdrop) backdrop.classList.add('active');
+                document.body.classList.remove('has-layers-panel-open');
+                if (mobileTabElements) mobileTabElements.classList.remove('active');
+                if (mobileTabLayers) mobileTabLayers.classList.remove('active');
+                this.editorState.activeMobilePanel = 'properties';
+            }
             return;
         }
 
@@ -1045,7 +1051,6 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(desktopTextGroup, !isText);
         setHiddenState(desktopShapeGroup, !isShape);
         setHiddenState(desktopImageGroup, !isImage);
-        setHiddenState(desktopImageFitGroup, !isImageWithFit);
 
         if (!hasSelection) {
             this.closeQuickOpacityPopover();

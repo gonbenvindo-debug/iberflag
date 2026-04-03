@@ -866,15 +866,9 @@ Object.assign(DesignEditor.prototype, {
         const imageFitContainBtn = document.getElementById('prop-image-fit-contain');
         const imageFitCoverBtn = document.getElementById('prop-image-fit-cover');
         const imageFitFillBtn = document.getElementById('prop-image-fit-fill');
-        const desktopImageFitContainBtn = document.getElementById('desktop-image-fit-contain');
-        const desktopImageFitCoverBtn = document.getElementById('desktop-image-fit-cover');
-        const desktopImageFitFillBtn = document.getElementById('desktop-image-fit-fill');
         if (imageFitContainBtn) imageFitContainBtn.addEventListener('click', () => this.updateImageObjectFit?.('contain'));
         if (imageFitCoverBtn) imageFitCoverBtn.addEventListener('click', () => this.updateImageObjectFit?.('cover'));
         if (imageFitFillBtn) imageFitFillBtn.addEventListener('click', () => this.updateImageObjectFit?.('fill'));
-        if (desktopImageFitContainBtn) desktopImageFitContainBtn.addEventListener('click', () => this.updateImageObjectFit?.('contain'));
-        if (desktopImageFitCoverBtn) desktopImageFitCoverBtn.addEventListener('click', () => this.updateImageObjectFit?.('cover'));
-        if (desktopImageFitFillBtn) desktopImageFitFillBtn.addEventListener('click', () => this.updateImageObjectFit?.('fill'));
 
         // Shape properties
         const shapeFill = document.getElementById('prop-shape-fill');

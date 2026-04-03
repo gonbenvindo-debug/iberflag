@@ -634,7 +634,11 @@
             }
 
             #properties-panel .properties-toolbar-row {
-                display: none !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                flex-wrap: nowrap !important;
+                overflow-x: auto !important;
             }
 
             #properties-panel #no-selection,
