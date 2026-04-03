@@ -28,7 +28,7 @@ class DesignEditor {
         this.historyCommitDelay = 180;
         this.activeHistoryGestureSnapshot = null;
         this.layerDragIndex = null;
-        this.zoom = 1;
+        this.zoom = 0.9;
         this.cameraOffset = { x: 0, y: 0 };
         this.isPanningCamera = false;
         this.cameraPanStart = null;
