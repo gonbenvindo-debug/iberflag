@@ -908,7 +908,6 @@ Object.assign(DesignEditor.prototype, {
         const topCenterHBtn = document.getElementById('top-center-h-btn');
         const topCenterVBtn = document.getElementById('top-center-v-btn');
         const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
-        const topMoreBtn = document.getElementById('top-more-btn');
         const panelDeleteBtn = document.getElementById('delete-element-btn');
         const panelDuplicateBtn = document.getElementById('duplicate-element-btn');
         const panelCenterHBtn = document.getElementById('center-h-btn');
@@ -985,7 +984,6 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(fontBtn, true);
         setHiddenState(fontPopover, true);
         setHiddenState(opacityAnchor, true);
-        setHiddenState(topMoreBtn, true);
         setHiddenState(topFontGroup, !isText);
         if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
 
@@ -999,17 +997,12 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, true);
             setDisabledState(topCenterVBtn, true);
             setDisabledState(topKeepAspectBtn, true);
-            setDisabledState(topMoreBtn, true);
             setDisabledState(panelDeleteBtn, true);
             setDisabledState(panelDuplicateBtn, true);
             setDisabledState(panelCenterHBtn, true);
             setDisabledState(panelCenterVBtn, true);
             setDisabledState(panelKeepAspectBtn, false);
             this.applyQuickOpacityValue(100, false);
-            if (topMoreBtn) {
-                topMoreBtn.classList.remove('active');
-                topMoreBtn.setAttribute('aria-expanded', 'false');
-            }
             this.syncKeepAspectControls();
             return;
         }
@@ -1024,16 +1017,11 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
         setDisabledState(topKeepAspectBtn, false);
-        setDisabledState(topMoreBtn, true);
         setDisabledState(panelDeleteBtn, false);
         setDisabledState(panelDuplicateBtn, false);
         setDisabledState(panelCenterHBtn, false);
         setDisabledState(panelCenterVBtn, false);
         setDisabledState(panelKeepAspectBtn, false);
-        if (topMoreBtn) {
-            topMoreBtn.classList.remove('active');
-            topMoreBtn.setAttribute('aria-expanded', 'false');
-        }
 
         if (isText) {
             this.renderQuickFontPopover();
