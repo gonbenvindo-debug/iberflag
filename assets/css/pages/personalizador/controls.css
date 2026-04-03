@@ -876,6 +876,26 @@ body.editor-mode-desktop #editor-floating-context-bar {
     overflow: visible !important;
 }
 
+@media (min-width: 1024px) {
+    #properties-panel {
+        padding: 8px 12px !important;
+        gap: 0 !important;
+    }
+
+    #properties-panel .properties-panel-header,
+    #properties-panel .properties-advanced-row,
+    #properties-panel #no-selection,
+    #properties-panel #text-properties,
+    #properties-panel #image-properties,
+    #properties-panel #shape-properties {
+        display: none !important;
+    }
+
+    #properties-panel .properties-toolbar-row {
+        margin: 0 !important;
+    }
+}
+
 @media (max-width: 1023px) {
     #editor-sidebar-right {
         width: 100% !important;
