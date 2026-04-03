@@ -67,6 +67,25 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('pointer-events', 'none');
         this.printArea.removeAttribute('transform');
 
+        // Fallback visual: área interna branca para diferenciar do checkerboard externo.
+        let printAreaBackground = this.canvas.querySelector('#print-area-background');
+        if (!printAreaBackground || String(printAreaBackground.tagName || '').toLowerCase() !== 'rect') {
+            if (printAreaBackground) {
+                printAreaBackground.remove();
+            }
+            printAreaBackground = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+            printAreaBackground.setAttribute('id', 'print-area-background');
+            printAreaBackground.setAttribute('pointer-events', 'none');
+            this.canvas.prepend(printAreaBackground);
+        }
+        printAreaBackground.setAttribute('x', String(this.printAreaBounds.x));
+        printAreaBackground.setAttribute('y', String(this.printAreaBounds.y));
+        printAreaBackground.setAttribute('width', String(this.printAreaBounds.width));
+        printAreaBackground.setAttribute('height', String(this.printAreaBounds.height));
+        printAreaBackground.setAttribute('fill', '#ffffff');
+        printAreaBackground.removeAttribute('stroke');
+        printAreaBackground.removeAttribute('transform');
+
         this.bringPrintAreaOverlaysToFront();
     },
 
@@ -385,6 +404,8 @@ Object.assign(DesignEditor.prototype, {
         this.printArea.setAttribute('width', String(contentBounds.width));
         this.printArea.setAttribute('height', String(contentBounds.height));
 
+        // Área do produto branca (com forma real do SVG) para destacar do fundo quadriculado.
+        this.upsertPrintAreaBackground(areaElement, `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
     },
