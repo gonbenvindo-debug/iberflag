@@ -1327,6 +1327,17 @@ body.is-camera-panning #canvas-stage {
         cursor: grab;
     }
 
+    #editor-sidebar-left .drawer-grip {
+        display: block !important;
+        margin: 10px auto 6px !important;
+        background: #d0d5dd !important;
+        cursor: grab;
+    }
+
+    #editor-sidebar-left.is-dragging .drawer-grip {
+        cursor: grabbing;
+    }
+
     #editor-sidebar-right.is-dragging .drawer-grip {
         cursor: grabbing;
     }

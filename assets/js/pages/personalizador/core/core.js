@@ -188,6 +188,7 @@ class DesignEditor {
         const tabElements = document.getElementById('mobile-tab-elements');
         const tabLayers = document.getElementById('mobile-tab-layers');
         const propertiesCloseBtn = document.getElementById('properties-close-btn');
+        const leftGrip = sidebarLeft?.querySelector('.drawer-grip');
         const rightGrip = sidebarRight?.querySelector('.drawer-grip');
 
         if (!backdrop || !sidebarLeft || !sidebarRight) return;
@@ -219,6 +220,21 @@ class DesignEditor {
         };
 
         backdrop.addEventListener('click', closeAll);
+
+        const closeLeftOnOutsidePointerDown = (event) => {
+            if (!this.isMobileViewport()) return;
+            if (!sidebarLeft.classList.contains('panel-open')) return;
+
+            const target = event.target;
+            if (!target || typeof target.closest !== 'function') return;
+            if (sidebarLeft.contains(target)) return;
+            if (target.closest('#mobile-panel-backdrop')) return;
+            if (target.closest('.editor-mobile-tab')) return;
+
+            closeAll();
+        };
+
+        document.addEventListener('pointerdown', closeLeftOnOutsidePointerDown);
 
         const openLeft = (panelId, tabId) => {
             const isAlreadyOpen = sidebarLeft.classList.contains('panel-open') &&
@@ -276,6 +292,54 @@ class DesignEditor {
 
         let rightSheetDrag = null;
         let rightSheetDidMove = false;
+        let leftSheetDrag = null;
+        let leftSheetDidMove = false;
+
+        const beginLeftSheetDrag = (event) => {
+            if (!this.isMobileViewport()) return;
+            if (!sidebarLeft.classList.contains('panel-open')) return;
+            if (event.button != null && event.button !== 0) return;
+
+            leftSheetDidMove = false;
+            leftSheetDrag = {
+                startY: event.clientY,
+                lastY: event.clientY
+            };
+            sidebarLeft.classList.add('is-dragging');
+            sidebarLeft.style.transition = 'none';
+            leftGrip?.setPointerCapture?.(event.pointerId);
+            event.preventDefault();
+        };
+
+        const moveLeftSheetDrag = (event) => {
+            if (!leftSheetDrag) return;
+
+            const deltaY = event.clientY - leftSheetDrag.startY;
+            leftSheetDrag.lastY = event.clientY;
+            leftSheetDidMove = leftSheetDidMove || Math.abs(deltaY) > 6;
+
+            sidebarLeft.style.transform = `translateY(${Math.max(0, deltaY)}px)`;
+            event.preventDefault();
+        };
+
+        const endLeftSheetDrag = (event) => {
+            if (!leftSheetDrag) return;
+
+            const fallbackY = Number.isFinite(Number(event?.clientY)) ? event.clientY : leftSheetDrag.lastY;
+            const deltaY = fallbackY - leftSheetDrag.startY;
+            leftSheetDrag = null;
+
+            sidebarLeft.classList.remove('is-dragging');
+            sidebarLeft.style.transition = '';
+            sidebarLeft.style.transform = '';
+
+            if (deltaY > 120) {
+                closeAll();
+                return;
+            }
+
+            this.updateContextualToolbar?.(this.selectedElement);
+        };
 
         const beginRightSheetDrag = (event) => {
             if (!this.isMobileViewport()) return;
@@ -335,6 +399,22 @@ class DesignEditor {
 
             this.updateContextualToolbar?.(this.selectedElement);
         };
+
+        leftGrip?.addEventListener('pointerdown', beginLeftSheetDrag);
+        leftGrip?.addEventListener('pointermove', moveLeftSheetDrag);
+        leftGrip?.addEventListener('pointerup', endLeftSheetDrag);
+        leftGrip?.addEventListener('pointercancel', endLeftSheetDrag);
+        leftGrip?.addEventListener('click', (event) => {
+            if (!this.isMobileViewport()) return;
+            if (!sidebarLeft.classList.contains('panel-open')) return;
+            if (leftSheetDidMove) {
+                leftSheetDidMove = false;
+                return;
+            }
+
+            closeAll();
+            event.preventDefault();
+        });
 
         rightGrip?.addEventListener('pointerdown', beginRightSheetDrag);
         rightGrip?.addEventListener('pointermove', moveRightSheetDrag);
