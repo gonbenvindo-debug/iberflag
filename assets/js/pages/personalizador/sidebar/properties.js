@@ -882,6 +882,7 @@ Object.assign(DesignEditor.prototype, {
         const desktopShapeGroup = document.getElementById('desktop-shape-group');
         const desktopImageGroup = document.getElementById('desktop-image-group');
         const desktopImageFitGroup = document.getElementById('desktop-image-fit-group');
+        const sidebarRight = document.getElementById('editor-sidebar-right');
 
         this.editorState = this.editorState || {};
         this.editorState.selectionType = elementData?.type || null;
@@ -920,6 +921,10 @@ Object.assign(DesignEditor.prototype, {
         };
 
         if (isMobile) {
+            if (sidebarRight) {
+                sidebarRight.classList.remove('toolbar-visible');
+                sidebarRight.removeAttribute('aria-hidden');
+            }
             if (floatingBar) floatingBar.classList.toggle('hidden', !hasSelection);
             if (bottomBar) bottomBar.classList.add('hidden');
             toolbar.classList.add('hidden');
@@ -1002,6 +1007,10 @@ Object.assign(DesignEditor.prototype, {
         if (floatingBar) floatingBar.classList.add('hidden');
         if (bottomBar) bottomBar.classList.add('hidden');
         toolbar.classList.add('hidden');
+        if (sidebarRight) {
+            sidebarRight.classList.toggle('toolbar-visible', hasSelection);
+            sidebarRight.setAttribute('aria-hidden', String(!hasSelection));
+        }
         setHiddenState(topFontGroup, true);
         setHiddenState(desktopCommonActions, !hasSelection);
         setHiddenState(desktopSelectionToolbar, !hasSelection);

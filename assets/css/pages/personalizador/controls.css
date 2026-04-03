@@ -1061,6 +1061,56 @@ body.editor-mode-desktop #editor-floating-context-bar {
 }
 
 @media (min-width: 1024px) {
+    #editor-body-layout {
+        position: relative;
+    }
+
+    #editor-sidebar-right {
+        position: absolute !important;
+        top: 10px;
+        left: 0;
+        right: 0;
+        width: auto !important;
+        min-width: 0;
+        min-height: 0;
+        padding: 0 !important;
+        margin: 0 auto;
+        display: flex;
+        justify-content: center;
+        background: transparent !important;
+        border: 0 !important;
+        border-radius: 0 !important;
+        box-shadow: none !important;
+        z-index: 38;
+        pointer-events: none;
+        opacity: 0;
+        transform: translateY(-8px);
+        transition: opacity 180ms ease, transform 180ms ease;
+    }
+
+    #editor-sidebar-right .sidebar-shell {
+        width: min(980px, calc(100% - 24px));
+        border: 1px solid var(--iber-border) !important;
+        border-radius: 10px !important;
+        background: #ffffff !important;
+        box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1) !important;
+        pointer-events: auto;
+    }
+
+    #editor-sidebar-right .drawer-grip {
+        display: none !important;
+    }
+
+    #editor-sidebar-right.toolbar-visible {
+        opacity: 1;
+        transform: translateY(0);
+        pointer-events: auto;
+    }
+
+    #editor-sidebar-right:not(.toolbar-visible) .sidebar-shell {
+        visibility: hidden;
+    }
+
     #properties-panel {
         padding: 8px 12px !important;
         gap: 0 !important;
