@@ -1205,6 +1205,12 @@ body.is-camera-panning #canvas-stage {
 }
 
 @media (max-width: 1023px) {
+    .editor-mobile-tabs {
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        margin-top: auto;
+    }
+
     #editor-bottom-context-bar {
         display: none !important;
         visibility: hidden !important;

@@ -126,6 +126,11 @@
                 max-width: 100vw;
             }
 
+            .editor-main {
+                display: grid !important;
+                grid-template-rows: minmax(0, 1fr) auto;
+            }
+
             #canvas-stage {
                 flex: 1 1 100%;
                 display: flex;
@@ -139,6 +144,12 @@
                 border: none;
                 box-shadow: none;
                 max-width: 100%;
+            }
+
+            #canvas-stage {
+                min-height: 0 !important;
+                height: auto !important;
+                flex: 1 1 auto !important;
             }
 
             #add-to-cart-btn {
@@ -502,6 +513,12 @@
                 width: 100%;
                 max-width: 100%;
                 box-sizing: border-box;
+            }
+
+            .editor-mobile-tabs {
+                display: grid !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+                z-index: var(--z-mobile-tabs);
             }
 
             /* Compact Mobile Panels */
