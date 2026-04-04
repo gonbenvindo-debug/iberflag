@@ -862,9 +862,14 @@ Object.assign(DesignEditor.prototype, {
         const desktopOpacityRange = document.getElementById('desktop-opacity-range');
         const topOpacityRange = document.getElementById('top-opacity-range');
         const desktopTextColor = document.getElementById('desktop-text-color');
+        const desktopTextEyedropper = document.getElementById('desktop-text-eyedropper');
         const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
+        const desktopShapeFillEyedropper = document.getElementById('desktop-shape-fill-eyedropper');
         const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
+        const desktopShapeStrokeEyedropper = document.getElementById('desktop-shape-stroke-eyedropper');
         const topShapeFillColor = document.getElementById('top-shape-fill-color');
+        const topShapeFillEyedropper = document.getElementById('top-shape-fill-eyedropper');
+        const supportsEyeDropper = typeof window !== 'undefined' && 'EyeDropper' in window;
         if (quickTextContent) quickTextContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (quickFontSelect) quickFontSelect.addEventListener('change', (e) => this.selectQuickFontFamily(e.target.value));
         if (quickFontBoldBtn) quickFontBoldBtn.addEventListener('click', () => this.toggleTextBold());
@@ -893,6 +898,42 @@ Object.assign(DesignEditor.prototype, {
         if (desktopShapeFillColor) desktopShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
         if (desktopShapeStrokeColor) desktopShapeStrokeColor.addEventListener('input', (e) => this.updateShapeStroke(e.target.value));
         if (topShapeFillColor) topShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
+
+        const bindEyeDropper = (button, input, onPick) => {
+            if (!button || !input) return;
+            if (!supportsEyeDropper) {
+                button.disabled = true;
+                button.classList.add('is-disabled');
+                button.setAttribute('title', 'Pipeta nao suportada neste browser');
+                return;
+            }
+
+            button.addEventListener('click', async (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                try {
+                    const eyeDropper = new window.EyeDropper();
+                    const result = await eyeDropper.open();
+                    const picked = this.sanitizeColorValue?.(result?.sRGBHex, input.value || '#000000') || input.value || '#000000';
+                    input.value = picked;
+                    if (typeof onPick === 'function') {
+                        onPick(picked);
+                    } else {
+                        input.dispatchEvent(new Event('input', { bubbles: true }));
+                    }
+                } catch (error) {
+                    if (error?.name !== 'AbortError') {
+                        console.warn('EyeDropper falhou:', error);
+                        showToast?.('Nao foi possivel capturar cor com a pipeta', 'error');
+                    }
+                }
+            });
+        };
+
+        bindEyeDropper(desktopTextEyedropper, desktopTextColor, (color) => this.updateTextColor(color));
+        bindEyeDropper(desktopShapeFillEyedropper, desktopShapeFillColor, (color) => this.updateShapeFill(color));
+        bindEyeDropper(desktopShapeStrokeEyedropper, desktopShapeStrokeColor, (color) => this.updateShapeStroke(color));
+        bindEyeDropper(topShapeFillEyedropper, topShapeFillColor, (color) => this.updateShapeFill(color));
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {

@@ -15,7 +15,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260404a">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260404a">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260404a">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260404b">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -178,9 +178,14 @@
                         </button>
                     </div>
                     <div id="top-shape-group" class="editor-floating-text-group hidden" aria-label="Opcoes da forma">
-                        <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
-                            <input id="top-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
-                        </label>
+                        <div class="desktop-inline-color-control">
+                            <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
+                                <input id="top-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
+                            </label>
+                            <button id="top-shape-fill-eyedropper" type="button" class="color-eyedropper-btn" aria-label="Pipeta de preenchimento" title="Pipeta de cor">
+                                <i data-lucide="pipette" class="w-3.5 h-3.5"></i>
+                            </button>
+                        </div>
                     </div>
                     <div id="top-image-group" class="editor-floating-text-group hidden" aria-label="Opacidade da imagem">
                         <input id="top-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
@@ -331,17 +336,32 @@
                                 <button id="desktop-font-caps-btn" type="button" class="desktop-inline-font-btn" aria-label="Caps Lock">
                                     <span class="quick-font-letter">Aa</span>
                                 </button>
-                                <label class="desktop-inline-color-wrap" title="Cor do texto" aria-label="Cor do texto">
-                                    <input id="desktop-text-color" type="color" class="desktop-inline-color" value="#000000">
-                                </label>
+                                <div class="desktop-inline-color-control">
+                                    <label class="desktop-inline-color-wrap" title="Cor do texto" aria-label="Cor do texto">
+                                        <input id="desktop-text-color" type="color" class="desktop-inline-color" value="#000000">
+                                    </label>
+                                    <button id="desktop-text-eyedropper" type="button" class="color-eyedropper-btn" aria-label="Pipeta de cor do texto" title="Pipeta de cor">
+                                        <i data-lucide="pipette" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div id="desktop-shape-group" class="desktop-context-group hidden">
-                                <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
-                                    <input id="desktop-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
-                                </label>
-                                <label class="desktop-inline-color-wrap" title="Contorno" aria-label="Contorno">
-                                    <input id="desktop-shape-stroke-color" type="color" class="desktop-inline-color" value="#000000">
-                                </label>
+                                <div class="desktop-inline-color-control">
+                                    <label class="desktop-inline-color-wrap" title="Preenchimento" aria-label="Preenchimento">
+                                        <input id="desktop-shape-fill-color" type="color" class="desktop-inline-color" value="#3b82f6">
+                                    </label>
+                                    <button id="desktop-shape-fill-eyedropper" type="button" class="color-eyedropper-btn" aria-label="Pipeta de preenchimento" title="Pipeta de cor">
+                                        <i data-lucide="pipette" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
+                                <div class="desktop-inline-color-control">
+                                    <label class="desktop-inline-color-wrap" title="Contorno" aria-label="Contorno">
+                                        <input id="desktop-shape-stroke-color" type="color" class="desktop-inline-color" value="#000000">
+                                    </label>
+                                    <button id="desktop-shape-stroke-eyedropper" type="button" class="color-eyedropper-btn" aria-label="Pipeta de contorno" title="Pipeta de cor">
+                                        <i data-lucide="pipette" class="w-3.5 h-3.5"></i>
+                                    </button>
+                                </div>
                             </div>
                             <div id="desktop-image-group" class="desktop-context-group hidden">
                                 <input id="desktop-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
@@ -613,7 +633,7 @@
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260404a" defer></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260404d" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260404e" defer></script>
     <script src="/assets/js/pages/personalizador/data/upload.js?v=20260404a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260404a" defer></script>
 <script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260404c" defer></script>
