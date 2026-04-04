@@ -1,5 +1,7 @@
 begin;
 
+drop function if exists public.checkout_upsert_customer(text, text, text, text, text, text, text, text);
+
 create or replace function public.checkout_upsert_customer(
     p_nome text,
     p_email text,
@@ -71,6 +73,8 @@ end;
 $$;
 
 grant execute on function public.checkout_upsert_customer(text, text, text, text, text, text, text, text) to anon, authenticated;
+
+drop function if exists public.get_order_tracking(text);
 
 create or replace function public.get_order_tracking(p_code text)
 returns jsonb
