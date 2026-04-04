@@ -214,12 +214,15 @@ body.app-page {
 }
 
 .layer-item {
+    margin: 0 !important;
+    padding: 0.55rem 0.62rem !important;
     border: 1px solid var(--iber-border) !important;
     border-left: 2px solid transparent !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
     box-shadow: none !important;
+    cursor: pointer;
 }
 
 .layer-item:hover {
@@ -227,9 +230,86 @@ body.app-page {
     background: #fff !important;
 }
 
+.layer-item.is-selected,
 .layer-item.bg-blue-50 {
     background: var(--iber-accent-soft) !important;
     border-left-color: var(--iber-accent) !important;
+}
+
+.layer-item.is-drag-over {
+    border-color: var(--iber-accent) !important;
+    background: var(--iber-accent-soft) !important;
+}
+
+.layer-item-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.45rem;
+    width: 100%;
+    min-width: 0;
+}
+
+.layer-item-main {
+    flex: 1 1 auto;
+    min-width: 0;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.layer-item-icon {
+    width: 0.9rem;
+    height: 0.9rem;
+    flex: 0 0 auto;
+    color: #1f232b;
+}
+
+.layer-item-label {
+    flex: 1 1 auto;
+    min-width: 0;
+    font-size: 0.72rem;
+    line-height: 1.2;
+    font-weight: 700;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.layer-item-actions {
+    flex: 0 0 auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.08rem;
+}
+
+.layer-item-action {
+    width: 1.28rem;
+    height: 1.28rem;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;
+    border: 0;
+    border-radius: 6px;
+    background: transparent;
+    color: #1f232b;
+    transition: background-color 0.15s ease, color 0.15s ease, opacity 0.15s ease;
+}
+
+.layer-item-action:hover:not(:disabled) {
+    background: rgba(0, 0, 0, 0.06);
+}
+
+.layer-item-action:disabled {
+    opacity: 0.35;
+    cursor: not-allowed;
+}
+
+.layer-item-action-icon {
+    width: 0.78rem;
+    height: 0.78rem;
 }
 
 .action-btn {

@@ -1186,21 +1186,21 @@ Object.assign(DesignEditor.prototype, {
         };
         
         layersList.innerHTML = this.elements.map((el, index) => `
-            <div class="layer-item p-3 border rounded-lg mb-2 hover:bg-gray-50 cursor-pointer ${selectedId === String(el.id) ? 'bg-blue-50 border-blue-600' : ''}"
+            <div class="layer-item ${selectedId === String(el.id) ? 'is-selected' : ''}"
                  data-layer-index="${index}"
                  data-layer-id="${String(el.id)}"
                  draggable="true">
-                <div class="flex items-center justify-between">
-                    <div class="flex items-center gap-2">
-                        <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="w-4 h-4"></i>
-                        <span class="text-sm font-semibold">${getLayerLabel(el)}</span>
+                <div class="layer-item-row">
+                    <div class="layer-item-main">
+                        <i data-lucide="${el.type === 'text' ? 'type' : el.type === 'image' ? (el.imageKind === 'qr' ? 'qr-code' : 'image') : 'square'}" class="layer-item-icon"></i>
+                        <span class="layer-item-label">${getLayerLabel(el)}</span>
                     </div>
-                    <div class="flex gap-1">
-                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === 0 ? 'disabled' : ''}>
-                            <i data-lucide="arrow-up" class="w-3 h-3"></i>
+                    <div class="layer-item-actions">
+                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="layer-item-action" ${index === 0 ? 'disabled' : ''}>
+                            <i data-lucide="arrow-up" class="layer-item-action-icon"></i>
                         </button>
-                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="p-1 hover:bg-gray-200 rounded" ${index === this.elements.length - 1 ? 'disabled' : ''}>
-                            <i data-lucide="arrow-down" class="w-3 h-3"></i>
+                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="layer-item-action" ${index === this.elements.length - 1 ? 'disabled' : ''}>
+                            <i data-lucide="arrow-down" class="layer-item-action-icon"></i>
                         </button>
                     </div>
                 </div>
@@ -1230,16 +1230,16 @@ Object.assign(DesignEditor.prototype, {
                 if (event.dataTransfer) {
                     event.dataTransfer.dropEffect = 'move';
                 }
-                item.classList.add('border-blue-400', 'bg-blue-50');
+                item.classList.add('is-drag-over');
             });
 
             item.addEventListener('dragleave', () => {
-                item.classList.remove('border-blue-400', 'bg-blue-50');
+                item.classList.remove('is-drag-over');
             });
 
             item.addEventListener('drop', (event) => {
                 event.preventDefault();
-                item.classList.remove('border-blue-400', 'bg-blue-50');
+                item.classList.remove('is-drag-over');
 
                 const targetIndex = Number(item.dataset.layerIndex);
                 const fromIndex = Number.isInteger(this.layerDragIndex)
@@ -1256,7 +1256,7 @@ Object.assign(DesignEditor.prototype, {
 
             item.addEventListener('dragend', () => {
                 this.layerDragIndex = null;
-                item.classList.remove('opacity-60', 'border-blue-400', 'bg-blue-50');
+                item.classList.remove('opacity-60', 'is-drag-over');
             });
         });
 
