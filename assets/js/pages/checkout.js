@@ -13,6 +13,75 @@ const remainingEl = document.getElementById('remaining');
 const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
 const termsCheckbox = document.getElementById('terms-checkbox');
+const checkoutFeedback = document.getElementById('checkout-feedback');
+
+const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
+
+function isSupabaseReady() {
+    return Boolean(supabaseClient && typeof supabaseClient.from === 'function' && typeof supabaseClient.rpc === 'function');
+}
+
+function setCheckoutFeedback(message, type = 'error') {
+    if (!checkoutFeedback) return;
+
+    const palette = {
+        error: 'border-red-200 bg-red-50 text-red-700',
+        success: 'border-emerald-200 bg-emerald-50 text-emerald-700',
+        info: 'border-slate-200 bg-slate-50 text-slate-700'
+    };
+
+    checkoutFeedback.className = `rounded-xl border px-4 py-3 text-sm font-medium ${palette[type] || palette.error}`;
+    checkoutFeedback.textContent = message;
+    checkoutFeedback.classList.remove('hidden');
+}
+
+function clearCheckoutFeedback() {
+    if (!checkoutFeedback) return;
+    checkoutFeedback.classList.add('hidden');
+    checkoutFeedback.textContent = '';
+}
+
+function setPlaceOrderLoading(isLoading) {
+    if (!placeOrderBtn) return;
+    placeOrderBtn.disabled = isLoading;
+    placeOrderBtn.innerHTML = isLoading
+        ? '<div class="spinner mx-auto"></div>'
+        : PLACE_ORDER_DEFAULT_LABEL;
+
+    if (!isLoading && typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function getCheckoutErrorMessage(error) {
+    const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+
+    if (!isSupabaseReady()) {
+        return 'Ligacao ao backend indisponivel. Verifique a configuracao do Supabase.';
+    }
+
+    if (error?.code === 'MISSING_PRODUCT_MAPPING') {
+        return 'Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.';
+    }
+
+    if (error?.code === '23503') {
+        return 'Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.';
+    }
+
+    if (rawMessage.includes('checkout_upsert_customer')) {
+        return 'O contrato de checkout do Supabase nao esta ativo (`checkout_upsert_customer`).';
+    }
+
+    if (rawMessage.includes('itens_encomenda') || rawMessage.includes('encomendas') || rawMessage.includes('clientes')) {
+        return 'A estrutura da base de dados do checkout nao corresponde ao esperado. Reveja tabelas, colunas e permissoes.';
+    }
+
+    if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
+        return 'O checkout foi bloqueado por permissoes do Supabase. Ajuste RLS ou use os RPCs previstos.';
+    }
+
+    return 'Erro ao processar encomenda. Por favor, tente novamente.';
+}
 
 function buildOrderItemSnapshots(items) {
     return items.map((item) => ({
@@ -260,6 +329,8 @@ if (placeOrderBtn) {
         if (window.cartHydrationPromise) {
             await window.cartHydrationPromise;
         }
+
+        clearCheckoutFeedback();
         
         // Validate form
         if (!checkoutForm.checkValidity()) {
@@ -275,6 +346,11 @@ if (placeOrderBtn) {
 
         // Validate customization
         if (!validateCustomization()) {
+            return;
+        }
+
+        if (!isSupabaseReady()) {
+            setCheckoutFeedback('Ligacao ao backend indisponivel. Verifique a configuracao do Supabase antes de finalizar a encomenda.');
             return;
         }
 
@@ -300,8 +376,7 @@ if (placeOrderBtn) {
         const total = subtotal + shipping;
 
         // Disable button
-        placeOrderBtn.disabled = true;
-        placeOrderBtn.innerHTML = '<div class="spinner mx-auto"></div>';
+        setPlaceOrderLoading(true);
 
         try {
             // 1. Create or update customer via secure RPC (SECURITY DEFINER – bypasses RLS)
@@ -364,6 +439,7 @@ if (placeOrderBtn) {
             await insertOrderItemsWithFallback(order.id, cart);
 
             // Success!
+            setCheckoutFeedback('Encomenda criada com sucesso. Vamos abrir o tracking desta encomenda.', 'success');
             showToast('Encomenda criada com sucesso!', 'success');
             
             // Clear cart
@@ -383,22 +459,12 @@ if (placeOrderBtn) {
 
         } catch (error) {
             console.error('Erro ao criar encomenda:', error);
-
-            if (error?.code === 'MISSING_PRODUCT_MAPPING') {
-                showToast('Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.', 'error');
-            } else if (error?.code === '23503') {
-                showToast('Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.', 'error');
-            } else {
-                showToast('Erro ao processar encomenda. Por favor, tente novamente.', 'error');
-            }
+            const errorMessage = getCheckoutErrorMessage(error);
+            setCheckoutFeedback(errorMessage, 'error');
+            showToast(errorMessage, 'error');
             
             // Re-enable button
-            placeOrderBtn.disabled = false;
-            placeOrderBtn.innerHTML = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
-            
-            if (typeof lucide !== 'undefined') {
-                lucide.createIcons();
-            }
+            setPlaceOrderLoading(false);
         }
     });
 }

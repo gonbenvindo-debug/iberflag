@@ -7,6 +7,78 @@ let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
 
+function isAdminSupabaseReady() {
+    return Boolean(
+        window.supabase &&
+        typeof window.supabase.createClient === 'function' &&
+        window.APP_CONFIG?.SUPABASE_URL &&
+        window.APP_CONFIG?.SUPABASE_ANON_KEY &&
+        supabaseClient &&
+        typeof supabaseClient.from === 'function' &&
+        supabaseClient.auth &&
+        typeof supabaseClient.auth.getSession === 'function'
+    );
+}
+
+function setAdminOverlayStatus(message = '', tone = 'info') {
+    const statusEl = document.getElementById('admin-login-status');
+    if (!statusEl) return;
+
+    if (!message) {
+        statusEl.textContent = '';
+        statusEl.className = 'hidden text-sm rounded-xl px-4 py-3 border';
+        return;
+    }
+
+    const tones = {
+        info: 'text-slate-700 bg-slate-50 border-slate-200',
+        warning: 'text-amber-800 bg-amber-50 border-amber-200',
+        error: 'text-red-700 bg-red-50 border-red-200',
+        success: 'text-emerald-700 bg-emerald-50 border-emerald-200'
+    };
+
+    statusEl.className = `text-sm rounded-xl px-4 py-3 border ${tones[tone] || tones.info}`;
+    statusEl.textContent = message;
+}
+
+function setAdminLoginEnabled(enabled) {
+    const passwordInput = document.getElementById('admin-password');
+    const button = document.getElementById('admin-login-btn');
+    if (passwordInput) passwordInput.disabled = !enabled;
+    if (button) button.disabled = !enabled;
+}
+
+function getAdminSupabaseBootstrapError() {
+    if (!window.supabase || typeof window.supabase.createClient !== 'function') {
+        return 'SDK do Supabase nao foi carregado.';
+    }
+
+    if (!window.APP_CONFIG?.SUPABASE_URL || !window.APP_CONFIG?.SUPABASE_ANON_KEY) {
+        return 'Configuracao do Supabase incompleta em APP_CONFIG.';
+    }
+
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+        return 'Nao foi possivel inicializar o cliente Supabase.';
+    }
+
+    return '';
+}
+
+function ensureAdminSupabaseReady() {
+    const bootstrapError = getAdminSupabaseBootstrapError();
+    if (!bootstrapError) {
+        setAdminOverlayStatus('', 'info');
+        setAdminLoginEnabled(true);
+        return true;
+    }
+
+    adminWriteSessionLastError = bootstrapError;
+    setAdminOverlayStatus(`Erro tecnico do admin: ${bootstrapError}`, 'error');
+    setAdminLoginEnabled(false);
+    showLoginOverlay();
+    return false;
+}
+
 function getSessionEmail(session) {
     return (session?.user?.email || '').trim().toLowerCase();
 }
@@ -21,6 +93,10 @@ function getRemainingLockSeconds() {
 
 async function ensureAdminWriteSession() {
     adminWriteSessionLastError = '';
+
+    if (!ensureAdminSupabaseReady()) {
+        return false;
+    }
 
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
@@ -58,10 +134,15 @@ function hideLoginOverlay() {
 }
 
 async function checkAdminAuth() {
+    if (!ensureAdminSupabaseReady()) {
+        return;
+    }
+
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
         if (session && isAllowedAdminSession(session)) {
             hideLoginOverlay();
+            setAdminOverlayStatus('', 'info');
             loadDashboard();
             return;
         }
@@ -82,6 +163,9 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loginForm) {
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
+            if (!ensureAdminSupabaseReady()) {
+                return;
+            }
             const password = document.getElementById('admin-password').value;
             const btn = document.getElementById('admin-login-btn');
             const btnText = document.getElementById('admin-login-btn-text');
@@ -140,6 +224,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const logoutBtn = document.getElementById('logout-btn');
     if (logoutBtn) {
         logoutBtn.addEventListener('click', async () => {
+            if (!ensureAdminSupabaseReady()) {
+                return;
+            }
             await supabaseClient.auth.signOut();
             showLoginOverlay();
         });
@@ -446,6 +533,10 @@ async function saveProductBaseAssignments(productId) {
 
 // ===== DASHBOARD =====
 async function loadDashboard() {
+    if (!await ensureAdminWriteSession()) {
+        return;
+    }
+
     try {
         // Load stats
         const [produtos, encomendas, clientes, contactos] = await Promise.all([
@@ -508,6 +599,7 @@ async function loadDashboard() {
 
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
+        setAdminOverlayStatus(`Falha ao carregar dados do admin: ${error?.message || 'erro desconhecido'}`, 'error');
         showToast('Erro ao carregar dashboard', 'error');
     }
 }

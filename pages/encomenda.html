@@ -121,6 +121,17 @@
             </a>
         </div>
 
+        <div id="order-error" class="admin-card p-6 text-center text-gray-500 hidden">
+            <i data-lucide="triangle-alert" class="w-12 h-12 mx-auto mb-3 text-amber-500"></i>
+            <h2 class="text-xl font-bold text-gray-800">Erro ao carregar a encomenda</h2>
+            <p id="order-error-message" class="mt-2">Ocorreu um problema tecnico ao consultar esta encomenda.</p>
+            <a href="/encomendas.html"
+                class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
+                <i data-lucide="search" class="w-4 h-4"></i>
+                Voltar ao tracking
+            </a>
+        </div>
+
         <div id="order-detail" class="hidden space-y-4">
             <section class="admin-card p-4 md:p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
@@ -214,7 +225,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260319c"></script>
-    <script src="/assets/js/pages/encomenda.js?v=20260319d"></script>
+    <script src="/assets/js/pages/encomenda.js?v=20260404a"></script>
     <script>lucide.createIcons();</script>
 </body>
 

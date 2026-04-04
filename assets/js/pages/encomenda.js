@@ -1,5 +1,7 @@
 ﻿const orderLoading = document.getElementById('order-loading');
 const orderNotFound = document.getElementById('order-not-found');
+const orderError = document.getElementById('order-error');
+const orderErrorMessage = document.getElementById('order-error-message');
 const orderDetail = document.getElementById('order-detail');
 const itemPreviewModal = document.getElementById('item-preview-modal');
 const itemPreviewCloseBtn = document.getElementById('item-preview-close');
@@ -506,6 +508,10 @@ function closeItemPreview() {
 }
 
 async function loadOrderByCode(orderCode) {
+    if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
+        throw new Error('SUPABASE_NOT_READY');
+    }
+
     // Uses SECURITY DEFINER RPC – anon cannot query encomendas/itens_encomenda directly (RLS)
     const { data, error } = await supabaseClient
         .rpc('get_order_tracking', { p_code: orderCode });
@@ -527,11 +533,44 @@ async function loadOrderByCode(orderCode) {
 function showNotFound() {
     orderLoading.classList.add('hidden');
     orderDetail.classList.add('hidden');
+    orderError?.classList.add('hidden');
     orderNotFound.classList.remove('hidden');
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+}
+
+function showOrderError(message) {
+    orderLoading.classList.add('hidden');
+    orderDetail.classList.add('hidden');
+    orderNotFound.classList.add('hidden');
+    if (orderErrorMessage) {
+        orderErrorMessage.textContent = message;
+    }
+    orderError?.classList.remove('hidden');
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function getOrderLoadErrorMessage(error) {
+    const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+
+    if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
+        return 'Ligacao ao backend indisponivel. Verifique a configuracao do Supabase.';
+    }
+
+    if (rawMessage.includes('get_order_tracking')) {
+        return 'O contrato publico de tracking do Supabase nao esta ativo (`get_order_tracking`).';
+    }
+
+    if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
+        return 'O tracking publico foi bloqueado por permissoes do Supabase.';
+    }
+
+    return 'Ocorreu um problema tecnico ao consultar esta encomenda. Tente novamente dentro de momentos.';
 }
 
 async function initOrderPage() {
@@ -566,6 +605,7 @@ async function initOrderPage() {
 
         orderLoading.classList.add('hidden');
         orderNotFound.classList.add('hidden');
+        orderError?.classList.add('hidden');
         orderDetail.classList.remove('hidden');
 
         if (typeof lucide !== 'undefined') {
@@ -573,8 +613,9 @@ async function initOrderPage() {
         }
     } catch (error) {
         console.error('Erro ao carregar encomenda:', error);
-        showToast('Erro ao carregar a encomenda. Tente novamente.', 'error');
-        showNotFound();
+        const message = getOrderLoadErrorMessage(error);
+        showToast(message, 'error');
+        showOrderError(message);
     }
 }
 
