@@ -1,7 +1,7 @@
 ﻿// ===== CHECKOUT PAGE LOGIC =====
 
-const FREE_SHIPPING_THRESHOLD = 150;
-const SHIPPING_COST = 7.50;
+const FREE_SHIPPING_THRESHOLD = 0;
+const SHIPPING_COST = 0;
 
 // ===== DOM ELEMENTS =====
 const checkoutForm = document.getElementById('checkout-form');
@@ -217,19 +217,19 @@ async function loadCart() {
 
     // Calculate totals
     const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-    const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+    const shipping = SHIPPING_COST;
     const total = subtotal + shipping;
 
     subtotalEl.textContent = `${subtotal.toFixed(2)}€`;
-    shippingEl.textContent = shipping === 0 ? 'Grátis' : `${shipping.toFixed(2)}€`;
+    shippingEl.textContent = 'Gratis';
     totalEl.textContent = `${total.toFixed(2)}€`;
 
     // Free shipping message
-    if (subtotal >= FREE_SHIPPING_THRESHOLD) {
-        freeShippingMsg.innerHTML = '<p class="font-semibold">Envio grátis aplicado! 🎉</p>';
-    } else {
-        const remaining = FREE_SHIPPING_THRESHOLD - subtotal;
-        remainingEl.textContent = `${remaining.toFixed(2)}€`;
+    if (freeShippingMsg) {
+        freeShippingMsg.innerHTML = '<p class="font-semibold">Envio gratis aplicado na Peninsula Iberica.</p>';
+    }
+    if (remainingEl) {
+        remainingEl.textContent = '0.00€';
     }
 
     if (typeof lucide !== 'undefined') {
@@ -280,7 +280,7 @@ if (placeOrderBtn) {
 
         // Get form data
         const formData = new FormData(checkoutForm);
-        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'cartao_online';
+        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'card';
         const customerData = {
             nome: formData.get('nome'),
             email: formData.get('email'),
@@ -296,7 +296,7 @@ if (placeOrderBtn) {
 
         // Calculate totals
         const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-        const shipping = subtotal >= FREE_SHIPPING_THRESHOLD ? 0 : SHIPPING_COST;
+        const shipping = SHIPPING_COST;
         const total = subtotal + shipping;
 
         // Disable button

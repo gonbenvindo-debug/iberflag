@@ -6,27 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Envios e Entregas - IberFlag</title>
     <meta name="description"
-        content="Consulta os prazos, custos e condicoes de envio e entrega das encomendas IberFlag.">
+        content="Politica oficial de envios IberFlag: envio gratis, prazo total 24-48h e cobertura na Peninsula Iberica.">
     <link rel="canonical" href="https://iberflag.vercel.app/envios.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Envios e Entregas - IberFlag">
     <meta property="og:description"
-        content="Informacao de logistica, prazos de producao e entregas para Portugal e Espanha.">
+        content="Informacao de prazos, tracking e cobertura de entregas para Portugal e Espanha.">
     <meta property="og:url" content="https://iberflag.vercel.app/envios.html">
     <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
- <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
- <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+    <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
 
 <body class="app-page bg-gray-50">
-    <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -34,9 +33,9 @@
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
-                    <a href="/" class="nav-link">Início</a>
+                    <a href="/" class="nav-link">Inicio</a>
                     <a href="/produtos.html" class="nav-link">Produtos</a>
-                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nos</a>
                     <a href="/faq.html" class="nav-link">FAQ</a>
                     <a href="/contacto.html" class="nav-link">Contacto</a>
                     <button id="cart-btn"
@@ -47,156 +46,91 @@
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
-                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700" aria-label="Abrir menu">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
     </nav>
 
-    <!-- Page Header -->
     <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-4">Envios e Entregas</h1>
-            <p class="text-xl text-blue-100">Informacao sobre prazos e custos de envio para Portugal e Espanha</p>
+            <p class="text-xl text-blue-100">Politica oficial para a Peninsula Iberica.</p>
         </div>
     </section>
 
-    <!-- Content -->
     <section class="py-16">
-        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <!-- Shipping Options -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-12">
-                <div class="bg-white rounded-xl p-6 border-2 border-blue-600">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="bg-blue-100 p-3 rounded-lg">
-                            <i data-lucide="truck" class="w-8 h-8 text-blue-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold">Envio Standard</h3>
-                    </div>
-                    <p class="text-gray-600 mb-4">Entrega em 1-2 dias úteis após produção</p>
-                    <div class="space-y-2 text-sm">
-                        <p><strong>Custo:</strong> 7.50€</p>
-                        <p><strong>Grátis:</strong> Encomendas acima de 150€</p>
-                        <p><strong>Cobertura:</strong> Portugal Continental e Espanha Peninsular</p>
-                    </div>
-                </div>
-
-                <div class="bg-white rounded-xl p-6 border border-gray-200">
-                    <div class="flex items-center gap-3 mb-4">
-                        <div class="bg-orange-100 p-3 rounded-lg">
-                            <i data-lucide="zap" class="w-8 h-8 text-orange-600"></i>
-                        </div>
-                        <h3 class="text-xl font-bold">Envio Express</h3>
-                    </div>
-                    <p class="text-gray-600 mb-4">Produção e entrega no mesmo dia</p>
-                    <div class="space-y-2 text-sm">
-                        <p><strong>Custo:</strong> Sob consulta</p>
-                        <p><strong>Disponível:</strong> Lisboa e Porto</p>
-                        <p><strong>Horário:</strong> Pedidos até 12h</p>
-                    </div>
-                </div>
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
+            <div class="bg-white rounded-xl p-8 border border-gray-200">
+                <h2 class="text-2xl font-bold mb-4">Resumo rapido</h2>
+                <ul class="space-y-3 text-gray-700">
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                        <span>Cobertura: apenas Peninsula Iberica (Portugal continental e Espanha peninsular).</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                        <span>Prazo total standard: 24-48h apos pagamento confirmado.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                        <span>Envio sempre gratis para a area de cobertura.</span>
+                    </li>
+                    <li class="flex items-start gap-2">
+                        <i data-lucide="check" class="w-5 h-5 text-blue-600 mt-0.5"></i>
+                        <span>Entregas de segunda a sexta com tracking enviado por email.</span>
+                    </li>
+                </ul>
             </div>
 
-            <!-- Production Times -->
-            <div class="bg-white rounded-xl p-8 border border-gray-200 mb-12">
-                <h2 class="text-2xl font-bold mb-6">Prazos de Produção</h2>
-                <div class="space-y-4">
-                    <div class="flex items-start gap-4">
-                        <i data-lucide="check-circle" class="w-6 h-6 text-green-600 flex-shrink-0 mt-1"></i>
-                        <div>
-                            <h3 class="font-bold mb-1">Produção Standard</h3>
-                            <p class="text-gray-600">12-24 horas após confirmação do design personalizado</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <i data-lucide="zap" class="w-6 h-6 text-orange-600 flex-shrink-0 mt-1"></i>
-                        <div>
-                            <h3 class="font-bold mb-1">Produção Rápida</h3>
-                            <p class="text-gray-600">12-24h para todos os produtos personalizados</p>
-                        </div>
-                    </div>
-                    <div class="flex items-start gap-4">
-                        <i data-lucide="package" class="w-6 h-6 text-blue-600 flex-shrink-0 mt-1"></i>
-                        <div>
-                            <h3 class="font-bold mb-1">Grandes Quantidades</h3>
-                            <p class="text-gray-600">Prazos personalizados - contacte-nos para orçamento</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- Shipping Zones -->
-            <div class="bg-white rounded-xl p-8 border border-gray-200 mb-12">
-                <h2 class="text-2xl font-bold mb-6">Zonas de Envio</h2>
+            <div class="bg-white rounded-xl p-8 border border-gray-200">
+                <h2 class="text-2xl font-bold mb-6">Detalhe operacional</h2>
                 <div class="table-container">
                     <table>
                         <thead>
                             <tr>
                                 <th>Zona</th>
-                                <th>Prazo</th>
+                                <th>Prazo total</th>
                                 <th>Custo</th>
+                                <th>Janela de entrega</th>
                             </tr>
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Portugal Continental e Espanha Peninsular</td>
-                                <td>1-2 dias úteis</td>
-                                <td>7.50€ (Grátis +150€)</td>
-                            </tr>
-                            <tr>
-                                <td>Açores e Madeira</td>
-                                <td>3-5 dias úteis</td>
-                                <td>Sob consulta</td>
-                            </tr>
-                            <tr>
-                                <td>União Europeia</td>
-                                <td>3-7 dias úteis</td>
-                                <td>Sob consulta</td>
+                                <td>Peninsula Iberica</td>
+                                <td>24-48h apos pagamento</td>
+                                <td>Gratis</td>
+                                <td>Segunda a sexta</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <!-- Important Info -->
             <div class="bg-blue-50 rounded-xl p-8 border border-blue-200">
                 <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
                     <i data-lucide="info" class="w-6 h-6 text-blue-600"></i>
-                    Informações Importantes
+                    Informacoes importantes
                 </h2>
                 <ul class="space-y-3 text-gray-700">
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Os prazos de entrega começam a contar após aprovação do design e confirmação de
-                            pagamento</span>
+                        <span>O prazo de 24-48h conta apos confirmacao de pagamento e validacao do design.</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Receberá um email com o número de tracking assim que a encomenda for expedida</span>
+                        <span>Recebes email com tracking assim que a encomenda entra em expedicao.</span>
                     </li>
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>As entregas são realizadas de segunda a sexta-feira, das 9h às 18h</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Para entregas urgentes ao fim de semana, contacte-nos para verificar
-                            disponibilidade</span>
-                    </li>
-                    <li class="flex items-start gap-2">
-                        <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                        <span>Todos os produtos são cuidadosamente embalados para garantir que chegam em perfeitas
-                            condições</span>
+                        <span>Nao fazemos entregas fora da Peninsula Iberica neste momento.</span>
                     </li>
                 </ul>
             </div>
-
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-gray-900 text-gray-400 py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -206,49 +140,26 @@
                             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
-                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
-                    <div class="flex gap-4">
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                            </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="20" height="20" x="2" y="2" rx="5" />
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                            </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                                <rect width="4" height="12" x="2" y="9" />
-                                <circle cx="4" cy="4" r="2" />
-                            </svg></a>
-                    </div>
+                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho na
+                        Peninsula Iberica.</p>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
                     <ul class="space-y-3">
-                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
                         <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nos</a></li>
                         <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
                         <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <h4 class="text-white font-bold mb-4">Informacoes</h4>
                     <ul class="space-y-3">
                         <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
-                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a>
-                        </li>
-                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Politica de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devolucoes</a></li>
                     </ul>
                 </div>
             </div>
@@ -263,36 +174,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Cart Sidebar removido
-    <div id="cart-sidebar"
-        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-6 border-b">
-                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
-                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
-                <div class="text-center text-gray-500 py-12">
-                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                    <p>O seu carrinho está vazio</p>
-                </div>
-            </div>
-            <div class="border-t p-6">
-                <div class="flex justify-between mb-4 text-lg font-bold">
-                    <span>Total:</span>
-                    <span id="cart-total">0.00€</span>
-                </div>
-                <a href="/checkout.html"
-                    class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                    Finalizar Encomenda
-                </a>
-            </div>
-        </div>
-    </div>
-    -->
 
     <script>lucide.createIcons();</script>
 </body>

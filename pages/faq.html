@@ -6,27 +6,26 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>FAQ - Perguntas Frequentes | IberFlag</title>
     <meta name="description"
-        content="Perguntas frequentes sobre personalizacao, producao, pagamento e entrega na IberFlag.">
+        content="Perguntas frequentes sobre personalizacao, prazos, pagamentos online e entregas da IberFlag.">
     <link rel="canonical" href="https://iberflag.vercel.app/faq.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="FAQ - IberFlag">
     <meta property="og:description"
-        content="Esclarece duvidas sobre encomendas, prazos e personalizacao com a IberFlag.">
+        content="Respostas claras sobre encomendas personalizadas para a Peninsula Iberica.">
     <meta property="og:url" content="https://iberflag.vercel.app/faq.html">
     <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
- <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
- <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+    <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
 
 <body class="app-page bg-gray-50">
-    <!-- Navigation -->
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -34,9 +33,9 @@
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
-                    <a href="/" class="nav-link">Início</a>
+                    <a href="/" class="nav-link">Inicio</a>
                     <a href="/produtos.html" class="nav-link">Produtos</a>
-                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nos</a>
                     <a href="/faq.html" class="nav-link text-blue-600">FAQ</a>
                     <a href="/contacto.html" class="nav-link">Contacto</a>
                     <button id="cart-btn"
@@ -47,35 +46,31 @@
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
-                <button id="mobile-menu-btn" class="md:hidden text-gray-700">
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700" aria-label="Abrir menu">
                     <i data-lucide="menu" class="w-6 h-6"></i>
                 </button>
             </div>
         </div>
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
             <div class="px-4 py-4 space-y-3">
-                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Inicio</a>
                 <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
-                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nos</a>
                 <a href="/faq.html" class="block py-2 text-blue-600">FAQ</a>
                 <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
             </div>
         </div>
     </nav>
 
-    <!-- Page Header -->
     <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-4">Perguntas Frequentes</h1>
-            <p class="text-xl text-blue-100">Encontre respostas para as suas dúvidas</p>
+            <p class="text-xl text-blue-100">Tudo o que precisas saber antes de encomendar.</p>
         </div>
     </section>
 
-    <!-- FAQ Section -->
     <section class="py-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-
-            <!-- Search -->
             <div class="mb-12">
                 <div class="search-container">
                     <i data-lucide="search" class="search-icon"></i>
@@ -83,7 +78,6 @@
                 </div>
             </div>
 
-            <!-- Categories -->
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
                 <button class="filter-btn active" data-category="all">Todas</button>
                 <button class="filter-btn" data-category="encomendas">Encomendas</button>
@@ -91,103 +85,91 @@
                 <button class="filter-btn" data-category="pagamento">Pagamento</button>
             </div>
 
-            <!-- FAQ Items -->
             <div id="faq-container" class="space-y-4">
-
-                <!-- Encomendas -->
                 <div class="accordion-item" data-category="encomendas" id="prazos">
                     <div class="accordion-header">
-                        <span>Qual é o prazo de produção e entrega?</span>
+                        <span>Qual e o prazo de producao e entrega?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>O prazo de producao e de 12-24 horas apos confirmacao do design personalizado. A entrega em
-                            Portugal Continental e Espanha Peninsular demora entre 1-2 dias uteis apos producao. O prazo
-                            total desde a encomenda ate receber o produto e normalmente de 2-4 dias uteis.</p>
+                        <p>Na Peninsula Iberica, o prazo total standard e de 24-48h apos pagamento confirmado. A janela
+                            considera producao, expedicao e entrega em dias uteis.</p>
                     </div>
                 </div>
 
                 <div class="accordion-item" data-category="encomendas">
                     <div class="accordion-header">
-                        <span>Como posso acompanhar a minha encomenda?</span>
+                        <span>Como acompanho a encomenda?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Após o envio da sua encomenda, receberá um email com o número de tracking. Pode acompanhar o
-                            estado da encomenda através do site da transportadora ou contactando-nos diretamente.</p>
+                        <p>Assim que a encomenda e expedida, enviamos tracking por email. As entregas decorrem de segunda
+                            a sexta-feira.</p>
                     </div>
                 </div>
 
                 <div class="accordion-item" data-category="encomendas">
                     <div class="accordion-header">
-                        <span>Fazem entregas ao fim de semana?</span>
+                        <span>O envio tem custo?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>As entregas standard são realizadas de segunda a sexta-feira. Para entregas urgentes ao fim
-                            de semana, contacte-nos para verificar disponibilidade e custos adicionais.</p>
+                        <p>Nao. O envio standard e sempre gratis para encomendas na Peninsula Iberica.</p>
                     </div>
                 </div>
 
-                <!-- Produtos -->
+                <div class="accordion-item" data-category="encomendas">
+                    <div class="accordion-header">
+                        <span>Posso cancelar a encomenda?</span>
+                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
+                    </div>
+                    <div class="accordion-content">
+                        <p>Sim, antes de iniciar producao. Depois de iniciar producao, apenas tratamos pedidos em caso de
+                            defeito, erro de fabrico ou problema validado.</p>
+                    </div>
+                </div>
+
                 <div class="accordion-item" data-category="produtos" id="design">
                     <div class="accordion-header">
-                        <span>Como funciona a personalização dos produtos?</span>
+                        <span>Como funciona a personalizacao?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Todos os produtos devem ser personalizados antes da compra. Utilizamos um editor online
-                            intuitivo onde pode adicionar texto, imagens, formas e cores. Pode fazer upload do seu
-                            logotipo, adicionar informações de contacto e criar o design perfeito. Apenas o conteúdo
-                            dentro da área de impressão será impresso no produto final.</p>
+                        <p>Todos os produtos sao personalizados no editor da loja. Podes inserir texto, imagens e ajustar
+                            a composicao. O sistema imprime apenas o que estiver dentro da area valida do produto.</p>
                     </div>
                 </div>
 
                 <div class="accordion-item" data-category="produtos">
                     <div class="accordion-header">
-                        <span>Posso guardar o meu design e continuar mais tarde?</span>
+                        <span>Posso descarregar a maquete?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Sim! O nosso editor permite guardar rascunhos do seu design. Pode voltar a qualquer momento
-                            para continuar a editar antes de adicionar ao carrinho. Os rascunhos ficam guardados no seu
-                            navegador.</p>
+                        <p>Sim. Podes descarregar a maquete de personalizacao para aprovacao interna antes de fechar a
+                            compra.</p>
                     </div>
                 </div>
 
-                <div class="accordion-item" data-category="produtos">
+                <div class="accordion-item" data-category="produtos" id="servico-design-15">
                     <div class="accordion-header">
-                        <span>Os flybanners incluem estrutura e base?</span>
+                        <span>Como funciona o servico de design por 15€?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Sim! Todos os nossos flybanners incluem a estrutura em fibra de vidro e base. Pode escolher
-                            entre base com água ou base com areia, dependendo do local de utilização.</p>
+                        <p>Se preferires, a nossa equipa cria o design com base na tua descricao e nas imagens enviadas.
+                            O servico custa 15€ e inclui 1 proposta inicial + 2 revisoes.</p>
                     </div>
                 </div>
 
-                <div class="accordion-item" data-category="produtos">
-                    <div class="accordion-header">
-                        <span>Qual a qualidade de impressão?</span>
-                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                    </div>
-                    <div class="accordion-content">
-                        <p>Utilizamos impressão digital de alta resolução em todos os produtos. As cores são vibrantes e
-                            duradouras, resistentes a UV e intempéries. Os materiais são de qualidade premium,
-                            garantindo que o seu design fica perfeito e dura muito tempo.</p>
-                    </div>
-                </div>
-
-                <!-- Pagamento -->
                 <div class="accordion-item" data-category="pagamento" id="pagamento">
                     <div class="accordion-header">
-                        <span>Que métodos de pagamento aceitam?</span>
+                        <span>Quais metodos de pagamento online estao ativos?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Aceitamos pagamentos por cartão de crédito/débito através do Stripe (Visa, Mastercard,
-                            American Express). O pagamento é processado de forma segura e os seus dados estão
-                            protegidos. Em breve teremos mais opções de pagamento disponíveis.</p>
+                        <p>Checkout online via Stripe com Cartoes, MB Way, Multibanco e Bizum, pensado para clientes de
+                            Portugal e Espanha.</p>
                     </div>
                 </div>
 
@@ -197,76 +179,36 @@
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Sim, emitimos fatura com todos os dados fiscais para todas as encomendas. Basta fornecer o
-                            NIF e dados da empresa durante o processo de encomenda.</p>
+                        <p>Sim. Emitimos fatura para todas as encomendas. Podes inserir os dados fiscais no checkout.</p>
                     </div>
                 </div>
 
                 <div class="accordion-item" data-category="encomendas">
                     <div class="accordion-header">
-                        <span>Qual é o valor mínimo de encomenda?</span>
+                        <span>Qual o prazo para reportar defeitos?</span>
                         <i data-lucide="chevron-down" class="w-5 h-5"></i>
                     </div>
                     <div class="accordion-content">
-                        <p>Nao temos valor minimo de encomenda. No entanto, encomendas acima de 150€ tem envio gratis
-                            para Portugal Continental e Espanha Peninsular.</p>
+                        <p>Tens 5 dias uteis apos rececao para reportar defeito ou erro com fotos e numero de encomenda.
+                            A equipa tecnica analisa e devolve solucao.</p>
                     </div>
                 </div>
-
-                <div class="accordion-item" data-category="encomendas">
-                    <div class="accordion-header">
-                        <span>Posso cancelar ou alterar a minha encomenda?</span>
-                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                    </div>
-                    <div class="accordion-content">
-                        <p>Pode cancelar a encomenda gratuitamente antes do início da produção. Uma vez iniciada a
-                            produção (após confirmação do design personalizado), não é possível cancelar pois o produto
-                            já está a ser fabricado especificamente para si. Contacte-nos o mais rápido possível se
-                            precisar de fazer alterações.</p>
-                    </div>
-                </div>
-
-                <div class="accordion-item" data-category="produtos">
-                    <div class="accordion-header">
-                        <span>Posso ver uma pré-visualização antes de comprar?</span>
-                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                    </div>
-                    <div class="accordion-content">
-                        <p>Sim! O nosso editor mostra uma pré-visualização em tempo real do seu design. Pode ver
-                            exatamente como ficará o produto final antes de adicionar ao carrinho. Também pode exportar
-                            o design em formato SVG para guardar ou partilhar.</p>
-                    </div>
-                </div>
-
-                <div class="accordion-item" data-category="encomendas">
-                    <div class="accordion-header">
-                        <span>Fazem envios para as ilhas e estrangeiro?</span>
-                        <i data-lucide="chevron-down" class="w-5 h-5"></i>
-                    </div>
-                    <div class="accordion-content">
-                        <p>Sim, fazemos envios para Açores, Madeira e países da União Europeia. Os prazos e custos
-                            variam consoante o destino. Contacte-nos para orçamento de envio.</p>
-                    </div>
-                </div>
-
             </div>
 
-            <!-- Still have questions -->
             <div class="mt-16 bg-gradient-to-r from-blue-600 to-indigo-600 rounded-2xl p-8 text-white text-center">
-                <h2 class="text-2xl font-bold mb-4">Ainda tem dúvidas?</h2>
-                <p class="mb-6">A nossa equipa está pronta para ajudar!</p>
+                <h2 class="text-2xl font-bold mb-4">Ainda tens duvidas?</h2>
+                <p class="mb-6">A equipa comercial pode ajudar no teu caso.</p>
                 <div class="flex flex-col sm:flex-row gap-4 justify-center">
                     <a href="/contacto.html"
                         class="bg-white text-blue-600 px-6 py-3 rounded-lg font-bold hover:bg-gray-100 transition inline-flex items-center justify-center gap-2">
                         <i data-lucide="mail" class="w-5 h-5"></i>
-                        Enviar Mensagem
+                        Falar com a equipa
                     </a>
                 </div>
             </div>
         </div>
     </section>
 
-    <!-- Footer -->
     <footer class="bg-gray-900 text-gray-400 py-16">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
@@ -276,49 +218,26 @@
                             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
-                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
-                    <div class="flex gap-4">
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
-                            </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="20" height="20" x="2" y="2" rx="5" />
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
-                            </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                                <rect width="4" height="12" x="2" y="9" />
-                                <circle cx="4" cy="4" r="2" />
-                            </svg></a>
-                    </div>
+                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho na
+                        Peninsula Iberica.</p>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
+                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
                     <ul class="space-y-3">
-                        <li><a href="/" class="hover:text-white transition">Início</a></li>
+                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
                         <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nos</a></li>
                         <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
                         <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
                     </ul>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Informações</h4>
+                    <h4 class="text-white font-bold mb-4">Informacoes</h4>
                     <ul class="space-y-3">
                         <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
-                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a>
-                        </li>
-                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Politica de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devolucoes</a></li>
                     </ul>
                 </div>
             </div>
@@ -333,36 +252,6 @@
             </div>
         </div>
     </footer>
-
-    <!-- Cart Sidebar removido
-    <div id="cart-sidebar"
-        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
-        <div class="flex flex-col h-full">
-            <div class="flex items-center justify-between p-6 border-b">
-                <h3 class="text-xl font-bold">Carrinho de Compras</h3>
-                <button id="close-cart" class="text-gray-500 hover:text-gray-700">
-                    <i data-lucide="x" class="w-6 h-6"></i>
-                </button>
-            </div>
-            <div id="cart-items" class="flex-1 overflow-y-auto p-6">
-                <div class="text-center text-gray-500 py-12">
-                    <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                    <p>O seu carrinho está vazio</p>
-                </div>
-            </div>
-            <div class="border-t p-6">
-                <div class="flex justify-between mb-4 text-lg font-bold">
-                    <span>Total:</span>
-                    <span id="cart-total">0.00€</span>
-                </div>
-                <a href="/checkout.html"
-                    class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                    Finalizar Encomenda
-                </a>
-            </div>
-        </div>
-    </div>
-    -->
 
     <script src="/assets/js/pages/faq.js"></script>
     <script>lucide.createIcons();</script>

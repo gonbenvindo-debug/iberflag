@@ -6,12 +6,12 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Encomenda - IberFlag</title>
     <meta name="description"
-        content="Finalize a sua encomenda na IberFlag com validacao de dados, resumo transparente e fluxo de pagamento seguro.">
+        content="Finalize a sua encomenda IberFlag com pagamento online via Stripe e envio gratis para a Peninsula Iberica.">
     <link rel="canonical" href="https://iberflag.vercel.app/checkout.html">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Finalizar Encomenda - IberFlag">
     <meta property="og:description"
-        content="Checkout seguro para concluir a compra dos seus produtos personalizados na IberFlag.">
+        content="Checkout online seguro com cartoes, MB Way, Multibanco e Bizum.">
     <meta property="og:url" content="https://iberflag.vercel.app/checkout.html">
     <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
@@ -89,13 +89,13 @@
                 <div class="lg:col-span-2 space-y-6">
                     <div class="app-surface checkout-surface-card p-6 md:p-7">
                         <div class="mb-6">
-                            <h2 class="app-section-title">Dados de Faturacao</h2>
+                            <h2 class="app-section-title">Dados de faturacao</h2>
                             <p class="app-section-subtitle mt-1">Preencha os dados para emissao e entrega.</p>
                         </div>
                         <form id="checkout-form" class="space-y-4">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">Nome Completo *</label>
+                                    <label class="form-label">Nome completo *</label>
                                     <input type="text" name="nome" required class="form-input">
                                 </div>
                                 <div>
@@ -124,9 +124,8 @@
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">Codigo Postal *</label>
-                                    <input type="text" name="codigo_postal" required class="form-input"
-                                        placeholder="0000-000">
+                                    <label class="form-label">Codigo postal *</label>
+                                    <input type="text" name="codigo_postal" required class="form-input" placeholder="0000-000">
                                 </div>
                                 <div>
                                     <label class="form-label">Cidade *</label>
@@ -134,27 +133,26 @@
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label">Notas da Encomenda (opcional)</label>
+                                <label class="form-label">Notas da encomenda (opcional)</label>
                                 <textarea name="notas" rows="3" class="form-input"
-                                    placeholder="Informacoes adicionais sobre a entrega..."></textarea>
+                                    placeholder="Informacoes adicionais para a equipa."></textarea>
                             </div>
                         </form>
                     </div>
 
                     <div class="app-surface checkout-surface-card p-6 md:p-7">
                         <div class="mb-6">
-                            <h2 class="app-section-title">Metodo de Pagamento</h2>
-                            <p class="app-section-subtitle mt-1">Escolha como prefere pagar a encomenda.</p>
+                            <h2 class="app-section-title">Pagamento online</h2>
+                            <p class="app-section-subtitle mt-1">Processado com Stripe para Portugal e Espanha.</p>
                         </div>
                         <div class="space-y-3">
                             <label class="checkout-payment-option flex items-center p-4 rounded-xl cursor-pointer">
-                                <input type="radio" name="payment" value="cartao_online" checked class="custom-radio">
+                                <input type="radio" name="payment" value="card" checked class="custom-radio">
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-semibold">Cartao online</span>
+                                        <span class="font-semibold">Cartoes (Visa, Mastercard, etc.)</span>
                                         <i data-lucide="credit-card" class="w-5 h-5 text-slate-900"></i>
                                     </div>
-                                    <p class="text-sm text-slate-600 mt-1">Pagamento digital seguro no momento da confirmacao.</p>
                                 </div>
                             </label>
                             <label class="checkout-payment-option flex items-center p-4 rounded-xl cursor-pointer">
@@ -164,22 +162,26 @@
                                         <span class="font-semibold">MB Way</span>
                                         <i data-lucide="smartphone" class="w-5 h-5 text-slate-900"></i>
                                     </div>
-                                    <p class="text-sm text-slate-600 mt-1">Recebe os dados para pagamento no contacto indicado.</p>
                                 </div>
                             </label>
                             <label class="checkout-payment-option flex items-center p-4 rounded-xl cursor-pointer">
-                                <input type="radio" name="payment" value="transferencia" class="custom-radio">
+                                <input type="radio" name="payment" value="multibanco" class="custom-radio">
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-semibold">Transferencia bancaria</span>
-                                        <i data-lucide="landmark" class="w-5 h-5 text-slate-900"></i>
+                                        <span class="font-semibold">Multibanco</span>
+                                        <i data-lucide="receipt" class="w-5 h-5 text-slate-900"></i>
                                     </div>
-                                    <p class="text-sm text-slate-600 mt-1">Enviamos os dados bancarios apos confirmacao da encomenda.</p>
                                 </div>
                             </label>
-                            <div class="p-4 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-700">
-                                A encomenda fica registada no sistema e recebe um email de confirmacao com os proximos passos.
-                            </div>
+                            <label class="checkout-payment-option flex items-center p-4 rounded-xl cursor-pointer">
+                                <input type="radio" name="payment" value="bizum" class="custom-radio">
+                                <div class="ml-3 flex-1">
+                                    <div class="flex items-center justify-between">
+                                        <span class="font-semibold">Bizum</span>
+                                        <i data-lucide="wallet" class="w-5 h-5 text-slate-900"></i>
+                                    </div>
+                                </div>
+                            </label>
                         </div>
                     </div>
 
@@ -188,7 +190,7 @@
                             <input type="checkbox" id="terms-checkbox" required class="custom-checkbox mt-1">
                             <span class="text-sm text-gray-700">
                                 Li e aceito os <a href="/termos.html" class="text-blue-600 hover:underline">Termos e Condicoes</a> e a
-                                <a href="/privacidade.html" class="text-blue-600 hover:underline">Politica de Privacidade</a>
+                                <a href="/privacidade.html" class="text-blue-600 hover:underline">Politica de Privacidade</a>.
                             </span>
                         </label>
                     </div>
@@ -196,14 +198,14 @@
                     <button id="place-order-btn"
                         class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
                         <i data-lucide="lock" class="w-5 h-5"></i>
-                        Finalizar Encomenda
+                        Finalizar encomenda
                     </button>
                 </div>
 
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
-                        <h2 class="text-xl font-bold mb-2">Resumo da Encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Revise os itens e os totais antes de finalizar.</p>
+                        <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
+                        <p class="app-section-subtitle mb-6">Entrega total em 24-48h na Peninsula Iberica apos pagamento.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -212,7 +214,7 @@
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Envio</span>
-                                <span id="shipping" class="font-semibold">7.50€</span>
+                                <span id="shipping" class="font-semibold">Gratis</span>
                             </div>
                             <div class="flex justify-between text-lg font-bold border-t pt-3">
                                 <span>Total</span>
@@ -223,23 +225,28 @@
                             <div class="flex items-start gap-2">
                                 <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
                                 <div class="text-sm text-emerald-900">
-                                    <p class="font-semibold">Envio Gratis</p>
-                                    <p id="free-shipping-msg">Faltam <span id="remaining">0.00€</span> para envio gratis</p>
+                                    <p class="font-semibold">Envio gratis</p>
+                                    <p id="free-shipping-msg">Cobertura exclusiva na Peninsula Iberica.</p>
+                                    <span id="remaining" class="hidden">0.00€</span>
                                 </div>
                             </div>
                         </div>
                         <div class="mt-6 space-y-2 text-xs text-gray-600">
                             <div class="flex items-center gap-2">
                                 <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700"></i>
-                                <span>Pagamento seguro</span>
+                                <span>Pagamento seguro com Stripe</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i data-lucide="clock" class="w-4 h-4 text-slate-700"></i>
-                                <span>Producao em 12-24h</span>
+                                <span>Prazo total 24-48h apos pagamento</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i data-lucide="package" class="w-4 h-4 text-slate-700"></i>
-                                <span>Entrega em 2-4 dias uteis</span>
+                                <span>Tracking enviado por email (Seg-Sex)</span>
+                            </div>
+                            <div class="flex items-center gap-2">
+                                <i data-lucide="pen-tool" class="w-4 h-4 text-slate-700"></i>
+                                <span>Servico de design opcional: 15€ (1 proposta + 2 revisoes)</span>
                             </div>
                         </div>
                     </div>
@@ -257,8 +264,8 @@
                             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
-                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho na
+                        Peninsula Iberica.</p>
                 </div>
                 <div>
                     <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
