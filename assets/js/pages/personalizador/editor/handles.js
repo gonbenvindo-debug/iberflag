@@ -748,8 +748,23 @@ Object.assign(DesignEditor.prototype, {
         this.hideGuideLines?.();
     },
     
+    isCanvasBackgroundClickTarget(target) {
+        if (!(target instanceof Element)) return false;
+        if (target.closest('#resize-handles, .resize-handle, .rotate-handle')) return false;
+        if (target.closest('[data-element-id], [data-editable="true"]')) return false;
+        if (target.closest('#inline-text-editor')) return false;
+        if (target.closest('button, input, select, textarea, label, a')) return false;
+
+        return Boolean(
+            target === this.canvas ||
+            target === this.printArea ||
+            target.closest('#design-canvas') ||
+            target.closest('#canvas-wrapper')
+        );
+    },
+
     handleCanvasMouseDown(e) {
-        if (e.target === this.canvas || e.target === this.printArea) {
+        if (this.isCanvasBackgroundClickTarget(e?.target)) {
             this.clearSelection();
         }
     },
