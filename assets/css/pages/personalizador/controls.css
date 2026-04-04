@@ -571,6 +571,7 @@ body.app-page {
 }
 
 #canvas-stage {
+    position: relative;
     border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
@@ -817,6 +818,52 @@ body.is-camera-panning #canvas-stage {
 
 #top-image-group .desktop-inline-value {
     min-width: 44px;
+}
+
+#top-image-group {
+    gap: 8px;
+}
+
+.editor-floating-actions--compact {
+    gap: 3px;
+}
+
+.editor-floating-btn--icon-only {
+    width: 32px;
+    min-width: 32px;
+    padding: 0;
+}
+
+.editor-floating-opacity-control {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: max-content;
+}
+
+.editor-floating-qr-group {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-width: max-content;
+}
+
+.editor-floating-inline-input {
+    width: 180px;
+    min-width: 180px;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid var(--iber-border);
+    border-radius: 6px;
+    background: #fff;
+    color: var(--iber-text);
+    font-size: 12px;
+    font-weight: 600;
+    outline: none;
+}
+
+.editor-floating-inline-input::placeholder {
+    color: var(--iber-subtext);
 }
 
 .editor-floating-size {
@@ -1130,6 +1177,18 @@ body.is-camera-panning #canvas-stage {
     #top-image-group .desktop-inline-range {
         width: 94px;
         min-width: 94px;
+    }
+
+    .editor-floating-inline-input {
+        width: 152px;
+        min-width: 152px;
+        height: 30px;
+        font-size: 11px;
+    }
+
+    .editor-floating-opacity-control,
+    .editor-floating-qr-group {
+        gap: 6px;
     }
 
 }

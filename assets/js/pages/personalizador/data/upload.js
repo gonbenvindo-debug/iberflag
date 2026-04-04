@@ -1003,6 +1003,8 @@ Object.assign(DesignEditor.prototype, {
         const originalSrc = options.originalSrc || src;
         const cropSourceData = options.cropSourceData || null;
         const objectFit = String(options.objectFit || 'contain').toLowerCase();
+        const flipX = Boolean(options.flipX);
+        const flipY = Boolean(options.flipY);
         const x = center.x - (fitted.width / 2);
         const y = center.y - (fitted.height / 2);
 
@@ -1025,6 +1027,8 @@ Object.assign(DesignEditor.prototype, {
         img.dataset.baseY = String(y);
         img.dataset.baseWidth = String(fitted.width);
         img.dataset.baseHeight = String(fitted.height);
+        img.dataset.flipX = flipX ? 'true' : 'false';
+        img.dataset.flipY = flipY ? 'true' : 'false';
 
         if (cropData) {
             const viewBoxX = cropData.x * fullWidth;
@@ -1079,6 +1083,8 @@ Object.assign(DesignEditor.prototype, {
             cropData,
             fullWidth,
             fullHeight,
+            flipX,
+            flipY,
             cropSourceData: cropSourceData || (cropData ? {
                 x: cropData.x * fullWidth,
                 y: cropData.y * fullHeight,

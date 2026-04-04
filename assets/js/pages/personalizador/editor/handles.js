@@ -55,9 +55,12 @@ Object.assign(DesignEditor.prototype, {
         this.closeInlineTextEditor(false);
 
         const textNode = elementData.element;
-        const rect = textNode.getBoundingClientRect();
-        if (!rect.width || !rect.height) return;
+        const stage = this.canvasStage;
+        if (!stage) return;
 
+        const editorShell = document.createElement('div');
+        editorShell.id = 'inline-text-editor-shell';
+        editorShell.setAttribute('aria-hidden', 'true');
         const editor = document.createElement('input');
         editor.type = 'text';
         editor.id = 'inline-text-editor';
@@ -67,18 +70,26 @@ Object.assign(DesignEditor.prototype, {
         editor.spellcheck = false;
 
         const computed = window.getComputedStyle(textNode);
+        Object.assign(editorShell.style, {
+            position: 'absolute',
+            zIndex: '180',
+            display: 'flex',
+            alignItems: 'center',
+            minWidth: '88px',
+            padding: '0 2px',
+            borderBottom: '1px solid rgba(239, 72, 37, 0.45)',
+            background: 'rgba(255, 255, 255, 0.92)',
+            boxShadow: 'none',
+            pointerEvents: 'auto'
+        });
         Object.assign(editor.style, {
-            position: 'fixed',
-            left: `${rect.left}px`,
-            top: `${rect.top}px`,
-            width: `${Math.max(rect.width + 24, 140)}px`,
-            height: `${Math.max(rect.height + 12, 38)}px`,
-            zIndex: '1000',
+            width: '100%',
+            height: '100%',
             margin: '0',
-            padding: '4px 10px',
-            border: '1px solid #2563eb',
-            borderRadius: '10px',
-            background: 'rgba(255, 255, 255, 0.98)',
+            padding: '0 3px',
+            border: '0',
+            borderRadius: '0',
+            background: 'transparent',
             color: computed.fill || '#0f172a',
             fontFamily: computed.fontFamily,
             fontSize: computed.fontSize,
@@ -88,23 +99,17 @@ Object.assign(DesignEditor.prototype, {
             textTransform: computed.textTransform,
             lineHeight: computed.lineHeight,
             outline: 'none',
-            boxShadow: '0 12px 30px rgba(15, 23, 42, 0.18)'
+            boxShadow: 'none'
         });
-
-        const commit = () => {
-            if (!this._inlineTextEditorState) return;
-            const nextValue = editor.value;
-            this.updateTextContent(nextValue);
-            this.closeInlineTextEditor(true);
-        };
 
         editor.addEventListener('input', () => {
             this.updateTextContent(editor.value);
+            this.refreshInlineTextEditorPosition?.();
         });
         editor.addEventListener('keydown', (event) => {
             if (event.key === 'Enter') {
                 event.preventDefault();
-                commit();
+                this.closeInlineTextEditor(true);
             }
             if (event.key === 'Escape') {
                 event.preventDefault();
@@ -113,32 +118,108 @@ Object.assign(DesignEditor.prototype, {
         });
         editor.addEventListener('blur', () => {
             if (!this._inlineTextEditorState) return;
-            commit();
+            this.closeInlineTextEditor(true);
         });
 
-        document.body.appendChild(editor);
-        editor.focus();
-        editor.select();
+        textNode.style.opacity = '0';
+        editorShell.appendChild(editor);
+        stage.appendChild(editorShell);
         this._inlineTextEditorState = {
             elementId: elementData.id,
             originalValue: String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? ''),
+            textNode,
+            shell: editorShell,
             editor
         };
+        this.refreshInlineTextEditorPosition?.();
+        editor.focus();
+        editor.select();
+    },
+
+    refreshInlineTextEditorPosition() {
+        const state = this._inlineTextEditorState;
+        if (!state?.editor || !state?.textNode || !this.canvasStage?.getBoundingClientRect) {
+            return;
+        }
+
+        const textRect = state.textNode.getBoundingClientRect();
+        const stageRect = this.canvasStage.getBoundingClientRect();
+        if (!stageRect.width || !stageRect.height) {
+            return;
+        }
+
+        const computed = window.getComputedStyle(state.textNode);
+        const baseWidth = Math.max(textRect.width + 10, this.isMobileViewport?.() ? 110 : 96);
+        const baseHeight = Math.max(textRect.height + 6, this.isMobileViewport?.() ? 34 : 30);
+        const maxWidth = Math.max(80, stageRect.width - 16);
+        const width = Math.min(baseWidth, maxWidth);
+        const height = Math.min(baseHeight, Math.max(28, stageRect.height - 12));
+        const unclampedLeft = textRect.left - stageRect.left - 5;
+        const unclampedTop = textRect.top - stageRect.top - 3;
+        const left = Math.max(8, Math.min(unclampedLeft, stageRect.width - width - 8));
+        const top = Math.max(8, Math.min(unclampedTop, stageRect.height - height - 8));
+
+        Object.assign(state.shell.style, {
+            left: `${left}px`,
+            top: `${top}px`,
+            width: `${width}px`,
+            height: `${height}px`
+        });
+        Object.assign(state.editor.style, {
+            color: computed.fill || '#0f172a',
+            fontFamily: computed.fontFamily,
+            fontSize: computed.fontSize,
+            fontWeight: computed.fontWeight,
+            fontStyle: computed.fontStyle,
+            textDecoration: computed.textDecoration,
+            textTransform: computed.textTransform,
+            lineHeight: computed.lineHeight,
+            textAlign: (() => {
+                const anchor = String(state.textNode.getAttribute('text-anchor') || 'start').toLowerCase();
+                if (anchor === 'end') return 'right';
+                if (anchor === 'middle') return 'center';
+                return 'left';
+            })()
+        });
     },
 
     closeInlineTextEditor(commit = true) {
         const state = this._inlineTextEditorState;
         if (!state) return;
 
-        const editor = state.editor;
         this._inlineTextEditorState = null;
+        const applyValue = (value) => {
+            const target = (this.selectedElement?.type === 'text' && String(this.selectedElement.id) === String(state.elementId))
+                ? this.selectedElement
+                : this.elements.find((elementData) => elementData?.type === 'text' && String(elementData.id) === String(state.elementId));
+            if (!target) return;
 
-        if (editor?.parentNode) {
-            editor.parentNode.removeChild(editor);
+            const nextValue = String(value ?? '');
+            target.rawContent = nextValue;
+            target.content = nextValue;
+            target.element.dataset.rawContent = nextValue;
+            target.element.textContent = target.capsLock ? nextValue.toUpperCase() : nextValue;
+            const bbox = target.element.getBBox();
+            target.width = bbox.width;
+            target.height = bbox.height;
+            if (this.selectedElement?.id === target.id) {
+                this.showResizeHandles(target);
+            }
+        };
+
+        if (commit) {
+            applyValue(state.editor?.value ?? state.originalValue);
+            this.queueHistorySave?.(120);
+        } else {
+            applyValue(state.originalValue);
         }
 
-        if (!commit && this.selectedElement && this.selectedElement.type === 'text') {
-            this.updateTextContent(state.originalValue);
+        if (state.textNode) {
+            state.textNode.style.opacity = '';
+        }
+
+        if (state.shell?.parentNode) {
+            state.shell.parentNode.removeChild(state.shell);
         }
     },
     
@@ -451,6 +532,7 @@ Object.assign(DesignEditor.prototype, {
             if (this.selectedElement) {
                 this.showResizeHandles(this.selectedElement);
             }
+            this.refreshInlineTextEditorPosition?.();
         });
     },
     
@@ -752,7 +834,7 @@ Object.assign(DesignEditor.prototype, {
         if (!(target instanceof Element)) return false;
         if (target.closest('#resize-handles, .resize-handle, .rotate-handle')) return false;
         if (target.closest('[data-element-id], [data-editable="true"]')) return false;
-        if (target.closest('#inline-text-editor')) return false;
+        if (target.closest('#inline-text-editor, #inline-text-editor-shell')) return false;
         if (target.closest('button, input, select, textarea, label, a')) return false;
 
         return Boolean(

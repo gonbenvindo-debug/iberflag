@@ -132,6 +132,24 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    toggleImageFlip(axis = 'x') {
+        if (!this.selectedElement || this.selectedElement.type !== 'image') {
+            return;
+        }
+
+        if (axis === 'y') {
+            this.selectedElement.flipY = !Boolean(this.selectedElement.flipY);
+        } else {
+            this.selectedElement.flipX = !Boolean(this.selectedElement.flipX);
+        }
+
+        this.applyElementRotation(this.selectedElement);
+        this.syncElementMetadata?.(this.selectedElement);
+        this.showResizeHandles?.(this.selectedElement);
+        this.updateContextualToolbar?.(this.selectedElement);
+        this.saveHistory?.();
+    },
+
     cycleQuickTextFont(direction = 1) {
         if (!this.selectedElement || this.selectedElement.type !== 'text') return;
 
@@ -562,8 +580,13 @@ Object.assign(DesignEditor.prototype, {
         const content = value.trim();
         this.selectedElement.qrContent = content;
         this.selectedElement.element.dataset.qrContent = content;
+        const propQrContent = document.getElementById('prop-qr-content');
+        if (propQrContent && propQrContent.value !== content) propQrContent.value = content;
+        const topQrContent = document.getElementById('top-qr-content');
+        if (topQrContent && topQrContent.value !== content) topQrContent.value = content;
 
         if (!content) {
+            this.queueHistorySave(250);
             return;
         }
 
@@ -585,8 +608,13 @@ Object.assign(DesignEditor.prototype, {
         const color = this.sanitizeColorValue(value, '#111827');
         this.selectedElement.qrColor = color;
         this.selectedElement.element.dataset.qrColor = color;
+        const propQrColor = document.getElementById('prop-qr-color');
+        if (propQrColor) propQrColor.value = color;
+        const topQrColor = document.getElementById('top-qr-color');
+        if (topQrColor) topQrColor.value = color;
 
         if (!this.selectedElement.qrContent) {
+            this.queueHistorySave(250);
             return;
         }
 
@@ -703,8 +731,10 @@ Object.assign(DesignEditor.prototype, {
 
         ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
             .forEach((id) => setDisabled(id, !isImage));
-        ['desktop-opacity-range']
+        ['desktop-opacity-range', 'top-opacity-range', 'top-image-crop-btn', 'top-image-flip-h-btn', 'top-image-flip-v-btn']
             .forEach((id) => setDisabled(id, !isImage));
+        ['top-qr-content', 'top-qr-color', 'top-qr-eyedropper', 'prop-qr-content', 'prop-qr-color']
+            .forEach((id) => setDisabled(id, !(isImage && elementData.imageKind === 'qr')));
         ['desktop-shape-fill-color', 'desktop-shape-stroke-color', 'top-shape-fill-color', 'top-shape-fill-eyedropper']
             .forEach((id) => setDisabled(id, !isShape));
 
@@ -959,6 +989,14 @@ Object.assign(DesignEditor.prototype, {
         const topFontGroup = document.getElementById('top-font-group');
         const topShapeGroup = document.getElementById('top-shape-group');
         const topImageGroup = document.getElementById('top-image-group');
+        const topImageEditActions = document.getElementById('top-image-edit-actions');
+        const topImageCropBtn = document.getElementById('top-image-crop-btn');
+        const topImageFlipHBtn = document.getElementById('top-image-flip-h-btn');
+        const topImageFlipVBtn = document.getElementById('top-image-flip-v-btn');
+        const topQrGroup = document.getElementById('top-qr-group');
+        const topQrContent = document.getElementById('top-qr-content');
+        const topQrColor = document.getElementById('top-qr-color');
+        const topQrEyedropper = document.getElementById('top-qr-eyedropper');
         const topDeleteBtn = document.getElementById('top-delete-btn');
         const topDuplicateBtn = document.getElementById('top-duplicate-btn');
         const topCenterHBtn = document.getElementById('top-center-h-btn');
@@ -998,6 +1036,7 @@ Object.assign(DesignEditor.prototype, {
         const isText = hasSelection && elementData.type === 'text';
         const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
+        const isQr = isImage && elementData.imageKind === 'qr';
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
         this.syncExpandedPropertiesControls?.(elementData);
@@ -1057,9 +1096,15 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(topFontGroup, !isText);
         setHiddenState(topShapeGroup, !isShape);
         setHiddenState(topImageGroup, !isImage);
+        setHiddenState(topImageEditActions, !isImage || isQr);
+        setHiddenState(topImageCropBtn, !isImage || isQr);
+        setHiddenState(topImageFlipHBtn, !isImage || isQr);
+        setHiddenState(topImageFlipVBtn, !isImage || isQr);
+        setHiddenState(topQrGroup, !isQr);
         if (floatingBar) {
             floatingBar.classList.toggle('hidden', !hasSelection);
             floatingBar.classList.toggle('is-text-selection', hasSelection && isText);
+            floatingBar.classList.toggle('is-qr-selection', hasSelection && isQr);
         }
 
         if (!hasSelection) {
@@ -1072,6 +1117,12 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(topCenterHBtn, true);
             setDisabledState(topCenterVBtn, true);
             setDisabledState(topKeepAspectBtn, true);
+            setDisabledState(topImageCropBtn, true);
+            setDisabledState(topImageFlipHBtn, true);
+            setDisabledState(topImageFlipVBtn, true);
+            setDisabledState(topQrContent, true);
+            setDisabledState(topQrColor, true);
+            setDisabledState(topQrEyedropper, true);
             setDisabledState(panelDeleteBtn, true);
             setDisabledState(panelDuplicateBtn, true);
             setDisabledState(panelCenterHBtn, true);
@@ -1092,6 +1143,12 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
         setDisabledState(topKeepAspectBtn, false);
+        setDisabledState(topImageCropBtn, !isImage || isQr);
+        setDisabledState(topImageFlipHBtn, !isImage || isQr);
+        setDisabledState(topImageFlipVBtn, !isImage || isQr);
+        setDisabledState(topQrContent, !isQr);
+        setDisabledState(topQrColor, !isQr);
+        setDisabledState(topQrEyedropper, !isQr);
         setDisabledState(panelDeleteBtn, false);
         setDisabledState(panelDuplicateBtn, false);
         setDisabledState(panelCenterHBtn, false);
@@ -1113,9 +1170,33 @@ Object.assign(DesignEditor.prototype, {
         }
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);
+            if (topImageFlipHBtn) {
+                topImageFlipHBtn.classList.toggle('active', Boolean(elementData.flipX));
+                topImageFlipHBtn.setAttribute('aria-pressed', String(Boolean(elementData.flipX)));
+            }
+            if (topImageFlipVBtn) {
+                topImageFlipVBtn.classList.toggle('active', Boolean(elementData.flipY));
+                topImageFlipVBtn.setAttribute('aria-pressed', String(Boolean(elementData.flipY)));
+            }
+            if (topQrContent) {
+                topQrContent.value = isQr ? String(elementData.qrContent || '') : '';
+            }
+            if (topQrColor) {
+                topQrColor.value = this.sanitizeColorValue(isQr ? elementData.qrColor : '#111827', '#111827');
+            }
         } else {
             if (opacityRange) opacityRange.value = '100';
             if (opacityValue) opacityValue.textContent = '100%';
+            if (topImageFlipHBtn) {
+                topImageFlipHBtn.classList.remove('active');
+                topImageFlipHBtn.setAttribute('aria-pressed', 'false');
+            }
+            if (topImageFlipVBtn) {
+                topImageFlipVBtn.classList.remove('active');
+                topImageFlipVBtn.setAttribute('aria-pressed', 'false');
+            }
+            if (topQrContent) topQrContent.value = '';
+            if (topQrColor) topQrColor.value = '#111827';
         }
 
         if (fontBtn) {

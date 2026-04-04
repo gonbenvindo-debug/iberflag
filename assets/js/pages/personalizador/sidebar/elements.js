@@ -59,6 +59,8 @@ Object.assign(DesignEditor.prototype, {
             data.originalSrc = node.dataset.originalSrc || '';
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
+            data.flipX = String(node.dataset.flipX || 'false') === 'true';
+            data.flipY = String(node.dataset.flipY || 'false') === 'true';
             const preserveAspectRatio = String(node.getAttribute('preserveAspectRatio') || '').trim().toLowerCase();
             if (node.dataset.objectFit) {
                 data.objectFit = String(node.dataset.objectFit).trim().toLowerCase();
@@ -143,7 +145,7 @@ Object.assign(DesignEditor.prototype, {
         const transform = node.getAttribute('transform') || '';
         const rotateMatch = transform.match(/rotate\(([-\d.]+)/);
         if (rotateMatch) data.rotation = parseFloat(rotateMatch[1]) || 0;
-        const translateMatch = transform.match(/translate\(([-\d.]+)\s+([-\d.]+)\)/);
+        const translateMatch = transform.trim().match(/^translate\(([-\d.]+)[,\s]+([-\d.]+)\)$/);
         if (translateMatch) {
             const translateX = parseFloat(translateMatch[1]) || 0;
             const translateY = parseFloat(translateMatch[2]) || 0;
@@ -228,6 +230,9 @@ Object.assign(DesignEditor.prototype, {
             } else {
                 delete elementData.element.dataset.qrColor;
             }
+
+            elementData.element.dataset.flipX = elementData.flipX ? 'true' : 'false';
+            elementData.element.dataset.flipY = elementData.flipY ? 'true' : 'false';
         } else if (elementData.type === 'text') {
             if (elementData.rawContent != null) {
                 elementData.element.dataset.rawContent = String(elementData.rawContent);
@@ -867,6 +872,12 @@ Object.assign(DesignEditor.prototype, {
         const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
         const desktopOpacityRange = document.getElementById('desktop-opacity-range');
         const topOpacityRange = document.getElementById('top-opacity-range');
+        const topImageCropBtn = document.getElementById('top-image-crop-btn');
+        const topImageFlipHBtn = document.getElementById('top-image-flip-h-btn');
+        const topImageFlipVBtn = document.getElementById('top-image-flip-v-btn');
+        const topQrContent = document.getElementById('top-qr-content');
+        const topQrColor = document.getElementById('top-qr-color');
+        const topQrEyedropper = document.getElementById('top-qr-eyedropper');
         const desktopTextColor = document.getElementById('desktop-text-color');
         const topTextColor = document.getElementById('top-text-color');
         const desktopTextEyedropper = document.getElementById('desktop-text-eyedropper');
@@ -902,6 +913,9 @@ Object.assign(DesignEditor.prototype, {
         if (desktopSizeIncreaseBtn) desktopSizeIncreaseBtn.addEventListener('click', () => this.stepQuickTextSize(1));
         if (desktopOpacityRange) desktopOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
         if (topOpacityRange) topOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
+        if (topImageCropBtn) topImageCropBtn.addEventListener('click', () => this.startCropMode?.());
+        if (topImageFlipHBtn) topImageFlipHBtn.addEventListener('click', () => this.toggleImageFlip?.('x'));
+        if (topImageFlipVBtn) topImageFlipVBtn.addEventListener('click', () => this.toggleImageFlip?.('y'));
         if (desktopTextColor) desktopTextColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (topTextColor) topTextColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (desktopShapeFillColor) desktopShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
@@ -944,6 +958,7 @@ Object.assign(DesignEditor.prototype, {
         bindEyeDropper(desktopShapeFillEyedropper, desktopShapeFillColor, (color) => this.updateShapeFill(color));
         bindEyeDropper(desktopShapeStrokeEyedropper, desktopShapeStrokeColor, (color) => this.updateShapeStroke(color));
         bindEyeDropper(topShapeFillEyedropper, topShapeFillColor, (color) => this.updateShapeFill(color));
+        bindEyeDropper(topQrEyedropper, topQrColor, (color) => this.updateQRCodeColor(color));
 
         const textRotation = document.getElementById('prop-text-rotation');
         if (textRotation) textRotation.addEventListener('input', (e) => {
@@ -1053,6 +1068,21 @@ Object.assign(DesignEditor.prototype, {
 
         const qrColor = document.getElementById('prop-qr-color');
         if (qrColor) qrColor.addEventListener('input', (e) => this.updateQRCodeColor(e.target.value));
+
+        if (topQrContent) {
+            let qrContentDebounce = null;
+            topQrContent.addEventListener('input', (event) => {
+                clearTimeout(qrContentDebounce);
+                const nextValue = event.target.value;
+                qrContentDebounce = window.setTimeout(() => {
+                    this.updateQRCodeContent(nextValue);
+                }, 160);
+            });
+        }
+
+        if (topQrColor) {
+            topQrColor.addEventListener('input', (event) => this.updateQRCodeColor(event.target.value));
+        }
 
         const imageRotation = document.getElementById('prop-image-rotation');
         if (imageRotation) imageRotation.addEventListener('input', (e) => {

@@ -74,17 +74,40 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
-    applyElementRotation(elementData, rotation = elementData.rotation || 0) {
+    buildElementTransform(elementData, rotation = elementData.rotation || 0) {
+        if (!elementData?.element?.getBBox) {
+            return '';
+        }
+
         const safeRotation = Number(rotation) || 0;
-        if (!safeRotation) {
-            elementData.element.removeAttribute('transform');
-            return;
+        const flipX = Boolean(elementData.flipX);
+        const flipY = Boolean(elementData.flipY);
+        if (!safeRotation && !flipX && !flipY) {
+            return '';
         }
 
         const bbox = elementData.element.getBBox();
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
-        elementData.element.setAttribute('transform', `rotate(${safeRotation} ${centerX} ${centerY})`);
+        const scaleX = flipX ? -1 : 1;
+        const scaleY = flipY ? -1 : 1;
+
+        return [
+            `translate(${centerX} ${centerY})`,
+            safeRotation ? `rotate(${safeRotation})` : '',
+            (flipX || flipY) ? `scale(${scaleX} ${scaleY})` : '',
+            `translate(${-centerX} ${-centerY})`
+        ].filter(Boolean).join(' ');
+    },
+
+    applyElementRotation(elementData, rotation = elementData.rotation || 0) {
+        const transform = this.buildElementTransform(elementData, rotation);
+        if (!transform) {
+            elementData.element.removeAttribute('transform');
+            return;
+        }
+
+        elementData.element.setAttribute('transform', transform);
     },
 
     moveElementBy(elementData, deltaX, deltaY) {
@@ -99,6 +122,27 @@ Object.assign(DesignEditor.prototype, {
 
     setElementTransform(elementData, translateX, translateY, rotation) {
         this.applyElementRotation(elementData, rotation);
+    },
+
+    getGuideBounds() {
+        const outline = this.canvas?.querySelector?.('#print-area-shape-outline-border, #print-area-shape-outline');
+        if (outline?.getBBox) {
+            try {
+                const bbox = outline.getBBox();
+                if (bbox && bbox.width > 0 && bbox.height > 0) {
+                    return {
+                        x: bbox.x,
+                        y: bbox.y,
+                        width: bbox.width,
+                        height: bbox.height
+                    };
+                }
+            } catch {
+                // Fall back to editable bounds below.
+            }
+        }
+
+        return this.getEditableBounds();
     },
 
     getResizeAnchorPoint(box, handle) {
@@ -311,7 +355,7 @@ Object.assign(DesignEditor.prototype, {
     calculateGuides(elementData) {
         if (!elementData) return { horizontal: [], vertical: [] };
 
-        const bounds = this.getEditableBounds();
+        const bounds = this.getGuideBounds();
         const horizontal = [];
         const vertical = [];
 
@@ -406,7 +450,7 @@ Object.assign(DesignEditor.prototype, {
         const guideLayer = this.ensureGuideLineLayer();
         if (!guideLayer) return;
 
-        const b = this.getEditableBounds();
+        const b = this.getGuideBounds();
         const x0 = b.x;
         const y0 = b.y;
         const x1 = b.x + b.width;

@@ -24,7 +24,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260404a">
 <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260404a">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260404d">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260404e">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -204,9 +204,33 @@
                             </button>
                         </div>
                     </div>
-                    <div id="top-image-group" class="editor-floating-text-group hidden" aria-label="Opacidade da imagem">
-                        <input id="top-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
-                        <span id="top-opacity-value" class="desktop-inline-value">100%</span>
+                    <div id="top-image-group" class="editor-floating-text-group hidden" aria-label="Opcoes da imagem">
+                        <div id="top-image-edit-actions" class="editor-floating-actions editor-floating-actions--compact" role="group" aria-label="Editar imagem">
+                            <button id="top-image-crop-btn" type="button" class="editor-floating-btn editor-floating-btn--icon-only" title="Cortar imagem" aria-label="Cortar imagem">
+                                <i data-lucide="crop" class="w-4 h-4"></i>
+                            </button>
+                            <button id="top-image-flip-h-btn" type="button" class="editor-floating-btn editor-floating-btn--icon-only" title="Inverter horizontalmente" aria-label="Inverter horizontalmente" aria-pressed="false">
+                                <i data-lucide="flip-horizontal" class="w-4 h-4"></i>
+                            </button>
+                            <button id="top-image-flip-v-btn" type="button" class="editor-floating-btn editor-floating-btn--icon-only" title="Inverter verticalmente" aria-label="Inverter verticalmente" aria-pressed="false">
+                                <i data-lucide="flip-vertical" class="w-4 h-4"></i>
+                            </button>
+                        </div>
+                        <div class="editor-floating-opacity-control" role="group" aria-label="Opacidade da imagem">
+                            <input id="top-opacity-range" type="range" min="0" max="100" value="100" class="desktop-inline-range" aria-label="Opacidade">
+                            <span id="top-opacity-value" class="desktop-inline-value">100%</span>
+                        </div>
+                        <div id="top-qr-group" class="editor-floating-qr-group hidden" aria-label="Conteudo do QR">
+                            <input id="top-qr-content" type="text" class="editor-floating-inline-input" placeholder="Conteudo / URL" aria-label="Conteudo ou URL do QR">
+                            <div class="desktop-inline-color-control top-inline-color-control">
+                                <label class="desktop-inline-color-wrap top-inline-color-wrap" title="Cor do QR" aria-label="Cor do QR">
+                                    <input id="top-qr-color" type="color" class="desktop-inline-color top-inline-color" value="#111827">
+                                </label>
+                                <button id="top-qr-eyedropper" type="button" class="color-eyedropper-btn" aria-label="Pipeta de cor do QR" title="Pipeta de cor">
+                                    <i data-lucide="pipette" class="w-3.5 h-3.5"></i>
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -648,12 +672,12 @@
     <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/data/product.js?v=20260401a" defer></script>
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260404a" defer></script>
-    <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260401a" defer></script>
+    <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260404a" defer></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260404g" defer></script>
-    <script src="/assets/js/pages/personalizador/data/upload.js?v=20260404a" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260404b" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260404e" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260404h" defer></script>
+    <script src="/assets/js/pages/personalizador/data/upload.js?v=20260404b" defer></script>
+    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260404c" defer></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260404f" defer></script>
     <script src="/assets/js/pages/personalizador/editor/export.js?v=20260401a" defer></script>
 
     <!-- Entry point - deve carregar por último -->
