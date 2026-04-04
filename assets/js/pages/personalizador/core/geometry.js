@@ -407,21 +407,16 @@ Object.assign(DesignEditor.prototype, {
         if (!guideLayer) return;
 
         const b = this.getEditableBounds();
-        // Extend lines slightly beyond canvas edges for visibility
-        const x0 = b.x - 20;
-        const y0 = b.y - 20;
-        const x1 = b.x + b.width + 20;
-        const y1 = b.y + b.height + 20;
+        const x0 = b.x;
+        const y0 = b.y;
+        const x1 = b.x + b.width;
+        const y1 = b.y + b.height;
 
         const colorFor = (type) => {
-            if (type === 'center-canvas')  return '#f59e0b'; // amber  ÔÇô canvas centre
-            if (type === 'edge-canvas')    return '#10b981'; // green  ÔÇô canvas edge
-            if (type === 'center-element') return '#8b5cf6'; // purple ÔÇô element centre
-            return '#ef4444';                                // red    ÔÇô element edge
+            return '#ef4825';
         };
         const dashFor = (type) => {
-            if (type?.includes('canvas'))  return '6,4';
-            return '4,3';
+            return '6,4';
         };
 
         const makeLine = (x1v, y1v, x2v, y2v, type) => {
@@ -431,12 +426,12 @@ Object.assign(DesignEditor.prototype, {
             line.setAttribute('x2', String(x2v));
             line.setAttribute('y2', String(y2v));
             line.setAttribute('stroke', colorFor(type));
-            line.setAttribute('stroke-width', type?.includes('canvas') ? '1.5' : '1');
+            line.setAttribute('stroke-width', '1.5');
             line.setAttribute('stroke-dasharray', dashFor(type));
             line.setAttribute('vector-effect', 'non-scaling-stroke');
             line.setAttribute('pointer-events', 'none');
-            line.setAttribute('class', 'guide-line');
-            line.setAttribute('opacity', '0.85');
+            line.setAttribute('class', 'guide-line guide-line-support');
+            line.setAttribute('opacity', '0.95');
             guideLayer.appendChild(line);
             this.guideLines.push(line);
         };
@@ -495,7 +490,7 @@ Object.assign(DesignEditor.prototype, {
         line.setAttribute('y1', String(center.y - dy));
         line.setAttribute('x2', String(center.x + dx));
         line.setAttribute('y2', String(center.y + dy));
-        line.setAttribute('stroke', '#2563eb');
+        line.setAttribute('stroke', '#ef4825');
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '6,6');
         line.setAttribute('vector-effect', 'non-scaling-stroke');
@@ -510,7 +505,7 @@ Object.assign(DesignEditor.prototype, {
         ring.setAttribute('cy', String(center.y));
         ring.setAttribute('r', '6');
         ring.setAttribute('fill', '#ffffff');
-        ring.setAttribute('stroke', '#2563eb');
+        ring.setAttribute('stroke', '#ef4825');
         ring.setAttribute('stroke-width', '1.5');
         ring.setAttribute('vector-effect', 'non-scaling-stroke');
         ring.setAttribute('pointer-events', 'none');

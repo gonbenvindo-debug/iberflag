@@ -70,10 +70,10 @@ class DesignEditor {
         this.handlesFrameRequest = null;
 
         // ===== GUIDES & SNAP =====
-        this.showGuides = false;
+        this.showGuides = true;
         this.guideLines = [];
-        this.guideThreshold = 10; // pixels para snap
-        this.guideReleaseThreshold = 18;
+        this.guideThreshold = 14; // tolerancia de snap mais visivel
+        this.guideReleaseThreshold = 22;
         this.gridSize = 10; // para snap grid
 
         // ===== CROP =====

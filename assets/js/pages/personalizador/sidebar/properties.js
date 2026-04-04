@@ -1401,6 +1401,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     setZoom(newZoom, options = {}) {
+        this.hideGuideLines?.();
         const nextZoom = Math.max(0.5, Math.min(5, Number(newZoom) || (Number(this.zoom) || 1)));
         const hasAnchor = Number.isFinite(Number(options?.clientX)) && Number.isFinite(Number(options?.clientY));
 
