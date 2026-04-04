@@ -1083,11 +1083,13 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar.is-shape-selection #top-shape-group,
     #editor-floating-context-bar.is-image-selection #top-image-group,
     #editor-floating-context-bar.is-qr-selection #top-qr-group {
-        width: 100%;
+        width: fit-content;
         min-width: 0;
+        max-width: 100%;
         padding-left: 0;
         border-left: 0;
         overflow: hidden;
+        justify-self: center;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group {
@@ -1108,7 +1110,7 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar.is-image-selection #top-image-group {
         display: grid;
-        grid-template-columns: 94px minmax(0, 1fr);
+        grid-template-columns: auto auto;
         align-items: center;
         gap: 8px;
         justify-content: center;
@@ -1123,7 +1125,7 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar.is-image-selection #top-image-group .editor-floating-opacity-control {
         min-width: 0;
-        width: 100%;
+        width: 186px;
         gap: 8px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
@@ -1144,15 +1146,15 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar.is-qr-selection #top-qr-group {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
+        grid-template-columns: 190px auto;
         align-items: center;
         gap: 8px;
         justify-content: center;
     }
 
     #editor-floating-context-bar.is-qr-selection #top-qr-content {
-        width: 100%;
-        min-width: 0;
+        width: 190px;
+        min-width: 190px;
         height: 30px;
         min-height: 30px;
         font-size: 12px;
