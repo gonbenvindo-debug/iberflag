@@ -412,11 +412,40 @@ Object.assign(DesignEditor.prototype, {
         const x1 = b.x + b.width;
         const y1 = b.y + b.height;
 
-        const colorFor = (type) => {
-            return '#ef4825';
-        };
-        const dashFor = (type) => {
-            return '6,4';
+        const styleFor = (type) => {
+            if (type === 'center-canvas') {
+                return {
+                    stroke: '#ef4825',
+                    strokeWidth: '2',
+                    dash: 'none',
+                    opacity: '0.98'
+                };
+            }
+
+            if (type === 'edge-canvas') {
+                return {
+                    stroke: '#ef4825',
+                    strokeWidth: '1.5',
+                    dash: '7,4',
+                    opacity: '0.9'
+                };
+            }
+
+            if (type === 'center-element') {
+                return {
+                    stroke: '#0f172a',
+                    strokeWidth: '1.5',
+                    dash: '4,4',
+                    opacity: '0.82'
+                };
+            }
+
+            return {
+                stroke: '#64748b',
+                strokeWidth: '1',
+                dash: '3,4',
+                opacity: '0.72'
+            };
         };
 
         const makeLine = (x1v, y1v, x2v, y2v, type) => {
@@ -425,13 +454,18 @@ Object.assign(DesignEditor.prototype, {
             line.setAttribute('y1', String(y1v));
             line.setAttribute('x2', String(x2v));
             line.setAttribute('y2', String(y2v));
-            line.setAttribute('stroke', colorFor(type));
-            line.setAttribute('stroke-width', '1.5');
-            line.setAttribute('stroke-dasharray', dashFor(type));
+            const style = styleFor(type);
+            line.setAttribute('stroke', style.stroke);
+            line.setAttribute('stroke-width', style.strokeWidth);
+            if (style.dash === 'none') {
+                line.removeAttribute('stroke-dasharray');
+            } else {
+                line.setAttribute('stroke-dasharray', style.dash);
+            }
             line.setAttribute('vector-effect', 'non-scaling-stroke');
             line.setAttribute('pointer-events', 'none');
             line.setAttribute('class', 'guide-line guide-line-support');
-            line.setAttribute('opacity', '0.95');
+            line.setAttribute('opacity', style.opacity);
             guideLayer.appendChild(line);
             this.guideLines.push(line);
         };
