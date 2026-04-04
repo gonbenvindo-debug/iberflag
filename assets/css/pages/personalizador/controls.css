@@ -863,10 +863,19 @@ body.is-camera-panning #canvas-stage {
 .editor-floating-context-bar .quick-font-select {
     min-width: 170px;
     height: 34px;
+    min-height: 34px;
     border: 1px solid var(--iber-border) !important;
     border-radius: 6px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
+    margin: 0;
+    padding-top: 0;
+    padding-bottom: 0;
+    box-sizing: border-box;
+    line-height: 1;
+    appearance: none;
+    -webkit-appearance: none;
+    -moz-appearance: none;
     box-shadow: none !important;
 }
 
