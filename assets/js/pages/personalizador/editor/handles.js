@@ -702,6 +702,7 @@ Object.assign(DesignEditor.prototype, {
         this.isResizing = false;
         this.isRotating = false;
         this.isPanningCamera = false;
+        document.body.classList.remove('is-resizing-element');
         this.cameraPanStart = null;
         this.resizeHandle = null;
         this.rotationCenterClient = null;
@@ -779,6 +780,7 @@ Object.assign(DesignEditor.prototype, {
 
         this.beginHistoryGesture();
         this.hideGuideLines?.();
+        document.body.classList.add('is-resizing-element');
         this.isResizing = true;
         this.resizeHandle = position;
         const bbox = this.selectedElement.element.getBBox();
@@ -1046,6 +1048,16 @@ Object.assign(DesignEditor.prototype, {
         newY = constrainedRect.y;
         newWidth = constrainedRect.width;
         newHeight = constrainedRect.height;
+
+        // Subpixel jitter during locked-ratio resize can create visual hairlines
+        // on some SVG renderers. Snap to half-pixels for stable rendering.
+        if (shouldKeepRatio && this.selectedElement.type !== 'text') {
+            const snapHalf = (value) => Math.round((Number(value) || 0) * 2) / 2;
+            newX = snapHalf(newX);
+            newY = snapHalf(newY);
+            newWidth = Math.max(minSize, snapHalf(newWidth));
+            newHeight = Math.max(minSize, snapHalf(newHeight));
+        }
 
         if (this.selectedElement.type === 'image' && this.selectedElement.imageKind !== 'qr') {
             const currentFit = this.getImageObjectFitMode?.(this.selectedElement) || 'contain';

@@ -51,6 +51,11 @@
             outline-offset: 2px;
         }
 
+        body.is-resizing-element .element-selected {
+            outline: none !important;
+            outline-offset: 0 !important;
+        }
+
         .resize-handle {
             width: 12px;
             height: 12px;

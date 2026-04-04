@@ -236,6 +236,7 @@ Object.assign(DesignEditor.prototype, {
             this.closeInlineTextEditor?.(true);
         }
         this.hideGuideLines?.();
+        document.body.classList.remove('is-resizing-element');
         this.selectedElement = null;
         this.editorState = this.editorState || {};
         this.editorState.selectionType = null;
