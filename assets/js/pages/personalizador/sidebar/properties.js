@@ -1095,7 +1095,7 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(opacityAnchor, true);
         setHiddenState(topFontGroup, !isText);
         setHiddenState(topShapeGroup, !isShape);
-        setHiddenState(topImageGroup, !isImage);
+        setHiddenState(topImageGroup, !isImage || isQr);
         setHiddenState(topImageEditActions, !isImage || isQr);
         setHiddenState(topImageCropBtn, !isImage || isQr);
         setHiddenState(topImageFlipHBtn, !isImage || isQr);
@@ -1170,11 +1170,11 @@ Object.assign(DesignEditor.prototype, {
         }
         if (isImage) {
             this.applyQuickOpacityValue(opacityPercent, false);
-            if (topImageFlipHBtn) {
+            if (topImageFlipHBtn && !isQr) {
                 topImageFlipHBtn.classList.toggle('active', Boolean(elementData.flipX));
                 topImageFlipHBtn.setAttribute('aria-pressed', String(Boolean(elementData.flipX)));
             }
-            if (topImageFlipVBtn) {
+            if (topImageFlipVBtn && !isQr) {
                 topImageFlipVBtn.classList.toggle('active', Boolean(elementData.flipY));
                 topImageFlipVBtn.setAttribute('aria-pressed', String(Boolean(elementData.flipY)));
             }
