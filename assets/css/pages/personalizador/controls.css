@@ -1086,12 +1086,13 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group {
-        display: grid;
-        grid-template-columns: repeat(7, minmax(0, 1fr));
+        display: flex;
         align-items: center;
+        flex-wrap: nowrap;
         gap: 3px;
         padding-left: 0;
         border-left: 0;
+        min-width: 0;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group,
@@ -1102,15 +1103,16 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar.is-image-selection #top-image-group {
         display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        align-items: stretch;
+        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        align-items: center;
         gap: 6px;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group #top-image-edit-actions {
         display: grid;
-        grid-template-columns: repeat(3, minmax(0, 1fr));
+        grid-template-columns: repeat(3, 30px);
         gap: 3px;
+        justify-content: start;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group .editor-floating-opacity-control {
@@ -1157,8 +1159,8 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-select {
-        grid-column: 1 / 5;
-        width: 100%;
+        flex: 1 1 108px;
+        width: auto;
         min-width: 0;
         height: 30px;
         min-height: 30px;
@@ -1167,8 +1169,8 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-size {
-        grid-column: 5 / 8;
-        width: 100%;
+        flex: 0 0 74px;
+        width: 74px;
         min-width: 0;
         height: 30px;
         padding: 0 6px;
@@ -1176,8 +1178,9 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-font-btn {
-        width: 100%;
-        min-width: 0;
+        flex: 0 0 28px;
+        width: 28px;
+        min-width: 28px;
         height: 30px;
         min-height: 30px;
         padding: 0;
@@ -1186,20 +1189,40 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-control {
-        grid-column: 5 / 8;
-        width: 100%;
+        flex: 0 0 auto;
+        width: auto;
         justify-content: flex-end;
         gap: 4px;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-wrap,
     #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color {
-        width: 24px;
-        height: 24px;
+        width: 22px;
+        height: 22px;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-select {
         border-radius: 6px;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn {
+        width: 30px !important;
+        min-width: 30px !important;
+        padding: 0 !important;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn > span {
+        display: none !important;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn .keep-aspect-base-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn .keep-aspect-state-icon {
+        width: 11px !important;
+        height: 11px !important;
     }
 
     .editor-floating-actions {
@@ -1263,14 +1286,14 @@ body.is-camera-panning #canvas-stage {
         box-shadow: none !important;
     }
 
-    #editor-floating-context-bar:not(.is-text-selection) #top-keep-aspect-btn {
+    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection) #top-keep-aspect-btn {
         width: auto !important;
         min-width: 74px;
         padding: 0 8px;
         gap: 6px;
     }
 
-    #editor-floating-context-bar:not(.is-text-selection) #top-keep-aspect-btn > span {
+    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection) #top-keep-aspect-btn > span {
         display: inline-flex !important;
         align-items: center;
         font-size: 10px;
