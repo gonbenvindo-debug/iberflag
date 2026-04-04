@@ -975,13 +975,13 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar {
         top: 8px;
-        width: fit-content;
+        width: calc(100% - 12px);
         max-width: calc(100% - 12px);
         padding: 5px;
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
-        width: max-content;
+        width: 100%;
         max-width: 100%;
         justify-content: flex-start;
         padding-bottom: 2px;
@@ -999,7 +999,7 @@ body.is-camera-panning #canvas-stage {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 6px;
-        width: min(100%, 320px);
+        width: 100%;
         overflow-x: hidden;
     }
 
@@ -1042,6 +1042,10 @@ body.is-camera-panning #canvas-stage {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 3px;
+    }
+
+    #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
+        grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
     #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn {
@@ -1115,8 +1119,8 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar.is-qr-selection #top-qr-group {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
+        grid-template-columns: minmax(0, 1fr);
+        align-items: stretch;
         gap: 6px;
     }
 
@@ -1128,6 +1132,7 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-control {
         justify-content: flex-end;
         gap: 4px;
+        width: 100%;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-select {
