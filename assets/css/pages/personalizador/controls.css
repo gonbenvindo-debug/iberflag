@@ -1241,6 +1241,7 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-keep-aspect-btn,
+    #editor-floating-context-bar.is-shape-selection #top-keep-aspect-btn,
     #editor-floating-context-bar.is-qr-selection #top-keep-aspect-btn {
         display: none !important;
     }
@@ -1306,14 +1307,14 @@ body.is-camera-panning #canvas-stage {
         box-shadow: none !important;
     }
 
-    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection) #top-keep-aspect-btn {
+    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection):not(.is-shape-selection):not(.is-qr-selection) #top-keep-aspect-btn {
         width: auto !important;
         min-width: 74px;
         padding: 0 8px;
         gap: 6px;
     }
 
-    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection) #top-keep-aspect-btn > span {
+    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection):not(.is-shape-selection):not(.is-qr-selection) #top-keep-aspect-btn > span {
         display: inline-flex !important;
         align-items: center;
         font-size: 10px;
