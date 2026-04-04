@@ -2,6 +2,25 @@
 // GEOMETRY, TRANSFORMS & GUIDES
 // ============================================================
 Object.assign(DesignEditor.prototype, {
+    ensureGuideLineLayer() {
+        if (!this.canvas) {
+            return null;
+        }
+
+        let layer = this.canvas.querySelector('#guide-lines-layer');
+        if (!layer) {
+            layer = document.createElementNS('http://www.w3.org/2000/svg', 'g');
+            layer.setAttribute('id', 'guide-lines-layer');
+            layer.setAttribute('pointer-events', 'none');
+            layer.setAttribute('aria-hidden', 'true');
+            this.canvas.appendChild(layer);
+        } else if (layer.parentNode === this.canvas && layer !== this.canvas.lastElementChild) {
+            // Keep guide lines above overlays/print border to avoid disappearing while dragging.
+            this.canvas.appendChild(layer);
+        }
+
+        return layer;
+    },
 
     offsetElementGeometry(elementData, deltaX, deltaY, pointSet = null) {
         if (!elementData || (!deltaX && !deltaY && !pointSet)) {
@@ -360,6 +379,14 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        this.canvas.querySelectorAll('#guide-lines-layer .guide-line').forEach((line) => {
+            try {
+                line.remove();
+            } catch {
+                // ignore stale nodes
+            }
+        });
+
         this.canvas.querySelectorAll('.guide-line').forEach((line) => {
             try {
                 line.remove();
@@ -375,6 +402,9 @@ Object.assign(DesignEditor.prototype, {
         if (!this.showGuides) return;
 
         if (!snaps.x && !snaps.y) return;
+
+        const guideLayer = this.ensureGuideLineLayer();
+        if (!guideLayer) return;
 
         const b = this.getEditableBounds();
         // Extend lines slightly beyond canvas edges for visibility
@@ -403,17 +433,16 @@ Object.assign(DesignEditor.prototype, {
             line.setAttribute('stroke', colorFor(type));
             line.setAttribute('stroke-width', type?.includes('canvas') ? '1.5' : '1');
             line.setAttribute('stroke-dasharray', dashFor(type));
+            line.setAttribute('vector-effect', 'non-scaling-stroke');
             line.setAttribute('pointer-events', 'none');
             line.setAttribute('class', 'guide-line');
             line.setAttribute('opacity', '0.85');
-            this.canvas.appendChild(line);
+            guideLayer.appendChild(line);
             this.guideLines.push(line);
         };
 
         if (snaps.x) makeLine(snaps.x.value, y0, snaps.x.value, y1, snaps.x.type);
         if (snaps.y) makeLine(x0, snaps.y.value, x1, snaps.y.value, snaps.y.type);
-
-        this.bringPrintAreaOverlaysToFront();
     },
 
     hideGuideLines() {
@@ -444,6 +473,9 @@ Object.assign(DesignEditor.prototype, {
 
         if (!Number.isFinite(rotation) || !center) return;
 
+        const guideLayer = this.ensureGuideLineLayer();
+        if (!guideLayer) return;
+
         const snap = this.getRotationGuideSnap(rotation, 4);
 
         if (!snap.snapped) {
@@ -466,10 +498,11 @@ Object.assign(DesignEditor.prototype, {
         line.setAttribute('stroke', '#2563eb');
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '6,6');
+        line.setAttribute('vector-effect', 'non-scaling-stroke');
         line.setAttribute('pointer-events', 'none');
         line.setAttribute('class', 'guide-line guide-line-rotation');
         line.setAttribute('opacity', '0.9');
-        this.canvas.appendChild(line);
+        guideLayer.appendChild(line);
         this.guideLines.push(line);
 
         const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
@@ -479,10 +512,11 @@ Object.assign(DesignEditor.prototype, {
         ring.setAttribute('fill', '#ffffff');
         ring.setAttribute('stroke', '#2563eb');
         ring.setAttribute('stroke-width', '1.5');
+        ring.setAttribute('vector-effect', 'non-scaling-stroke');
         ring.setAttribute('pointer-events', 'none');
         ring.setAttribute('class', 'guide-line guide-line-rotation-center');
         ring.setAttribute('opacity', '0.95');
-        this.canvas.appendChild(ring);
+        guideLayer.appendChild(ring);
         this.guideLines.push(ring);
     },
 
