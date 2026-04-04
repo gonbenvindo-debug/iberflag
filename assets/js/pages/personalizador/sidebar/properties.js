@@ -1104,6 +1104,7 @@ Object.assign(DesignEditor.prototype, {
         if (floatingBar) {
             floatingBar.classList.toggle('hidden', !hasSelection);
             floatingBar.classList.toggle('is-text-selection', hasSelection && isText);
+            floatingBar.classList.toggle('is-image-selection', hasSelection && isImage && !isQr);
             floatingBar.classList.toggle('is-qr-selection', hasSelection && isQr);
         }
 

@@ -994,8 +994,26 @@ body.is-camera-panning #canvas-stage {
         overflow-x: hidden;
     }
 
+    #editor-floating-context-bar.is-image-selection .editor-floating-context-inner,
+    #editor-floating-context-bar.is-qr-selection .editor-floating-context-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
+        width: min(100%, 320px);
+        overflow-x: hidden;
+    }
+
     #editor-floating-context-bar.is-text-selection .editor-floating-actions,
     #editor-floating-context-bar.is-text-selection #top-font-group {
+        width: 100%;
+        min-width: 0;
+        overflow: hidden;
+    }
+
+    #editor-floating-context-bar.is-image-selection .editor-floating-actions,
+    #editor-floating-context-bar.is-image-selection #top-image-group,
+    #editor-floating-context-bar.is-qr-selection .editor-floating-actions,
+    #editor-floating-context-bar.is-qr-selection #top-qr-group {
         width: 100%;
         min-width: 0;
         overflow: hidden;
@@ -1006,13 +1024,40 @@ body.is-camera-panning #canvas-stage {
         display: none;
     }
 
+    #editor-floating-context-bar.is-image-selection .editor-floating-actions::-webkit-scrollbar,
+    #editor-floating-context-bar.is-image-selection #top-image-group::-webkit-scrollbar,
+    #editor-floating-context-bar.is-qr-selection .editor-floating-actions::-webkit-scrollbar,
+    #editor-floating-context-bar.is-qr-selection #top-qr-group::-webkit-scrollbar {
+        display: none;
+    }
+
     #editor-floating-context-bar.is-text-selection .editor-floating-actions {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
         gap: 3px;
     }
 
+    #editor-floating-context-bar.is-image-selection .editor-floating-actions,
+    #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
+        display: grid;
+        grid-template-columns: repeat(5, minmax(0, 1fr));
+        gap: 3px;
+    }
+
     #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn {
+        width: 100%;
+        min-width: 0;
+        height: 30px;
+        min-height: 30px;
+        border: 0 !important;
+        border-radius: 6px;
+        padding: 0;
+        background: transparent;
+        box-shadow: none !important;
+    }
+
+    #editor-floating-context-bar.is-image-selection .editor-floating-actions .editor-floating-btn,
+    #editor-floating-context-bar.is-qr-selection .editor-floating-actions .editor-floating-btn {
         width: 100%;
         min-width: 0;
         height: 30px;
@@ -1031,6 +1076,58 @@ body.is-camera-panning #canvas-stage {
         gap: 3px;
         padding-left: 0;
         border-left: 0;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group,
+    #editor-floating-context-bar.is-qr-selection #top-qr-group {
+        padding-left: 0;
+        border-left: 0;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        gap: 6px;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group #top-image-edit-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 30px);
+        gap: 3px;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group .editor-floating-opacity-control {
+        min-width: 0;
+        width: 100%;
+        gap: 6px;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group .desktop-inline-range {
+        width: 100%;
+        min-width: 0;
+    }
+
+    #editor-floating-context-bar.is-image-selection #top-image-group .desktop-inline-value {
+        min-width: 42px;
+        text-align: right;
+    }
+
+    #editor-floating-context-bar.is-qr-selection #top-qr-group {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 6px;
+    }
+
+    #editor-floating-context-bar.is-qr-selection #top-qr-content {
+        width: 100%;
+        min-width: 0;
+    }
+
+    #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-control {
+        justify-content: flex-end;
+        gap: 4px;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-select {
