@@ -981,45 +981,26 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection {
-        width: min(calc(100% - 12px), 460px);
+        width: min(calc(100% - 12px), 366px);
     }
 
     #editor-floating-context-bar.is-image-selection {
-        width: min(calc(100% - 12px), 380px);
+        width: min(calc(100% - 12px), 342px);
     }
 
     #editor-floating-context-bar.is-qr-selection {
-        width: min(calc(100% - 12px), 360px);
+        width: min(calc(100% - 12px), 328px);
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
+        gap: 6px;
         width: 100%;
         max-width: 100%;
-        justify-content: flex-start;
         padding-bottom: 2px;
-    }
-
-    #editor-floating-context-bar.is-text-selection .editor-floating-context-inner {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 6px;
         overflow-x: hidden;
-    }
-
-    #editor-floating-context-bar.is-image-selection .editor-floating-context-inner,
-    #editor-floating-context-bar.is-qr-selection .editor-floating-context-inner {
-        display: grid;
-        grid-template-columns: minmax(0, 1fr);
-        gap: 6px;
-        width: 100%;
-        overflow-x: hidden;
-    }
-
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-text-selection #top-font-group {
-        width: 100%;
-        min-width: 0;
-        overflow: hidden;
+        align-items: stretch;
     }
 
     #editor-floating-context-bar.is-image-selection .editor-floating-actions,
@@ -1031,11 +1012,6 @@ body.is-camera-panning #canvas-stage {
         overflow: hidden;
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions::-webkit-scrollbar,
-    #editor-floating-context-bar.is-text-selection #top-font-group::-webkit-scrollbar {
-        display: none;
-    }
-
     #editor-floating-context-bar.is-image-selection .editor-floating-actions::-webkit-scrollbar,
     #editor-floating-context-bar.is-image-selection #top-image-group::-webkit-scrollbar,
     #editor-floating-context-bar.is-qr-selection .editor-floating-actions::-webkit-scrollbar,
@@ -1043,35 +1019,21 @@ body.is-camera-panning #canvas-stage {
         display: none;
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions {
-        display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 3px;
-    }
-
+    #editor-floating-context-bar.is-text-selection .editor-floating-actions,
     #editor-floating-context-bar.is-image-selection .editor-floating-actions,
     #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
         display: grid;
         grid-template-columns: repeat(5, minmax(0, 1fr));
-        gap: 3px;
+        gap: 4px;
+        width: 100%;
+        min-width: 0;
     }
 
     #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
         grid-template-columns: repeat(4, minmax(0, 1fr));
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn {
-        width: 100%;
-        min-width: 0;
-        height: 30px;
-        min-height: 30px;
-        border: 0 !important;
-        border-radius: 6px;
-        padding: 0;
-        background: transparent;
-        box-shadow: none !important;
-    }
-
+    #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn,
     #editor-floating-context-bar.is-image-selection .editor-floating-actions .editor-floating-btn,
     #editor-floating-context-bar.is-qr-selection .editor-floating-actions .editor-floating-btn {
         width: 100%;
@@ -1085,40 +1047,41 @@ body.is-camera-panning #canvas-stage {
         box-shadow: none !important;
     }
 
+    #editor-floating-context-bar.is-text-selection #top-font-group,
+    #editor-floating-context-bar.is-image-selection #top-image-group,
+    #editor-floating-context-bar.is-qr-selection #top-qr-group {
+        width: 100%;
+        min-width: 0;
+        padding-left: 0;
+        border-left: 0;
+        overflow: hidden;
+    }
+
     #editor-floating-context-bar.is-text-selection #top-font-group {
         display: flex;
         align-items: center;
         flex-wrap: nowrap;
-        gap: 3px;
-        padding-left: 0;
-        border-left: 0;
-        min-width: 0;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-image-group,
-    #editor-floating-context-bar.is-qr-selection #top-qr-group {
-        padding-left: 0;
-        border-left: 0;
+        gap: 4px;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group {
         display: grid;
-        grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
+        grid-template-columns: 94px minmax(0, 1fr);
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group #top-image-edit-actions {
         display: grid;
         grid-template-columns: repeat(3, 30px);
-        gap: 3px;
+        gap: 2px;
         justify-content: start;
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group .editor-floating-opacity-control {
         min-width: 0;
         width: 100%;
-        gap: 6px;
+        gap: 8px;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
@@ -1130,26 +1093,32 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-image-selection #top-image-group .desktop-inline-value {
-        min-width: 42px;
+        min-width: 40px;
         text-align: right;
+        font-size: 12px;
+        font-weight: 700;
     }
 
     #editor-floating-context-bar.is-qr-selection #top-qr-group {
         display: grid;
-        grid-template-columns: minmax(0, 1.55fr) minmax(0, 0.45fr);
+        grid-template-columns: minmax(0, 1fr) auto;
         align-items: center;
-        gap: 6px;
+        gap: 8px;
     }
 
     #editor-floating-context-bar.is-qr-selection #top-qr-content {
         width: 100%;
         min-width: 0;
+        height: 30px;
+        min-height: 30px;
+        font-size: 12px;
     }
 
     #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-control {
-        justify-content: flex-end;
+        justify-content: flex-start;
         gap: 4px;
-        width: 100%;
+        width: auto;
+        flex: 0 0 auto;
     }
 
     #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-wrap,
@@ -1159,28 +1128,28 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-select {
-        flex: 1 1 108px;
+        flex: 1 1 112px;
         width: auto;
-        min-width: 0;
+        min-width: 112px;
         height: 30px;
         min-height: 30px;
         padding: 0 8px;
-        font-size: 14px;
+        font-size: 13px;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-size {
-        flex: 0 0 74px;
-        width: 74px;
-        min-width: 0;
+        flex: 0 0 72px;
+        width: 72px;
+        min-width: 72px;
         height: 30px;
         padding: 0 6px;
         justify-content: space-between;
     }
 
     #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-font-btn {
-        flex: 0 0 28px;
-        width: 28px;
-        min-width: 28px;
+        flex: 0 0 26px;
+        width: 26px;
+        min-width: 26px;
         height: 30px;
         min-height: 30px;
         padding: 0;
@@ -1223,6 +1192,11 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn .keep-aspect-state-icon {
         width: 11px !important;
         height: 11px !important;
+    }
+
+    #editor-floating-context-bar.is-text-selection #top-keep-aspect-btn,
+    #editor-floating-context-bar.is-qr-selection #top-keep-aspect-btn {
+        display: none !important;
     }
 
     .editor-floating-actions {
