@@ -926,6 +926,19 @@ body.is-camera-panning #canvas-stage {
         border-radius: 6px;
     }
 
+    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-control {
+        grid-column: span 2;
+        width: 100%;
+        justify-content: flex-end;
+        gap: 4px;
+    }
+
+    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-wrap,
+    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color {
+        width: 22px;
+        height: 22px;
+    }
+
     .editor-floating-actions {
         gap: 2px;
     }
@@ -1249,6 +1262,37 @@ body.is-camera-panning #canvas-stage {
     padding: 0;
     background: transparent;
     cursor: pointer;
+}
+
+.top-inline-color-control {
+    gap: 5px;
+}
+
+.top-inline-color-wrap {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+}
+
+.top-inline-color {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+}
+
+.top-inline-color::-webkit-color-swatch-wrapper {
+    padding: 0;
+    border-radius: 999px;
+}
+
+.top-inline-color::-webkit-color-swatch {
+    border: 0;
+    border-radius: 999px;
+}
+
+.top-inline-color::-moz-color-swatch {
+    border: 0;
+    border-radius: 999px;
 }
 
 .desktop-inline-color-control {

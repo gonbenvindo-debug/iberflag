@@ -416,9 +416,9 @@ Object.assign(DesignEditor.prototype, {
             if (type === 'center-canvas') {
                 return {
                     stroke: '#ef4825',
-                    strokeWidth: '2',
-                    dash: 'none',
-                    opacity: '0.98'
+                    strokeWidth: '1.9',
+                    dash: '8,4',
+                    opacity: '0.96'
                 };
             }
 
@@ -427,24 +427,24 @@ Object.assign(DesignEditor.prototype, {
                     stroke: '#ef4825',
                     strokeWidth: '1.5',
                     dash: '7,4',
-                    opacity: '0.9'
+                    opacity: '0.88'
                 };
             }
 
             if (type === 'center-element') {
                 return {
                     stroke: '#0f172a',
-                    strokeWidth: '1.5',
-                    dash: '4,4',
-                    opacity: '0.82'
+                    strokeWidth: '1',
+                    dash: '3,4',
+                    opacity: '0.58'
                 };
             }
 
             return {
                 stroke: '#64748b',
-                strokeWidth: '1',
-                dash: '3,4',
-                opacity: '0.72'
+                strokeWidth: '0.9',
+                dash: '2,4',
+                opacity: '0.52'
             };
         };
 
@@ -457,11 +457,7 @@ Object.assign(DesignEditor.prototype, {
             const style = styleFor(type);
             line.setAttribute('stroke', style.stroke);
             line.setAttribute('stroke-width', style.strokeWidth);
-            if (style.dash === 'none') {
-                line.removeAttribute('stroke-dasharray');
-            } else {
-                line.setAttribute('stroke-dasharray', style.dash);
-            }
+            line.setAttribute('stroke-dasharray', style.dash);
             line.setAttribute('vector-effect', 'non-scaling-stroke');
             line.setAttribute('pointer-events', 'none');
             line.setAttribute('class', 'guide-line guide-line-support');

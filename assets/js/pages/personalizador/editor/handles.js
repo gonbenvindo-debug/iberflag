@@ -486,6 +486,8 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('prop-text-color').value = elementData.color;
             const desktopTextColor = document.getElementById('desktop-text-color');
             if (desktopTextColor) desktopTextColor.value = elementData.color;
+            const topTextColor = document.getElementById('top-text-color');
+            if (topTextColor) topTextColor.value = elementData.color;
             const textRot = this.normalizeRotation(elementData.rotation || 0);
             document.getElementById('prop-text-rotation').value = textRot;
             document.getElementById('prop-text-rotation-val').textContent = textRot;

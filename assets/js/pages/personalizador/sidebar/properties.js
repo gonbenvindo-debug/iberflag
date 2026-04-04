@@ -60,6 +60,8 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.color = value;
             const desktopTextColor = document.getElementById('desktop-text-color');
             if (desktopTextColor) desktopTextColor.value = value;
+            const topTextColor = document.getElementById('top-text-color');
+            if (topTextColor) topTextColor.value = value;
             this.queueHistorySave();
             this.renderQuickFontPopover?.();
         }
@@ -218,6 +220,7 @@ Object.assign(DesignEditor.prototype, {
         const desktopSizeDecreaseBtn = document.getElementById('desktop-text-size-decrease');
         const desktopSizeIncreaseBtn = document.getElementById('desktop-text-size-increase');
         const desktopTextColor = document.getElementById('desktop-text-color');
+        const topTextColor = document.getElementById('top-text-color');
         const quickSizeDecreaseBtn = document.getElementById('quick-text-size-decrease');
         const quickSizeIncreaseBtn = document.getElementById('quick-text-size-increase');
         const textFont = document.getElementById('prop-text-font');
@@ -345,6 +348,11 @@ Object.assign(DesignEditor.prototype, {
             desktopTextColor.disabled = !hasText;
             desktopTextColor.classList.toggle('is-disabled', !hasText);
             desktopTextColor.value = hasText ? (this.selectedElement.color || '#000000') : '#000000';
+        }
+        if (topTextColor) {
+            topTextColor.disabled = !hasText;
+            topTextColor.classList.toggle('is-disabled', !hasText);
+            topTextColor.value = hasText ? (this.selectedElement.color || '#000000') : '#000000';
         }
 
         fontSelect.disabled = !hasText;
@@ -691,13 +699,13 @@ Object.assign(DesignEditor.prototype, {
 
         ['prop-text-bold', 'prop-text-italic', 'prop-text-underline', 'prop-text-caps']
             .forEach((id) => setDisabled(id, !isText));
-        ['desktop-text-color'].forEach((id) => setDisabled(id, !isText));
+        ['desktop-text-color', 'top-text-color', 'top-text-eyedropper'].forEach((id) => setDisabled(id, !isText));
 
         ['prop-image-fit-contain', 'prop-image-fit-cover', 'prop-image-fit-fill']
             .forEach((id) => setDisabled(id, !isImage));
         ['desktop-opacity-range']
             .forEach((id) => setDisabled(id, !isImage));
-        ['desktop-shape-fill-color', 'desktop-shape-stroke-color']
+        ['desktop-shape-fill-color', 'desktop-shape-stroke-color', 'top-shape-fill-color', 'top-shape-fill-eyedropper']
             .forEach((id) => setDisabled(id, !isShape));
 
         setActive('prop-text-bold', isText && Boolean(elementData.bold));
@@ -1094,6 +1102,10 @@ Object.assign(DesignEditor.prototype, {
             this.renderQuickFontPopover();
         } else {
             this.closeQuickFontPopover();
+        }
+        if (isText) {
+            const topTextColor = document.getElementById('top-text-color');
+            if (topTextColor) topTextColor.value = this.sanitizeColorValue(elementData.color, '#000000');
         }
         if (isShape) {
             const topShapeFillColor = document.getElementById('top-shape-fill-color');

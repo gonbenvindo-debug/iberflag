@@ -862,7 +862,9 @@ Object.assign(DesignEditor.prototype, {
         const desktopOpacityRange = document.getElementById('desktop-opacity-range');
         const topOpacityRange = document.getElementById('top-opacity-range');
         const desktopTextColor = document.getElementById('desktop-text-color');
+        const topTextColor = document.getElementById('top-text-color');
         const desktopTextEyedropper = document.getElementById('desktop-text-eyedropper');
+        const topTextEyedropper = document.getElementById('top-text-eyedropper');
         const desktopShapeFillColor = document.getElementById('desktop-shape-fill-color');
         const desktopShapeFillEyedropper = document.getElementById('desktop-shape-fill-eyedropper');
         const desktopShapeStrokeColor = document.getElementById('desktop-shape-stroke-color');
@@ -895,6 +897,7 @@ Object.assign(DesignEditor.prototype, {
         if (desktopOpacityRange) desktopOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
         if (topOpacityRange) topOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
         if (desktopTextColor) desktopTextColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
+        if (topTextColor) topTextColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (desktopShapeFillColor) desktopShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
         if (desktopShapeStrokeColor) desktopShapeStrokeColor.addEventListener('input', (e) => this.updateShapeStroke(e.target.value));
         if (topShapeFillColor) topShapeFillColor.addEventListener('input', (e) => this.updateShapeFill(e.target.value));
@@ -931,6 +934,7 @@ Object.assign(DesignEditor.prototype, {
         };
 
         bindEyeDropper(desktopTextEyedropper, desktopTextColor, (color) => this.updateTextColor(color));
+        bindEyeDropper(topTextEyedropper, topTextColor, (color) => this.updateTextColor(color));
         bindEyeDropper(desktopShapeFillEyedropper, desktopShapeFillColor, (color) => this.updateShapeFill(color));
         bindEyeDropper(desktopShapeStrokeEyedropper, desktopShapeStrokeColor, (color) => this.updateShapeStroke(color));
         bindEyeDropper(topShapeFillEyedropper, topShapeFillColor, (color) => this.updateShapeFill(color));
