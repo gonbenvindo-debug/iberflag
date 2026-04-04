@@ -1,27 +1,173 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Sobre Nos | IberFlag</title>
-    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j" />
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sobre Nos - IberFlag</title>
+    <meta name="description"
+        content="Conheca a IberFlag: equipa focada em flybanners e publicidade fisica para marcas em Portugal e Espanha, com producao rapida e acompanhamento dedicado.">
+    <link rel="canonical" href="https://iberflag.vercel.app/sobre.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Sobre Nos - IberFlag">
+    <meta property="og:description"
+        content="Especialistas em publicidade fisica para eventos, retalho e ativacoes de marca em toda a Peninsula Iberica.">
+    <meta property="og:url" content="https://iberflag.vercel.app/sobre.html">
+    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
+    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script src="/assets/js/core/icon-engine.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+    <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <main class="max-w-4xl mx-auto px-6 py-16">
-        <h1 class="text-4xl font-bold mb-6">Sobre Nos</h1>
-        <p class="text-lg text-gray-700 mb-4">
-            A IberFlag e especializada em solucoes de publicidade visual para empresas em Portugal e Espanha.
-        </p>
-        <p class="text-gray-700 mb-10">
-            Esta pagina foi adicionada para consolidar a nova estrutura modular da aplicacao e manter todos os links internos funcionais.
-        </p>
-        <a href="/" class="inline-flex items-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-            Voltar ao inicio
-        </a>
+
+<body class="app-page bg-gray-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Inicio</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link text-blue-600">Sobre Nos</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn"
+                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700" aria-label="Abrir menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Inicio</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 text-blue-600">Sobre Nos</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Sobre a IberFlag</h1>
+            <p class="text-xl text-blue-100">Publicidade fisica com foco em impacto visual, rapidez e fiabilidade.</p>
+        </div>
+    </section>
+
+    <main class="py-14">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-10">
+            <section class="bg-white rounded-2xl border border-gray-200 p-8">
+                <h2 class="text-2xl font-bold mb-4">Quem somos</h2>
+                <p class="text-gray-700 leading-relaxed mb-4">
+                    A IberFlag e uma equipa especializada em producao de materiais promocionais para marcas que precisam
+                    de presenca fisica forte em eventos, lojas e ativacoes.
+                </p>
+                <p class="text-gray-700 leading-relaxed">
+                    Trabalhamos com clientes em Portugal e Espanha, com processos simples desde a personalizacao ate a
+                    entrega final, sempre com suporte humano durante todo o percurso.
+                </p>
+            </section>
+
+            <section class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <article class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <i data-lucide="shield-check" class="w-7 h-7 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold text-lg mb-2">Qualidade consistente</h3>
+                    <p class="text-gray-600">Materiais resistentes e revisao tecnica antes da producao.</p>
+                </article>
+                <article class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <i data-lucide="clock-3" class="w-7 h-7 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold text-lg mb-2">Execucao rapida</h3>
+                    <p class="text-gray-600">Fluxo otimizado para reduzir tempo entre aprovacao e envio.</p>
+                </article>
+                <article class="bg-white rounded-2xl border border-gray-200 p-6">
+                    <i data-lucide="map-pin" class="w-7 h-7 text-blue-600 mb-3"></i>
+                    <h3 class="font-bold text-lg mb-2">Cobertura iberica</h3>
+                    <p class="text-gray-600">Operacao orientada para Portugal e Espanha com logistica previsivel.</p>
+                </article>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-8">
+                <h2 class="text-2xl font-bold mb-4">Como trabalhamos</h2>
+                <ol class="space-y-4 text-gray-700">
+                    <li><strong>1.</strong> Escolhe o produto e personaliza no editor.</li>
+                    <li><strong>2.</strong> Validamos o ficheiro e os detalhes de producao.</li>
+                    <li><strong>3.</strong> Produzimos, embalamos e enviamos com acompanhamento.</li>
+                </ol>
+            </section>
+
+            <section class="bg-blue-600 text-white rounded-2xl p-8 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                <div>
+                    <h2 class="text-2xl font-bold mb-1">Pronto para avancar com o teu projeto?</h2>
+                    <p class="text-blue-100">Fala connosco para recomendacoes de formato e quantidade.</p>
+                </div>
+                <a href="/contacto.html"
+                    class="inline-flex items-center justify-center px-6 py-3 rounded-xl bg-white text-blue-700 font-bold hover:bg-blue-50 transition">
+                    Falar com a equipa
+                </a>
+            </section>
+        </div>
     </main>
 
- <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="mb-6">
+                        <a href="/" class="brand-logo-badge" aria-label="IberFlag">
+                            <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
+                        </a>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
+                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nos</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informacoes</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Politica de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devolucoes</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2026 IberFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@iberflag.pt" class="hover:text-white transition">geral@iberflag.pt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>lucide.createIcons();</script>
 </body>
+
 </html>

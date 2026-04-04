@@ -1,27 +1,166 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Politica de Privacidade | IberFlag</title>
-    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j" />
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Politica de Privacidade - IberFlag</title>
+    <meta name="description"
+        content="Politica de privacidade da IberFlag: como recolhemos, utilizamos e protegemos dados pessoais durante navegação, contacto e compra.">
+    <link rel="canonical" href="https://iberflag.vercel.app/privacidade.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Politica de Privacidade - IberFlag">
+    <meta property="og:description"
+        content="Informacao sobre tratamento de dados pessoais, base legal, direitos do titular e contactos de privacidade.">
+    <meta property="og:url" content="https://iberflag.vercel.app/privacidade.html">
+    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
+    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script src="/assets/js/core/icon-engine.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+    <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <main class="max-w-4xl mx-auto px-6 py-16">
-        <h1 class="text-4xl font-bold mb-6">Politica de Privacidade</h1>
-        <p class="text-lg text-gray-700 mb-4">
-            Explicamos como os dados pessoais sao recolhidos, utilizados e protegidos na plataforma IberFlag.
-        </p>
-        <p class="text-gray-700 mb-10">
-            Esta pagina garante continuidade dos links existentes apos a reorganizacao dos ficheiros da app.
-        </p>
-        <a href="/" class="inline-flex items-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-            Voltar ao inicio
-        </a>
+
+<body class="app-page bg-gray-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Inicio</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nos</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn"
+                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700" aria-label="Abrir menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Inicio</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nos</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-14">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Politica de Privacidade</h1>
+            <p class="text-xl text-blue-100">Transparencia total no tratamento dos teus dados pessoais.</p>
+        </div>
+    </section>
+
+    <main class="py-14">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">1. Dados recolhidos</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Recolhemos apenas os dados necessarios para processar pedidos de contacto, encomendas e suporte:
+                    nome, email, telefone, morada de entrega e informacoes de faturacao quando aplicavel.
+                </p>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">2. Finalidade de utilizacao</h2>
+                <p class="text-gray-700 leading-relaxed mb-3">Os dados sao usados para:</p>
+                <ul class="list-disc pl-5 space-y-1 text-gray-700">
+                    <li>processar e entregar encomendas;</li>
+                    <li>prestar apoio ao cliente e responder a pedidos;</li>
+                    <li>cumprir obrigacoes legais e fiscais.</li>
+                </ul>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">3. Conservacao e seguranca</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Mantemos os dados durante o periodo estritamente necessario para operacao e conformidade legal.
+                    Aplicamos medidas tecnicas e organizativas para reduzir risco de acesso indevido.
+                </p>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">4. Partilha de dados</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Os dados podem ser partilhados com parceiros de logistica e plataformas tecnologicas apenas para
+                    execucao do servico. Nunca vendemos dados pessoais a terceiros.
+                </p>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">5. Direitos do titular</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Podes solicitar acesso, retificacao, apagamento ou limitacao de tratamento a qualquer momento,
+                    enviando email para <a href="mailto:geral@iberflag.pt"
+                        class="text-blue-600 hover:underline">geral@iberflag.pt</a>.
+                </p>
+            </section>
+        </div>
     </main>
 
- <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="mb-6">
+                        <a href="/" class="brand-logo-badge" aria-label="IberFlag">
+                            <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
+                        </a>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
+                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nos</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informacoes</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Politica de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devolucoes</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2026 IberFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@iberflag.pt" class="hover:text-white transition">geral@iberflag.pt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>lucide.createIcons();</script>
 </body>
+
 </html>

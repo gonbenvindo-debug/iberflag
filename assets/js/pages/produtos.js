@@ -400,7 +400,7 @@ async function openTemplatesModal(productId, productName) {
     const modal = document.getElementById('templates-modal');
 
     if (!modalProductName || !modal) {
-        window.location.href = `/pages/personalizar.html?produto=${productId}`;
+        window.location.href = `/personalizar.html?produto=${productId}`;
         return;
     }
 
@@ -422,12 +422,12 @@ function closeTemplatesModal() {
 
 function startBlank() {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto=${currentProductId}`;
+    window.location.href = `/personalizar.html?produto=${currentProductId}`;
 }
 
 function selectTemplate(templateId) {
     if (!currentProductId) return;
-    window.location.href = `/pages/personalizar.html?produto=${currentProductId}&template=${templateId}`;
+    window.location.href = `/personalizar.html?produto=${currentProductId}&template=${templateId}`;
 }
 
 function renderTemplatesLoading(message = 'A carregar templates...') {

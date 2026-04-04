@@ -1,27 +1,166 @@
 <!DOCTYPE html>
 <html lang="pt-PT">
+
 <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Devolucoes | IberFlag</title>
-    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j" />
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u" />
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Devolucoes - IberFlag</title>
+    <meta name="description"
+        content="Politica de devolucoes da IberFlag para produtos personalizados: condicoes de troca, defeitos de fabrico, prazos e procedimento de suporte.">
+    <link rel="canonical" href="https://iberflag.vercel.app/devolucoes.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Devolucoes - IberFlag">
+    <meta property="og:description"
+        content="Consulta as regras de devolucao, trocas e reembolso aplicaveis a encomendas IberFlag.">
+    <meta property="og:url" content="https://iberflag.vercel.app/devolucoes.html">
+    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
+    <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
+    <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+    <script src="/assets/js/core/icon-engine.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+    <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
-<body class="bg-gray-50 text-gray-900">
-    <main class="max-w-4xl mx-auto px-6 py-16">
-        <h1 class="text-4xl font-bold mb-6">Devolucoes</h1>
-        <p class="text-lg text-gray-700 mb-4">
-            Aqui encontra as condicoes para trocas, devolucoes e reembolsos dos produtos personalizados.
-        </p>
-        <p class="text-gray-700 mb-10">
-            Esta pagina foi criada para manter os caminhos internos consistentes com a nova estrutura modular.
-        </p>
-        <a href="/" class="inline-flex items-center px-5 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-            Voltar ao inicio
-        </a>
+
+<body class="app-page bg-gray-50">
+    <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <a href="/" class="flex items-center gap-2 group">
+                    <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
+                </a>
+                <div class="hidden md:flex space-x-6 items-center">
+                    <a href="/" class="nav-link">Inicio</a>
+                    <a href="/produtos.html" class="nav-link">Produtos</a>
+                    <a href="/sobre.html" class="nav-link">Sobre Nos</a>
+                    <a href="/faq.html" class="nav-link">FAQ</a>
+                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <button id="cart-btn"
+                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        <span class="hidden sm:inline">Carrinho</span>
+                        <span id="cart-count"
+                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                    </button>
+                </div>
+                <button id="mobile-menu-btn" class="md:hidden text-gray-700" aria-label="Abrir menu">
+                    <i data-lucide="menu" class="w-6 h-6"></i>
+                </button>
+            </div>
+        </div>
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
+            <div class="px-4 py-4 space-y-3">
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Inicio</a>
+                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nos</a>
+                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto.html" class="block py-2 hover:text-blue-600 transition">Contacto</a>
+            </div>
+        </div>
+    </nav>
+
+    <section class="bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-14">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+            <h1 class="text-4xl md:text-5xl font-bold mb-4">Devolucoes e Reembolsos</h1>
+            <p class="text-xl text-blue-100">Informacao clara para resolver qualquer problema com rapidez.</p>
+        </div>
+    </section>
+
+    <main class="py-14">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">1. Produtos personalizados</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Por se tratar de producao personalizada, nao e possivel devolucao por arrependimento apos inicio da
+                    producao. Antes de confirmar, verifica sempre o design final no editor.
+                </p>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">2. Quando aceitamos devolucao</h2>
+                <ul class="list-disc pl-5 space-y-2 text-gray-700">
+                    <li>Defeito de fabrico comprovado;</li>
+                    <li>Erro de producao face ao ficheiro aprovado;</li>
+                    <li>Dano de transporte com evidencia fotografica imediata.</li>
+                </ul>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">3. Prazo para reportar</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Qualquer anomalia deve ser comunicada ate 48 horas apos a rececao da encomenda, com numero da
+                    encomenda, descricao do problema e fotografias.
+                </p>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">4. Processo de analise</h2>
+                <ol class="space-y-2 text-gray-700">
+                    <li><strong>1.</strong> Rececao do pedido e validacao inicial.</li>
+                    <li><strong>2.</strong> Analise tecnica pela equipa.</li>
+                    <li><strong>3.</strong> Solucao proposta: reposicao, correcao ou reembolso parcial/total.</li>
+                </ol>
+            </section>
+
+            <section class="bg-white rounded-2xl border border-gray-200 p-7">
+                <h2 class="text-2xl font-bold mb-3">5. Contacto para devolucoes</h2>
+                <p class="text-gray-700 leading-relaxed">
+                    Envia o teu pedido para <a href="mailto:geral@iberflag.pt"
+                        class="text-blue-600 hover:underline">geral@iberflag.pt</a> ou usa
+                    <a href="/contacto.html" class="text-blue-600 hover:underline">a pagina de contacto</a>.
+                </p>
+            </section>
+        </div>
     </main>
 
- <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260401e"></script>
+    <footer class="bg-gray-900 text-gray-400 py-16">
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+                <div class="col-span-1 md:col-span-2">
+                    <div class="mb-6">
+                        <a href="/" class="brand-logo-badge" aria-label="IberFlag">
+                            <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
+                        </a>
+                    </div>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em
+                        Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nos</a></li>
+                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                    </ul>
+                </div>
+                <div>
+                    <h4 class="text-white font-bold mb-4">Informacoes</h4>
+                    <ul class="space-y-3">
+                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/privacidade.html" class="hover:text-white transition">Politica de Privacidade</a></li>
+                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devolucoes</a></li>
+                    </ul>
+                </div>
+            </div>
+            <div class="border-t border-gray-800 pt-8">
+                <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+                    <div class="text-sm">© 2026 IberFlag. Todos os direitos reservados.</div>
+                    <div class="flex items-center gap-2 text-sm">
+                        <i data-lucide="mail" class="w-4 h-4"></i>
+                        <a href="mailto:geral@iberflag.pt" class="hover:text-white transition">geral@iberflag.pt</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <script>lucide.createIcons();</script>
 </body>
+
 </html>

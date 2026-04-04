@@ -606,7 +606,7 @@ document.addEventListener('click', (e) => {
         showToast('Guarde o produto primeiro', 'warning');
         return;
     }
-    window.open(`/pages/personalizar.html?produto=${currentProductId}&admin=true`, '_blank');
+    window.open(`/personalizar.html?produto=${currentProductId}&admin=true`, '_blank');
 });
 
 // ===== SVG FILE UPLOAD HANDLER =====
@@ -2071,7 +2071,7 @@ function openTemplateInCustomizerFromCard(templateId) {
         return;
     }
 
-    const customizerUrl = `/pages/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(templateId))}`;
+    const customizerUrl = `/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(templateId))}`;
     window.open(customizerUrl, '_blank', 'noopener,noreferrer');
 }
 

@@ -280,6 +280,7 @@ if (placeOrderBtn) {
 
         // Get form data
         const formData = new FormData(checkoutForm);
+        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'cartao_online';
         const customerData = {
             nome: formData.get('nome'),
             email: formData.get('email'),
@@ -348,7 +349,7 @@ if (placeOrderBtn) {
                     ? buildOrderNotesWithMeta(orderNotes, orderMeta)
                     : orderNotes,
                 morada_envio: `${customerData.morada}, ${customerData.codigo_postal} ${customerData.cidade}`,
-                metodo_pagamento: 'stripe_placeholder'
+                metodo_pagamento: selectedPaymentMethod
             };
 
             const { data: order, error: orderError } = await supabaseClient
@@ -368,7 +369,6 @@ if (placeOrderBtn) {
             // Clear cart
             cart = [];
             localStorage.removeItem('iberflag_cart');
-            localStorage.removeItem('iberflag_cart');
             localStorage.removeItem('cart');
             if (window.CartAssetStore?.cleanupUnusedDesigns) {
                 window.CartAssetStore.cleanupUnusedDesigns([]).catch((cleanupError) => {
@@ -376,18 +376,9 @@ if (placeOrderBtn) {
                 });
             }
 
-            // Show success message
+            // Redirect directly to tracking after success
             setTimeout(() => {
-                alert(`✅ Encomenda ${orderNumber} criada com sucesso!\n\n` +
-                      `📧 Receberá um email de confirmação em breve.\n\n` +
-                      `💳 NOTA: A integração com Stripe será implementada em breve.\n` +
-                      `Por enquanto, a encomenda foi registada no sistema.\n\n` +
-                        `🔎 Pode acompanhar o estado em /encomenda.html?codigo=${orderNumber} ou pesquisar em /encomendas.html.\n\n` +
-                      `📦 Produção: 12-24h\n` +
-                      `🚚 Entrega: 2-4 dias úteis\n\n` +
-                      `Total: ${total.toFixed(2)}€`);
-                
-                window.location.href = '/';
+                window.location.href = `/encomenda.html?codigo=${encodeURIComponent(orderNumber)}`;
             }, 1000);
 
         } catch (error) {

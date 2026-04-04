@@ -502,7 +502,7 @@ Object.assign(DesignEditor.prototype, {
 
         const closeLink = document.querySelector('#editor-nav a[href="/produtos.html"]');
         if (closeLink) {
-            closeLink.href = '/pages/admin.html#produtos';
+            closeLink.href = '/admin.html#produtos';
             closeLink.title = 'Voltar ao Admin';
         }
     },
@@ -587,7 +587,7 @@ Object.assign(DesignEditor.prototype, {
             }
 
             setTimeout(() => {
-                window.location.href = '/pages/admin.html#produtos';
+                window.location.href = '/admin.html#produtos';
             }, 1200);
         } catch (err) {
             console.error('Erro ao guardar design:', err);
