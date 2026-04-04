@@ -1185,9 +1185,14 @@ Object.assign(DesignEditor.prototype, {
             return `${baseLabel} ${nextCount}`;
         };
         
-        layersList.innerHTML = this.elements.map((el, index) => `
+        const orderedLayers = this.elements
+            .map((el, index) => ({ el, index }))
+            .reverse();
+
+        layersList.innerHTML = orderedLayers.map(({ el, index }, visualIndex) => `
             <div class="layer-item ${selectedId === String(el.id) ? 'is-selected' : ''}"
                  data-layer-index="${index}"
+                 data-layer-visual-index="${visualIndex}"
                  data-layer-id="${String(el.id)}"
                  draggable="true">
                 <div class="layer-item-row">
@@ -1196,10 +1201,10 @@ Object.assign(DesignEditor.prototype, {
                         <span class="layer-item-label">${getLayerLabel(el)}</span>
                     </div>
                     <div class="layer-item-actions">
-                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="layer-item-action" ${index === 0 ? 'disabled' : ''}>
+                        <button type="button" data-layer-action="up" data-layer-index="${index}" class="layer-item-action" ${visualIndex === 0 ? 'disabled' : ''}>
                             <i data-lucide="arrow-up" class="layer-item-action-icon"></i>
                         </button>
-                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="layer-item-action" ${index === this.elements.length - 1 ? 'disabled' : ''}>
+                        <button type="button" data-layer-action="down" data-layer-index="${index}" class="layer-item-action" ${visualIndex === orderedLayers.length - 1 ? 'disabled' : ''}>
                             <i data-lucide="arrow-down" class="layer-item-action-icon"></i>
                         </button>
                     </div>
@@ -1269,7 +1274,7 @@ Object.assign(DesignEditor.prototype, {
                 if (!Number.isInteger(index)) return;
 
                 const action = button.dataset.layerAction;
-                this.moveLayer(index, action === 'up' ? -1 : 1);
+                this.moveLayer(index, action === 'up' ? 1 : -1);
             });
         });
         

@@ -511,9 +511,9 @@ Object.assign(DesignEditor.prototype, {
         if (centerBothBtn) centerBothBtn.addEventListener('click', () => this.centerSelectedBoth?.());
 
         const moveLayerUpBtn = document.getElementById('move-layer-up-btn');
-        if (moveLayerUpBtn) moveLayerUpBtn.addEventListener('click', () => this.moveSelectedLayer?.(-1));
+        if (moveLayerUpBtn) moveLayerUpBtn.addEventListener('click', () => this.moveSelectedLayer?.(1));
         const moveLayerDownBtn = document.getElementById('move-layer-down-btn');
-        if (moveLayerDownBtn) moveLayerDownBtn.addEventListener('click', () => this.moveSelectedLayer?.(1));
+        if (moveLayerDownBtn) moveLayerDownBtn.addEventListener('click', () => this.moveSelectedLayer?.(-1));
 
         const nudgeStep = 2;
         const nudgeUpBtn = document.getElementById('nudge-up-btn');
