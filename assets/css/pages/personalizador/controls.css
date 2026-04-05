@@ -1365,6 +1365,10 @@ body.is-camera-panning #canvas-stage {
         border-radius: 6px;
     }
 
+    #editor-floating-context-bar #top-keep-aspect-btn.hidden {
+        display: none !important;
+    }
+
     #top-keep-aspect-btn:focus,
     #top-keep-aspect-btn:focus-visible {
         outline: none !important;

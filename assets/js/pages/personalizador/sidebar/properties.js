@@ -1086,7 +1086,8 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(topImageFlipHBtn, !isImage || isQr);
         setHiddenState(topImageFlipVBtn, !isImage || isQr);
         setHiddenState(topQrGroup, !isQr);
-        const showTopKeepAspect = (isImage && !isQr) || isShape;
+        const selectedShapeType = isShape ? String(elementData?.shapeType || '').toLowerCase() : '';
+        const showTopKeepAspect = (isImage && !isQr) || (isShape && selectedShapeType !== 'circle');
         setHiddenState(topKeepAspectBtn, !showTopKeepAspect);
         if (floatingBar) {
             floatingBar.classList.toggle('hidden', !hasSelection);
