@@ -1001,8 +1001,9 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] .editor-floating-context-inner {
-        width: min(334px, calc(100vw - 24px));
-        grid-template-columns: max-content minmax(0, 1fr);
+        width: max-content;
+        max-width: calc(100vw - 24px);
+        grid-template-columns: max-content minmax(132px, 188px);
         align-items: start;
         justify-items: stretch;
         column-gap: 6px;
@@ -1109,7 +1110,8 @@ body.is-camera-panning #canvas-stage {
         grid-column: 2;
         grid-row: 1;
         width: 100%;
-        min-width: 0;
+        min-width: 132px;
+        max-width: 188px;
         height: 30px;
         min-height: 30px;
         padding: 0 8px;
@@ -1121,17 +1123,17 @@ body.is-camera-panning #canvas-stage {
         grid-column: 1 / -1;
         grid-row: 2;
         display: grid;
-        grid-template-columns: 68px repeat(4, 24px) auto;
+        grid-template-columns: 64px repeat(4, 24px) minmax(0, 1fr);
         align-items: center;
         width: 100%;
         min-width: 0;
-        gap: 4px;
+        gap: 5px;
         justify-content: center;
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .editor-floating-size {
-        width: 68px;
-        min-width: 68px;
+        width: 64px;
+        min-width: 64px;
         height: 30px;
         padding: 0 4px;
         justify-content: space-between;
@@ -1148,7 +1150,7 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .top-inline-color-control {
-        width: auto;
+        width: 100%;
         justify-content: flex-end;
         gap: 4px;
     }
