@@ -1018,7 +1018,8 @@ body.is-camera-panning #canvas-stage {
         display: grid;
         grid-template-columns: repeat(5, 30px);
         gap: 4px;
-        width: max-content;
+        width: 100%;
+        max-width: 100%;
         min-width: 0;
         justify-content: center;
         margin-inline: auto;
@@ -1243,27 +1244,42 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group {
-        display: grid;
-        grid-template-columns: minmax(144px, 1fr) auto;
-        align-items: center;
-        gap: 8px;
-        width: 100%;
-        min-width: 0;
+        display: contents;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-content {
+        grid-column: 1 / -1;
         width: 100%;
         min-width: 0;
         height: 30px;
         min-height: 30px;
         font-size: 12px;
+        order: 2;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group .top-inline-color-control {
-        justify-content: flex-start;
+        display: inline-flex;
+        align-items: center;
+        justify-content: flex-end;
         gap: 4px;
         width: auto;
-        flex: 0 0 auto;
+        margin-left: auto;
+        order: 1;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-context-inner {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+        justify-items: stretch;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-actions {
+        grid-column: 1;
+        margin-inline: 0;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group .top-inline-color-wrap,
