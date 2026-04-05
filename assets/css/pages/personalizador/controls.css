@@ -803,6 +803,13 @@ body.is-camera-panning #canvas-stage {
     min-width: max-content;
 }
 
+.top-font-controls {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    min-width: max-content;
+}
+
 #top-shape-group {
     gap: 8px;
 }
@@ -1095,19 +1102,12 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-group {
-        display: grid;
-        grid-column: 2;
-        grid-row: 1 / span 2;
-        grid-template-columns: 68px repeat(4, 24px) auto;
-        align-items: center;
-        width: 100%;
-        min-width: 0;
-        gap: 4px;
-        justify-content: center;
+        display: contents;
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-select {
-        grid-column: 1 / -1;
+        grid-column: 2;
+        grid-row: 1;
         width: 100%;
         min-width: 0;
         height: 30px;
@@ -1117,7 +1117,19 @@ body.is-camera-panning #canvas-stage {
         border-radius: 6px;
     }
 
-    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .editor-floating-size {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        display: grid;
+        grid-template-columns: 68px repeat(4, 24px) auto;
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+        gap: 4px;
+        justify-content: center;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .editor-floating-size {
         width: 68px;
         min-width: 68px;
         height: 30px;
@@ -1125,7 +1137,7 @@ body.is-camera-panning #canvas-stage {
         justify-content: space-between;
     }
 
-    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .editor-floating-font-btn {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .editor-floating-font-btn {
         width: 24px;
         min-width: 24px;
         height: 30px;
@@ -1135,14 +1147,14 @@ body.is-camera-panning #canvas-stage {
         border-radius: 6px;
     }
 
-    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color-control {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .top-inline-color-control {
         width: auto;
         justify-content: flex-end;
         gap: 4px;
     }
 
-    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color-wrap,
-    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .top-inline-color-wrap,
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-font-controls .top-inline-color {
         width: 22px;
         height: 22px;
     }
