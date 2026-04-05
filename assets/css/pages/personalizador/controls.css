@@ -1012,8 +1012,8 @@ body.is-camera-panning #canvas-stage {
         justify-content: center;
         justify-items: center;
         gap: 6px;
-        width: min(268px, calc(100vw - 24px));
-        max-width: 100%;
+        width: max-content;
+        max-width: calc(100vw - 24px);
         min-width: 0;
     }
 
@@ -1028,7 +1028,6 @@ body.is-camera-panning #canvas-stage {
         margin-inline: auto;
     }
 
-    #editor-floating-context-bar[data-mobile-context="shape"] .editor-floating-actions,
     #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-actions {
         grid-template-columns: repeat(4, 30px);
     }
@@ -1204,30 +1203,33 @@ body.is-camera-panning #canvas-stage {
         height: 11px !important;
     }
 
-    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"] {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"],
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn[aria-pressed="false"] {
         background: #f8fafc !important;
         color: #64748b !important;
     }
 
-    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"] {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"],
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn[aria-pressed="true"] {
         background: var(--iber-accent) !important;
         color: #ffffff !important;
     }
 
-    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon,
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon {
         background: #ffffff;
         color: var(--iber-accent);
     }
 
-    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon,
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon {
         background: #ffffff;
         color: #64748b;
     }
 
     #editor-floating-context-bar[data-mobile-context="shape"] #top-font-group,
     #editor-floating-context-bar[data-mobile-context="shape"] #top-image-group,
-    #editor-floating-context-bar[data-mobile-context="shape"] #top-qr-group,
-    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn {
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-qr-group {
         display: none !important;
     }
 
@@ -1235,7 +1237,7 @@ body.is-camera-panning #canvas-stage {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 100%;
+        width: max-content;
         min-width: 0;
         gap: 6px;
     }
@@ -1247,6 +1249,34 @@ body.is-camera-panning #canvas-stage {
         gap: 4px;
         width: auto;
         margin-inline: auto;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn {
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px;
+        min-height: 30px;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 6px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn > span {
+        display: none !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn .keep-aspect-base-icon {
+        width: 16px !important;
+        height: 16px !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn .keep-aspect-state-icon {
+        width: 11px !important;
+        height: 11px !important;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-font-group,

@@ -1101,7 +1101,8 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(topImageFlipHBtn, !isImage || isQr);
         setHiddenState(topImageFlipVBtn, !isImage || isQr);
         setHiddenState(topQrGroup, !isQr);
-        setHiddenState(topKeepAspectBtn, !isImage || isQr);
+        const showTopKeepAspect = (isImage && !isQr) || isShape;
+        setHiddenState(topKeepAspectBtn, !showTopKeepAspect);
         if (floatingBar) {
             floatingBar.classList.toggle('hidden', !hasSelection);
             floatingBar.classList.toggle('is-text-selection', hasSelection && isText);
@@ -1157,7 +1158,7 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(topDuplicateBtn, false);
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
-        setDisabledState(topKeepAspectBtn, !isImage || isQr);
+        setDisabledState(topKeepAspectBtn, !showTopKeepAspect);
         setDisabledState(topImageCropBtn, !isImage || isQr);
         setDisabledState(topImageFlipHBtn, !isImage || isQr);
         setDisabledState(topImageFlipVBtn, !isImage || isQr);
