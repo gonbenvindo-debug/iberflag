@@ -1006,12 +1006,15 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="shape"] .editor-floating-context-inner {
-        display: flex;
+        display: grid;
+        grid-template-columns: minmax(0, 1fr);
         align-items: center;
         justify-content: center;
-        gap: 8px;
-        width: max-content;
-        max-width: calc(100vw - 24px);
+        justify-items: center;
+        gap: 6px;
+        width: min(268px, calc(100vw - 24px));
+        max-width: 100%;
+        min-width: 0;
     }
 
     #editor-floating-context-bar .editor-floating-actions {
@@ -1229,11 +1232,21 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="shape"] #top-shape-group {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        gap: 6px;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-shape-group .top-inline-color-control {
         display: inline-flex;
         align-items: center;
         justify-content: center;
-        width: max-content;
-        gap: 6px;
+        gap: 4px;
+        width: auto;
+        margin-inline: auto;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] #top-font-group,
