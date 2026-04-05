@@ -255,9 +255,62 @@ Object.assign(DesignEditor.prototype, {
         // Bring attention to properties automatically.
         this.focusPropertiesPanel();
     },
+
+    getElementGeometryBox(elementData, fallbackBox = null) {
+        const fallback = fallbackBox || elementData?.element?.getBBox?.() || {
+            x: 0,
+            y: 0,
+            width: 0,
+            height: 0
+        };
+
+        if (!elementData?.element) {
+            return fallback;
+        }
+
+        const toFinite = (value) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : null;
+        };
+
+        if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
+            const attrX = toFinite(elementData.element.getAttribute('x'));
+            const attrY = toFinite(elementData.element.getAttribute('y'));
+            const attrWidth = toFinite(elementData.element.getAttribute('width'));
+            const attrHeight = toFinite(elementData.element.getAttribute('height'));
+
+            const dataX = toFinite(elementData.x);
+            const dataY = toFinite(elementData.y);
+            const dataWidth = toFinite(elementData.width);
+            const dataHeight = toFinite(elementData.height);
+
+            const x = attrX ?? dataX ?? fallback.x;
+            const y = attrY ?? dataY ?? fallback.y;
+            const width = Math.max(1, attrWidth ?? dataWidth ?? fallback.width);
+            const height = Math.max(1, attrHeight ?? dataHeight ?? fallback.height);
+
+            return { x, y, width, height };
+        }
+
+        if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const cx = toFinite(elementData.element.getAttribute('cx')) ?? toFinite(elementData.x);
+            const cy = toFinite(elementData.element.getAttribute('cy')) ?? toFinite(elementData.y);
+            const r = toFinite(elementData.element.getAttribute('r')) ?? (toFinite(elementData.width) !== null ? Number(elementData.width) / 2 : null);
+            if (cx !== null && cy !== null && r !== null) {
+                return {
+                    x: cx - r,
+                    y: cy - r,
+                    width: Math.max(1, r * 2),
+                    height: Math.max(1, r * 2)
+                };
+            }
+        }
+
+        return fallback;
+    },
     
     getTransformedBounds(elementData) {
-        const bbox = elementData.element.getBBox();
+        const bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
         const baseBounds = {
             left: bbox.x,
             right: bbox.x + bbox.width,
@@ -875,7 +928,7 @@ Object.assign(DesignEditor.prototype, {
         document.body.classList.add('is-resizing-element');
         this.isResizing = true;
         this.resizeHandle = position;
-        const bbox = this.selectedElement.element.getBBox();
+        const bbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
         const anchorLocalPoint = this.getResizeAnchorPoint(bbox, position);
         this.dragStart = {
             x: e.clientX,
@@ -971,7 +1024,7 @@ Object.assign(DesignEditor.prototype, {
             }
 
             // Garantir que o crop n├úo sai dos limites da imagem
-            const imageBbox = this.selectedElement.element.getBBox();
+            const imageBbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
             newX = Math.max(imageBbox.x, Math.min(newX, imageBbox.x + imageBbox.width - 20));
             newY = Math.max(imageBbox.y, Math.min(newY, imageBbox.y + imageBbox.height - 20));
             newWidth = Math.min(newWidth, imageBbox.x + imageBbox.width - newX);
@@ -986,7 +1039,7 @@ Object.assign(DesignEditor.prototype, {
 
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         const rotation = this.selectedElement.rotation || 0;
-        const bbox = this.dragStart.bbox || this.selectedElement.element.getBBox();
+        const bbox = this.dragStart.bbox || this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
         const canvasBounds = this.getEditableBounds();
         const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
         const centerPoint = {
@@ -1154,11 +1207,7 @@ Object.assign(DesignEditor.prototype, {
 
         if (this.selectedElement.type === 'image' && this.selectedElement.imageKind !== 'qr') {
             const currentFit = this.getImageObjectFitMode?.(this.selectedElement) || 'contain';
-            if (shouldKeepRatio) {
-                if (this.selectedElement._freeResizeObjectFitBackup) {
-                    this.setImageObjectFitMode?.(this.selectedElement, this.selectedElement._freeResizeObjectFitBackup);
-                }
-            } else {
+            if (!shouldKeepRatio) {
                 if (!this.selectedElement._freeResizeObjectFitBackup) {
                     this.selectedElement._freeResizeObjectFitBackup = currentFit;
                 }
@@ -1174,6 +1223,20 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('height', newHeight);
             this.selectedElement.element.setAttribute('x', newX);
             this.selectedElement.element.setAttribute('y', newY);
+            this.selectedElement.width = newWidth;
+            this.selectedElement.height = newHeight;
+            this.selectedElement.x = newX;
+            this.selectedElement.y = newY;
+            if (this.selectedElement.type === 'image') {
+                this.selectedElement.baseX = newX;
+                this.selectedElement.baseY = newY;
+                this.selectedElement.baseWidth = newWidth;
+                this.selectedElement.baseHeight = newHeight;
+                this.selectedElement.element.dataset.baseX = String(newX);
+                this.selectedElement.element.dataset.baseY = String(newY);
+                this.selectedElement.element.dataset.baseWidth = String(newWidth);
+                this.selectedElement.element.dataset.baseHeight = String(newHeight);
+            }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(minSize / 2, newWidth / 2);
             this.selectedElement.element.setAttribute('r', radius);
