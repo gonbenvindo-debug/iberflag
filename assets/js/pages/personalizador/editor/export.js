@@ -126,25 +126,33 @@ Object.assign(DesignEditor.prototype, {
                     const currentY = Number(referenceBox.y || 0) || 0;
                     const currentWidth = Math.max(20, Number(referenceBox.width || 0) || 20);
                     const currentHeight = Math.max(20, Number(referenceBox.height || 0) || 20);
+                    const cropXRatio = Math.max(0, Math.min(1, Number(cropData.x) || 0));
+                    const cropYRatio = Math.max(0, Math.min(1, Number(cropData.y) || 0));
+                    const cropWidthRatio = Math.max(0.05, Math.min(1, Number(cropData.width) || 1));
+                    const cropHeightRatio = Math.max(0.05, Math.min(1, Number(cropData.height) || 1));
+                    const nextX = currentX + (currentWidth * cropXRatio);
+                    const nextY = currentY + (currentHeight * cropYRatio);
+                    const nextWidth = Math.max(20, currentWidth * cropWidthRatio);
+                    const nextHeight = Math.max(20, currentHeight * cropHeightRatio);
 
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
                     const viewBoxWidth = cropData.width * fullWidth;
                     const viewBoxHeight = cropData.height * fullHeight;
 
-                    // Keep current geometry after crop: crop should only change visible content.
-                    imgElement.setAttribute('x', String(currentX));
-                    imgElement.setAttribute('y', String(currentY));
-                    imgElement.setAttribute('width', String(currentWidth));
-                    imgElement.setAttribute('height', String(currentHeight));
+                    // Apply crop geometry to the element box as well.
+                    imgElement.setAttribute('x', String(nextX));
+                    imgElement.setAttribute('y', String(nextY));
+                    imgElement.setAttribute('width', String(nextWidth));
+                    imgElement.setAttribute('height', String(nextHeight));
                     imgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
                     imgElement.dataset.cropData = JSON.stringify(cropData);
                     imgElement.dataset.fullWidth = String(fullWidth);
                     imgElement.dataset.fullHeight = String(fullHeight);
-                    imgElement.dataset.baseX = String(currentX);
-                    imgElement.dataset.baseY = String(currentY);
-                    imgElement.dataset.baseWidth = String(currentWidth);
-                    imgElement.dataset.baseHeight = String(currentHeight);
+                    imgElement.dataset.baseX = String(nextX);
+                    imgElement.dataset.baseY = String(nextY);
+                    imgElement.dataset.baseWidth = String(nextWidth);
+                    imgElement.dataset.baseHeight = String(nextHeight);
                     imgElement.dataset.cropSourceData = JSON.stringify({
                         x: viewBoxX,
                         y: viewBoxY,
@@ -153,14 +161,14 @@ Object.assign(DesignEditor.prototype, {
                     });
 
                     elementToUpdate.src = croppedImageData.dataUrl;
-                    elementToUpdate.x = currentX;
-                    elementToUpdate.y = currentY;
-                    elementToUpdate.width = currentWidth;
-                    elementToUpdate.height = currentHeight;
-                    elementToUpdate.baseX = currentX;
-                    elementToUpdate.baseY = currentY;
-                    elementToUpdate.baseWidth = currentWidth;
-                    elementToUpdate.baseHeight = currentHeight;
+                    elementToUpdate.x = nextX;
+                    elementToUpdate.y = nextY;
+                    elementToUpdate.width = nextWidth;
+                    elementToUpdate.height = nextHeight;
+                    elementToUpdate.baseX = nextX;
+                    elementToUpdate.baseY = nextY;
+                    elementToUpdate.baseWidth = nextWidth;
+                    elementToUpdate.baseHeight = nextHeight;
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;
