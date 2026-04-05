@@ -360,7 +360,7 @@ async function fetchBuffer(url, retries = 3) {
 async function fetchAllPortuguesePages() {
     const firstResponse = await fetch(`${SUPPLIER_WP_PAGES_URL}?per_page=100&page=1`, { headers: REQUEST_HEADERS });
     if (!firstResponse.ok) {
-        throw new Error(`Falha ao carregar o catálogo do fornecedor: HTTP ${firstResponse.status}`);
+        throw new Error(`Falha ao carregar o catálogo remoto: HTTP ${firstResponse.status}`);
     }
 
     const totalPages = Number(firstResponse.headers.get('x-wp-totalpages') || '1');
@@ -458,10 +458,10 @@ async function uploadImageToStorage({ supabase, bucketName, sourceImageUrl, cate
     return publicUrl;
 }
 
-function buildDescription(baseDescription, sizeLabel, sourceLink) {
-    const description = sanitizeLongText(baseDescription || 'Produto importado do catálogo do fornecedor.');
+function buildDescription(baseDescription, sizeLabel) {
+    const description = sanitizeLongText(baseDescription || 'Produto personalizável.');
     const sizeText = sizeLabel === 'Tamanho único' ? 'Tamanho único' : `Tamanho: ${sizeLabel}`;
-    const merged = `${description}\n\n${sizeText}\nFonte: ${sourceLink}`;
+    const merged = `${description}\n\n${sizeText}`;
     return merged.slice(0, 1900);
 }
 
@@ -477,7 +477,7 @@ function buildProductsFromPage(page, parsedPage) {
 
         return {
             nome: finalName,
-            descricao: buildDescription(parsedPage.baseDescription, sizeLabel, page.link),
+            descricao: buildDescription(parsedPage.baseDescription, sizeLabel),
             preco: 0,
             categoria: category,
             destaque: false,
@@ -485,7 +485,6 @@ function buildProductsFromPage(page, parsedPage) {
             svg_template: null,
             __sizeLabel: sizeLabel,
             __pageId: page.id,
-            __sourcePageLink: page.link,
             __baseName: baseName,
             __sourceImageUrl: parsedPage.mainImageUrl
         };
@@ -560,7 +559,7 @@ async function run() {
     console.log('1/6 A preparar bucket de imagens...');
     await ensureBucket(supabase, bucketName);
 
-    console.log('2/6 A ler páginas PT do catálogo do fornecedor...');
+    console.log('2/6 A ler páginas PT do catálogo...');
     const pages = await fetchAllPortuguesePages();
     report.pagesTotalPt = pages.length;
 
