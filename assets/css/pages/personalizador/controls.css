@@ -995,6 +995,10 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar[data-mobile-context="text"] .editor-floating-context-inner {
         width: min(334px, calc(100vw - 24px));
+        grid-template-columns: max-content minmax(0, 1fr);
+        align-items: start;
+        justify-items: stretch;
+        column-gap: 6px;
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] .editor-floating-context-inner {
@@ -1031,6 +1035,14 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar[data-mobile-context="text"] .editor-floating-actions,
     #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-actions {
         grid-template-columns: repeat(4, 30px);
+    }
+
+    #editor-floating-context-bar[data-mobile-context="text"] .editor-floating-actions {
+        grid-column: 1;
+        grid-row: 1;
+        width: max-content;
+        margin-inline: 0;
+        align-self: center;
     }
 
     #editor-floating-context-bar .editor-floating-actions .editor-floating-btn {
@@ -1084,7 +1096,9 @@ body.is-camera-panning #canvas-stage {
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-group {
         display: grid;
-        grid-template-columns: minmax(100px, 1fr) 68px repeat(4, 24px) auto;
+        grid-column: 2;
+        grid-row: 1 / span 2;
+        grid-template-columns: 68px repeat(4, 24px) auto;
         align-items: center;
         width: 100%;
         min-width: 0;
@@ -1093,8 +1107,9 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="text"] #top-font-select {
+        grid-column: 1 / -1;
         width: 100%;
-        min-width: 96px;
+        min-width: 0;
         height: 30px;
         min-height: 30px;
         padding: 0 8px;
