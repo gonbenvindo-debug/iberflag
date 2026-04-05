@@ -980,6 +980,87 @@ Object.assign(DesignEditor.prototype, {
         if (desktopSizeIncreaseBtn) desktopSizeIncreaseBtn.addEventListener('click', () => this.stepQuickTextSize(1));
         if (desktopOpacityRange) desktopOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
         if (topOpacityRange) topOpacityRange.addEventListener('input', (e) => this.applyQuickOpacityValue(e.target.value));
+        if (topOpacityRange) {
+            let topOpacityPointerId = null;
+            let topOpacityDragging = false;
+            let topOpacityTouchDragging = false;
+            const clamp = (value, min, max) => Math.min(max, Math.max(min, value));
+            const applyTopOpacityFromClientX = (clientX) => {
+                const rect = topOpacityRange.getBoundingClientRect();
+                if (!rect.width) return;
+                const min = Number(topOpacityRange.min || 0);
+                const max = Number(topOpacityRange.max || 100);
+                const step = Math.max(1, Number(topOpacityRange.step || 1));
+                const ratio = clamp((clientX - rect.left) / rect.width, 0, 1);
+                const rawValue = min + ((max - min) * ratio);
+                const stepped = Math.round(rawValue / step) * step;
+                this.applyQuickOpacityValue(clamp(stepped, min, max));
+            };
+
+            topOpacityRange.style.touchAction = 'none';
+            topOpacityRange.addEventListener('pointerdown', (event) => {
+                if (event.pointerType === 'mouse' && event.button !== 0) return;
+                event.preventDefault();
+                event.stopPropagation();
+                topOpacityDragging = true;
+                topOpacityPointerId = event.pointerId;
+                topOpacityRange.setPointerCapture?.(event.pointerId);
+                applyTopOpacityFromClientX(event.clientX);
+            }, true);
+
+            topOpacityRange.addEventListener('pointermove', (event) => {
+                if (!topOpacityDragging || event.pointerId !== topOpacityPointerId) return;
+                event.preventDefault();
+                event.stopPropagation();
+                applyTopOpacityFromClientX(event.clientX);
+            }, true);
+
+            const releaseTopOpacityPointer = (event) => {
+                if (!topOpacityDragging || event.pointerId !== topOpacityPointerId) return;
+                event.preventDefault();
+                event.stopPropagation();
+                topOpacityDragging = false;
+                topOpacityRange.releasePointerCapture?.(event.pointerId);
+                topOpacityPointerId = null;
+                applyTopOpacityFromClientX(event.clientX);
+            };
+
+            topOpacityRange.addEventListener('pointerup', releaseTopOpacityPointer, true);
+            topOpacityRange.addEventListener('pointercancel', releaseTopOpacityPointer, true);
+            topOpacityRange.addEventListener('lostpointercapture', () => {
+                topOpacityDragging = false;
+                topOpacityPointerId = null;
+            });
+
+            topOpacityRange.addEventListener('touchstart', (event) => {
+                if (!event.touches?.length) return;
+                event.preventDefault();
+                event.stopPropagation();
+                topOpacityTouchDragging = true;
+                applyTopOpacityFromClientX(event.touches[0].clientX);
+            }, { passive: false, capture: true });
+
+            topOpacityRange.addEventListener('touchmove', (event) => {
+                if (!topOpacityTouchDragging || !event.touches?.length) return;
+                event.preventDefault();
+                event.stopPropagation();
+                applyTopOpacityFromClientX(event.touches[0].clientX);
+            }, { passive: false, capture: true });
+
+            const finishTopOpacityTouchDrag = (event) => {
+                if (!topOpacityTouchDragging) return;
+                event.preventDefault();
+                event.stopPropagation();
+                topOpacityTouchDragging = false;
+                const touch = event.changedTouches?.[0];
+                if (touch) {
+                    applyTopOpacityFromClientX(touch.clientX);
+                }
+            };
+
+            topOpacityRange.addEventListener('touchend', finishTopOpacityTouchDrag, { passive: false, capture: true });
+            topOpacityRange.addEventListener('touchcancel', finishTopOpacityTouchDrag, { passive: false, capture: true });
+        }
         if (topImageCropBtn) topImageCropBtn.addEventListener('click', () => this.startCropMode?.());
         if (topImageFlipHBtn) topImageFlipHBtn.addEventListener('click', () => this.toggleImageFlip?.('x'));
         if (topImageFlipVBtn) topImageFlipVBtn.addEventListener('click', () => this.toggleImageFlip?.('y'));

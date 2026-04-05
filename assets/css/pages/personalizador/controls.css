@@ -1010,7 +1010,17 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] .editor-floating-context-inner {
-        width: min(332px, calc(100vw - 24px));
+        display: grid;
+        grid-template-columns: max-content max-content;
+        grid-template-rows: auto auto;
+        width: max-content;
+        max-width: calc(100vw - 24px);
+        min-width: 0;
+        justify-items: center;
+        align-items: center;
+        column-gap: 6px;
+        row-gap: 6px;
+        touch-action: none;
     }
 
     #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-context-inner {
@@ -1185,15 +1195,20 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] #top-image-group {
-        display: grid;
-        grid-template-columns: auto minmax(0, 1fr);
-        align-items: center;
-        width: 100%;
-        min-width: 0;
-        gap: 8px;
+        display: contents;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] .editor-floating-actions {
+        grid-column: 1;
+        grid-row: 1;
+        width: max-content;
+        min-width: max-content;
+        margin-inline: 0;
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] #top-image-group #top-image-edit-actions {
+        grid-column: 2;
+        grid-row: 1;
         display: grid;
         grid-template-columns: repeat(3, 30px);
         align-items: center;
@@ -1202,17 +1217,22 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .editor-floating-opacity-control {
+        grid-column: 1 / -1;
+        grid-row: 2;
         display: grid;
         grid-template-columns: minmax(0, 1fr) auto;
-        width: 100%;
+        width: min(286px, calc(100vw - 36px));
         min-width: 0;
-        gap: 8px;
+        gap: 6px;
         align-items: center;
+        margin-inline: auto;
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .desktop-inline-range {
         width: 100%;
         min-width: 0;
+        touch-action: none;
+        pointer-events: auto;
     }
 
     #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .desktop-inline-value {
