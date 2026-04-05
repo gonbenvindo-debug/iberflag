@@ -1078,7 +1078,8 @@ Object.assign(DesignEditor.prototype, {
         
         let { x: newX, y: newY, width: newWidth, height: newHeight } = buildBoxFromPoint();
 
-        const shouldKeepRatio = (this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text';
+        const isCircleShape = this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle';
+        const shouldKeepRatio = ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text') || isCircleShape;
         if (shouldKeepRatio && rotation === 0 && bbox.height > 0) {
             const ratio = bbox.width / bbox.height;
 
@@ -1174,15 +1175,14 @@ Object.assign(DesignEditor.prototype, {
             this.selectedElement.element.setAttribute('x', newX);
             this.selectedElement.element.setAttribute('y', newY);
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
-            const radius = Math.max(newWidth, newHeight) / 2;
-            const maxRadius = Math.min(
-                (canvasBounds.width - (newX - canvasBounds.x)) / 2,
-                (canvasBounds.height - (newY - canvasBounds.y)) / 2
-            );
-            const constrainedRadius = Math.min(radius, maxRadius);
-            this.selectedElement.element.setAttribute('r', constrainedRadius);
-            this.selectedElement.element.setAttribute('cx', newX + constrainedRadius);
-            this.selectedElement.element.setAttribute('cy', newY + constrainedRadius);
+            const radius = Math.max(minSize / 2, newWidth / 2);
+            this.selectedElement.element.setAttribute('r', radius);
+            this.selectedElement.element.setAttribute('cx', newX + radius);
+            this.selectedElement.element.setAttribute('cy', newY + radius);
+            this.selectedElement.x = newX + radius;
+            this.selectedElement.y = newY + radius;
+            this.selectedElement.width = radius * 2;
+            this.selectedElement.height = radius * 2;
         } else if (this.selectedElement.type === 'shape' && this.isPolygonShapeType?.(this.selectedElement.shapeType)) {
             const currentPoints = this.dragStart.points || (this.selectedElement.element.getAttribute('points') || '')
                 .trim()
