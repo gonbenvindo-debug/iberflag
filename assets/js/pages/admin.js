@@ -493,6 +493,27 @@ function isMissingBasesSchema(error) {
     return msg.includes('bases_fixacao') || msg.includes('produto_bases_fixacao');
 }
 
+function ensureProductCategoryOption(value) {
+    const select = document.getElementById('product-categoria');
+    const categoryValue = String(value || '').trim();
+    if (!select || !categoryValue) return;
+
+    const hasOption = Array.from(select.options).some(
+        (option) => String(option.value || '').trim().toLowerCase() === categoryValue.toLowerCase()
+    );
+
+    if (hasOption) return;
+
+    const option = document.createElement('option');
+    option.value = categoryValue;
+    option.textContent = categoryValue
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+    select.appendChild(option);
+}
+
 async function loadBaseCatalog(force = false) {
     if (!force && Array.isArray(baseCatalogCache) && baseCatalogCache.length > 0) {
         return baseCatalogCache;
@@ -742,7 +763,6 @@ async function loadProducts() {
                     <td class="font-semibold">${p.nome}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
                     <td class="font-bold text-blue-600">${p.preco.toFixed(2)}€</td>
-                    <td>${p.stock || 0}</td>
                     <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">NÃ£o</span>'}</td>
                     <td>${p.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
                     <td>
@@ -758,7 +778,7 @@ async function loadProducts() {
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="9" class="text-center py-8 text-gray-400">Nenhum produto encontrado</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">Nenhum produto encontrado</td></tr>';
         }
 
         if (typeof lucide !== 'undefined') {
@@ -1040,7 +1060,6 @@ if (productForm) {
             categoria: document.getElementById('product-categoria').value,
             imagem: productImageValue,
             svg_template: svgTemplateContent || null,
-            stock: parseInt(document.getElementById('product-stock').value) || 0,
             destaque: document.getElementById('product-destaque').checked,
             ativo: document.getElementById('product-ativo').checked
         };
@@ -1120,12 +1139,10 @@ async function editProduct(id) {
         if (productPreco) productPreco.value = data.preco || '';
 
         const productCategoria = el('product-categoria');
+        ensureProductCategoryOption(data.categoria || '');
         if (productCategoria) productCategoria.value = data.categoria || '';
 
         setProductImageValue(data.imagem || '', data.imagem ? 'Imagem atual carregada.' : 'Carregue uma imagem. O sistema converte automaticamente para WebP.', data.imagem ? 'success' : 'neutral');
-
-        const productStock = el('product-stock');
-        if (productStock) productStock.value = data.stock || 0;
 
         const productDestaque = el('product-destaque');
         if (productDestaque) productDestaque.checked = data.destaque || false;

@@ -26,8 +26,9 @@ const productCount = document.getElementById('product-count');
 const emptyState = document.getElementById('empty-state');
 const sortSelect = document.getElementById('sort-select');
 const clearFiltersBtn = document.getElementById('clear-filters');
-const categoryRadios = document.querySelectorAll('input[name="category"]');
+const categoryFiltersContainer = document.getElementById('category-filters');
 const priceCheckboxes = document.querySelectorAll('.price-filter');
+let categoryRadios = [];
 
 // ===== LOAD PRODUCTS =====
 async function loadAllProducts() {
@@ -51,6 +52,7 @@ async function loadAllProducts() {
         allProducts = initialProducts || [];
     }
 
+    buildDynamicCategoryFilters();
     applyFilters();
 }
 
@@ -126,7 +128,7 @@ function applyFilters() {
 
     // Category filter
     if (currentCategory !== 'all') {
-        products = products.filter(p => p.categoria === currentCategory);
+        products = products.filter((product) => String(product?.categoria || '').trim().toLowerCase() === currentCategory);
     }
 
     // Price filters
@@ -167,12 +169,79 @@ function applyFilters() {
 
 // ===== HELPER FUNCTIONS =====
 function getCategoryName(categoria) {
-    const categories = {
+    const normalized = String(categoria || '').trim();
+    if (!normalized) return 'Sem categoria';
+
+    const knownCategories = {
         'flybanners': 'Flybanners',
         'rollups': 'Roll-ups',
-        'lonas': 'Lonas & Banners'
+        'lonas': 'Lonas & Banners',
+        'fly-banner': 'Fly Banner',
+        'mini-fly-banner': 'Mini Fly Banner',
+        'x-banner': 'X-Banner',
+        'roll-up': 'Roll Up',
+        'wall-banner': 'Wall Banner',
+        'tenda-publicitaria': 'Tenda Publicitária',
+        'photocall': 'Photocall',
+        'mastros': 'Mastros',
+        'cubo-publicitario': 'Cubo Publicitário',
+        'balcao-promocional': 'Balcão Promocional',
+        'bandeiras': 'Bandeiras'
     };
-    return categories[categoria] || categoria;
+
+    if (knownCategories[normalized]) {
+        return knownCategories[normalized];
+    }
+
+    return normalized
+        .replace(/[-_]+/g, ' ')
+        .replace(/\s+/g, ' ')
+        .trim()
+        .replace(/\b\w/g, (char) => char.toUpperCase());
+}
+
+function buildDynamicCategoryFilters() {
+    if (!categoryFiltersContainer) return;
+
+    const categoryCounts = new Map();
+    allProducts.forEach((product) => {
+        const key = String(product?.categoria || '').trim().toLowerCase();
+        if (!key) return;
+        categoryCounts.set(key, (categoryCounts.get(key) || 0) + 1);
+    });
+
+    const categories = Array.from(categoryCounts.entries())
+        .map(([value, count]) => ({ value, count, label: getCategoryName(value) }))
+        .sort((a, b) => a.label.localeCompare(b.label, 'pt-PT', { sensitivity: 'base' }));
+
+    if (currentCategory !== 'all' && !categoryCounts.has(String(currentCategory).toLowerCase())) {
+        currentCategory = 'all';
+    }
+
+    categoryFiltersContainer.innerHTML = `
+        <label class="flex items-center cursor-pointer">
+            <input type="radio" name="category" value="all" class="custom-radio" ${currentCategory === 'all' ? 'checked' : ''}>
+            <span class="ml-2 text-sm">Todos os Produtos (${allProducts.length})</span>
+        </label>
+        ${categories.map((category) => `
+            <label class="flex items-center cursor-pointer">
+                <input type="radio" name="category" value="${escapeHtml(category.value)}" class="custom-radio" ${String(currentCategory).toLowerCase() === category.value ? 'checked' : ''}>
+                <span class="ml-2 text-sm">${escapeHtml(category.label)} (${category.count})</span>
+            </label>
+        `).join('')}
+    `;
+
+    bindCategoryFilterListeners();
+}
+
+function bindCategoryFilterListeners() {
+    categoryRadios = Array.from(document.querySelectorAll('input[name="category"]'));
+    categoryRadios.forEach((radio) => {
+        radio.addEventListener('change', (event) => {
+            currentCategory = String(event.target.value || 'all').trim().toLowerCase() || 'all';
+            applyFilters();
+        });
+    });
 }
 
 function viewProductDetails(productId) {
@@ -188,15 +257,6 @@ if (sortSelect) {
     sortSelect.addEventListener('change', (e) => {
         currentSort = e.target.value;
         applyFilters();
-    });
-}
-
-if (categoryRadios) {
-    categoryRadios.forEach(radio => {
-        radio.addEventListener('change', (e) => {
-            currentCategory = e.target.value;
-            applyFilters();
-        });
     });
 }
 
@@ -243,8 +303,8 @@ function checkUrlParams() {
     const categoria = urlParams.get('categoria');
 
     if (categoria) {
-        currentCategory = categoria;
-        const radio = document.querySelector(`input[name="category"][value="${categoria}"]`);
+        currentCategory = String(categoria).trim().toLowerCase();
+        const radio = document.querySelector(`input[name="category"][value="${currentCategory}"]`);
         if (radio) {
             radio.checked = true;
         }

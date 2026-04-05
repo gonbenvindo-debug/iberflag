@@ -87,7 +87,6 @@ const testProducts = [
         categoria: 'flybanners',
         imagem: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
         svg_template: svgTemplates.flybanner_small,
-        stock: 50,
         destaque: true,
         ativo: true
     },
@@ -98,7 +97,6 @@ const testProducts = [
         categoria: 'flybanners',
         imagem: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
         svg_template: svgTemplates.flybanner_medium,
-        stock: 40,
         destaque: true,
         ativo: true
     },
@@ -109,7 +107,6 @@ const testProducts = [
         categoria: 'flybanners',
         imagem: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=800',
         svg_template: svgTemplates.flybanner_large,
-        stock: 30,
         destaque: true,
         ativo: true
     },
@@ -120,7 +117,6 @@ const testProducts = [
         categoria: 'rollups',
         imagem: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800',
         svg_template: svgTemplates.rollup_standard,
-        stock: 25,
         destaque: true,
         ativo: true
     },
@@ -131,7 +127,6 @@ const testProducts = [
         categoria: 'rollups',
         imagem: 'https://images.unsplash.com/photo-1542744173-8e7e53415bb0?w=800',
         svg_template: svgTemplates.rollup_premium,
-        stock: 20,
         destaque: false,
         ativo: true
     },
@@ -142,7 +137,6 @@ const testProducts = [
         categoria: 'banners',
         imagem: 'https://images.unsplash.com/photo-1557804506-669a67965ba0?w=800',
         svg_template: svgTemplates.banner_horizontal,
-        stock: 35,
         destaque: false,
         ativo: true
     }
