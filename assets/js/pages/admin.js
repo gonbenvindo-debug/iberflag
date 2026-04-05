@@ -370,6 +370,124 @@ function slugify(value) {
         .replace(/-+/g, '-');
 }
 
+function readFileAsDataUrl(file) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(String(reader.result || ''));
+        reader.onerror = () => reject(new Error('Nao foi possivel ler o ficheiro.'));
+        reader.readAsDataURL(file);
+    });
+}
+
+function loadImageFromSrc(src) {
+    return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.onload = () => resolve(img);
+        img.onerror = () => reject(new Error('Nao foi possivel processar a imagem.'));
+        img.src = src;
+    });
+}
+
+async function convertImageFileToWebPDataUrl(file, options = {}) {
+    if (!file || !String(file.type || '').startsWith('image/')) {
+        throw new Error('Selecione um ficheiro de imagem valido.');
+    }
+
+    const maxDimension = Number(options.maxDimension || 2048);
+    const quality = Number(options.quality || 0.9);
+    const sourceDataUrl = await readFileAsDataUrl(file);
+    const image = await loadImageFromSrc(sourceDataUrl);
+
+    const sourceWidth = image.naturalWidth || image.width || 1;
+    const sourceHeight = image.naturalHeight || image.height || 1;
+    const largerSide = Math.max(sourceWidth, sourceHeight, 1);
+    const scale = largerSide > maxDimension ? (maxDimension / largerSide) : 1;
+    const width = Math.max(1, Math.round(sourceWidth * scale));
+    const height = Math.max(1, Math.round(sourceHeight * scale));
+
+    const canvas = document.createElement('canvas');
+    canvas.width = width;
+    canvas.height = height;
+
+    const context = canvas.getContext('2d');
+    if (!context) {
+        throw new Error('Nao foi possivel preparar o conversor de imagem.');
+    }
+
+    context.clearRect(0, 0, width, height);
+    context.drawImage(image, 0, 0, width, height);
+
+    const webpDataUrl = canvas.toDataURL('image/webp', quality);
+    if (!webpDataUrl || !webpDataUrl.startsWith('data:image/webp')) {
+        throw new Error('Falha ao converter imagem para WebP.');
+    }
+
+    return webpDataUrl;
+}
+
+function setImagePreview(previewElement, imageValue) {
+    if (!previewElement) return;
+    const src = String(imageValue || '').trim();
+    if (!src) {
+        previewElement.removeAttribute('src');
+        previewElement.classList.add('hidden');
+        return;
+    }
+    previewElement.src = src;
+    previewElement.classList.remove('hidden');
+}
+
+function setImageStatus(statusElement, message, tone = 'neutral') {
+    if (!statusElement) return;
+    const toneClasses = {
+        neutral: 'text-gray-500',
+        success: 'text-emerald-600',
+        loading: 'text-blue-600',
+        error: 'text-red-600'
+    };
+
+    statusElement.classList.remove('text-gray-500', 'text-emerald-600', 'text-blue-600', 'text-red-600');
+    statusElement.classList.add(toneClasses[tone] || toneClasses.neutral);
+    statusElement.textContent = message;
+}
+
+function setProductImageValue(value = '', statusMessage = 'Carregue uma imagem. O sistema converte automaticamente para WebP.', statusTone = 'neutral') {
+    if (productImageHiddenInput) {
+        productImageHiddenInput.value = String(value || '').trim();
+    }
+    setImagePreview(productImagePreview, value);
+    setImageStatus(productImageStatus, statusMessage, statusTone);
+}
+
+function setBaseImageValue(value = '', statusMessage = 'Carregue uma imagem. O sistema converte automaticamente para WebP.', statusTone = 'neutral') {
+    if (baseImageHiddenInput) {
+        baseImageHiddenInput.value = String(value || '').trim();
+    }
+    setImagePreview(baseImagePreview, value);
+    setImageStatus(baseImageStatus, statusMessage, statusTone);
+}
+
+function bindAdminImageUpload(fileInput, setImageValue, label) {
+    if (!fileInput) return;
+
+    fileInput.addEventListener('change', async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        try {
+            setImageValue('', `A converter ${label} para WebP...`, 'loading');
+            const webpDataUrl = await convertImageFileToWebPDataUrl(file, { quality: 0.9, maxDimension: 2048 });
+            setImageValue(webpDataUrl, `${label} pronta em WebP.`, 'success');
+        } catch (error) {
+            console.error(`Erro ao converter ${label}:`, error);
+            setImageValue('', `Nao foi possivel converter ${label}. Tente outro ficheiro.`, 'error');
+            showToast(`Erro ao converter ${label} para WebP`, 'error');
+        } finally {
+            fileInput.value = '';
+        }
+    });
+}
+
 function isMissingBasesSchema(error) {
     const msg = String(error?.message || error?.details || '').toLowerCase();
     return msg.includes('bases_fixacao') || msg.includes('produto_bases_fixacao');
@@ -660,6 +778,7 @@ if (addProductBtn) {
         document.getElementById('modal-title').textContent = 'Adicionar Produto';
         productForm.reset();
         document.getElementById('product-ativo').checked = true;
+        setProductImageValue('');
         resetSvgTemplateState();
         const createDesignBtn = document.getElementById('create-design-btn');
         if (createDesignBtn) {
@@ -709,6 +828,17 @@ let isReadingSvgTemplate = false;
 const svgUpload = document.getElementById('product-svg-upload');
 const svgPreview = document.getElementById('svg-preview');
 const productSubmitBtn = productForm ? productForm.querySelector('button[type="submit"]') : null;
+const productImageUploadInput = document.getElementById('product-imagem-upload');
+const productImageHiddenInput = document.getElementById('product-imagem');
+const productImagePreview = document.getElementById('product-imagem-preview');
+const productImageStatus = document.getElementById('product-imagem-status');
+const baseImageUploadInput = document.getElementById('base-imagem-upload');
+const baseImageHiddenInput = document.getElementById('base-imagem');
+const baseImagePreview = document.getElementById('base-imagem-preview');
+const baseImageStatus = document.getElementById('base-imagem-status');
+
+bindAdminImageUpload(productImageUploadInput, setProductImageValue, 'a imagem do produto');
+bindAdminImageUpload(baseImageUploadInput, setBaseImageValue, 'a imagem da base');
 
 function setProductSubmitLoadingState(isLoading) {
     isReadingSvgTemplate = isLoading;
@@ -897,12 +1027,18 @@ if (productForm) {
             return;
         }
 
+        const productImageValue = (productImageHiddenInput?.value || '').trim();
+        if (!productImageValue) {
+            showToast('Carregue a imagem do produto antes de guardar.', 'warning');
+            return;
+        }
+
         const productData = {
             nome: document.getElementById('product-nome').value,
             descricao: document.getElementById('product-descricao').value,
             preco: parseFloat(document.getElementById('product-preco').value),
             categoria: document.getElementById('product-categoria').value,
-            imagem: document.getElementById('product-imagem').value,
+            imagem: productImageValue,
             svg_template: svgTemplateContent || null,
             stock: parseInt(document.getElementById('product-stock').value) || 0,
             destaque: document.getElementById('product-destaque').checked,
@@ -986,8 +1122,7 @@ async function editProduct(id) {
         const productCategoria = el('product-categoria');
         if (productCategoria) productCategoria.value = data.categoria || '';
 
-        const productImagem = el('product-imagem');
-        if (productImagem) productImagem.value = data.imagem || '';
+        setProductImageValue(data.imagem || '', data.imagem ? 'Imagem atual carregada.' : 'Carregue uma imagem. O sistema converte automaticamente para WebP.', data.imagem ? 'success' : 'neutral');
 
         const productStock = el('product-stock');
         if (productStock) productStock.value = data.stock || 0;
@@ -1098,6 +1233,7 @@ if (addBaseBtn) {
         currentBaseId = null;
         document.getElementById('base-modal-title').textContent = 'Adicionar Base';
         if (baseForm) baseForm.reset();
+        setBaseImageValue('');
         document.getElementById('base-preco-extra').value = '0';
         document.getElementById('base-ordem').value = '0';
         document.getElementById('base-ativo').checked = true;
@@ -1118,11 +1254,17 @@ if (baseForm) {
         e.preventDefault();
 
         const nome = document.getElementById('base-nome').value.trim();
+        const baseImageValue = (baseImageHiddenInput?.value || '').trim();
+        if (!baseImageValue) {
+            showToast('Carregue a imagem da base antes de guardar.', 'warning');
+            return;
+        }
+
         const baseData = {
             nome,
             slug: slugify(nome),
             descricao: document.getElementById('base-descricao').value.trim() || null,
-            imagem: document.getElementById('base-imagem').value.trim(),
+            imagem: baseImageValue,
             preco_extra: parseFloat(document.getElementById('base-preco-extra').value || '0') || 0,
             ordem: parseInt(document.getElementById('base-ordem').value || '0', 10) || 0,
             ativo: document.getElementById('base-ativo').checked
@@ -1172,7 +1314,7 @@ async function editBase(id) {
         document.getElementById('base-modal-title').textContent = 'Editar Base';
         document.getElementById('base-nome').value = data.nome || '';
         document.getElementById('base-descricao').value = data.descricao || '';
-        document.getElementById('base-imagem').value = data.imagem || '';
+        setBaseImageValue(data.imagem || '', data.imagem ? 'Imagem atual carregada.' : 'Carregue uma imagem. O sistema converte automaticamente para WebP.', data.imagem ? 'success' : 'neutral');
         document.getElementById('base-preco-extra').value = data.preco_extra ?? 0;
         document.getElementById('base-ordem').value = data.ordem ?? 0;
         document.getElementById('base-ativo').checked = Boolean(data.ativo);
