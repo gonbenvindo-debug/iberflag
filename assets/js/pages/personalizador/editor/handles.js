@@ -417,7 +417,7 @@ Object.assign(DesignEditor.prototype, {
     // Compute all handle positions for elementData using direct SVG viewport math,
     // without getScreenCTM(). This is immune to CTM staleness during active gestures.
     getHandlePoints(elementData) {
-        const bbox = elementData.element.getBBox();
+        const bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
         const metrics = this.getCanvasViewportMetrics();
         const scale = metrics.scale || 1;
         const vbX = Number(metrics.vb?.x) || 0;
@@ -669,7 +669,7 @@ Object.assign(DesignEditor.prototype, {
             startClientY: e.clientY,
             mouseX: e.clientX,
             mouseY: e.clientY,
-            bbox: elementData.element.getBBox(),
+            bbox: this.getElementGeometryBox(elementData, elementData.element.getBBox()),
             transformedBounds: this.getTransformedBounds(elementData),
             guides: this.calculateGuides(elementData),
             snapLock: { x: null, y: null }
@@ -687,7 +687,7 @@ Object.assign(DesignEditor.prototype, {
                 .trim()
                 .split(/\s+/)
                 .map((pair) => pair.split(',').map(Number));
-            this.dragStart.bbox = elementData.element.getBBox();
+            this.dragStart.bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
         }
     },
     
@@ -1132,7 +1132,10 @@ Object.assign(DesignEditor.prototype, {
         let { x: newX, y: newY, width: newWidth, height: newHeight } = buildBoxFromPoint();
 
         const isCircleShape = this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle';
-        const shouldKeepRatio = ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text') || isCircleShape;
+        const isImageElement = this.selectedElement.type === 'image';
+        const shouldKeepRatio = isCircleShape
+            ? true
+            : (!isImageElement && ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text'));
         if (shouldKeepRatio && rotation === 0 && bbox.height > 0) {
             const ratio = bbox.width / bbox.height;
 
@@ -1330,7 +1333,7 @@ Object.assign(DesignEditor.prototype, {
         this.isResizing = false;
         this.isRotating = true;
 
-        const bbox = elementData.element.getBBox();
+        const bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
 
@@ -1377,7 +1380,7 @@ Object.assign(DesignEditor.prototype, {
             this.rotationHasMovement = true;
         }
 
-        const bbox = this.selectedElement.element.getBBox();
+        const bbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
         const centerX = bbox.x + bbox.width / 2;
         const centerY = bbox.y + bbox.height / 2;
         const elementCenter = { x: centerX, y: centerY };
@@ -1463,7 +1466,7 @@ Object.assign(DesignEditor.prototype, {
     
     updateRotation(value) {
         if (this.selectedElement) {
-            const bbox = this.selectedElement.element.getBBox();
+            const bbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
             const centerX = bbox.x + bbox.width / 2;
             const centerY = bbox.y + bbox.height / 2;
             
