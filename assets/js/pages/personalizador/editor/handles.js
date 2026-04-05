@@ -64,7 +64,7 @@ Object.assign(DesignEditor.prototype, {
         const editor = document.createElement('input');
         editor.type = 'text';
         editor.id = 'inline-text-editor';
-        editor.value = String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? '');
+        editor.value = this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? '');
         editor.setAttribute('aria-label', 'Editar texto');
         editor.autocomplete = 'off';
         editor.spellcheck = false;
@@ -126,7 +126,7 @@ Object.assign(DesignEditor.prototype, {
         stage.appendChild(editorShell);
         this._inlineTextEditorState = {
             elementId: elementData.id,
-            originalValue: String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? ''),
+            originalValue: this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? ''),
             textNode,
             shell: editorShell,
             editor
@@ -194,14 +194,7 @@ Object.assign(DesignEditor.prototype, {
                 : this.elements.find((elementData) => elementData?.type === 'text' && String(elementData.id) === String(state.elementId));
             if (!target) return;
 
-            const nextValue = String(value ?? '');
-            target.rawContent = nextValue;
-            target.content = nextValue;
-            target.element.dataset.rawContent = nextValue;
-            target.element.textContent = target.capsLock ? nextValue.toUpperCase() : nextValue;
-            const bbox = target.element.getBBox();
-            target.width = bbox.width;
-            target.height = bbox.height;
+            this.applyTextRawValue?.(target, value);
             if (this.selectedElement?.id === target.id) {
                 this.showResizeHandles(target);
             }

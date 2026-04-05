@@ -285,13 +285,16 @@ Object.assign(DesignEditor.prototype, {
         };
 
         if (normalizedType === 'text') {
-            normalized.content = data.content ?? properties.text ?? 'Texto';
+            const rawText = data.rawContent ?? data.content ?? properties.text ?? 'Texto';
+            normalized.rawContent = String(rawText ?? '');
+            normalized.content = String(rawText ?? '');
             normalized.font = data.font ?? properties.fontFamily ?? 'Arial';
             normalized.size = Number(data.size ?? properties.fontSize ?? 24);
             normalized.color = data.color ?? properties.color ?? '#000000';
             normalized.bold = Boolean(data.bold ?? (String(properties.fontWeight || '').toLowerCase() === 'bold'));
             normalized.italic = Boolean(data.italic ?? (String(properties.fontStyle || '').toLowerCase() === 'italic'));
             normalized.textAnchor = data.textAnchor ?? (properties.textAlign === 'center' ? 'middle' : properties.textAlign === 'right' ? 'end' : 'start');
+            normalized.capsLock = Boolean(data.capsLock ?? false);
         }
 
         if (normalizedType === 'shape') {
@@ -340,6 +343,9 @@ Object.assign(DesignEditor.prototype, {
     addTextFromTemplate(data) {
         const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const capsLockEnabled = String(data.capsLock || 'false') === 'true' || data.capsLock === true;
+        const rawText = String(data.rawContent ?? data.content ?? '');
+        const renderedText = this.getRenderedTextValue?.(rawText, capsLockEnabled) ?? rawText;
 
         textElement.setAttribute('id', id);
         textElement.setAttribute('x', data.x);
@@ -351,7 +357,9 @@ Object.assign(DesignEditor.prototype, {
         textElement.setAttribute('font-style', data.italic ? 'italic' : 'normal');
         textElement.setAttribute('text-anchor', data.textAnchor || 'start');
         textElement.setAttribute('data-element-id', id);
-        textElement.textContent = data.content || 'Texto';
+        textElement.dataset.rawContent = rawText;
+        textElement.dataset.capsLock = capsLockEnabled ? 'true' : 'false';
+        textElement.textContent = renderedText;
 
         // Apply rotation
         if (data.rotation) {

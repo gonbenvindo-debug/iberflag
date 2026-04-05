@@ -37,16 +37,35 @@ Object.assign(DesignEditor.prototype, {
         };
 
         if (type === 'text') {
-            const bbox = node.getBBox();
-            data.rawContent = node.dataset.rawContent || node.textContent || '';
-            data.content = node.textContent || '';
+            const rawFromDataset = Object.prototype.hasOwnProperty.call(node.dataset || {}, 'rawContent')
+                ? String(node.dataset.rawContent ?? '')
+                : this.extractRawTextValueFromNode?.(node) ?? '';
+            const capsLockEnabled = String(node.dataset.capsLock || 'false') === 'true';
+            const renderedText = this.getRenderedTextValue?.(rawFromDataset, capsLockEnabled) ?? rawFromDataset;
+            if (node.textContent !== renderedText) {
+                node.textContent = renderedText;
+            }
+            const xAttr = parseFloat(node.getAttribute('x') || '0');
+            const yAttr = parseFloat(node.getAttribute('y') || '0');
+            const bbox = this.safeGetBBox?.(node, {
+                x: Number.isFinite(xAttr) ? xAttr : 0,
+                y: Number.isFinite(yAttr) ? yAttr : 0,
+                width: 0,
+                height: 0
+            }) || node.getBBox();
+            data.rawContent = rawFromDataset;
+            data.content = rawFromDataset;
             data.font = node.getAttribute('font-family') || 'Arial';
             data.size = parseFloat(node.getAttribute('font-size') || '24');
             data.color = node.getAttribute('fill') || '#000000';
             data.bold = (node.getAttribute('font-weight') || 'normal') === 'bold';
             data.italic = (node.getAttribute('font-style') || 'normal') === 'italic';
             data.underline = String(node.getAttribute('text-decoration') || '').toLowerCase().includes('underline');
-            data.capsLock = String(node.dataset.capsLock || 'false') === 'true';
+            data.capsLock = capsLockEnabled;
+            data.textAnchor = node.getAttribute('text-anchor') || 'start';
+            data.dominantBaseline = node.getAttribute('dominant-baseline') || '';
+            data.x = Number.isFinite(xAttr) ? xAttr : bbox.x;
+            data.y = Number.isFinite(yAttr) ? yAttr : bbox.y;
             data.width = bbox.width;
             data.height = bbox.height;
         }
@@ -245,6 +264,54 @@ Object.assign(DesignEditor.prototype, {
                 delete elementData.element.dataset.capsLock;
             }
         }
+    },
+
+    buildSerializableElementData(elementData) {
+        if (!elementData?.element) return null;
+
+        const serializable = {
+            ...elementData
+        };
+        delete serializable.element;
+
+        if (elementData.type === 'text') {
+            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0));
+            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0));
+            const rawText = this.extractRawTextValueFromNode?.(elementData.element) ?? String(elementData.rawContent ?? '');
+            const bbox = this.safeGetBBox?.(elementData.element, {
+                x: Number.isFinite(x) ? x : Number(elementData.x) || 0,
+                y: Number.isFinite(y) ? y : Number(elementData.y) || 0,
+                width: Number(elementData.width) || 0,
+                height: Number(elementData.height) || 0
+            });
+
+            serializable.rawContent = rawText;
+            serializable.content = rawText;
+            serializable.x = Number.isFinite(x) ? x : (bbox?.x ?? 0);
+            serializable.y = Number.isFinite(y) ? y : (bbox?.y ?? 0);
+            serializable.width = (bbox?.width ?? Number(elementData.width)) || 0;
+            serializable.height = (bbox?.height ?? Number(elementData.height)) || 0;
+            serializable.textAnchor = elementData.element.getAttribute('text-anchor') || elementData.textAnchor || 'start';
+            serializable.dominantBaseline = elementData.element.getAttribute('dominant-baseline') || elementData.dominantBaseline || '';
+        } else if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
+            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0));
+            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0));
+            const width = parseFloat(elementData.element.getAttribute('width') || String(elementData.width ?? 0));
+            const height = parseFloat(elementData.element.getAttribute('height') || String(elementData.height ?? 0));
+            serializable.x = Number.isFinite(x) ? x : (Number(elementData.x) || 0);
+            serializable.y = Number.isFinite(y) ? y : (Number(elementData.y) || 0);
+            serializable.width = Number.isFinite(width) ? width : (Number(elementData.width) || 0);
+            serializable.height = Number.isFinite(height) ? height : (Number(elementData.height) || 0);
+        } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
+            const cx = parseFloat(elementData.element.getAttribute('cx') || String(elementData.x ?? 0));
+            const cy = parseFloat(elementData.element.getAttribute('cy') || String(elementData.y ?? 0));
+            const radius = parseFloat(elementData.element.getAttribute('r') || String(elementData.radius ?? 0));
+            serializable.x = Number.isFinite(cx) ? cx : (Number(elementData.x) || 0);
+            serializable.y = Number.isFinite(cy) ? cy : (Number(elementData.y) || 0);
+            serializable.radius = Number.isFinite(radius) ? radius : (Number(elementData.radius) || 0);
+        }
+
+        return serializable;
     },
 
     async loadExistingDesign(index) {

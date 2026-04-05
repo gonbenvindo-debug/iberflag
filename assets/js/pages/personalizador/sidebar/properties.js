@@ -5,18 +5,7 @@ Object.assign(DesignEditor.prototype, {
 
     updateTextContent(value) {
         if (this.selectedElement && this.selectedElement.type === 'text') {
-            const rawValue = String(value ?? '');
-            this.selectedElement.rawContent = rawValue;
-            this.selectedElement.content = rawValue;
-            this.selectedElement.element.dataset.rawContent = rawValue;
-            const displayValue = this.selectedElement.capsLock ? rawValue.toUpperCase() : rawValue;
-            this.selectedElement.element.textContent = displayValue;
-            
-            // Update stored dimensions
-            const bbox = this.selectedElement.element.getBBox();
-            this.selectedElement.width = bbox.width;
-            this.selectedElement.height = bbox.height;
-            
+            this.applyTextRawValue?.(this.selectedElement, value);
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave(250);
         }
@@ -99,12 +88,8 @@ Object.assign(DesignEditor.prototype, {
             const nextState = !this.selectedElement.capsLock;
             this.selectedElement.capsLock = nextState;
             this.selectedElement.element.dataset.capsLock = nextState ? 'true' : 'false';
-            const rawContent = this.selectedElement.rawContent ?? this.selectedElement.content ?? this.selectedElement.element.textContent ?? '';
-            const displayValue = nextState ? String(rawContent).toUpperCase() : String(rawContent);
-            this.selectedElement.element.textContent = displayValue;
-            const bbox = this.selectedElement.element.getBBox();
-            this.selectedElement.width = bbox.width;
-            this.selectedElement.height = bbox.height;
+            const rawContent = this.selectedElement.rawContent ?? this.extractRawTextValueFromNode?.(this.selectedElement.element) ?? '';
+            this.applyTextRawValue?.(this.selectedElement, rawContent);
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
             this.renderQuickFontPopover?.();
@@ -1773,9 +1758,8 @@ Object.assign(DesignEditor.prototype, {
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
             elements: this.elements.map((elementData) => {
-                const { element, ...serializable } = elementData || {};
-                return serializable;
-            })
+                return this.buildSerializableElementData?.(elementData) || null;
+            }).filter(Boolean)
         };
         const compactDesign = JSON.stringify(payload);
 

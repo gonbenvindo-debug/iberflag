@@ -258,13 +258,17 @@ Object.assign(DesignEditor.prototype, {
         const baseFontSize = Math.round(Math.max(14, Math.min(40, scale.shortSide * 0.09)));
         const estimatedTextWidth = Math.max(80, baseFontSize * 5.2);
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+        const defaultLabel = 'Clique para editar';
         text.setAttribute('x', String(center.x - (estimatedTextWidth / 2)));
         text.setAttribute('y', String(center.y));
         text.setAttribute('font-family', 'Arial');
         text.setAttribute('font-size', String(baseFontSize));
         text.setAttribute('fill', '#000000');
+        text.setAttribute('text-anchor', 'start');
+        text.setAttribute('xml:space', 'preserve');
         text.setAttribute('data-editable', 'true');
-        text.textContent = 'Clique para editar';
+        text.dataset.rawContent = defaultLabel;
+        text.textContent = this.getRenderedTextValue?.(defaultLabel, false) ?? defaultLabel;
         text.style.cursor = 'move';
 
         this.canvas.appendChild(text);
@@ -277,7 +281,8 @@ Object.assign(DesignEditor.prototype, {
             id: Date.now(),
             element: text,
             type: 'text',
-            content: 'Clique para editar',
+            rawContent: defaultLabel,
+            content: defaultLabel,
             font: 'Arial',
             size: baseFontSize,
             color: '#000000',

@@ -523,9 +523,8 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const serializableElements = this.elements.map(el => {
-            const { element, ...rest } = el;
-            return rest;
-        });
+            return this.buildSerializableElementData?.(el) || null;
+        }).filter(Boolean);
 
         const normalizeTemplateCategory = (value) => {
             const allowed = new Set(['promocoes', 'eventos', 'corporativo', 'festas', 'varejo']);

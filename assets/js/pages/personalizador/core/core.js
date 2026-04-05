@@ -98,6 +98,87 @@ class DesignEditor {
         return window.matchMedia('(max-width: 767px)').matches;
     }
 
+    getRenderedTextValue(rawValue, capsLock = false) {
+        const normalizedRaw = String(rawValue ?? '');
+        const display = capsLock ? normalizedRaw.toUpperCase() : normalizedRaw;
+        return display.length > 0 ? display : '\u00A0';
+    }
+
+    extractRawTextValueFromNode(node) {
+        if (!node) return '';
+
+        if (node.dataset && Object.prototype.hasOwnProperty.call(node.dataset, 'rawContent')) {
+            return String(node.dataset.rawContent ?? '');
+        }
+
+        const text = String(node.textContent ?? '');
+        return text === '\u00A0' ? '' : text;
+    }
+
+    safeGetBBox(node, fallback = {}) {
+        const fallbackBox = {
+            x: Number.isFinite(Number(fallback?.x)) ? Number(fallback.x) : 0,
+            y: Number.isFinite(Number(fallback?.y)) ? Number(fallback.y) : 0,
+            width: Number.isFinite(Number(fallback?.width)) ? Number(fallback.width) : 0,
+            height: Number.isFinite(Number(fallback?.height)) ? Number(fallback.height) : 0
+        };
+
+        if (!node || typeof node.getBBox !== 'function') {
+            return fallbackBox;
+        }
+
+        try {
+            const box = node.getBBox();
+            if (
+                box
+                && Number.isFinite(box.x)
+                && Number.isFinite(box.y)
+                && Number.isFinite(box.width)
+                && Number.isFinite(box.height)
+            ) {
+                return {
+                    x: box.x,
+                    y: box.y,
+                    width: box.width,
+                    height: box.height
+                };
+            }
+        } catch {
+            // Fallback below.
+        }
+
+        return fallbackBox;
+    }
+
+    applyTextRawValue(elementData, rawValue) {
+        if (!elementData?.element || elementData.type !== 'text') {
+            return null;
+        }
+
+        const nextRaw = String(rawValue ?? '');
+        const renderedText = this.getRenderedTextValue(nextRaw, Boolean(elementData.capsLock));
+        const currentX = Number.parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0)) || 0;
+        const currentY = Number.parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0)) || 0;
+
+        elementData.rawContent = nextRaw;
+        elementData.content = nextRaw;
+        elementData.x = currentX;
+        elementData.y = currentY;
+        elementData.element.dataset.rawContent = nextRaw;
+        elementData.element.textContent = renderedText;
+
+        const measured = this.safeGetBBox(elementData.element, {
+            x: currentX,
+            y: currentY,
+            width: Number(elementData.width) || 0,
+            height: Number(elementData.height) || 0
+        });
+
+        elementData.width = measured.width;
+        elementData.height = measured.height;
+        return measured;
+    }
+
     executeEditorCommand(command, payload = null) {
         switch (command) {
             case 'add-text':

@@ -41,6 +41,8 @@ Object.assign(DesignEditor.prototype, {
                 : toFinite(parseFloat(elementData.element.getAttribute('y') || '0') + deltaY, parseFloat(elementData.element.getAttribute('y') || '0'));
             elementData.element.setAttribute('x', currentX);
             elementData.element.setAttribute('y', currentY);
+            elementData.x = currentX;
+            elementData.y = currentY;
             return;
         }
 
@@ -53,6 +55,8 @@ Object.assign(DesignEditor.prototype, {
                 : toFinite(parseFloat(elementData.element.getAttribute('cy') || '0') + deltaY, parseFloat(elementData.element.getAttribute('cy') || '0'));
             elementData.element.setAttribute('cx', currentCx);
             elementData.element.setAttribute('cy', currentCy);
+            elementData.x = currentCx;
+            elementData.y = currentCy;
             return;
         }
 
