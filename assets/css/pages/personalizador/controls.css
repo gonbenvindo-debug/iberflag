@@ -977,35 +977,35 @@ body.is-camera-panning #canvas-stage {
         top: 8px;
         width: auto;
         max-width: calc(100% - 12px);
-        padding: 5px;
+        padding: 6px;
     }
 
     #editor-floating-context-bar .editor-floating-context-inner {
         display: grid;
         grid-template-columns: minmax(0, 1fr);
         gap: 6px;
-        width: max-content;
+        width: min(356px, calc(100vw - 24px));
         max-width: 100%;
+        min-width: 0;
         margin-inline: auto;
-        padding-bottom: 2px;
-        overflow-x: hidden;
-        align-items: stretch;
+        overflow: visible;
+        align-items: center;
         justify-items: center;
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-context-inner {
+    #editor-floating-context-bar[data-mobile-context="text"] .editor-floating-context-inner {
         width: min(356px, calc(100vw - 24px));
     }
 
-    #editor-floating-context-bar.is-image-selection .editor-floating-context-inner {
-        width: min(320px, calc(100vw - 24px));
+    #editor-floating-context-bar[data-mobile-context="image"] .editor-floating-context-inner {
+        width: min(332px, calc(100vw - 24px));
     }
 
-    #editor-floating-context-bar.is-qr-selection .editor-floating-context-inner {
+    #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-context-inner {
         width: min(304px, calc(100vw - 24px));
     }
 
-    #editor-floating-context-bar.is-shape-selection .editor-floating-context-inner {
+    #editor-floating-context-bar[data-mobile-context="shape"] .editor-floating-context-inner {
         display: flex;
         align-items: center;
         justify-content: center;
@@ -1014,60 +1014,22 @@ body.is-camera-panning #canvas-stage {
         max-width: calc(100vw - 24px);
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-image-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-shape-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-image-selection #top-image-group,
-    #editor-floating-context-bar.is-shape-selection #top-shape-group,
-    #editor-floating-context-bar.is-qr-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-qr-selection #top-qr-group {
-        width: 100%;
-        min-width: 0;
-        overflow: hidden;
-    }
-
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions::-webkit-scrollbar,
-    #editor-floating-context-bar.is-shape-selection .editor-floating-actions::-webkit-scrollbar,
-    #editor-floating-context-bar.is-image-selection .editor-floating-actions::-webkit-scrollbar,
-    #editor-floating-context-bar.is-image-selection #top-image-group::-webkit-scrollbar,
-    #editor-floating-context-bar.is-qr-selection .editor-floating-actions::-webkit-scrollbar,
-    #editor-floating-context-bar.is-qr-selection #top-qr-group::-webkit-scrollbar {
-        display: none;
-    }
-
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-shape-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-image-selection .editor-floating-actions,
-    #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
+    #editor-floating-context-bar .editor-floating-actions {
         display: grid;
-        grid-template-columns: repeat(5, minmax(0, 1fr));
+        grid-template-columns: repeat(5, 30px);
         gap: 4px;
         width: max-content;
-        min-width: max-content;
+        min-width: 0;
         justify-content: center;
         margin-inline: auto;
     }
 
-    #editor-floating-context-bar.is-shape-selection .editor-floating-actions {
+    #editor-floating-context-bar[data-mobile-context="shape"] .editor-floating-actions,
+    #editor-floating-context-bar[data-mobile-context="qr"] .editor-floating-actions {
         grid-template-columns: repeat(4, 30px);
     }
 
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions {
-        grid-template-columns: repeat(5, 30px);
-    }
-
-    #editor-floating-context-bar.is-image-selection .editor-floating-actions {
-        grid-template-columns: repeat(5, 30px);
-    }
-
-    #editor-floating-context-bar.is-qr-selection .editor-floating-actions {
-        grid-template-columns: repeat(4, 30px);
-    }
-
-    #editor-floating-context-bar.is-text-selection .editor-floating-actions .editor-floating-btn,
-    #editor-floating-context-bar.is-shape-selection .editor-floating-actions .editor-floating-btn,
-    #editor-floating-context-bar.is-image-selection .editor-floating-actions .editor-floating-btn,
-    #editor-floating-context-bar.is-qr-selection .editor-floating-actions .editor-floating-btn {
+    #editor-floating-context-bar .editor-floating-actions .editor-floating-btn {
         width: 30px;
         min-width: 30px;
         height: 30px;
@@ -1079,121 +1041,72 @@ body.is-camera-panning #canvas-stage {
         box-shadow: none !important;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group,
-    #editor-floating-context-bar.is-shape-selection #top-shape-group,
-    #editor-floating-context-bar.is-image-selection #top-image-group,
-    #editor-floating-context-bar.is-qr-selection #top-qr-group {
-        width: fit-content;
+    #editor-floating-context-bar .editor-floating-actions .editor-floating-btn > span {
+        display: none !important;
+    }
+
+    #editor-floating-context-bar .editor-floating-actions .editor-floating-btn i,
+    #editor-floating-context-bar .editor-floating-actions .editor-floating-btn svg {
+        width: 14px;
+        height: 14px;
+    }
+
+    #top-font-group,
+    #top-shape-group,
+    #top-image-group,
+    #top-qr-group {
         min-width: 0;
         max-width: 100%;
         padding-left: 0;
         border-left: 0;
-        overflow: hidden;
+        overflow: visible;
         justify-self: center;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group {
-        display: flex;
-        align-items: center;
-        flex-wrap: nowrap;
-        gap: 4px;
-        justify-content: center;
+    #editor-floating-context-bar[data-mobile-context="none"] #top-font-group,
+    #editor-floating-context-bar[data-mobile-context="none"] #top-shape-group,
+    #editor-floating-context-bar[data-mobile-context="none"] #top-image-group,
+    #editor-floating-context-bar[data-mobile-context="none"] #top-qr-group,
+    #editor-floating-context-bar[data-mobile-context="none"] #top-keep-aspect-btn {
+        display: none !important;
     }
 
-    #editor-floating-context-bar.is-shape-selection #top-shape-group {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        gap: 6px;
-        width: max-content;
+    #editor-floating-context-bar[data-mobile-context="text"] #top-shape-group,
+    #editor-floating-context-bar[data-mobile-context="text"] #top-image-group,
+    #editor-floating-context-bar[data-mobile-context="text"] #top-qr-group,
+    #editor-floating-context-bar[data-mobile-context="text"] #top-keep-aspect-btn {
+        display: none !important;
     }
 
-    #editor-floating-context-bar.is-image-selection #top-image-group {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: minmax(96px, 1fr) 74px repeat(4, 26px) auto;
         align-items: center;
-        gap: 8px;
-        justify-content: center;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-image-group #top-image-edit-actions {
-        display: grid;
-        grid-template-columns: repeat(3, 30px);
-        gap: 2px;
-        justify-content: start;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-image-group .editor-floating-opacity-control {
-        min-width: 0;
-        width: 186px;
-        gap: 8px;
-        display: grid;
-        grid-template-columns: minmax(0, 1fr) auto;
-        align-items: center;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-image-group .desktop-inline-range {
         width: 100%;
         min-width: 0;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-image-group .desktop-inline-value {
-        min-width: 40px;
-        text-align: right;
-        font-size: 12px;
-        font-weight: 700;
-    }
-
-    #editor-floating-context-bar.is-qr-selection #top-qr-group {
-        display: grid;
-        grid-template-columns: 190px auto;
-        align-items: center;
-        gap: 8px;
+        gap: 4px;
         justify-content: center;
     }
 
-    #editor-floating-context-bar.is-qr-selection #top-qr-content {
-        width: 190px;
-        min-width: 190px;
-        height: 30px;
-        min-height: 30px;
-        font-size: 12px;
-    }
-
-    #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-control {
-        justify-content: flex-start;
-        gap: 4px;
-        width: auto;
-        flex: 0 0 auto;
-    }
-
-    #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color-wrap,
-    #editor-floating-context-bar.is-qr-selection #top-qr-group .top-inline-color {
-        width: 24px;
-        height: 24px;
-    }
-
-    #editor-floating-context-bar.is-text-selection #top-font-select {
-        flex: 1 1 112px;
-        width: auto;
-        min-width: 112px;
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-select {
+        width: 100%;
+        min-width: 96px;
         height: 30px;
         min-height: 30px;
         padding: 0 8px;
         font-size: 13px;
+        border-radius: 6px;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-size {
-        flex: 0 0 72px;
-        width: 72px;
-        min-width: 72px;
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .editor-floating-size {
+        width: 74px;
+        min-width: 74px;
         height: 30px;
         padding: 0 6px;
         justify-content: space-between;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group .editor-floating-font-btn {
-        flex: 0 0 26px;
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .editor-floating-font-btn {
         width: 26px;
         min-width: 26px;
         height: 30px;
@@ -1203,128 +1116,170 @@ body.is-camera-panning #canvas-stage {
         border-radius: 6px;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-control {
-        flex: 0 0 auto;
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color-control {
         width: auto;
         justify-content: flex-end;
         gap: 4px;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color-wrap,
-    #editor-floating-context-bar.is-text-selection #top-font-group .top-inline-color {
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color-wrap,
+    #editor-floating-context-bar[data-mobile-context="text"] #top-font-group .top-inline-color {
         width: 22px;
         height: 22px;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-font-select {
-        border-radius: 6px;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn {
-        width: 30px !important;
-        min-width: 30px !important;
-        padding: 0 !important;
-    }
-
-    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn > span {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-font-group,
+    #editor-floating-context-bar[data-mobile-context="image"] #top-shape-group,
+    #editor-floating-context-bar[data-mobile-context="image"] #top-qr-group {
         display: none !important;
     }
 
-    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn .keep-aspect-base-icon {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-image-group {
+        display: grid;
+        grid-template-columns: auto minmax(0, 1fr);
+        align-items: center;
+        width: 100%;
+        min-width: 0;
+        gap: 8px;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-image-group #top-image-edit-actions {
+        display: grid;
+        grid-template-columns: repeat(3, 30px);
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .editor-floating-opacity-control {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) auto;
+        width: 100%;
+        min-width: 0;
+        gap: 8px;
+        align-items: center;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .desktop-inline-range {
+        width: 100%;
+        min-width: 0;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-image-group .desktop-inline-value {
+        min-width: 40px;
+        text-align: right;
+        font-size: 12px;
+        font-weight: 700;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn {
+        width: 30px !important;
+        min-width: 30px !important;
+        height: 30px;
+        min-height: 30px;
+        padding: 0 !important;
+        border: 0 !important;
+        border-radius: 6px;
+        display: inline-flex !important;
+        align-items: center;
+        justify-content: center;
+        gap: 0;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn > span {
+        display: none !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn .keep-aspect-base-icon {
         width: 16px !important;
         height: 16px !important;
     }
 
-    #editor-floating-context-bar.is-image-selection #top-keep-aspect-btn .keep-aspect-state-icon {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn .keep-aspect-state-icon {
         width: 11px !important;
         height: 11px !important;
     }
 
-    #editor-floating-context-bar.is-text-selection #top-keep-aspect-btn,
-    #editor-floating-context-bar.is-shape-selection #top-keep-aspect-btn,
-    #editor-floating-context-bar.is-qr-selection #top-keep-aspect-btn {
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"] {
+        background: #f8fafc !important;
+        color: #64748b !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"] {
+        background: var(--iber-accent) !important;
+        color: #ffffff !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon {
+        background: #ffffff;
+        color: var(--iber-accent);
+    }
+
+    #editor-floating-context-bar[data-mobile-context="image"] #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon {
+        background: #ffffff;
+        color: #64748b;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-font-group,
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-image-group,
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-qr-group,
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-keep-aspect-btn {
         display: none !important;
     }
 
-    .editor-floating-actions {
-        gap: 2px;
+    #editor-floating-context-bar[data-mobile-context="shape"] #top-shape-group {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: max-content;
+        gap: 6px;
     }
 
-    .editor-floating-actions .editor-floating-btn {
-        width: 30px;
-        min-width: 30px;
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-font-group,
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-shape-group,
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-image-group,
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-keep-aspect-btn {
+        display: none !important;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group {
+        display: grid;
+        grid-template-columns: minmax(144px, 1fr) auto;
+        align-items: center;
+        gap: 8px;
+        width: 100%;
+        min-width: 0;
+    }
+
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-content {
+        width: 100%;
+        min-width: 0;
         height: 30px;
         min-height: 30px;
-        padding: 0;
-        gap: 0;
+        font-size: 12px;
     }
 
-    .editor-floating-actions .editor-floating-btn i,
-    .editor-floating-actions .editor-floating-btn svg {
-        width: 14px;
-        height: 14px;
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group .top-inline-color-control {
+        justify-content: flex-start;
+        gap: 4px;
+        width: auto;
+        flex: 0 0 auto;
     }
 
-    #top-keep-aspect-btn .keep-aspect-base-icon {
-        width: 16px !important;
-        height: 16px !important;
-    }
-
-    #top-keep-aspect-btn .keep-aspect-state-icon {
-        width: 12px !important;
-        height: 12px !important;
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group .top-inline-color-wrap,
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-qr-group .top-inline-color {
+        width: 24px;
+        height: 24px;
     }
 
     #top-keep-aspect-btn {
         border-radius: 6px;
     }
 
-    #top-keep-aspect-btn[aria-pressed="false"] {
-        background: #f8fafc !important;
-        color: #475569 !important;
-        border-color: #dbe4f0 !important;
-    }
-
-    #top-keep-aspect-btn[aria-pressed="true"] {
-        background: var(--iber-accent) !important;
-        color: #ffffff !important;
-        border-color: var(--iber-accent) !important;
-    }
-
-    #top-keep-aspect-btn[aria-pressed="true"] .keep-aspect-state-icon {
-        background: #ffffff;
-        color: var(--iber-accent);
-    }
-
-    #top-keep-aspect-btn[aria-pressed="false"] .keep-aspect-state-icon {
-        background: #ffffff;
-        color: #64748b;
-    }
-
     #top-keep-aspect-btn:focus,
     #top-keep-aspect-btn:focus-visible {
         outline: none !important;
         box-shadow: none !important;
-    }
-
-    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection):not(.is-shape-selection):not(.is-qr-selection) #top-keep-aspect-btn {
-        width: auto !important;
-        min-width: 74px;
-        padding: 0 8px;
-        gap: 6px;
-    }
-
-    #editor-floating-context-bar:not(.is-text-selection):not(.is-image-selection):not(.is-shape-selection):not(.is-qr-selection) #top-keep-aspect-btn > span {
-        display: inline-flex !important;
-        align-items: center;
-        font-size: 10px;
-        font-weight: 800;
-        letter-spacing: 0.02em;
-        text-transform: uppercase;
-    }
-
-    .editor-floating-actions .editor-floating-btn > span {
-        display: none !important;
     }
 
     #quick-keep-aspect-btn .keep-aspect-base-icon {
@@ -1343,18 +1298,6 @@ body.is-camera-panning #canvas-stage {
         background: var(--iber-accent-soft) !important;
         color: var(--iber-accent) !important;
         border-color: rgba(239, 72, 37, 0.38) !important;
-    }
-
-    #top-image-group .desktop-inline-range {
-        width: 94px;
-        min-width: 94px;
-    }
-
-    .editor-floating-inline-input {
-        width: 152px;
-        min-width: 152px;
-        height: 30px;
-        font-size: 11px;
     }
 
     .editor-floating-opacity-control,

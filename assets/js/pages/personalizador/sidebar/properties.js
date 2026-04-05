@@ -1108,6 +1108,18 @@ Object.assign(DesignEditor.prototype, {
             floatingBar.classList.toggle('is-shape-selection', hasSelection && isShape);
             floatingBar.classList.toggle('is-image-selection', hasSelection && isImage && !isQr);
             floatingBar.classList.toggle('is-qr-selection', hasSelection && isQr);
+            const mobileContext = !hasSelection
+                ? 'none'
+                : isText
+                    ? 'text'
+                    : isQr
+                        ? 'qr'
+                        : isShape
+                            ? 'shape'
+                            : isImage
+                                ? 'image'
+                                : 'none';
+            floatingBar.setAttribute('data-mobile-context', mobileContext);
         }
 
         if (!hasSelection) {
