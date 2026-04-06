@@ -654,9 +654,9 @@ function renderProducts(products) {
                     ${product.preco.toFixed(2)}€
                 </div>
             </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <h3 class="text-xl font-bold mb-6 text-gray-900">${product.nome}</h3>
-                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+            <div class="product-card-body">
+                <h3 class="product-card-title">${product.nome}</h3>
+                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="product-card-cta">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </a>

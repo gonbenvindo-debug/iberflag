@@ -91,21 +91,15 @@ function renderProductsGrid(products) {
                 </div>
                 ${product.destaque ? '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
             </div>
-            <div class="p-6 flex flex-col flex-grow">
-                <div class="mb-2">
-                    <span class="inline-block bg-blue-100 text-blue-600 text-xs font-semibold px-2 py-1 rounded">${safeCategory}</span>
-                </div>
-                <h3 class="text-xl font-bold mb-4 text-gray-900">${safeName}</h3>
-                <div class="mb-4">
-                    <div class="price-tag">${safePrice}€</div>
-                    <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>
-                </div>
+            <div class="product-card-body">
+                <div class="product-card-meta">${safeCategory}</div>
+                <h3 class="product-card-title">${safeName}</h3>
                 <button
                     type="button"
                     data-open-templates="true"
                     data-product-id="${safeProductId}"
                     data-product-name="${safeProductNameParam}"
-                    class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2 cursor-pointer min-h-[44px]">
+                    class="product-card-cta cursor-pointer min-h-[44px]">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
                 </button>
