@@ -78,14 +78,13 @@ function renderProductsGrid(products) {
         ${(() => {
             const safeName = escapeHtml(product?.nome || 'Produto sem nome');
             const safeCategory = escapeHtml(getCategoryName(product?.categoria || 'outros'));
-            const safeDescription = escapeHtml(product?.descricao || 'Sem descrição disponível');
             const safeImage = escapeHtml(product?.imagem || '/assets/images/template-placeholder.svg');
             const safePrice = parseProductPrice(product).toFixed(2);
             const safeProductId = escapeHtml(String(product?.id || ''));
             const safeProductNameParam = encodeURIComponent(String(product?.nome || 'Produto sem nome'));
             return `
         <div class="product-card page-transition" data-product-id="${product.id}">
-            <div class="relative h-64 overflow-hidden image-zoom">
+            <div class="product-card-image image-zoom">
                 <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover" loading="lazy">
                 <div class="product-badge">
                     ${safePrice}€
@@ -96,8 +95,7 @@ function renderProductsGrid(products) {
                 <div class="mb-2">
                     <span class="inline-block bg-blue-100 text-blue-600 text-xs font-semibold px-2 py-1 rounded">${safeCategory}</span>
                 </div>
-                <h3 class="text-xl font-bold mb-2 text-gray-900">${safeName}</h3>
-                <p class="text-gray-600 text-sm mb-4 flex-grow">${safeDescription}</p>
+                <h3 class="text-xl font-bold mb-4 text-gray-900">${safeName}</h3>
                 <div class="mb-4">
                     <div class="price-tag">${safePrice}€</div>
                     <p class="text-xs text-gray-500 mt-1">Preço por unidade</p>

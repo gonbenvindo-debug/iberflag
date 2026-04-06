@@ -648,15 +648,14 @@ function renderProducts(products) {
 
     productsContainer.innerHTML = displayProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}">
-            <div class="relative h-64 overflow-hidden image-zoom">
+            <div class="product-card-image image-zoom">
                 <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
                 <div class="product-badge">
                     ${product.preco.toFixed(2)}€
                 </div>
             </div>
             <div class="p-6 flex flex-col flex-grow">
-                <h3 class="text-xl font-bold mb-2 text-gray-900">${product.nome}</h3>
-                <p class="text-gray-600 text-sm mb-6 flex-grow">${product.descricao}</p>
+                <h3 class="text-xl font-bold mb-6 text-gray-900">${product.nome}</h3>
                 <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="w-full bg-blue-600 text-white font-bold py-3 rounded-xl hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                     <i data-lucide="palette" class="w-4 h-4"></i>
                     Personalizar e Comprar
