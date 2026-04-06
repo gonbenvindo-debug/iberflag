@@ -414,6 +414,96 @@ var initialProducts = [
     }
 ];
 
+function normalizeCategoryKey(value) {
+    return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .replace(/[^a-z0-9]/g, '');
+}
+
+function categoryMatches(productCategory, targetCategory, productName = '', productDescription = '') {
+    const productKey = normalizeCategoryKey(productCategory);
+    const targetKey = normalizeCategoryKey(targetCategory);
+    const searchableProductText = [
+        normalizeCategoryKey(productName),
+        normalizeCategoryKey(productDescription)
+    ].filter(Boolean).join(' ');
+
+    if (!productKey || !targetKey) {
+        if (!targetKey) return false;
+    }
+
+    if (productKey && productKey === targetKey) {
+        return true;
+    }
+
+    const aliasMap = {
+        flybanners: ['flybanner', 'flybanners', 'beachflag', 'beachflags', 'bandeira', 'bandeiras', 'mastro', 'mastros', 'teardrop', 'feather'],
+        rollups: ['rollup', 'rollups', 'rollupbanner', 'rollupbanners', 'xbanner', 'xbanner', 'wallbanner', 'photocall', 'backdrop'],
+        lonas: ['lona', 'lonas', 'banner', 'banners', 'pvc', 'wallbanner', 'tendapublicitaria', 'vinil', 'mesh']
+    };
+
+    const aliases = aliasMap[targetKey] || [targetKey];
+    return aliases.some((alias) => {
+        const normalizedAlias = normalizeCategoryKey(alias);
+        if (!normalizedAlias) return false;
+
+        return (
+            (productKey && (productKey.includes(normalizedAlias) || normalizedAlias.includes(productKey)))
+            || searchableProductText.includes(normalizedAlias)
+        );
+    });
+}
+
+function pickRandomItem(items) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return null;
+    }
+
+    const randomIndex = Math.floor(Math.random() * items.length);
+    return items[randomIndex] || null;
+}
+
+function updateHomepageCategoryCards(products) {
+    const categoryCards = document.querySelectorAll('[data-category-card]');
+    if (!categoryCards.length) {
+        return;
+    }
+
+    const sourceProducts = Array.isArray(products) && products.length > 0 ? products : initialProducts;
+
+    categoryCards.forEach((card) => {
+        const categoryKey = card.getAttribute('data-category');
+        const imageElement = card.querySelector('[data-category-image]');
+        if (!categoryKey || !(imageElement instanceof HTMLImageElement)) {
+            return;
+        }
+
+        const matches = sourceProducts.filter((product) =>
+            categoryMatches(product?.categoria, categoryKey, product?.nome, product?.descricao)
+            && typeof product?.imagem === 'string'
+            && product.imagem.trim().length > 0
+        );
+
+        const fallbackMatches = initialProducts.filter((product) =>
+            categoryMatches(product?.categoria, categoryKey, product?.nome, product?.descricao)
+            && typeof product?.imagem === 'string'
+            && product.imagem.trim().length > 0
+        );
+
+        const selectedProduct = pickRandomItem(matches.length > 0 ? matches : fallbackMatches);
+        if (!selectedProduct) {
+            return;
+        }
+
+        imageElement.src = selectedProduct.imagem;
+        if (selectedProduct.nome) {
+            imageElement.alt = selectedProduct.nome;
+        }
+    });
+}
+
 function normalizeCartItem(item) {
     if (!item || typeof item !== 'object') {
         return null;
@@ -675,6 +765,7 @@ function renderProducts(products) {
 async function fetchProducts() {
     if (!supabaseClient || typeof supabaseClient.from !== 'function') {
         renderProducts(initialProducts);
+        updateHomepageCategoryCards(initialProducts);
         return;
     }
 
@@ -689,12 +780,15 @@ async function fetchProducts() {
 
         if (data && data.length > 0) {
             renderProducts(data);
+            updateHomepageCategoryCards(data);
         } else {
             renderProducts(initialProducts);
+            updateHomepageCategoryCards(initialProducts);
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error.message);
         renderProducts(initialProducts);
+        updateHomepageCategoryCards(initialProducts);
     }
 }
 
