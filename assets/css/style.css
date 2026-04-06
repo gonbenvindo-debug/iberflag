@@ -596,13 +596,11 @@ body {
     width: 100%;
     background-image: url('/assets/images/homepage-hero-canvas-sweep.svg');
     background-repeat: no-repeat;
-    background-size: min(76rem, 68vw) 100%;
-    background-position: right center;
-    -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 36%, rgba(0, 0, 0, 0.04) 52%, rgba(0, 0, 0, 0.12) 62%, rgba(0, 0, 0, 0.26) 72%, rgba(0, 0, 0, 0.46) 80%, rgba(0, 0, 0, 0.72) 89%, rgba(0, 0, 0, 1) 97%);
-    mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 36%, rgba(0, 0, 0, 0.04) 52%, rgba(0, 0, 0, 0.12) 62%, rgba(0, 0, 0, 0.26) 72%, rgba(0, 0, 0, 0.46) 80%, rgba(0, 0, 0, 0.72) 89%, rgba(0, 0, 0, 1) 97%);
+    background-size: min(78rem, 70vw) 100%;
+    background-position: calc(100% + 8px) center;
     pointer-events: none;
     z-index: 1;
-    opacity: 1;
+    opacity: 0.96;
 }
 
 .homepage-metric-card {
@@ -652,11 +650,9 @@ body {
 
     .homepage-hero-image-layer {
         width: 100%;
-        opacity: 0.34;
-        background-size: 148% 100%;
-        background-position: 100% center;
-        -webkit-mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 0.04) 56%, rgba(0, 0, 0, 0.14) 66%, rgba(0, 0, 0, 0.32) 76%, rgba(0, 0, 0, 0.58) 86%, rgba(0, 0, 0, 1) 98%);
-        mask-image: linear-gradient(90deg, rgba(0, 0, 0, 0) 0%, rgba(0, 0, 0, 0) 42%, rgba(0, 0, 0, 0.04) 56%, rgba(0, 0, 0, 0.14) 66%, rgba(0, 0, 0, 0.32) 76%, rgba(0, 0, 0, 0.58) 86%, rgba(0, 0, 0, 1) 98%);
+        opacity: 0.42;
+        background-size: 165% 100%;
+        background-position: calc(100% + 8px) center;
     }
 }
 
