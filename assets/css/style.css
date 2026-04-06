@@ -640,7 +640,6 @@ body {
 @media (min-width: 1024px) {
     .homepage-hero-content {
         padding-right: min(16vw, 13rem);
-        margin-left: -1rem;
     }
 }
 
