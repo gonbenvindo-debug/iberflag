@@ -2872,3 +2872,31 @@ a[href="/checkout.html"].block.w-full:hover,
     background: #ef4825 !important;
     color: #ffffff !important;
 }
+
+@media (max-width: 767px) {
+    .homepage .homepage-mobile-pre-catalog {
+        display: none !important;
+    }
+
+    .homepage #produtos {
+        padding-top: 2rem !important;
+    }
+
+    .homepage #produtos .text-center.mb-16 {
+        margin-bottom: 1rem !important;
+    }
+
+    .homepage #products-container {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+        gap: 0.75rem !important;
+    }
+
+    .homepage #products-container .product-card,
+    .homepage #products-container .skeleton-card {
+        margin-bottom: 0 !important;
+    }
+
+    .homepage #products-container .skeleton-image {
+        height: 10rem !important;
+    }
+}
