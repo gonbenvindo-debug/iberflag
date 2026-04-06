@@ -935,6 +935,15 @@ body {
 
 .homepage-section {
     position: relative;
+    padding-top: clamp(3.75rem, 7vw, 6rem);
+    padding-bottom: clamp(3.75rem, 7vw, 6rem);
+}
+
+@media (max-width: 767px) {
+    .homepage-section {
+        padding-top: 2.75rem;
+        padding-bottom: 2.75rem;
+    }
 }
 
 .homepage-cta {
