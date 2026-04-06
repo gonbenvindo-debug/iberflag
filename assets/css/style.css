@@ -725,15 +725,34 @@ body {
 .homepage-card-tag {
     display: inline-flex;
     align-items: center;
-    padding: 0.45rem 0.8rem;
+    justify-content: center;
+    max-width: min(92%, 15rem);
+    min-height: 2rem;
+    padding: 0.5rem 0.95rem;
     border-radius: 999px;
-    background: rgba(255, 255, 255, 0.14);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    backdrop-filter: blur(10px);
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    background: rgba(2, 6, 23, 0.72);
+    border: 1px solid rgba(255, 255, 255, 0.26);
+    backdrop-filter: blur(6px);
+    color: #ffffff;
+    font-size: 0.8rem;
+    font-weight: 800;
+    line-height: 1.2;
+    letter-spacing: 0.045em;
     text-transform: uppercase;
+    white-space: normal;
+    text-wrap: balance;
+    overflow-wrap: anywhere;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.4);
+    box-shadow: 0 8px 16px rgba(2, 6, 23, 0.2);
+}
+
+@media (max-width: 767px) {
+    .homepage-card-tag {
+        max-width: calc(100% - 0.5rem);
+        min-height: 1.9rem;
+        padding: 0.45rem 0.82rem;
+        font-size: 0.74rem;
+    }
 }
 
 .homepage-card-link {
