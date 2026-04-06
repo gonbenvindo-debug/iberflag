@@ -426,6 +426,10 @@ body {
     box-shadow: 0 14px 40px rgba(15, 23, 42, 0.05);
 }
 
+.homepage {
+    --homepage-nav-height: 4rem;
+}
+
 .nav-link {
     position: relative;
     font-weight: 500;
@@ -937,6 +941,34 @@ body {
     position: relative;
     padding-top: clamp(3.75rem, 7vw, 6rem);
     padding-bottom: clamp(3.75rem, 7vw, 6rem);
+}
+
+.homepage-products-cta {
+    margin-top: clamp(2.25rem, 4vw, 4rem) !important;
+    margin-bottom: clamp(2rem, 3.5vw, 3.75rem) !important;
+}
+
+@media (min-width: 768px) {
+    .homepage-hero {
+        min-height: calc(100svh - var(--homepage-nav-height));
+        display: flex;
+        align-items: center;
+    }
+
+    .homepage-section {
+        min-height: 100svh;
+        display: flex;
+        align-items: center;
+    }
+
+    .homepage-section > .max-w-7xl,
+    .homepage-section > .homepage-cta {
+        width: 100%;
+    }
+
+    .homepage-categories-section {
+        padding-top: clamp(5rem, 8vw, 7rem);
+    }
 }
 
 @media (max-width: 767px) {
