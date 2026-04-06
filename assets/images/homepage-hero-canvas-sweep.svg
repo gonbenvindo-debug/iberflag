@@ -15,10 +15,6 @@
       <stop offset="0.45" stop-color="#D93D1D"/>
       <stop offset="1" stop-color="#B6290E" stop-opacity="0"/>
     </linearGradient>
-    <linearGradient id="lineGlow" x1="2400" y1="700" x2="1120" y2="700" gradientUnits="userSpaceOnUse">
-      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.34"/>
-      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
-    </linearGradient>
     <filter id="orangeSoft" x="1300" y="70" width="1320" height="1240" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
       <feGaussianBlur stdDeviation="54"/>
     </filter>
@@ -30,18 +26,8 @@
   <path d="M2400 120V1270C2042 1328 1718 1230 1442 1006C1172 786 1112 538 1266 328C1420 112 1734 74 2142 172L2400 120Z" fill="url(#orangeBandA)"/>
   <path d="M2400 622V1340C2106 1372 1860 1292 1648 1138C1422 972 1364 768 1460 612C1566 446 1800 396 2118 470L2400 622Z" fill="url(#orangeBandB)" opacity="0.86"/>
 
-  <g stroke="url(#lineGlow)" stroke-width="1.8">
-    <path d="M2400 212C2132 226 1902 316 1718 472"/>
-    <path d="M2400 340C2098 358 1840 470 1628 658"/>
-    <path d="M2400 494C2062 520 1788 650 1570 864"/>
-    <path d="M2400 676C2028 708 1730 868 1520 1102"/>
-    <path d="M2400 884C1980 930 1678 1114 1484 1320"/>
-  </g>
-
   <g filter="url(#orangeSoft)" opacity="0.46">
     <ellipse cx="2100" cy="290" rx="280" ry="180" fill="#EF4825"/>
     <ellipse cx="1982" cy="1080" rx="330" ry="220" fill="#EF4825"/>
   </g>
-
-  <rect x="1540" y="140" width="720" height="1120" rx="34" fill="none" stroke="#FFFFFF" stroke-opacity="0.12" stroke-width="2"/>
 </svg>
