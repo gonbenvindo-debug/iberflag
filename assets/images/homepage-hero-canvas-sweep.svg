@@ -1,0 +1,45 @@
+<svg width="2200" height="1400" viewBox="0 0 2200 1400" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bgFade" x1="2200" y1="700" x2="420" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#0B0B0B"/>
+      <stop offset="0.34" stop-color="#141414"/>
+      <stop offset="0.7" stop-color="#2A2A2A"/>
+      <stop offset="1" stop-color="#F6F4F1"/>
+    </linearGradient>
+    <linearGradient id="orangeSweep" x1="2100" y1="500" x2="650" y2="1040" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#EF4825"/>
+      <stop offset="0.5" stop-color="#F26543"/>
+      <stop offset="1" stop-color="#F6F4F1" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="lineFade" x1="2100" y1="700" x2="920" y2="700" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFFFFF" stop-opacity="0.32"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="softGlow" x="0" y="0" width="2200" height="1400" filterUnits="userSpaceOnUse" color-interpolation-filters="sRGB">
+      <feGaussianBlur stdDeviation="40"/>
+    </filter>
+  </defs>
+
+  <rect width="2200" height="1400" fill="url(#bgFade)"/>
+
+  <path d="M2200 150V1280C1710 1368 1280 1204 968 934C640 650 574 372 744 136C915 -94 1255 -136 1746 28L2200 150Z" fill="#0A0A0A"/>
+
+  <path d="M2200 220V1234C1778 1302 1423 1198 1154 995C903 806 842 590 958 411C1070 236 1323 194 1686 301L2200 220Z" fill="url(#orangeSweep)" opacity="0.88"/>
+
+  <path d="M2200 302V1160C1834 1212 1530 1135 1301 971C1087 818 1037 680 1138 553C1231 438 1426 408 1706 490L2200 302Z" fill="#F6F4F1" opacity="0.18"/>
+
+  <g stroke="url(#lineFade)" stroke-width="1.6">
+    <path d="M2200 248C1926 252 1698 332 1528 486"/>
+    <path d="M2200 356C1904 358 1656 453 1466 628"/>
+    <path d="M2200 478C1872 484 1599 596 1392 801"/>
+    <path d="M2200 620C1830 634 1534 771 1324 998"/>
+    <path d="M2200 784C1798 808 1486 973 1282 1181"/>
+  </g>
+
+  <g filter="url(#softGlow)" opacity="0.44">
+    <ellipse cx="1858" cy="218" rx="252" ry="150" fill="#EF4825"/>
+    <ellipse cx="1754" cy="1124" rx="318" ry="208" fill="#EF4825"/>
+  </g>
+
+  <rect x="1460" y="168" width="604" height="1044" rx="34" fill="none" stroke="#FFFFFF" stroke-opacity="0.13" stroke-width="2"/>
+</svg>
