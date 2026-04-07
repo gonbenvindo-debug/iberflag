@@ -11,14 +11,25 @@ const { createSaleForOrder, findOrCreateCustomer } = require('../../lib/server/f
 
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
-    const { data: existing, error: lookupError } = await supabase
-        .from('stripe_webhook_events')
-        .select('event_id,status,attempts,last_error,processed_at')
-        .eq('event_id', event.id)
-        .maybeSingle();
+    let existing = null;
+    try {
+        const { data, error: lookupError } = await supabase
+            .from('stripe_webhook_events')
+            .select('event_id,status,attempts,last_error,processed_at')
+            .eq('event_id', event.id)
+            .maybeSingle();
 
-    if (lookupError) {
-        throw lookupError;
+        if (lookupError) {
+            throw lookupError;
+        }
+
+        existing = data || null;
+    } catch (error) {
+        const raw = String(error?.message || '').toLowerCase();
+        if (error?.code === 'PGRST205' || raw.includes('stripe_webhook_events')) {
+            return true;
+        }
+        throw error;
     }
 
     if (existing?.status === 'processed') {
@@ -78,65 +89,50 @@ async function finalizeWebhookEvent(supabase, eventId, status, lastError = null)
         processed_at: new Date().toISOString()
     };
 
-    const { error } = await supabase
-        .from('stripe_webhook_events')
-        .update(updates)
-        .eq('event_id', eventId);
+    try {
+        const { error } = await supabase
+            .from('stripe_webhook_events')
+            .update(updates)
+            .eq('event_id', eventId);
 
-    if (error) {
+        if (error) {
+            throw error;
+        }
+    } catch (error) {
+        const raw = String(error?.message || '').toLowerCase();
+        if (error?.code === 'PGRST205' || raw.includes('stripe_webhook_events')) {
+            return;
+        }
         throw error;
     }
 }
 
 async function findOrderByStripeSession(supabase, session) {
     const orderCode = String(session?.metadata?.order_code || '').trim();
-    const sessionId = String(session?.id || '').trim();
-
-    let query = supabase.from('encomendas').select('*').limit(1);
-    if (sessionId) {
-        query = query.eq('stripe_session_id', sessionId);
-    } else if (orderCode) {
-        query = query.eq('numero_encomenda', orderCode);
+    if (!orderCode) {
+        return null;
     }
 
-    const { data, error } = await query.maybeSingle();
+    const { data, error } = await supabase
+        .from('encomendas')
+        .select('*')
+        .eq('numero_encomenda', orderCode)
+        .maybeSingle();
+
     if (error) {
         throw error;
     }
 
-    if (data) {
-        return data;
-    }
-
-    if (orderCode) {
-        const fallback = await supabase
-            .from('encomendas')
-            .select('*')
-            .eq('numero_encomenda', orderCode)
-            .limit(1)
-            .maybeSingle();
-
-        if (fallback.error) {
-            throw fallback.error;
-        }
-
-        return fallback.data || null;
-    }
-
-    return null;
+    return data || null;
 }
 
-async function updateOrderPaymentStatus(supabase, order, session, paymentStatus, extraUpdates = {}) {
+async function updateOrderPaymentStatus(supabase, order, session, paymentStatus) {
     const split = splitOrderNotesAndMeta(order?.notas || '');
-    const alreadyInStatus = String(order?.payment_status || '').toLowerCase() === paymentStatus
-        && String(order?.stripe_session_id || '') === String(session?.id || '');
-    const meta = alreadyInStatus
-        ? split.meta
-        : appendWorkflowHistory(split.meta, split.meta.workflowStatus, paymentStatus === 'paid'
-            ? 'Pagamento confirmado via Stripe'
-            : paymentStatus === 'failed'
-                ? 'Pagamento Stripe falhou'
-                : 'Pagamento Stripe expirado');
+    const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, paymentStatus === 'paid'
+        ? 'Pagamento confirmado via Stripe'
+        : paymentStatus === 'failed'
+            ? 'Pagamento Stripe falhou'
+            : 'Pagamento Stripe expirado');
 
     meta.paymentStatus = paymentStatus;
     meta.paymentProvider = 'stripe';
@@ -145,19 +141,8 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus,
     meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
 
     const updates = {
-        payment_status: paymentStatus,
-        payment_provider: 'stripe',
-        stripe_session_id: session?.id || order?.stripe_session_id || null,
-        stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : order?.stripe_payment_intent || null,
-        stripe_payment_method_type: session?.metadata?.payment_method || order?.stripe_payment_method_type || null,
-        stripe_metadata: session?.metadata || order?.stripe_metadata || {},
-        notas: buildOrderNotesWithMeta(split.publicNotes, meta),
-        ...extraUpdates
+        notas: buildOrderNotesWithMeta(split.publicNotes, meta)
     };
-
-    if (paymentStatus === 'paid') {
-        updates.payment_confirmed_at = new Date().toISOString();
-    }
 
     const { error } = await supabase
         .from('encomendas')
@@ -175,12 +160,11 @@ async function emitFacturalusaDocument(supabase, order, session) {
         return;
     }
 
-    const checkoutPayload = order?.checkout_payload && typeof order.checkout_payload === 'object'
-        ? order.checkout_payload
-        : {};
-    const checkoutCustomer = checkoutPayload?.customer && typeof checkoutPayload.customer === 'object'
-        ? checkoutPayload.customer
-        : {};
+    const checkoutCustomer = split.meta.checkoutCustomer && typeof split.meta.checkoutCustomer === 'object'
+        ? split.meta.checkoutCustomer
+        : split.meta.customer && typeof split.meta.customer === 'object'
+            ? split.meta.customer
+            : {};
 
     const customerData = {
         nome: checkoutCustomer.nome || 'Cliente IberFlag',
@@ -230,13 +214,6 @@ async function emitFacturalusaDocument(supabase, order, session) {
     const { error } = await supabase
         .from('encomendas')
         .update({
-            facturalusa_status: 'emitted',
-            facturalusa_customer_code: facturalusaCustomerCode || null,
-            facturalusa_document_number: facturalusaDocumentNumber,
-            facturalusa_document_url: facturalusaDocumentUrl,
-            facturalusa_payload: sale,
-            facturalusa_last_error: null,
-            stripe_metadata: session?.metadata || order?.stripe_metadata || {},
             notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta)
         })
         .eq('id', order.id);
@@ -248,13 +225,9 @@ async function emitFacturalusaDocument(supabase, order, session) {
 
 async function markOrderFailed(supabase, order, session, paymentStatus) {
     const split = splitOrderNotesAndMeta(order?.notas || '');
-    const alreadyInStatus = String(order?.payment_status || '').toLowerCase() === paymentStatus
-        && String(order?.stripe_session_id || '') === String(session?.id || '');
-    const meta = alreadyInStatus
-        ? split.meta
-        : appendWorkflowHistory(split.meta, split.meta.workflowStatus, paymentStatus === 'failed'
-            ? 'Pagamento Stripe falhou'
-            : 'Pagamento Stripe expirado');
+    const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, paymentStatus === 'failed'
+        ? 'Pagamento Stripe falhou'
+        : 'Pagamento Stripe expirado');
 
     meta.paymentStatus = paymentStatus;
     meta.paymentProvider = 'stripe';
@@ -265,12 +238,6 @@ async function markOrderFailed(supabase, order, session, paymentStatus) {
     const { error } = await supabase
         .from('encomendas')
         .update({
-            payment_status: paymentStatus,
-            payment_provider: 'stripe',
-            stripe_session_id: session?.id || order?.stripe_session_id || null,
-            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : order?.stripe_payment_intent || null,
-            stripe_payment_method_type: session?.metadata?.payment_method || order?.stripe_payment_method_type || null,
-            stripe_metadata: session?.metadata || order?.stripe_metadata || {},
             notas: buildOrderNotesWithMeta(split.publicNotes, meta)
         })
         .eq('id', order.id);
@@ -317,22 +284,23 @@ module.exports = async function stripeWebhookHandler(req, res) {
                 const order = await findOrderByStripeSession(supabase, session);
 
                 if (order) {
-                    await updateOrderPaymentStatus(supabase, order, session, 'paid', {
-                        payment_confirmed_at: new Date().toISOString()
-                    });
+                    await updateOrderPaymentStatus(supabase, order, session, 'paid');
 
                     try {
                         await emitFacturalusaDocument(supabase, order, session);
                     } catch (facturalusaError) {
+                        const split = splitOrderNotesAndMeta(order?.notas || '');
+                        const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
+                        meta.facturalusaLastError = facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
+
                         await supabase
                             .from('encomendas')
                             .update({
-                                facturalusa_status: 'error',
-                                facturalusa_last_error: facturalusaError?.message || 'Falha ao emitir documento no Facturalusa'
+                                notas: buildOrderNotesWithMeta(split.publicNotes, meta)
                             })
                             .eq('id', order.id);
 
-                        throw facturalusaError;
+                        console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
                     }
                 }
             }

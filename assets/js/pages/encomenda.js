@@ -528,6 +528,30 @@ function closeItemPreview() {
 }
 
 async function loadOrderByCode(orderCode) {
+    try {
+        const response = await fetch(`/api/checkout/session-status?codigo=${encodeURIComponent(orderCode)}`, {
+            method: 'GET',
+            headers: {
+                'Accept': 'application/json'
+            }
+        });
+
+        if (response.ok) {
+            const payload = await response.json().catch(() => ({}));
+            if (payload?.order) {
+                return {
+                    order: {
+                        ...payload.order,
+                        notas: payload.order.notas || ''
+                    },
+                    items: Array.isArray(payload.items) ? payload.items : []
+                };
+            }
+        }
+    } catch (apiError) {
+        console.warn('Falha ao carregar encomenda via API de sessao:', apiError);
+    }
+
     if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
         throw new Error('SUPABASE_NOT_READY');
     }
@@ -580,6 +604,10 @@ function getOrderLoadErrorMessage(error) {
 
     if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
         return 'Ligacao ao backend indisponivel. Verifique a configuracao do Supabase.';
+    }
+
+    if (rawMessage.includes('session-status') || rawMessage.includes('checkout/session-status')) {
+        return 'Nao foi possivel consultar o estado da encomenda neste momento.';
     }
 
     if (rawMessage.includes('get_order_tracking')) {

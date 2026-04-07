@@ -11,6 +11,54 @@ const { getStripeClient } = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
 const { readJsonBody, sendJson, getPublicBaseUrl } = require('../../lib/server/http');
 
+function buildCheckoutCustomerSnapshot(customer = {}) {
+    return {
+        nome: String(customer.nome || '').trim(),
+        email: String(customer.email || '').trim().toLowerCase(),
+        telefone: String(customer.telefone || '').trim(),
+        empresa: String(customer.empresa || '').trim(),
+        nif: String(customer.nif || '').trim(),
+        morada: String(customer.morada || '').trim(),
+        codigo_postal: String(customer.codigo_postal || '').trim(),
+        cidade: String(customer.cidade || '').trim()
+    };
+}
+
+async function findOrCreateCheckoutCustomer(supabase, customer) {
+    const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+    if (!customerSnapshot.email) {
+        const error = new Error('EMAIL_REQUIRED');
+        error.code = 'EMAIL_REQUIRED';
+        throw error;
+    }
+
+    const { data: existingCustomer, error: lookupError } = await supabase
+        .from('clientes')
+        .select('id')
+        .eq('email', customerSnapshot.email)
+        .maybeSingle();
+
+    if (lookupError) {
+        throw lookupError;
+    }
+
+    if (existingCustomer?.id) {
+        return existingCustomer.id;
+    }
+
+    const { data: createdCustomer, error: createError } = await supabase
+        .from('clientes')
+        .insert([customerSnapshot])
+        .select('id')
+        .single();
+
+    if (createError) {
+        throw createError;
+    }
+
+    return createdCustomer?.id || null;
+}
+
 function getCheckoutErrorMessage(error) {
     const raw = String(error?.message || error?.details || error?.hint || '').toLowerCase();
     const errorCode = String(error?.code || '').toUpperCase();
@@ -43,16 +91,24 @@ function getCheckoutErrorMessage(error) {
         return 'Configuracao do Facturalusa em falta no servidor.';
     }
 
+    if (errorCode === 'EMAIL_REQUIRED') {
+        return 'Introduza um email valido para iniciar o checkout.';
+    }
+
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
         return 'Existem produtos no carrinho que ja nao existem na base de dados.';
     }
 
-    if (raw.includes('checkout_upsert_customer')) {
-        return 'O contrato checkout_upsert_customer nao esta disponivel.';
-    }
-
     if (raw.includes('itens_encomenda') || raw.includes('encomendas') || raw.includes('clientes')) {
         return 'A base de dados do checkout nao corresponde ao esperado.';
+    }
+
+    if (errorCode === '22P02' && raw.includes('bigint')) {
+        return 'A base de dados do checkout precisa de alinhamento entre clientes e encomendas.';
+    }
+
+    if (errorCode === '23503' && raw.includes('cliente_id')) {
+        return 'Nao foi possivel associar a encomenda ao cliente.';
     }
 
     if (raw.includes('stripe')) {
@@ -113,25 +169,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
-        const { data: customerId, error: customerError } = await supabase
-            .rpc('checkout_upsert_customer', {
-                p_nome: customer.nome,
-                p_email: customer.email,
-                p_telefone: customer.telefone || null,
-                p_empresa: customer.empresa || null,
-                p_nif: customer.nif || null,
-                p_morada: customer.morada || null,
-                p_codigo_postal: customer.codigo_postal || null,
-                p_cidade: customer.cidade || null
-            });
-
-        if (customerError) {
-            throw customerError;
-        }
+        const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+        const customerId = await findOrCreateCheckoutCustomer(supabase, customerSnapshot);
 
         const orderNumber = generateOrderNumber();
         const itemSnapshots = buildOrderItemSnapshots(cart);
-        const checkoutPayload = buildCheckoutPayloadSnapshot(customer, cart, selectedPaymentMethod, notes);
         const orderMeta = {
             workflowStatus: 'pendente_confirmacao',
             paymentStatus: 'pending',
@@ -151,7 +193,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                     note: 'Encomenda criada no checkout'
                 }
             ],
-            itemSnapshots
+            itemSnapshots,
+            checkoutCustomer: customerSnapshot,
+            checkoutSnapshot: buildCheckoutPayloadSnapshot(customerSnapshot, cart, selectedPaymentMethod, notes)
         };
 
         const { data: order, error: orderError } = await supabase
@@ -165,11 +209,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 total,
                 notas: buildOrderNotesWithMeta(notes, orderMeta),
                 morada_envio: `${customer.morada}, ${customer.codigo_postal} ${customer.cidade}`,
-                metodo_pagamento: selectedPaymentMethod,
-                payment_provider: 'stripe',
-                payment_status: 'pending',
-                stripe_payment_method_type: selectedPaymentMethod,
-                checkout_payload: checkoutPayload
+                metodo_pagamento: selectedPaymentMethod
             }])
             .select('*')
             .single();
@@ -180,7 +220,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
 
         orderIdForCleanup = order.id;
 
-        await insertOrderItemsWithFallback(supabase, order.id, cart);
+        try {
+            await insertOrderItemsWithFallback(supabase, order.id, cart);
+        } catch (itemError) {
+            console.warn('Falha ao gravar itens da encomenda:', itemError);
+        }
 
         const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
         const successUrl = `${baseUrl}/checkout-sucesso.html?session_id={CHECKOUT_SESSION_ID}&codigo=${encodeURIComponent(orderNumber)}`;
@@ -216,21 +260,20 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             billing_address_collection: 'required'
         });
 
-        const { error: sessionUpdateError } = await supabase
+        const orderNotesWithSession = buildOrderNotesWithMeta(notes, {
+            ...orderMeta,
+            stripeSessionId: session.id
+        });
+
+        const { error: notesUpdateError } = await supabase
             .from('encomendas')
             .update({
-                stripe_session_id: session.id,
-                stripe_checkout_url: session.url || null,
-                stripe_metadata: session.metadata || {},
-                checkout_payload: {
-                    ...checkoutPayload,
-                    stripeSessionId: session.id
-                }
+                notas: orderNotesWithSession
             })
             .eq('id', order.id);
 
-        if (sessionUpdateError) {
-            console.warn('Nao foi possivel gravar o stripe_session_id na encomenda:', sessionUpdateError);
+        if (notesUpdateError) {
+            console.warn('Nao foi possivel atualizar as notas da encomenda com o stripe_session_id:', notesUpdateError);
         }
 
         sendJson(res, 200, {

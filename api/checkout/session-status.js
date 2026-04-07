@@ -1,47 +1,41 @@
 const { getStripeClient } = require('../../lib/server/stripe');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { readJsonBody, sendJson } = require('../../lib/server/http');
+const { splitOrderNotesAndMeta } = require('../../lib/server/checkout');
 
 async function resolveOrderBySession(supabase, session) {
     const orderCode = String(session?.metadata?.order_code || '').trim();
-    const sessionId = String(session?.id || '').trim();
-
-    if (!sessionId && !orderCode) {
+    if (!orderCode) {
         return null;
     }
 
-    let query = supabase.from('encomendas').select('*').limit(1);
-    if (sessionId) {
-        query = query.eq('stripe_session_id', sessionId);
-    } else if (orderCode) {
-        query = query.eq('numero_encomenda', orderCode);
-    }
+    const { data, error } = await supabase
+        .from('encomendas')
+        .select('*')
+        .eq('numero_encomenda', orderCode)
+        .maybeSingle();
 
-    const { data, error } = await query.maybeSingle();
     if (error) {
         throw error;
     }
 
-    if (data) {
-        return data;
-    }
+    return data || null;
+}
 
-    if (orderCode) {
-        const byCode = await supabase
-            .from('encomendas')
-            .select('*')
-            .eq('numero_encomenda', orderCode)
-            .limit(1)
-            .maybeSingle();
-
-        if (byCode.error) {
-            throw byCode.error;
+function buildOrderItemsFromSnapshots(splitMeta) {
+    const snapshots = Array.isArray(splitMeta?.meta?.itemSnapshots) ? splitMeta.meta.itemSnapshots : [];
+    return snapshots.map((snapshot) => ({
+        produto_id: snapshot.produtoId || null,
+        quantidade: snapshot.quantidade || 1,
+        preco_unitario: snapshot.precoUnitario || 0,
+        subtotal: (Number(snapshot.precoUnitario || 0) * Number(snapshot.quantidade || 1)),
+        produtos: {
+            id: snapshot.produtoId || null,
+            nome: snapshot.nome || 'Produto',
+            imagem: snapshot.imagem || '',
+            preco: snapshot.precoUnitario || 0
         }
-
-        return byCode.data || null;
-    }
-
-    return null;
+    }));
 }
 
 module.exports = async function checkoutSessionStatusHandler(req, res) {
@@ -73,6 +67,7 @@ module.exports = async function checkoutSessionStatusHandler(req, res) {
         }
 
         const order = await resolveOrderBySession(supabase, session || { id: sessionId, metadata: { order_code: orderCodeFromQuery } });
+        const splitMeta = splitOrderNotesAndMeta(order?.notas || '');
 
         sendJson(res, 200, {
             session: session ? {
@@ -86,14 +81,20 @@ module.exports = async function checkoutSessionStatusHandler(req, res) {
             order: order ? {
                 id: order.id,
                 numero_encomenda: order.numero_encomenda,
-                payment_status: order.payment_status || 'pending',
-                payment_provider: order.payment_provider || 'stripe',
-                stripe_session_id: order.stripe_session_id || null,
-                stripe_payment_intent: order.stripe_payment_intent || null,
-                facturalusa_status: order.facturalusa_status || null,
-                facturalusa_document_number: order.facturalusa_document_number || null,
-                facturalusa_document_url: order.facturalusa_document_url || null
+                payment_status: splitMeta.meta.paymentStatus || 'pending',
+                payment_provider: splitMeta.meta.paymentProvider || 'stripe',
+                stripe_session_id: splitMeta.meta.stripeSessionId || null,
+                stripe_payment_intent: splitMeta.meta.stripePaymentIntent || null,
+                facturalusa_status: splitMeta.meta.facturalusaLastError
+                    ? 'error'
+                    : splitMeta.meta.facturalusaDocumentNumber
+                        ? 'emitted'
+                        : null,
+                facturalusa_last_error: splitMeta.meta.facturalusaLastError || null,
+                facturalusa_document_number: splitMeta.meta.facturalusaDocumentNumber || null,
+                facturalusa_document_url: splitMeta.meta.facturalusaDocumentUrl || null
             } : null,
+            items: buildOrderItemsFromSnapshots(splitMeta),
             orderCode: order?.numero_encomenda || orderCodeFromQuery || session?.metadata?.order_code || null
         });
     } catch (error) {
