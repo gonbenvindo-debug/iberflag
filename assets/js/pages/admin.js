@@ -1617,8 +1617,8 @@ async function loadOrders() {
                         </span>
                     </td>
                     <td>
-                        <span class="badge badge-${getFacturalusaStatusColor(getFacturalusaStatus(o))}">
-                            ${escapeHtml(getFacturalusaStatusLabel(getFacturalusaStatus(o)))}
+<span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
+    ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
                         </span>
                     </td>
                     <td>
@@ -1716,7 +1716,7 @@ async function viewOrder(id) {
         const notesInput = document.getElementById('order-public-notes');
         const statusNoteInput = document.getElementById('order-status-note');
         const emitFacturalusaBtn = document.getElementById('emit-facturalusa-btn');
-        const facturalusaStatus = getFacturalusaStatus(order);
+const facturalusaStatus = resolveFacturalusaStatus(order);
 
         const metaEl = document.getElementById('order-modal-meta');
         if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} Â· ${formatDateTime(order.created_at)}`;
@@ -1746,7 +1746,7 @@ async function viewOrder(id) {
                     </div>` : ''}
                     <div>
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Faturação</p>
-                        <span class="badge badge-${getFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(getFacturalusaStatusLabel(facturalusaStatus))}</span>
+<span class="badge badge-${resolveFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(resolveFacturalusaStatusLabel(facturalusaStatus))}</span>
                     </div>
                 </div>
             `;
@@ -1790,8 +1790,8 @@ async function viewOrder(id) {
             const documentUrl = String(split.meta?.facturalusaDocumentUrl || '').trim();
             const lastError = String(split.meta?.facturalusaLastError || '').trim();
             const lastAttempt = split.meta?.facturalusaLastAttemptAt || '';
-            const statusLabel = escapeHtml(getFacturalusaStatusLabel(facturalusaStatus));
-            const statusColor = getFacturalusaStatusColor(facturalusaStatus);
+const statusLabel = escapeHtml(resolveFacturalusaStatusLabel(facturalusaStatus));
+const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
             const canRetry = facturalusaStatus !== 'emitted';
 
             facturalusaBlock.innerHTML = `
@@ -1830,7 +1830,7 @@ async function viewOrder(id) {
         if (statusNoteInput) statusNoteInput.value = '';
 
         if (emitFacturalusaBtn) {
-            const canEmit = getFacturalusaStatus(order) !== 'emitted' && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
+const canEmit = resolveFacturalusaStatus(order) !== 'emitted' && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
             emitFacturalusaBtn.disabled = !canEmit;
             emitFacturalusaBtn.classList.toggle('opacity-60', !canEmit);
             emitFacturalusaBtn.classList.toggle('cursor-not-allowed', !canEmit);
@@ -2335,7 +2335,7 @@ function getStatusColor(status) {
     return fallback[status] || 'info';
 }
 
-function getFacturalusaStatus(order) {
+function resolveFacturalusaStatus(order) {
     if (typeof window.getFacturalusaStatus === 'function') {
         return window.getFacturalusaStatus(order);
     }
@@ -2350,7 +2350,7 @@ function getFacturalusaStatus(order) {
     return meta.paymentStatus === 'paid' ? 'pending' : 'not_required';
 }
 
-function getFacturalusaStatusLabel(status) {
+function resolveFacturalusaStatusLabel(status) {
     if (typeof window.getFacturalusaStatusLabel === 'function') {
         return window.getFacturalusaStatusLabel(status);
     }
@@ -2366,7 +2366,7 @@ function getFacturalusaStatusLabel(status) {
     return labels[String(status || '').trim()] || 'Sem estado';
 }
 
-function getFacturalusaStatusColor(status) {
+function resolveFacturalusaStatusColor(status) {
     if (typeof window.getFacturalusaStatusColor === 'function') {
         return window.getFacturalusaStatusColor(status);
     }
