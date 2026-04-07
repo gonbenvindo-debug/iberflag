@@ -76,6 +76,10 @@ function getCheckoutErrorMessage(error) {
         return 'Configuracao do Supabase em falta no servidor.';
     }
 
+    if (errorCode === 'SUPABASE_URL_NOT_CONFIGURED' || errorCode.startsWith('SUPABASE_URL_')) {
+        return 'Configuracao do URL do Supabase em falta no servidor.';
+    }
+
     if (errorCode === 'STRIPE_SECRET_KEY_NOT_CONFIGURED' || errorCode.startsWith('STRIPE_SECRET_KEY_')) {
         return 'Configuracao do Stripe em falta no servidor.';
     }
