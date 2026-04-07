@@ -1617,6 +1617,11 @@ async function loadOrders() {
                         </span>
                     </td>
                     <td>
+                        <span class="badge badge-${getFacturalusaStatusColor(getFacturalusaStatus(o))}">
+                            ${escapeHtml(getFacturalusaStatusLabel(getFacturalusaStatus(o)))}
+                        </span>
+                    </td>
+                    <td>
                         <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
@@ -1624,7 +1629,7 @@ async function loadOrders() {
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="6" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
         }
 
         if (typeof lucide !== 'undefined') {
@@ -1702,6 +1707,7 @@ async function viewOrder(id) {
 
         const summaryBlock = document.getElementById('order-summary-block');
         const customerBlock = document.getElementById('order-customer-block');
+        const facturalusaBlock = document.getElementById('order-facturalusa-block');
         const itemsList = document.getElementById('order-items-list');
         const historyList = document.getElementById('order-history-list');
         const statusSelect = document.getElementById('order-status-select');
@@ -1709,6 +1715,8 @@ async function viewOrder(id) {
         const trackingUrlInput = document.getElementById('order-tracking-url');
         const notesInput = document.getElementById('order-public-notes');
         const statusNoteInput = document.getElementById('order-status-note');
+        const emitFacturalusaBtn = document.getElementById('emit-facturalusa-btn');
+        const facturalusaStatus = getFacturalusaStatus(order);
 
         const metaEl = document.getElementById('order-modal-meta');
         if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} Â· ${formatDateTime(order.created_at)}`;
@@ -1736,6 +1744,10 @@ async function viewOrder(id) {
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Tracking</p>
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;font-family:monospace;">${escapeHtml(tracking.trackingCode)}</p>
                     </div>` : ''}
+                    <div>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Faturação</p>
+                        <span class="badge badge-${getFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(getFacturalusaStatusLabel(facturalusaStatus))}</span>
+                    </div>
                 </div>
             `;
         }
@@ -1773,6 +1785,41 @@ async function viewOrder(id) {
             `;
         }
 
+        if (facturalusaBlock) {
+            const documentNumber = escapeHtml(split.meta?.facturalusaDocumentNumber || 'Ainda não emitido');
+            const documentUrl = String(split.meta?.facturalusaDocumentUrl || '').trim();
+            const lastError = String(split.meta?.facturalusaLastError || '').trim();
+            const lastAttempt = split.meta?.facturalusaLastAttemptAt || '';
+            const statusLabel = escapeHtml(getFacturalusaStatusLabel(facturalusaStatus));
+            const statusColor = getFacturalusaStatusColor(facturalusaStatus);
+            const canRetry = facturalusaStatus !== 'emitted';
+
+            facturalusaBlock.innerHTML = `
+                <div style="display:flex;align-items:center;justify-content:space-between;gap:0.75rem;">
+                    <div>
+                        <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.1em;text-transform:uppercase;color:#9ca3af;margin:0 0 0.35rem;">Estado fiscal</p>
+                        <span class="badge badge-${statusColor}">${statusLabel}</span>
+                    </div>
+                    ${documentUrl ? `<a href="${escapeHtml(documentUrl)}" target="_blank" rel="noreferrer" style="font-size:0.75rem;font-weight:600;color:#2563eb;text-decoration:none;">Abrir documento</a>` : ''}
+                </div>
+                <div style="display:grid;gap:0.45rem;font-size:0.8125rem;margin-top:0.75rem;">
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;">
+                        <span style="color:#9ca3af;">Número</span>
+                        <span style="font-weight:600;color:#111827;text-align:right;">${documentNumber}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;">
+                        <span style="color:#9ca3af;">Última tentativa</span>
+                        <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : '—'}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Erro</span>
+                        <span style="font-size:0.75rem;color:${lastError ? '#b91c1c' : '#374151'};text-align:right;word-break:break-word;max-width:14rem;">${lastError ? escapeHtml(lastError) : 'Sem erro registado'}</span>
+                    </div>
+                </div>
+                ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a faturação assim que a conta Facturalusa estiver pronta.</p>' : ''}
+            `;
+        }
+
         if (statusSelect) {
             statusSelect.innerHTML = buildStatusOptionsHtml(workflowStatus);
         }
@@ -1781,6 +1828,13 @@ async function viewOrder(id) {
         if (trackingUrlInput) trackingUrlInput.value = tracking.trackingUrl || '';
         if (notesInput) notesInput.value = currentOrderPublicNotes || '';
         if (statusNoteInput) statusNoteInput.value = '';
+
+        if (emitFacturalusaBtn) {
+            const canEmit = getFacturalusaStatus(order) !== 'emitted' && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
+            emitFacturalusaBtn.disabled = !canEmit;
+            emitFacturalusaBtn.classList.toggle('opacity-60', !canEmit);
+            emitFacturalusaBtn.classList.toggle('cursor-not-allowed', !canEmit);
+        }
 
         const items = Array.isArray(itemsData) ? itemsData : [];
         const snapshots = Array.isArray(split.meta?.itemSnapshots) ? split.meta.itemSnapshots : [];
@@ -2223,6 +2277,34 @@ if (saveOrderBtn) {
     });
 }
 
+document.getElementById('emit-facturalusa-btn')?.addEventListener('click', async () => {
+    if (!currentOrderId || !currentOrderData) {
+        showToast('Nenhuma encomenda selecionada', 'warning');
+        return;
+    }
+
+    const button = document.getElementById('emit-facturalusa-btn');
+    try {
+        if (button) {
+            button.disabled = true;
+            button.classList.add('opacity-60', 'cursor-not-allowed');
+        }
+
+        const result = await reemitFacturalusaDocument(currentOrderId);
+        showToast(result?.message || 'Documento fiscal reenviado com sucesso!', 'success');
+        await loadOrders();
+        await viewOrder(currentOrderId);
+    } catch (error) {
+        console.error('Erro ao reenviar documento Facturalusa:', error);
+        showToast(error?.message || 'Não foi possível reenviar o documento fiscal.', 'error');
+    } finally {
+        if (button) {
+            button.disabled = false;
+            button.classList.remove('opacity-60', 'cursor-not-allowed');
+        }
+    }
+});
+
 adminModals.forEach((modal) => {
     modal.addEventListener('mousedown', (event) => {
         if (event.target === modal) {
@@ -2253,8 +2335,74 @@ function getStatusColor(status) {
     return fallback[status] || 'info';
 }
 
+function getFacturalusaStatus(order) {
+    if (typeof window.getFacturalusaStatus === 'function') {
+        return window.getFacturalusaStatus(order);
+    }
+
+    const split = typeof splitOrderNotesAndMeta === 'function'
+        ? splitOrderNotesAndMeta(order?.notas || '')
+        : { meta: {} };
+    const meta = split.meta || {};
+    if (meta.facturalusaStatus) return meta.facturalusaStatus;
+    if (meta.facturalusaDocumentNumber) return 'emitted';
+    if (meta.facturalusaLastError) return 'blocked';
+    return meta.paymentStatus === 'paid' ? 'pending' : 'not_required';
+}
+
+function getFacturalusaStatusLabel(status) {
+    if (typeof window.getFacturalusaStatusLabel === 'function') {
+        return window.getFacturalusaStatusLabel(status);
+    }
+
+    const labels = {
+        emitted: 'Fatura emitida',
+        pending: 'A emitir',
+        blocked: 'Bloqueada',
+        error: 'Erro de faturação',
+        not_required: 'Ainda não aplicável'
+    };
+
+    return labels[String(status || '').trim()] || 'Sem estado';
+}
+
+function getFacturalusaStatusColor(status) {
+    if (typeof window.getFacturalusaStatusColor === 'function') {
+        return window.getFacturalusaStatusColor(status);
+    }
+
+    const colors = {
+        emitted: 'success',
+        pending: 'warning',
+        blocked: 'danger',
+        error: 'danger',
+        not_required: 'info'
+    };
+
+    return colors[String(status || '').trim()] || 'info';
+}
+
 function viewClient(id) {
     showToast('Funcionalidade de visualização de cliente em desenvolvimento', 'info');
+}
+
+async function reemitFacturalusaDocument(orderId) {
+    const response = await fetch('/api/admin/orders/reemit-facturalusa', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Accept': 'application/json'
+        },
+        body: JSON.stringify({ orderId })
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const message = payload?.message || payload?.error || 'Não foi possível reenviar o documento.';
+        throw new Error(message);
+    }
+
+    return payload;
 }
 
 // ===== INITIALIZATION =====

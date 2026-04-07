@@ -4,10 +4,12 @@ const { readRawBody, sendJson } = require('../../lib/server/http');
 const {
     appendWorkflowHistory,
     buildOrderNotesWithMeta,
-    buildOrderItemSnapshots,
     splitOrderNotesAndMeta
 } = require('../../lib/server/checkout');
-const { createSaleForOrder, findOrCreateCustomer } = require('../../lib/server/facturalusa');
+const {
+    classifyFacturalusaError,
+    issueFacturalusaDocumentForOrder
+} = require('../../lib/server/facturalusa');
 
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
@@ -139,6 +141,7 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus)
     meta.paymentMethod = session?.metadata?.payment_method || meta.paymentMethod || '';
     meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
     meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
+    meta.facturalusaStatus = meta.facturalusaStatus || (paymentStatus === 'paid' ? 'pending' : '');
 
     const updates = {
         notas: buildOrderNotesWithMeta(split.publicNotes, meta)
@@ -160,43 +163,14 @@ async function emitFacturalusaDocument(supabase, order, session) {
         return;
     }
 
-    const checkoutCustomer = split.meta.checkoutCustomer && typeof split.meta.checkoutCustomer === 'object'
-        ? split.meta.checkoutCustomer
-        : split.meta.customer && typeof split.meta.customer === 'object'
-            ? split.meta.customer
-            : {};
-
-    const customerData = {
-        nome: checkoutCustomer.nome || 'Cliente IberFlag',
-        email: checkoutCustomer.email || session?.customer_email || '',
-        telefone: checkoutCustomer.telefone || '',
-        empresa: checkoutCustomer.empresa || '',
-        nif: checkoutCustomer.nif || '',
-        morada: checkoutCustomer.morada || '',
-        codigo_postal: checkoutCustomer.codigo_postal || '',
-        cidade: checkoutCustomer.cidade || '',
-        country: checkoutCustomer.country || ''
-    };
-
-    const snapshots = Array.isArray(split.meta.itemSnapshots) && split.meta.itemSnapshots.length > 0
-        ? split.meta.itemSnapshots
-        : buildOrderItemSnapshots([]);
-
-    const customer = await findOrCreateCustomer(customerData, {
-        paymentMethod: session?.metadata?.payment_method || order?.metodo_pagamento || 'card'
+    const invoiceResult = await issueFacturalusaDocumentForOrder({
+        supabase,
+        order,
+        session
     });
 
-    const sale = await createSaleForOrder({
-        customer,
-        order: {
-            ...order,
-            stripe_session_id: session?.id || order?.stripe_session_id || null
-        },
-        cartItems: snapshots,
-        paymentMethod: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
-        sourceCustomer: customerData
-    });
-
+    const sale = invoiceResult.sale;
+    const customer = invoiceResult.customer;
     const facturalusaDocumentNumber = sale?.document_full_number || sale?.number || sale?.reference || null;
     const facturalusaDocumentUrl = sale?.url_file || sale?.url || null;
     const facturalusaCustomerCode = customer?.code || customer?.id || null;
@@ -210,6 +184,9 @@ async function emitFacturalusaDocument(supabase, order, session) {
     nextMeta.facturalusaCustomerCode = facturalusaCustomerCode ? String(facturalusaCustomerCode) : nextMeta.facturalusaCustomerCode || '';
     nextMeta.facturalusaDocumentNumber = facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : nextMeta.facturalusaDocumentNumber || '';
     nextMeta.facturalusaDocumentUrl = facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : nextMeta.facturalusaDocumentUrl || '';
+    nextMeta.facturalusaLastError = '';
+    nextMeta.facturalusaStatus = 'emitted';
+    nextMeta.facturalusaLastAttemptAt = new Date().toISOString();
 
     const { error } = await supabase
         .from('encomendas')
@@ -291,7 +268,10 @@ module.exports = async function stripeWebhookHandler(req, res) {
                     } catch (facturalusaError) {
                         const split = splitOrderNotesAndMeta(order?.notas || '');
                         const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
-                        meta.facturalusaLastError = facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
+                        const classified = classifyFacturalusaError(facturalusaError);
+                        meta.facturalusaLastError = classified.message || facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
+                        meta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
+                        meta.facturalusaLastAttemptAt = new Date().toISOString();
 
                         await supabase
                             .from('encomendas')

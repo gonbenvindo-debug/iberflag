@@ -191,6 +191,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             facturalusaCustomerCode: '',
             facturalusaDocumentNumber: '',
             facturalusaDocumentUrl: '',
+            facturalusaLastError: '',
+            facturalusaStatus: 'pending',
+            facturalusaLastAttemptAt: '',
             statusHistory: [
                 {
                     status: 'pendente_confirmacao',

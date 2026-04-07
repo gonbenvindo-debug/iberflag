@@ -85,14 +85,17 @@ module.exports = async function checkoutSessionStatusHandler(req, res) {
                 payment_provider: splitMeta.meta.paymentProvider || 'stripe',
                 stripe_session_id: splitMeta.meta.stripeSessionId || null,
                 stripe_payment_intent: splitMeta.meta.stripePaymentIntent || null,
-                facturalusa_status: splitMeta.meta.facturalusaLastError
-                    ? 'error'
-                    : splitMeta.meta.facturalusaDocumentNumber
+                facturalusa_status: splitMeta.meta.facturalusaStatus || (
+                    splitMeta.meta.facturalusaDocumentNumber
                         ? 'emitted'
-                        : null,
+                        : splitMeta.meta.facturalusaLastError
+                            ? 'blocked'
+                            : (splitMeta.meta.paymentStatus === 'paid' ? 'pending' : null)
+                ),
                 facturalusa_last_error: splitMeta.meta.facturalusaLastError || null,
                 facturalusa_document_number: splitMeta.meta.facturalusaDocumentNumber || null,
-                facturalusa_document_url: splitMeta.meta.facturalusaDocumentUrl || null
+                facturalusa_document_url: splitMeta.meta.facturalusaDocumentUrl || null,
+                facturalusa_last_attempt_at: splitMeta.meta.facturalusaLastAttemptAt || null
             } : null,
             items: buildOrderItemsFromSnapshots(splitMeta),
             orderCode: order?.numero_encomenda || orderCodeFromQuery || session?.metadata?.order_code || null

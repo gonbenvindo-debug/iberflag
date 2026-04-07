@@ -296,6 +296,10 @@ function renderOrderHeader(order, workflowStatus) {
     const statusLabel = typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(workflowStatus) : workflowStatus;
     const paymentStatus = String(order.payment_status || '').toLowerCase();
     const paymentBadge = document.getElementById('order-payment-badge');
+    const facturalusaBadge = document.getElementById('order-facturalusa-badge');
+    const facturalusaStatus = typeof getFacturalusaStatus === 'function'
+        ? getFacturalusaStatus(order)
+        : (order.facturalusa_document_number ? 'emitted' : order.facturalusa_last_error ? 'blocked' : (paymentStatus === 'paid' ? 'pending' : 'not_required'));
     const paymentLabelMap = {
         paid: 'Pagamento confirmado',
         processing: 'Pagamento em processamento',
@@ -310,6 +314,13 @@ function renderOrderHeader(order, workflowStatus) {
         failed: 'bg-red-50 border-red-200 text-red-700',
         expired: 'bg-red-50 border-red-200 text-red-700'
     };
+    const facturalusaClassMap = {
+        emitted: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+        pending: 'bg-amber-50 border-amber-200 text-amber-700',
+        blocked: 'bg-red-50 border-red-200 text-red-700',
+        error: 'bg-red-50 border-red-200 text-red-700',
+        not_required: 'bg-slate-100 border-slate-200 text-slate-700'
+    };
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `Criada em ${formatDateTime(order.created_at)}`;
@@ -318,6 +329,12 @@ function renderOrderHeader(order, workflowStatus) {
     if (paymentBadge) {
         paymentBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${paymentClassMap[paymentStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
         paymentBadge.textContent = paymentLabelMap[paymentStatus] || 'Pagamento online';
+    }
+    if (facturalusaBadge) {
+        facturalusaBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${facturalusaClassMap[facturalusaStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
+        facturalusaBadge.textContent = typeof getFacturalusaStatusLabel === 'function'
+            ? getFacturalusaStatusLabel(facturalusaStatus)
+            : 'Faturação';
     }
 }
 
@@ -331,6 +348,12 @@ function renderOrderSidebar(order, splitMeta) {
     const shippingEl = document.getElementById('order-shipping');
     const notesEl = document.getElementById('order-notes');
     const nifEl = document.getElementById('order-nif');
+    const facturalusaStatusEl = document.getElementById('order-facturalusa-status');
+    const facturalusaNumberEl = document.getElementById('order-facturalusa-number');
+    const facturalusaLinkEl = document.getElementById('order-facturalusa-link');
+    const facturalusaStatus = typeof getFacturalusaStatus === 'function'
+        ? getFacturalusaStatus(order)
+        : (splitMeta.meta.facturalusaDocumentNumber ? 'emitted' : splitMeta.meta.facturalusaLastError ? 'blocked' : (splitMeta.meta.paymentStatus === 'paid' ? 'pending' : 'not_required'));
 
     trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
 
@@ -348,6 +371,28 @@ function renderOrderSidebar(order, splitMeta) {
     // Preencher NIF se disponivel
     if (nifEl) {
         nifEl.textContent = order.clientes?.nif || 'Nao fornecido';
+    }
+    if (facturalusaStatusEl) {
+        facturalusaStatusEl.textContent = typeof getFacturalusaStatusLabel === 'function'
+            ? getFacturalusaStatusLabel(facturalusaStatus)
+            : facturalusaStatus;
+    }
+    if (facturalusaNumberEl) {
+        facturalusaNumberEl.textContent = splitMeta.meta.facturalusaDocumentNumber
+            ? `Nº ${splitMeta.meta.facturalusaDocumentNumber}`
+            : splitMeta.meta.facturalusaLastError
+                ? `Erro: ${splitMeta.meta.facturalusaLastError}`
+                : 'A aguardar emissão automática';
+    }
+    if (facturalusaLinkEl) {
+        const url = String(splitMeta.meta.facturalusaDocumentUrl || '').trim();
+        if (url) {
+            facturalusaLinkEl.href = url;
+            facturalusaLinkEl.classList.remove('hidden');
+        } else {
+            facturalusaLinkEl.classList.add('hidden');
+            facturalusaLinkEl.removeAttribute('href');
+        }
     }
 }
 

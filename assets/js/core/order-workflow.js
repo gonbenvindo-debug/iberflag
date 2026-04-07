@@ -108,6 +108,11 @@
         const facturalusaCustomerCode = typeof source.facturalusaCustomerCode === 'string' ? source.facturalusaCustomerCode.trim() : '';
         const facturalusaDocumentNumber = typeof source.facturalusaDocumentNumber === 'string' ? source.facturalusaDocumentNumber.trim() : '';
         const facturalusaDocumentUrl = typeof source.facturalusaDocumentUrl === 'string' ? source.facturalusaDocumentUrl.trim() : '';
+        const facturalusaLastError = typeof source.facturalusaLastError === 'string' ? source.facturalusaLastError.trim() : '';
+        const facturalusaStatus = typeof source.facturalusaStatus === 'string' && source.facturalusaStatus.trim()
+            ? source.facturalusaStatus.trim()
+            : (facturalusaDocumentNumber ? 'emitted' : facturalusaLastError ? 'blocked' : 'pending');
+        const facturalusaLastAttemptAt = typeof source.facturalusaLastAttemptAt === 'string' ? source.facturalusaLastAttemptAt.trim() : '';
 
         const statusHistory = Array.isArray(source.statusHistory)
             ? source.statusHistory
@@ -146,6 +151,9 @@
             facturalusaCustomerCode,
             facturalusaDocumentNumber,
             facturalusaDocumentUrl,
+            facturalusaLastError,
+            facturalusaStatus,
+            facturalusaLastAttemptAt,
             statusHistory,
             itemSnapshots
         };
@@ -275,5 +283,36 @@
     global.deriveWorkflowStatus = deriveWorkflowStatus;
     global.appendWorkflowHistory = appendWorkflowHistory;
     global.getTrackingDetails = getTrackingDetails;
+    global.getFacturalusaStatus = function getFacturalusaStatus(order) {
+        const split = splitOrderNotesAndMeta(order?.notas || '');
+        const meta = split.meta || {};
+        const status = String(meta.facturalusaStatus || '').trim();
+        if (status) return status;
+        if (meta.facturalusaDocumentNumber) return 'emitted';
+        if (meta.facturalusaLastError) return 'blocked';
+        return meta.paymentStatus === 'paid' ? 'pending' : 'not_required';
+    };
+    global.getFacturalusaStatusLabel = function getFacturalusaStatusLabel(status) {
+        const normalized = String(status || '').trim();
+        const labels = {
+            emitted: 'Fatura emitida',
+            pending: 'A emitir',
+            blocked: 'Bloqueada',
+            error: 'Erro de faturação',
+            not_required: 'Ainda não aplicável'
+        };
+        return labels[normalized] || (normalized ? normalized.replace(/_/g, ' ') : 'Sem estado');
+    };
+    global.getFacturalusaStatusColor = function getFacturalusaStatusColor(status) {
+        const normalized = String(status || '').trim();
+        const colors = {
+            emitted: 'success',
+            pending: 'warning',
+            blocked: 'danger',
+            error: 'danger',
+            not_required: 'info'
+        };
+        return colors[normalized] || 'info';
+    };
     global.buildSvgDataUrl = buildSvgDataUrl;
 })(window);
