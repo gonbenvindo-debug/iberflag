@@ -1617,8 +1617,8 @@ async function loadOrders() {
                         </span>
                     </td>
                     <td>
-<span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
-    ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
+                        <span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
+                            ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
                         </span>
                     </td>
                     <td>
