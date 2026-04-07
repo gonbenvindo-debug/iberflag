@@ -11,6 +11,7 @@ const { getStripeClient } = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
 const { readJsonBody, sendJson, getPublicBaseUrl } = require('../../lib/server/http');
 
+// Checkout flow version bump to force a fresh production deploy.
 function buildCheckoutCustomerSnapshot(customer = {}) {
     return {
         nome: String(customer.nome || '').trim(),
