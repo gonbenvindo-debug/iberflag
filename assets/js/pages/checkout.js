@@ -56,10 +56,6 @@ function setPlaceOrderLoading(isLoading) {
 function getCheckoutErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
-    if (!isSupabaseReady()) {
-        return 'Ligacao ao backend indisponivel. Verifique a configuracao do Supabase.';
-    }
-
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
         return 'Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.';
     }
@@ -68,19 +64,35 @@ function getCheckoutErrorMessage(error) {
         return 'Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.';
     }
 
-    if (rawMessage.includes('checkout_upsert_customer')) {
-        return 'O contrato de checkout do Supabase nao esta ativo (`checkout_upsert_customer`).';
+    if (error?.code === 'CARRINHO_VAZIO') {
+        return 'O carrinho esta vazio.';
     }
 
-    if (rawMessage.includes('itens_encomenda') || rawMessage.includes('encomendas') || rawMessage.includes('clientes')) {
-        return 'A estrutura da base de dados do checkout nao corresponde ao esperado. Reveja tabelas, colunas e permissoes.';
+    if (error?.code === 'DADOS_CLIENTE_INVALIDOS') {
+        return 'Preencha nome, email e telefone.';
     }
 
-    if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
-        return 'O checkout foi bloqueado por permissoes do Supabase. Ajuste RLS ou use os RPCs previstos.';
+    if (error?.code === 'MORADA_INVALIDA') {
+        return 'Preencha morada, codigo postal e cidade.';
     }
 
-    return 'Erro ao processar encomenda. Por favor, tente novamente.';
+    if (error?.code === 'TOTAL_INVALIDO') {
+        return 'O total da encomenda nao e valido.';
+    }
+
+    if (error?.code === 'CHECKOUT_SESSION_FAILED') {
+        return error?.message || 'Nao foi possivel iniciar a sessao de pagamento.';
+    }
+
+    if (rawMessage.includes('stripe')) {
+        return 'Nao foi possivel iniciar o checkout com o Stripe.';
+    }
+
+    if (rawMessage.includes('facturalusa')) {
+        return 'Nao foi possivel comunicar com o Facturalusa.';
+    }
+
+    return 'Erro ao iniciar o checkout. Por favor, tente novamente.';
 }
 
 function buildOrderItemSnapshots(items) {
@@ -349,11 +361,6 @@ if (placeOrderBtn) {
             return;
         }
 
-        if (!isSupabaseReady()) {
-            setCheckoutFeedback('Ligacao ao backend indisponivel. Verifique a configuracao do Supabase antes de finalizar a encomenda.');
-            return;
-        }
-
         // Get form data
         const formData = new FormData(checkoutForm);
         const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'card';
@@ -379,70 +386,35 @@ if (placeOrderBtn) {
         setPlaceOrderLoading(true);
 
         try {
-            // 1. Create or update customer via secure RPC (SECURITY DEFINER – bypasses RLS)
-            const { data: customerId, error: customerError } = await supabaseClient
-                .rpc('checkout_upsert_customer', {
-                    p_nome:          customerData.nome,
-                    p_email:         customerData.email,
-                    p_telefone:      customerData.telefone    || null,
-                    p_empresa:       customerData.empresa     || null,
-                    p_nif:           customerData.nif         || null,
-                    p_morada:        customerData.morada      || null,
-                    p_codigo_postal: customerData.codigo_postal || null,
-                    p_cidade:        customerData.cidade      || null
+            const response = await fetch('/api/checkout/create-session', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    customer: customerData,
+                    cart,
+                    paymentMethod: selectedPaymentMethod,
+                    notes: orderNotes
+                })
+            });
+
+            const payload = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+                const message = getCheckoutErrorMessage({
+                    code: payload?.error,
+                    message: payload?.message || payload?.error || 'CHECKOUT_SESSION_FAILED'
                 });
+                throw {
+                    code: payload?.error || 'CHECKOUT_SESSION_FAILED',
+                    message
+                };
+            }
 
-            if (customerError) throw customerError;
+            setCheckoutFeedback('Pagamento iniciado. Vamos abrir o checkout seguro.', 'success');
+            showToast('Pagamento iniciado com sucesso!', 'success');
 
-            // 2. Create order
-            const orderNumber = `IBF${Date.now()}`;
-            const initialWorkflowStatus = 'pendente_confirmacao';
-            const orderMeta = {
-                workflowStatus: initialWorkflowStatus,
-                trackingCode: '',
-                trackingUrl: '',
-                statusHistory: [
-                    {
-                        status: initialWorkflowStatus,
-                        at: new Date().toISOString(),
-                        note: 'Encomenda criada no checkout'
-                    }
-                ],
-                itemSnapshots: buildOrderItemSnapshots(cart)
-            };
-
-            const orderData = {
-                cliente_id: customerId,
-                numero_encomenda: orderNumber,
-                status: typeof getLegacyStatusFromWorkflow === 'function'
-                    ? getLegacyStatusFromWorkflow(initialWorkflowStatus)
-                    : 'pendente',
-                subtotal: subtotal,
-                envio: shipping,
-                total: total,
-                notas: typeof buildOrderNotesWithMeta === 'function'
-                    ? buildOrderNotesWithMeta(orderNotes, orderMeta)
-                    : orderNotes,
-                morada_envio: `${customerData.morada}, ${customerData.codigo_postal} ${customerData.cidade}`,
-                metodo_pagamento: selectedPaymentMethod
-            };
-
-            const { data: order, error: orderError } = await supabaseClient
-                .from('encomendas')
-                .insert([orderData])
-                .select()
-                .single();
-
-            if (orderError) throw orderError;
-
-            // 3. Create order items (with graceful fallback for optional design columns)
-            await insertOrderItemsWithFallback(order.id, cart);
-
-            // Success!
-            setCheckoutFeedback('Encomenda criada com sucesso. Vamos abrir o tracking desta encomenda.', 'success');
-            showToast('Encomenda criada com sucesso!', 'success');
-            
-            // Clear cart
             cart = [];
             localStorage.removeItem('iberflag_cart');
             localStorage.removeItem('cart');
@@ -452,9 +424,13 @@ if (placeOrderBtn) {
                 });
             }
 
-            // Redirect directly to tracking after success
             setTimeout(() => {
-                window.location.href = `/encomenda.html?codigo=${encodeURIComponent(orderNumber)}`;
+                if (payload?.url) {
+                    window.location.href = payload.url;
+                    return;
+                }
+
+                window.location.href = `/checkout-sucesso.html?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
             }, 1000);
 
         } catch (error) {

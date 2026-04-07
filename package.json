@@ -7,6 +7,7 @@
     "populate": "node scripts/populate-products.js",
     "import:catalog:pt": "node scripts/import-supplier-catalog-pt.js",
     "provision:admin": "node scripts/provision-admin-user.js",
+    "payments:check": "node scripts/check-payments-config.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:css"
   },
@@ -15,6 +16,7 @@
     "cheerio": "^1.1.2",
     "dotenv": "^16.3.1",
     "sharp": "^0.34.4",
+    "stripe": "^22.0.0",
     "supabase": "^2.84.4"
   },
   "devDependencies": {

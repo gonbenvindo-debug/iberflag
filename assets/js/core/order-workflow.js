@@ -100,6 +100,14 @@
 
         const trackingCode = typeof source.trackingCode === 'string' ? source.trackingCode.trim() : '';
         const trackingUrl = typeof source.trackingUrl === 'string' ? source.trackingUrl.trim() : '';
+        const paymentStatus = typeof source.paymentStatus === 'string' ? source.paymentStatus.trim() : '';
+        const paymentProvider = typeof source.paymentProvider === 'string' ? source.paymentProvider.trim() : '';
+        const paymentMethod = typeof source.paymentMethod === 'string' ? source.paymentMethod.trim() : '';
+        const stripeSessionId = typeof source.stripeSessionId === 'string' ? source.stripeSessionId.trim() : '';
+        const stripePaymentIntent = typeof source.stripePaymentIntent === 'string' ? source.stripePaymentIntent.trim() : '';
+        const facturalusaCustomerCode = typeof source.facturalusaCustomerCode === 'string' ? source.facturalusaCustomerCode.trim() : '';
+        const facturalusaDocumentNumber = typeof source.facturalusaDocumentNumber === 'string' ? source.facturalusaDocumentNumber.trim() : '';
+        const facturalusaDocumentUrl = typeof source.facturalusaDocumentUrl === 'string' ? source.facturalusaDocumentUrl.trim() : '';
 
         const statusHistory = Array.isArray(source.statusHistory)
             ? source.statusHistory
@@ -130,6 +138,14 @@
             workflowStatus,
             trackingCode,
             trackingUrl,
+            paymentStatus,
+            paymentProvider,
+            paymentMethod,
+            stripeSessionId,
+            stripePaymentIntent,
+            facturalusaCustomerCode,
+            facturalusaDocumentNumber,
+            facturalusaDocumentUrl,
             statusHistory,
             itemSnapshots
         };

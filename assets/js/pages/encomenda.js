@@ -294,11 +294,31 @@ function resolveOrderItemVisual(item, snapshot) {
 
 function renderOrderHeader(order, workflowStatus) {
     const statusLabel = typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(workflowStatus) : workflowStatus;
+    const paymentStatus = String(order.payment_status || '').toLowerCase();
+    const paymentBadge = document.getElementById('order-payment-badge');
+    const paymentLabelMap = {
+        paid: 'Pagamento confirmado',
+        processing: 'Pagamento em processamento',
+        pending: 'A aguardar pagamento',
+        failed: 'Pagamento falhou',
+        expired: 'Sessao expirada'
+    };
+    const paymentClassMap = {
+        paid: 'bg-emerald-50 border-emerald-200 text-emerald-700',
+        processing: 'bg-amber-50 border-amber-200 text-amber-700',
+        pending: 'bg-slate-100 border-slate-200 text-slate-700',
+        failed: 'bg-red-50 border-red-200 text-red-700',
+        expired: 'bg-red-50 border-red-200 text-red-700'
+    };
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `Criada em ${formatDateTime(order.created_at)}`;
     document.getElementById('order-total').textContent = formatCurrency(order.total);
     document.getElementById('order-status-badge').textContent = statusLabel;
+    if (paymentBadge) {
+        paymentBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${paymentClassMap[paymentStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
+        paymentBadge.textContent = paymentLabelMap[paymentStatus] || 'Pagamento online';
+    }
 }
 
 function renderOrderSidebar(order, splitMeta) {
