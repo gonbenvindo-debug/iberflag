@@ -109,6 +109,19 @@ function buildOrderItemSnapshots(items) {
     }));
 }
 
+function buildCheckoutRequestCart(items) {
+    return items.map((item) => ({
+        id: item.id ?? null,
+        nome: String(item.nome || 'Produto').trim(),
+        quantity: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
+        preco: Number(item.preco || 0),
+        customized: Boolean(item.customized),
+        baseNome: String(item.baseNome || '').trim(),
+        basePrecoExtra: Number(item.basePrecoExtra || 0),
+        designId: item.designId || item.design_id || null
+    }));
+}
+
 async function insertOrderItemsWithFallback(orderId, items) {
     const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
 
@@ -393,7 +406,7 @@ if (placeOrderBtn) {
                 },
                 body: JSON.stringify({
                     customer: customerData,
-                    cart,
+                    cart: buildCheckoutRequestCart(cart),
                     paymentMethod: selectedPaymentMethod,
                     notes: orderNotes
                 })

@@ -19,6 +19,10 @@ function getCheckoutErrorMessage(error) {
         return 'Pedido JSON invalido.';
     }
 
+    if (error?.message === 'REQUEST_BODY_TOO_LARGE') {
+        return 'O carrinho enviado para o checkout esta demasiado grande. Volte a guardar o design e tente novamente.';
+    }
+
     if (errorCode === 'SUPABASE_SERVICE_ROLE_KEY_NOT_CONFIGURED' || errorCode.startsWith('SUPABASE_SERVICE_ROLE_KEY_')) {
         return 'Configuracao do Supabase em falta no servidor.';
     }
