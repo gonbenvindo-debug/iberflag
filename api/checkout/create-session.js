@@ -19,6 +19,7 @@ const {
     calculateCheckoutTotals,
     findOrCreateCheckoutCustomer,
     resolveCheckoutCart,
+    validateCheckoutCustomerEmail,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
 
@@ -60,6 +61,10 @@ function getCheckoutErrorMessage(error) {
 
     if (errorCode === 'EMAIL_REQUIRED') {
         return 'Introduza um email valido para iniciar o checkout.';
+    }
+
+    if (errorCode === 'EMAIL_INVALIDO') {
+        return error?.message || 'Introduza um email valido para iniciar o checkout.';
     }
 
     if (errorCode === 'NIF_INVALIDO') {
@@ -137,6 +142,17 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         }
 
         const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+        const emailValidation = validateCheckoutCustomerEmail(customerSnapshot.email);
+        if (!emailValidation.valid) {
+            sendJson(res, 400, {
+                error: 'EMAIL_INVALIDO',
+                message: emailValidation.message,
+                field: 'email',
+                suggestion: emailValidation.suggestion || null
+            });
+            return;
+        }
+
         const taxIdValidation = validateCheckoutCustomerTaxId(customerSnapshot);
         if (!taxIdValidation.valid) {
             sendJson(res, 400, {
@@ -206,7 +222,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             success_url: successUrl,
             cancel_url: cancelUrl,
             client_reference_id: orderNumber,
-            customer_email: customer.email,
+            customer_email: customerSnapshot.email,
             metadata: {
                 order_code: orderNumber,
                 order_id: String(order.id),

@@ -16,9 +16,65 @@ const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
 
 const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
+const COMMON_EMAIL_DOMAIN_FIXES = {
+    'gmail.com.pt': 'gmail.com',
+    'gmail.pt': 'gmail.com',
+    'gmai.com': 'gmail.com',
+    'gmial.com': 'gmail.com',
+    'gmail.con': 'gmail.com',
+    'hotmai.com': 'hotmail.com',
+    'hotmail.con': 'hotmail.com',
+    'outlook.con': 'outlook.com'
+};
 
 function normalizeTaxId(value) {
     return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
+}
+
+function normalizeCheckoutEmail(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function validateCheckoutEmail(value) {
+    const normalized = normalizeCheckoutEmail(value);
+    if (!normalized || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(normalized)) {
+        return {
+            valid: false,
+            normalized,
+            message: 'Introduza um email valido.'
+        };
+    }
+
+    const domain = normalized.split('@').pop();
+    const suggestedDomain = COMMON_EMAIL_DOMAIN_FIXES[domain];
+    if (suggestedDomain) {
+        return {
+            valid: false,
+            normalized,
+            suggestion: normalized.replace(/@[^@]+$/, `@${suggestedDomain}`),
+            message: `O dominio do email parece invalido: @${domain}. Queria dizer @${suggestedDomain}?`
+        };
+    }
+
+    return {
+        valid: true,
+        normalized,
+        message: ''
+    };
+}
+
+function updateEmailValidity({ normalizeInput = false } = {}) {
+    const emailInput = checkoutForm?.elements?.email;
+    if (!emailInput) {
+        return { valid: true, normalized: '', message: '' };
+    }
+
+    const validation = validateCheckoutEmail(emailInput.value);
+    if (normalizeInput) {
+        emailInput.value = validation.normalized;
+    }
+    emailInput.setCustomValidity(validation.valid ? '' : validation.message);
+    return validation;
 }
 
 function detectTaxCountry(value, postalCode = '') {
@@ -196,6 +252,10 @@ function getCheckoutErrorMessage(error) {
         return 'Preencha nome, email e telefone.';
     }
 
+    if (error?.code === 'EMAIL_INVALIDO') {
+        return error?.message || 'Introduza um email valido para iniciar o checkout.';
+    }
+
     if (error?.code === 'MORADA_INVALIDA') {
         return 'Preencha morada, codigo postal e cidade.';
     }
@@ -312,6 +372,13 @@ if (placeOrderBtn) {
         }
 
         clearCheckoutFeedback();
+        const emailValidation = updateEmailValidity({ normalizeInput: true });
+        if (!emailValidation.valid) {
+            setCheckoutFeedback(emailValidation.message, 'error');
+            checkoutForm.reportValidity();
+            return;
+        }
+
         const taxIdValidation = updateTaxIdValidity();
         if (!taxIdValidation.valid) {
             setCheckoutFeedback(taxIdValidation.message, 'error');
@@ -422,8 +489,20 @@ if (placeOrderBtn) {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
+    const emailInput = checkoutForm?.elements?.email;
     const nifInput = checkoutForm?.elements?.nif;
     const postalCodeInput = checkoutForm?.elements?.codigo_postal;
+    if (emailInput) {
+        emailInput.addEventListener('input', () => {
+            updateEmailValidity();
+        });
+        emailInput.addEventListener('blur', () => {
+            const validation = updateEmailValidity({ normalizeInput: true });
+            if (!validation.valid) {
+                setCheckoutFeedback(validation.message, 'error');
+            }
+        });
+    }
     if (nifInput) {
         nifInput.addEventListener('input', () => {
             updateTaxIdValidity();

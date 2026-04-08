@@ -96,7 +96,8 @@ module.exports = async function adminEmailSendTestHandler(req, res) {
                 provider_message_id: result.messageId || null,
                 payload: {
                     type: 'admin_test',
-                    admin: admin.email
+                    admin: admin.email,
+                    sentCopy: result.sentCopy || null
                 },
                 sent_at: new Date().toISOString()
             });
@@ -105,7 +106,8 @@ module.exports = async function adminEmailSendTestHandler(req, res) {
                 success: true,
                 messageId: result.messageId || null,
                 accepted: result.accepted || [],
-                rejected: result.rejected || []
+                rejected: result.rejected || [],
+                sentCopy: result.sentCopy || null
             });
         } catch (sendError) {
             await logEmailDelivery(supabase, {
