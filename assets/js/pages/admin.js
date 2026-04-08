@@ -282,6 +282,12 @@ let currentOrderData = null;
 let currentOrderMeta = null;
 let currentOrderPublicNotes = '';
 let ordersCache = new Map();
+let operationalOrdersList = [];
+let orderFilters = {
+    query: '',
+    workflowStatus: 'all',
+    fiscalStatus: 'all'
+};
 const adminDesignCache = new Map();
 let emailTemplatesCache = [];
 let currentEmailTemplate = null;
@@ -309,6 +315,10 @@ const closeClientModalBtns = document.querySelectorAll('.close-client-modal');
 const closeOrderModalBtns = document.querySelectorAll('.close-order-modal');
 const markRespondedBtn = document.getElementById('mark-responded');
 const saveOrderBtn = document.getElementById('save-order-btn');
+const ordersSearchInput = document.getElementById('orders-search');
+const ordersStatusFilter = document.getElementById('orders-status-filter');
+const ordersFiscalFilter = document.getElementById('orders-fiscal-filter');
+const ordersClearFiltersBtn = document.getElementById('orders-clear-filters');
 const svgPreviewModal = document.getElementById('svg-preview-modal');
 const openSvgPreviewBtn = document.getElementById('open-svg-preview');
 const closeSvgPreviewBtns = document.querySelectorAll('.close-svg-preview');
@@ -1688,6 +1698,135 @@ function filterOperationalOrders(orders) {
     return (Array.isArray(orders) ? orders : []).filter(isOperationalOrder);
 }
 
+function normalizeSearchTerm(value) {
+    return String(value || '')
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase()
+        .trim();
+}
+
+function getFilteredOperationalOrders() {
+    const query = normalizeSearchTerm(orderFilters.query);
+
+    return operationalOrdersList.filter((order) => {
+        const workflowStatus = deriveWorkflowStatus(order);
+        const fiscalStatus = resolveFacturalusaStatus(order);
+        const searchHaystack = normalizeSearchTerm([
+            order?.numero_encomenda,
+            order?.clientes?.nome,
+            order?.clientes?.email
+        ].filter(Boolean).join(' '));
+
+        if (query && !searchHaystack.includes(query)) {
+            return false;
+        }
+
+        if (orderFilters.workflowStatus !== 'all' && workflowStatus !== orderFilters.workflowStatus) {
+            return false;
+        }
+
+        if (orderFilters.fiscalStatus !== 'all' && fiscalStatus !== orderFilters.fiscalStatus) {
+            return false;
+        }
+
+        return true;
+    });
+}
+
+function renderOrdersMetrics(orders) {
+    const list = Array.isArray(orders) ? orders : [];
+    const activeCount = list.filter((order) => {
+        const status = deriveWorkflowStatus(order);
+        return ['em_preparacao', 'em_producao', 'expedido'].includes(status);
+    }).length;
+    const deliveredCount = list.filter((order) => deriveWorkflowStatus(order) === 'entregue').length;
+    const fiscalPendingCount = list.filter((order) => {
+        const status = resolveFacturalusaStatus(order);
+        return status === 'pending' || status === 'blocked' || status === 'error';
+    }).length;
+
+    const totalEl = document.getElementById('orders-metric-total');
+    const activeEl = document.getElementById('orders-metric-active');
+    const deliveredEl = document.getElementById('orders-metric-delivered');
+    const fiscalPendingEl = document.getElementById('orders-metric-fiscal-pending');
+
+    if (totalEl) totalEl.textContent = String(list.length);
+    if (activeEl) activeEl.textContent = String(activeCount);
+    if (deliveredEl) deliveredEl.textContent = String(deliveredCount);
+    if (fiscalPendingEl) fiscalPendingEl.textContent = String(fiscalPendingCount);
+}
+
+function renderOrdersTable(orders) {
+    const tbody = document.getElementById('orders-tbody');
+    if (!tbody) return;
+
+    const visibleOrders = Array.isArray(orders) ? orders : [];
+    ordersCache = new Map(visibleOrders.map((order) => [String(order.id), order]));
+
+    if (visibleOrders.length > 0) {
+        tbody.innerHTML = visibleOrders.map((o) => `
+            <tr>
+                <td class="font-semibold">${o.numero_encomenda}</td>
+                <td>
+                    <div class="min-w-[180px]">
+                        <p class="font-semibold text-gray-900">${escapeHtml(o.clientes?.nome || 'N/A')}</p>
+                        <p class="text-xs text-gray-500">${escapeHtml(o.clientes?.email || 'Sem email')}</p>
+                    </div>
+                </td>
+                <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
+                <td class="font-bold text-blue-600">${formatCurrency(o.total)}</td>
+                <td>
+                    ${buildWorkflowBadgeHtml(deriveWorkflowStatus(o))}
+                </td>
+                <td>
+                    <span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
+                        ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
+                    </span>
+                </td>
+                <td>
+                    <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
+                        <i data-lucide="eye" class="w-4 h-4"></i>
+                    </button>
+                </td>
+            </tr>
+        `).join('');
+    } else {
+        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda corresponde aos filtros atuais</td></tr>';
+    }
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function syncOrderFiltersFromDom() {
+    orderFilters = {
+        query: String(ordersSearchInput?.value || '').trim(),
+        workflowStatus: String(ordersStatusFilter?.value || 'all'),
+        fiscalStatus: String(ordersFiscalFilter?.value || 'all')
+    };
+}
+
+function applyOrderFilters() {
+    syncOrderFiltersFromDom();
+    renderOrdersTable(getFilteredOperationalOrders());
+}
+
+function resetOrderFilters() {
+    if (ordersSearchInput) ordersSearchInput.value = '';
+    if (ordersStatusFilter) ordersStatusFilter.value = 'all';
+    if (ordersFiscalFilter) ordersFiscalFilter.value = 'all';
+    applyOrderFilters();
+}
+
+function setupOrdersFilters() {
+    ordersSearchInput?.addEventListener('input', applyOrderFilters);
+    ordersStatusFilter?.addEventListener('change', applyOrderFilters);
+    ordersFiscalFilter?.addEventListener('change', applyOrderFilters);
+    ordersClearFiltersBtn?.addEventListener('click', resetOrderFilters);
+}
+
 // ===== ORDERS =====
 async function loadOrders() {
     try {
@@ -1698,39 +1837,9 @@ async function loadOrders() {
 
         if (error) throw error;
 
-        const tbody = document.getElementById('orders-tbody');
-        const visibleOrders = filterOperationalOrders(data);
-        ordersCache = new Map(visibleOrders.map((order) => [String(order.id), order]));
-
-        if (visibleOrders.length > 0) {
-            tbody.innerHTML = visibleOrders.map(o => `
-                <tr>
-                    <td class="font-semibold">${o.numero_encomenda}</td>
-                    <td>${o.clientes?.nome || 'N/A'}</td>
-                    <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
-                    <td class="font-bold text-blue-600">${formatCurrency(o.total)}</td>
-                    <td>
-                        ${buildWorkflowBadgeHtml(deriveWorkflowStatus(o))}
-                    </td>
-                    <td>
-                        <span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
-                            ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
-                        </span>
-                    </td>
-                    <td>
-                        <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
-                    </td>
-                </tr>
-            `).join('');
-        } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda paga encontrada</td></tr>';
-        }
-
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        operationalOrdersList = filterOperationalOrders(data);
+        renderOrdersMetrics(operationalOrdersList);
+        applyOrderFilters();
 
     } catch (error) {
         console.error('Erro ao carregar encomendas:', error);
@@ -2997,6 +3106,7 @@ function setupEmailTemplateAdmin() {
 document.addEventListener('DOMContentLoaded', () => {
     closeAllModals();
     reduceBrowserAutofillNoise();
+    setupOrdersFilters();
     setupEmailTemplateAdmin();
     checkAdminAuth();
 });

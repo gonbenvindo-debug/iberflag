@@ -9,6 +9,10 @@ const itemPreviewTitle = document.getElementById('item-preview-title');
 const itemPreviewImage = document.getElementById('item-preview-image');
 const itemPreviewOptions = document.getElementById('item-preview-options');
 const itemPreviewDownload = document.getElementById('item-preview-download');
+const orderCopyCodeBtn = document.getElementById('order-copy-code-btn');
+const orderCopyTrackingBtn = document.getElementById('order-copy-tracking-btn');
+const orderOpenDocumentBtn = document.getElementById('order-open-document-btn');
+const orderContactSupportBtn = document.getElementById('order-contact-support-btn');
 
 let renderedItemPreviews = [];
 
@@ -112,6 +116,35 @@ function formatDateTime(value) {
 
 function normalizeOrderCode(value) {
     return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+}
+
+async function copyTextToClipboard(value, successMessage) {
+    const normalized = String(value || '').trim();
+    if (!normalized) {
+        showToast('Nada para copiar.', 'warning');
+        return;
+    }
+
+    try {
+        if (navigator.clipboard?.writeText) {
+            await navigator.clipboard.writeText(normalized);
+        } else {
+            const helper = document.createElement('textarea');
+            helper.value = normalized;
+            helper.setAttribute('readonly', '');
+            helper.style.position = 'fixed';
+            helper.style.opacity = '0';
+            document.body.appendChild(helper);
+            helper.select();
+            document.execCommand('copy');
+            helper.remove();
+        }
+
+        showToast(successMessage, 'success');
+    } catch (error) {
+        console.error('Falha ao copiar texto:', error);
+        showToast('Não foi possível copiar automaticamente.', 'error');
+    }
 }
 
 function sanitizeFilenameToken(value) {
@@ -489,6 +522,94 @@ function renderOrderSidebar(order, splitMeta) {
     }
 }
 
+function buildOrderNextSteps(order, workflowStatus, splitMeta) {
+    const paymentStatus = String(order?.payment_status || splitMeta?.meta?.paymentStatus || '').toLowerCase();
+    const fiscalStatus = typeof getFacturalusaStatus === 'function'
+        ? getFacturalusaStatus(order)
+        : 'not_required';
+    const tracking = typeof getTrackingDetails === 'function'
+        ? getTrackingDetails(order)
+        : { trackingCode: '', trackingUrl: '' };
+    const steps = [];
+
+    if (paymentStatus !== 'paid') {
+        steps.push('O pagamento ainda não foi confirmado. Assim que entrar, a equipa pode avançar para a validação do pedido.');
+    } else {
+        steps.push('Pagamento confirmado. A encomenda já está em fila operacional e pode ser atualizada pela equipa em tempo real.');
+    }
+
+    if (fiscalStatus === 'emitted') {
+        steps.push('A fatura já foi emitida e pode ser aberta diretamente a partir desta página.');
+    } else if (paymentStatus === 'paid') {
+        steps.push('A emissão fiscal está a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.');
+    }
+
+    if (workflowStatus === 'em_preparacao') {
+        steps.push('Estamos a validar ficheiros e a preparar a produção do teu material.');
+    } else if (workflowStatus === 'em_producao') {
+        steps.push('A encomenda já está em produção. O próximo passo normal é expedição.');
+    } else if (workflowStatus === 'expedido') {
+        steps.push(tracking.trackingCode
+            ? `A encomenda já saiu para entrega. Usa o tracking ${tracking.trackingCode} para acompanhar o percurso.`
+            : 'A encomenda já foi expedida. O tracking ficará visível assim que estiver disponível.');
+    } else if (workflowStatus === 'entregue') {
+        steps.push('A encomenda aparece como entregue. Se precisares de apoio, usa o botão de contacto e responde com o código IBF.');
+    }
+
+    return steps.slice(0, 4);
+}
+
+function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
+    const nextStepsEl = document.getElementById('order-next-steps');
+    const tracking = typeof getTrackingDetails === 'function'
+        ? getTrackingDetails(order)
+        : { trackingCode: '', trackingUrl: '' };
+    const orderCode = String(order?.numero_encomenda || '').trim();
+    const invoiceUrl = String(order?.facturalusa_document_url || splitMeta?.meta?.facturalusaDocumentUrl || '').trim();
+
+    if (nextStepsEl) {
+        const steps = buildOrderNextSteps(order, workflowStatus, splitMeta);
+        nextStepsEl.innerHTML = steps.length > 0
+            ? steps.map((step) => `
+                <div class="flex items-start gap-2">
+                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold flex-shrink-0 mt-0.5">+</span>
+                    <p>${escapeHtml(step)}</p>
+                </div>
+            `).join('')
+            : '<p>Sem passos adicionais para mostrar neste momento.</p>';
+    }
+
+    if (orderCopyCodeBtn) {
+        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, 'Código da encomenda copiado.');
+        orderCopyCodeBtn.disabled = !orderCode;
+    }
+
+    if (orderCopyTrackingBtn) {
+        const hasTracking = Boolean(tracking.trackingCode);
+        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, 'Código de tracking copiado.');
+        orderCopyTrackingBtn.disabled = !hasTracking;
+        orderCopyTrackingBtn.classList.toggle('opacity-50', !hasTracking);
+        orderCopyTrackingBtn.classList.toggle('cursor-not-allowed', !hasTracking);
+    }
+
+    if (orderOpenDocumentBtn) {
+        if (invoiceUrl) {
+            orderOpenDocumentBtn.href = invoiceUrl;
+            orderOpenDocumentBtn.classList.remove('hidden');
+        } else {
+            orderOpenDocumentBtn.classList.add('hidden');
+            orderOpenDocumentBtn.removeAttribute('href');
+        }
+    }
+
+    if (orderContactSupportBtn) {
+        const params = new URLSearchParams();
+        if (orderCode) params.set('codigo', orderCode);
+        params.set('assunto', 'Apoio a encomenda');
+        orderContactSupportBtn.href = `/contacto.html?${params.toString()}`;
+    }
+}
+
 function renderStatusTable(order, workflowStatus, splitMeta) {
     const statusTableBody = document.getElementById('order-status-table-body');
     const history = Array.isArray(splitMeta?.meta?.statusHistory)
@@ -789,6 +910,7 @@ async function initOrderPage() {
         renderOrderHeader(result.order, workflowStatus);
         renderOrderProgress(result.order, workflowStatus, splitMeta);
         renderOrderSidebar(result.order, splitMeta);
+        renderOrderOperationalPanels(result.order, workflowStatus, splitMeta);
         renderStatusTable(result.order, workflowStatus, splitMeta);
         renderOrderItems(result.order, result.items, splitMeta);
 
