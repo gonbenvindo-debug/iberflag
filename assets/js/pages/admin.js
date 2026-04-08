@@ -2765,20 +2765,27 @@ function renderEmailMailConfigStatus(status) {
     const { configStatus } = getEmailTemplateElements();
     if (!configStatus) return;
 
+    const activeProvider = String(status?.activeProvider || 'none').trim() || 'none';
+    const resend = status?.resend || {};
     const smtp = status?.smtp || {};
     const imap = status?.imap || {};
+    const resendText = resend.configured
+        ? 'Resend configurado'
+        : `Resend aguarda credenciais${resend.missing?.length ? `: ${resend.missing.join(', ')}` : ''}`;
     const smtpText = smtp.configured
-        ? 'SMTP configurado'
-        : `SMTP aguarda credenciais${smtp.missing?.length ? `: ${smtp.missing.join(', ')}` : ''}`;
+        ? 'SMTP fallback configurado'
+        : `SMTP fallback aguarda credenciais${smtp.missing?.length ? `: ${smtp.missing.join(', ')}` : ''}`;
     const imapText = imap.configured
-        ? 'IMAP configurado'
-        : `IMAP aguarda credenciais${imap.missing?.length ? `: ${imap.missing.join(', ')}` : ''}`;
+        ? 'IMAP configurado para copia em enviados'
+        : `IMAP opcional${imap.missing?.length ? `: ${imap.missing.join(', ')}` : ''}`;
 
     configStatus.innerHTML = `
         <div class="flex items-start gap-3">
             <i data-lucide="server" class="w-4 h-4 text-gray-500 mt-0.5"></i>
             <div>
                 <p class="font-semibold text-gray-900">Configuracao email</p>
+                <p class="mt-1 text-gray-600">Provider ativo: ${escapeHtml(activeProvider)}</p>
+                <p class="mt-1 text-gray-600">${escapeHtml(resendText)}</p>
                 <p class="mt-1 text-gray-600">${escapeHtml(smtpText)}</p>
                 <p class="mt-1 text-gray-600">${escapeHtml(imapText)}</p>
             </div>
