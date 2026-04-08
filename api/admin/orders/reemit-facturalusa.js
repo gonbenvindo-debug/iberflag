@@ -11,6 +11,7 @@ const {
     issueFacturalusaDocumentForOrder
 } = require('../../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
+const { sendOrderEmailNotification } = require('../../../lib/server/email-notifications');
 
 async function findOrderByIdOrCode(supabase, orderId, orderCode) {
     if (orderId) {
@@ -145,6 +146,27 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
             if (updateError) {
                 throw updateError;
             }
+
+            await sendOrderEmailNotification({
+                supabase,
+                req,
+                order: {
+                    ...order,
+                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+                    payment_provider: 'stripe',
+                    payment_status: 'paid',
+                    stripe_session_id: session.id || null,
+                    stripe_payment_method_type: session.metadata.payment_method || 'card',
+                    facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
+                    facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
+                    facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
+                    facturalusa_last_error: null,
+                    facturalusa_status: 'emitted',
+                    facturalusa_payload: sale || {}
+                },
+                templateKey: 'invoice_document_ready',
+                dedupeKey: `invoice_document_ready:${order.id}`
+            });
 
             sendJson(res, 200, {
                 success: true,

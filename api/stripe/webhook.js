@@ -203,7 +203,7 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus)
 async function emitFacturalusaDocument(supabase, order, session) {
     const split = splitOrderNotesAndMeta(order?.notas || '');
     if (order?.facturalusa_status === 'emitted' || split.meta.facturalusaDocumentNumber) {
-        return;
+        return { emitted: false, skipped: true, order };
     }
 
     const invoiceResult = await issueFacturalusaDocumentForOrder({
@@ -231,31 +231,41 @@ async function emitFacturalusaDocument(supabase, order, session) {
     nextMeta.facturalusaStatus = 'emitted';
     nextMeta.facturalusaLastAttemptAt = new Date().toISOString();
 
+    const updates = {
+        notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+        payment_provider: 'stripe',
+        payment_status: 'paid',
+        stripe_session_id: session?.id || null,
+        stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+        stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
+        payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
+        facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
+        facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
+        facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
+        facturalusa_last_error: null,
+        facturalusa_status: 'emitted',
+        facturalusa_payload: sale || {}
+    };
+
     const { error } = await updateWithOptionalColumns(
         supabase,
         'encomendas',
         'id',
         order.id,
-        {
-            notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
-            payment_provider: 'stripe',
-            payment_status: 'paid',
-            stripe_session_id: session?.id || null,
-            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
-            stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
-            payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
-            facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
-            facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
-            facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
-            facturalusa_last_error: null,
-            facturalusa_status: 'emitted',
-            facturalusa_payload: sale || {}
-        }
+        updates
     );
 
     if (error) {
         throw error;
     }
+
+    return {
+        emitted: true,
+        order: {
+            ...order,
+            ...updates
+        }
+    };
 }
 
 async function markOrderFailed(supabase, order, session, paymentStatus) {
@@ -330,7 +340,16 @@ module.exports = async function stripeWebhookHandler(req, res) {
                     const paidOrder = await updateOrderPaymentStatus(supabase, order, session, 'paid');
 
                     try {
-                        await emitFacturalusaDocument(supabase, paidOrder, session);
+                        const invoiceResult = await emitFacturalusaDocument(supabase, paidOrder, session);
+                        if (invoiceResult?.emitted && invoiceResult.order) {
+                            await sendOrderEmailNotification({
+                                supabase,
+                                req,
+                                order: invoiceResult.order,
+                                templateKey: 'invoice_document_ready',
+                                dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
+                            });
+                        }
                     } catch (facturalusaError) {
                         const split = splitOrderNotesAndMeta(paidOrder?.notas || order?.notas || '');
                         const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
