@@ -345,6 +345,35 @@ function closeAllModals() {
     updateModalBodyLock();
 }
 
+function reduceBrowserAutofillNoise() {
+    const fields = document.querySelectorAll([
+        '#email-templates-tab input',
+        '#email-templates-tab textarea',
+        '#order-modal input',
+        '#order-modal textarea',
+        '#product-modal input',
+        '#product-modal textarea',
+        '#base-modal input',
+        '#base-modal textarea'
+    ].join(','));
+
+    fields.forEach((field) => {
+        const type = String(field.getAttribute('type') || '').toLowerCase();
+        if (['file', 'checkbox', 'radio', 'hidden'].includes(type)) {
+            return;
+        }
+
+        field.setAttribute('autocomplete', 'off');
+        field.setAttribute('autocorrect', 'off');
+        field.setAttribute('autocapitalize', 'off');
+        field.setAttribute('spellcheck', 'false');
+        field.setAttribute('data-lpignore', 'true');
+        field.setAttribute('data-1p-ignore', 'true');
+        field.setAttribute('data-bwignore', 'true');
+        field.setAttribute('data-form-type', 'other');
+    });
+}
+
 // ===== TAB NAVIGATION =====
 navTabs.forEach(tab => {
     tab.addEventListener('click', () => {
@@ -2957,6 +2986,7 @@ function setupEmailTemplateAdmin() {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     closeAllModals();
+    reduceBrowserAutofillNoise();
     setupEmailTemplateAdmin();
     checkAdminAuth();
 });

@@ -20,6 +20,14 @@
                 return true;
             }
         }, true);
+
+        window.addEventListener('unhandledrejection', (event) => {
+            const reason = String(event.reason?.stack || event.reason?.message || event.reason || '');
+            if (reason.includes('bootstrap-autofill-overlay') || reason.includes('AutofillOverlayContentService')) {
+                event.preventDefault();
+                return true;
+            }
+        });
     </script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
@@ -961,7 +969,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408a"></script>
-    <script src="/assets/js/pages/admin.js?v=20260408b"></script>
+    <script src="/assets/js/pages/admin.js?v=20260408c"></script>
     <script>lucide.createIcons();</script>
 </body>
 
