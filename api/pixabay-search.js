@@ -1,4 +1,5 @@
 const PIXABAY_API_BASE = 'https://pixabay.com/api/';
+const { applyRateLimit, sendJson } = require('../lib/server/http');
 
 function clampInteger(value, fallback, min, max) {
     const parsed = Number.parseInt(String(value || ''), 10);
@@ -12,22 +13,26 @@ function normalizeQuery(value) {
 
 module.exports = async function pixabaySearchHandler(req, res) {
     if (req.method !== 'GET') {
-        res.statusCode = 405;
-        res.setHeader('Allow', 'GET');
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({ error: 'Method not allowed' }));
+        sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'GET' });
+        return;
+    }
+
+    if (!applyRateLimit(req, res, {
+        key: 'pixabay-search',
+        windowMs: 60 * 1000,
+        max: 30,
+        message: 'Demasiadas pesquisas de imagens. Aguarde um pouco e volte a tentar.'
+    })) {
         return;
     }
 
     const requestUrl = new URL(req.url || '/', 'http://localhost');
     const apiKey = process.env.PIXABAY_API_KEY;
     if (!apiKey) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({
+        sendJson(res, 500, {
             error: 'PIXABAY_API_KEY not configured',
             message: 'Set PIXABAY_API_KEY in your Vercel or local environment.'
-        }));
+        });
         return;
     }
 
@@ -72,14 +77,12 @@ module.exports = async function pixabaySearchHandler(req, res) {
             payload = null;
         }
 
-        res.statusCode = upstream.status;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.setHeader('Cache-Control', 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400');
-
         if (!upstream.ok) {
-            res.end(JSON.stringify({
+            sendJson(res, upstream.status, {
                 error: payload?.error || payload?.message || text || 'Pixabay search failed'
-            }));
+            }, {
+                'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400'
+            });
             return;
         }
 
@@ -102,16 +105,16 @@ module.exports = async function pixabaySearchHandler(req, res) {
             }))
             : [];
 
-        res.end(JSON.stringify({
+        sendJson(res, upstream.status, {
             total: Number(payload?.total || 0),
             totalHits: Number(payload?.totalHits || 0),
             hits
-        }));
+        }, {
+            'Cache-Control': 'public, max-age=0, s-maxage=86400, stale-while-revalidate=86400'
+        });
     } catch (error) {
-        res.statusCode = 500;
-        res.setHeader('Content-Type', 'application/json; charset=utf-8');
-        res.end(JSON.stringify({
+        sendJson(res, 500, {
             error: error?.message || 'Unexpected Pixabay search error'
-        }));
+        });
     }
 };

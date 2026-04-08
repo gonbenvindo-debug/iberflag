@@ -36,7 +36,11 @@ Antes de testar compra end-to-end, aplicar as migrations em `supabase/migrations
 - `20260408120000_harden_order_flow.sql`
 - `20260408143000_complete_test_checkout_flow.sql`
 - `20260408150000_remove_tracking_address_key.sql`
-- `20260408153000_fill_simulated_catalog_values.sql`
+- `20260408200000_create_produto_templates_if_missing.sql`
+
+Depois das migrations, aplicar manualmente o seed de dados simulados apenas em ambiente de teste:
+
+- `scripts/sql/test-checkout-simulated-catalog.sql`
 
 Sem acesso SQL remoto (`SUPABASE_ACCESS_TOKEN` para a CLI, ou connection string da base), estas migrations não podem ser aplicadas automaticamente a partir deste workspace.
 

@@ -757,13 +757,13 @@ async function loadDashboard() {
         // Load stats
         const [produtos, encomendas, clientes, contactos] = await Promise.all([
             supabaseClient.from('produtos').select('*', { count: 'exact' }),
-            supabaseClient.from('encomendas').select('*', { count: 'exact' }),
+            supabaseClient.from('encomendas').select('id,payment_status'),
             supabaseClient.from('clientes').select('*', { count: 'exact' }),
             supabaseClient.from('contactos').select('*', { count: 'exact' })
         ]);
 
         document.getElementById('stat-produtos').textContent = produtos.count || 0;
-        document.getElementById('stat-encomendas').textContent = encomendas.count || 0;
+        document.getElementById('stat-encomendas').textContent = filterOperationalOrders(encomendas.data).length;
         document.getElementById('stat-clientes').textContent = clientes.count || 0;
         document.getElementById('stat-contactos').textContent = contactos.count || 0;
 
@@ -1679,6 +1679,15 @@ function collectTrackableColumns(orderData) {
     };
 }
 
+function isOperationalOrder(order) {
+    const paymentStatus = String(order?.payment_status || '').trim().toLowerCase();
+    return !paymentStatus || paymentStatus === 'paid';
+}
+
+function filterOperationalOrders(orders) {
+    return (Array.isArray(orders) ? orders : []).filter(isOperationalOrder);
+}
+
 // ===== ORDERS =====
 async function loadOrders() {
     try {
@@ -1690,10 +1699,11 @@ async function loadOrders() {
         if (error) throw error;
 
         const tbody = document.getElementById('orders-tbody');
-        ordersCache = new Map((data || []).map((order) => [String(order.id), order]));
+        const visibleOrders = filterOperationalOrders(data);
+        ordersCache = new Map(visibleOrders.map((order) => [String(order.id), order]));
 
-        if (data && data.length > 0) {
-            tbody.innerHTML = data.map(o => `
+        if (visibleOrders.length > 0) {
+            tbody.innerHTML = visibleOrders.map(o => `
                 <tr>
                     <td class="font-semibold">${o.numero_encomenda}</td>
                     <td>${o.clientes?.nome || 'N/A'}</td>
@@ -1715,7 +1725,7 @@ async function loadOrders() {
                 </tr>
             `).join('');
         } else {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda encontrada</td></tr>';
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda paga encontrada</td></tr>';
         }
 
         if (typeof lucide !== 'undefined') {
@@ -2467,8 +2477,8 @@ function resolveFacturalusaStatusLabel(status) {
 
     const labels = {
         emitted: 'Fatura emitida',
-        pending: 'A emitir',
-        blocked: 'Bloqueada',
+        pending: 'Faturação pendente',
+        blocked: 'Requer atenção',
         error: 'Erro de faturação',
         not_required: 'Ainda não aplicável'
     };

@@ -8,7 +8,12 @@ const {
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { getStripeClient } = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
-const { readJsonBody, sendJson, getPublicBaseUrl } = require('../../lib/server/http');
+const {
+    applyRateLimit,
+    readJsonBody,
+    sendJson,
+    getPublicBaseUrl
+} = require('../../lib/server/http');
 const {
     insertWithOptionalColumns,
     updateWithOptionalColumns
@@ -114,6 +119,15 @@ async function deleteOrderWithItems(supabase, orderId) {
 module.exports = async function createCheckoutSessionHandler(req, res) {
     if (req.method !== 'POST') {
         sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'POST' });
+        return;
+    }
+
+    if (!applyRateLimit(req, res, {
+        key: 'checkout-create-session',
+        windowMs: 5 * 60 * 1000,
+        max: 18,
+        message: 'Demasiadas tentativas de checkout. Aguarde um pouco e volte a tentar.'
+    })) {
         return;
     }
 

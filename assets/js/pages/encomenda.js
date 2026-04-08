@@ -378,7 +378,7 @@ function renderOrderHeader(order, workflowStatus) {
     const facturalusaBadge = document.getElementById('order-facturalusa-badge');
     const facturalusaStatus = typeof getFacturalusaStatus === 'function'
         ? getFacturalusaStatus(order)
-        : (order.facturalusa_document_number ? 'emitted' : order.facturalusa_last_error ? 'blocked' : (paymentStatus === 'paid' ? 'pending' : 'not_required'));
+        : (order.facturalusa_document_number ? 'emitted' : (paymentStatus === 'paid' ? 'pending' : 'not_required'));
     const paymentLabelMap = {
         paid: 'Pagamento confirmado',
         processing: 'Pagamento em processamento',
@@ -436,7 +436,7 @@ function renderOrderSidebar(order, splitMeta) {
     const facturalusaLinkEl = document.getElementById('order-facturalusa-link');
     const facturalusaStatus = typeof getFacturalusaStatus === 'function'
         ? getFacturalusaStatus(order)
-        : (splitMeta.meta.facturalusaDocumentNumber ? 'emitted' : splitMeta.meta.facturalusaLastError ? 'blocked' : (splitMeta.meta.paymentStatus === 'paid' ? 'pending' : 'not_required'));
+        : ((order.facturalusa_document_number || splitMeta.meta.facturalusaDocumentNumber) ? 'emitted' : ((order.payment_status || splitMeta.meta.paymentStatus) === 'paid' ? 'pending' : 'not_required'));
 
     if (trackingCodeEl) {
         trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
@@ -468,16 +468,17 @@ function renderOrderSidebar(order, splitMeta) {
             : facturalusaStatus;
     }
     if (facturalusaNumberEl) {
-        const documentNumber = splitMeta.meta.facturalusaDocumentNumber || order.facturalusa_document_number || '';
-        const lastError = splitMeta.meta.facturalusaLastError || '';
+        const documentNumber = order.facturalusa_document_number || splitMeta.meta.facturalusaDocumentNumber || '';
         facturalusaNumberEl.textContent = documentNumber
             ? `Nº ${documentNumber}`
-            : lastError
-                ? `Erro: ${lastError}`
-                : 'A aguardar emissão automática';
+            : facturalusaStatus === 'blocked' || facturalusaStatus === 'error'
+                ? 'Emissão pendente. A nossa equipa está a validar.'
+                : facturalusaStatus === 'pending'
+                    ? 'A aguardar emissão automática'
+                    : 'Disponível após confirmação do pagamento';
     }
     if (facturalusaLinkEl) {
-        const url = String(splitMeta.meta.facturalusaDocumentUrl || '').trim();
+        const url = String(order.facturalusa_document_url || splitMeta.meta.facturalusaDocumentUrl || '').trim();
         if (url) {
             facturalusaLinkEl.href = url;
             facturalusaLinkEl.classList.remove('hidden');

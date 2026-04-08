@@ -296,8 +296,8 @@
         const normalized = String(status || '').trim();
         const labels = {
             emitted: 'Fatura emitida',
-            pending: 'A emitir',
-            blocked: 'Bloqueada',
+            pending: 'Faturação pendente',
+            blocked: 'Requer atenção',
             error: 'Erro de faturação',
             not_required: 'Ainda não aplicável'
         };

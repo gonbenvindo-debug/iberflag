@@ -1,6 +1,6 @@
 const { getStripeClient } = require('../../lib/server/stripe');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
-const { readJsonBody, sendJson } = require('../../lib/server/http');
+const { applyRateLimit, readJsonBody, sendJson } = require('../../lib/server/http');
 const { splitOrderNotesAndMeta } = require('../../lib/server/checkout');
 const {
     buildOrderItemsFromSnapshots,
@@ -80,6 +80,15 @@ async function fetchPublicOrderItems(supabase, orderId) {
 module.exports = async function checkoutSessionStatusHandler(req, res) {
     if (req.method !== 'GET' && req.method !== 'POST') {
         sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'GET, POST' });
+        return;
+    }
+
+    if (!applyRateLimit(req, res, {
+        key: 'checkout-session-status',
+        windowMs: 5 * 60 * 1000,
+        max: 60,
+        message: 'Demasiadas consultas ao estado da encomenda. Aguarde um pouco e tente novamente.'
+    })) {
         return;
     }
 
