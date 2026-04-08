@@ -3,90 +3,57 @@
 
     const ORDER_WORKFLOW_STEPS = [
         {
-            value: 'pendente_confirmacao',
-            label: 'Pendente de Confirmacao',
-            grade: '1',
-            description: 'Encomenda recebida e a aguardar validacao inicial.'
+            value: 'em_preparacao',
+            label: 'Em Preparacao',
+            description: 'Encomenda recebida e em preparacao inicial.'
         },
         {
-            value: 'aguarda_pagamento',
-            label: 'Aguarda Pagamento',
-            grade: '2',
-            description: 'A aguardar confirmacao de pagamento para avancar.'
-        },
-        {
-            value: 'arte_em_validacao',
-            label: 'Arte em Validacao',
-            grade: '3',
-            description: 'Ficheiros e artes em revisao pre-producao.'
-        },
-        {
-            value: 'producao',
+            value: 'em_producao',
             label: 'Em Producao',
-            grade: '4',
-            description: 'Material em impressao e fabricacao.'
+            description: 'Material em producao e acabamento.'
         },
         {
-            value: 'acabamento',
-            label: 'Acabamentos',
-            grade: '5',
-            description: 'Corte, costura, ilhoses e controlo de qualidade.'
-        },
-        {
-            value: 'embalagem',
-            label: 'Embalagem',
-            grade: '6',
-            description: 'Pedido preparado para expedicao.'
-        },
-        {
-            value: 'expedida',
-            label: 'Expedida',
-            grade: '7',
+            value: 'expedido',
+            label: 'Expedido',
             description: 'Encomenda entregue ao transportador.'
         },
         {
             value: 'entregue',
             label: 'Entregue',
-            grade: '8',
             description: 'Encomenda concluida com sucesso.'
-        },
-        {
-            value: 'cancelada',
-            label: 'Cancelada',
-            grade: '9',
-            description: 'Encomenda cancelada.'
         }
     ];
 
     const WORKFLOW_BADGE_COLORS = {
-        pendente_confirmacao: 'warning',
-        aguarda_pagamento: 'warning',
-        arte_em_validacao: 'info',
-        producao: 'info',
-        acabamento: 'info',
-        embalagem: 'info',
-        expedida: 'warning',
-        entregue: 'success',
-        cancelada: 'danger'
+        em_preparacao: 'warning',
+        em_producao: 'info',
+        expedido: 'warning',
+        entregue: 'success'
     };
 
     const WORKFLOW_TO_LEGACY_STATUS = {
-        pendente_confirmacao: 'pendente',
-        aguarda_pagamento: 'pendente',
-        arte_em_validacao: 'processando',
-        producao: 'processando',
-        acabamento: 'processando',
-        embalagem: 'processando',
-        expedida: 'processando',
-        entregue: 'concluido',
-        cancelada: 'cancelado'
+        em_preparacao: 'pendente',
+        em_producao: 'processando',
+        expedido: 'processando',
+        entregue: 'concluido'
     };
 
     const LEGACY_TO_WORKFLOW_STATUS = {
-        pendente: 'pendente_confirmacao',
-        processando: 'producao',
+        pendente: 'em_preparacao',
+        processando: 'em_producao',
         concluido: 'entregue',
-        cancelado: 'cancelada'
+        cancelado: 'em_preparacao'
+    };
+
+    const WORKFLOW_STATUS_ALIASES = {
+        pendente_confirmacao: 'em_preparacao',
+        aguarda_pagamento: 'em_preparacao',
+        arte_em_validacao: 'em_preparacao',
+        producao: 'em_producao',
+        acabamento: 'em_producao',
+        embalagem: 'em_producao',
+        expedida: 'expedido',
+        cancelada: 'em_preparacao'
     };
 
     function safeParseJson(input) {
@@ -101,11 +68,20 @@
         }
     }
 
+    function normalizeWorkflowStatusValue(statusValue) {
+        const normalized = String(statusValue || '').trim();
+        if (!normalized) {
+            return 'em_preparacao';
+        }
+
+        return WORKFLOW_STATUS_ALIASES[normalized] || normalized;
+    }
+
     function normalizeOrderMeta(meta) {
         const source = (meta && typeof meta === 'object') ? meta : {};
         const workflowStatus = typeof source.workflowStatus === 'string' && source.workflowStatus.trim()
-            ? source.workflowStatus.trim()
-            : 'pendente_confirmacao';
+            ? normalizeWorkflowStatusValue(source.workflowStatus)
+            : 'em_preparacao';
 
         const trackingCode = typeof source.trackingCode === 'string' ? source.trackingCode.trim() : '';
         const trackingUrl = typeof source.trackingUrl === 'string' ? source.trackingUrl.trim() : '';
@@ -127,7 +103,7 @@
             ? source.statusHistory
                 .filter((entry) => entry && typeof entry === 'object' && entry.status)
                 .map((entry) => ({
-                    status: String(entry.status),
+                    status: normalizeWorkflowStatusValue(entry.status),
                     at: entry.at ? String(entry.at) : new Date().toISOString(),
                     note: entry.note ? String(entry.note) : ''
                 }))
@@ -198,7 +174,7 @@
     }
 
     function getWorkflowStatusLabel(statusValue) {
-        const normalized = String(statusValue || '').trim();
+        const normalized = normalizeWorkflowStatusValue(statusValue);
         const found = ORDER_WORKFLOW_STEPS.find((step) => step.value === normalized);
 
         if (found) {
@@ -215,31 +191,23 @@
     }
 
     function getWorkflowStatusGrade(statusValue) {
-        const normalized = String(statusValue || '').trim();
-        const foundIndex = ORDER_WORKFLOW_STEPS.findIndex((step) => step.value === normalized);
-        if (foundIndex === -1) {
-            return '';
-        }
-
-        return String(ORDER_WORKFLOW_STEPS[foundIndex].grade || foundIndex + 1);
+        return '';
     }
 
     function getWorkflowStatusLabelWithGrade(statusValue) {
-        const label = getWorkflowStatusLabel(statusValue);
-        const grade = getWorkflowStatusGrade(statusValue);
-        return grade ? `${label} - Grau ${grade}` : label;
+        return getWorkflowStatusLabel(statusValue);
     }
 
     function getWorkflowStatusColor(statusValue) {
-        return WORKFLOW_BADGE_COLORS[String(statusValue || '').trim()] || 'info';
+        return WORKFLOW_BADGE_COLORS[normalizeWorkflowStatusValue(statusValue)] || 'info';
     }
 
     function getLegacyStatusFromWorkflow(workflowStatus) {
-        return WORKFLOW_TO_LEGACY_STATUS[String(workflowStatus || '').trim()] || 'processando';
+        return WORKFLOW_TO_LEGACY_STATUS[normalizeWorkflowStatusValue(workflowStatus)] || 'processando';
     }
 
     function getWorkflowStatusFromLegacy(legacyStatus) {
-        return LEGACY_TO_WORKFLOW_STATUS[String(legacyStatus || '').trim()] || 'pendente_confirmacao';
+        return LEGACY_TO_WORKFLOW_STATUS[String(legacyStatus || '').trim()] || 'em_preparacao';
     }
 
     function deriveWorkflowStatus(order) {
@@ -256,7 +224,7 @@
     function appendWorkflowHistory(meta, nextStatus, note) {
         const normalized = normalizeOrderMeta(meta);
         normalized.statusHistory.push({
-            status: nextStatus,
+            status: normalizeWorkflowStatusValue(nextStatus),
             at: new Date().toISOString(),
             note: typeof note === 'string' ? note.trim() : ''
         });
@@ -305,6 +273,7 @@
     global.getWorkflowStatusGrade = getWorkflowStatusGrade;
     global.getWorkflowStatusLabelWithGrade = getWorkflowStatusLabelWithGrade;
     global.getWorkflowStatusColor = getWorkflowStatusColor;
+    global.normalizeWorkflowStatusValue = normalizeWorkflowStatusValue;
     global.getLegacyStatusFromWorkflow = getLegacyStatusFromWorkflow;
     global.getWorkflowStatusFromLegacy = getWorkflowStatusFromLegacy;
     global.deriveWorkflowStatus = deriveWorkflowStatus;

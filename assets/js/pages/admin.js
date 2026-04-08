@@ -1592,8 +1592,8 @@ function buildStatusOptionsHtml(activeStatus) {
     const steps = Array.isArray(window.ORDER_WORKFLOW_STEPS) ? window.ORDER_WORKFLOW_STEPS : [];
     return steps.map((step) => {
         const selected = step.value === activeStatus ? 'selected' : '';
-        const label = typeof getWorkflowStatusLabelWithGrade === 'function'
-            ? getWorkflowStatusLabelWithGrade(step.value)
+        const label = typeof getWorkflowStatusLabel === 'function'
+            ? getWorkflowStatusLabel(step.value)
             : step.label;
         return `<option value="${escapeHtml(step.value)}" ${selected}>${escapeHtml(label)}</option>`;
     }).join('');
@@ -1603,12 +1603,8 @@ function buildWorkflowBadgeHtml(statusValue, style = '') {
     const label = typeof getWorkflowStatusLabel === 'function'
         ? getWorkflowStatusLabel(statusValue)
         : String(statusValue || 'Sem estado');
-    const grade = typeof getWorkflowStatusGrade === 'function'
-        ? getWorkflowStatusGrade(statusValue)
-        : '';
-    const gradeHtml = grade ? `<span class="workflow-grade">Grau ${escapeHtml(grade)}</span>` : '';
     const styleAttr = style ? ` style="${escapeHtml(style)}"` : '';
-    return `<span class="badge badge-${getStatusColor(statusValue)}"${styleAttr}>${escapeHtml(label)}${gradeHtml}</span>`;
+    return `<span class="badge badge-${getStatusColor(statusValue)}"${styleAttr}>${escapeHtml(label)}</span>`;
 }
 
 function collectTrackableColumns(orderData) {

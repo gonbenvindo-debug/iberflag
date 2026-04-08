@@ -25,53 +25,29 @@ function buildWorkflowLabelWithGradeHtml(statusValue) {
     const label = typeof getWorkflowStatusLabel === 'function'
         ? getWorkflowStatusLabel(statusValue)
         : String(statusValue || 'Sem estado');
-    const grade = typeof getWorkflowStatusGrade === 'function'
-        ? getWorkflowStatusGrade(statusValue)
-        : '';
-    const gradeHtml = grade ? `<span class="workflow-grade">Grau ${escapeHtml(grade)}</span>` : '';
-    return `${escapeHtml(label)}${gradeHtml}`;
+    return escapeHtml(label);
 }
 
 function getOrderProgressSteps(workflowStatus, splitMeta) {
     const defaultSteps = [
-        { value: 'pendente_confirmacao', label: 'Pendente de Confirmacao', grade: '1' },
-        { value: 'aguarda_pagamento', label: 'Aguarda Pagamento', grade: '2' },
-        { value: 'arte_em_validacao', label: 'Arte em Validacao', grade: '3' },
-        { value: 'producao', label: 'Em Producao', grade: '4' },
-        { value: 'acabamento', label: 'Acabamentos', grade: '5' },
-        { value: 'embalagem', label: 'Embalagem', grade: '6' },
-        { value: 'expedida', label: 'Expedida', grade: '7' },
-        { value: 'entregue', label: 'Entregue', grade: '8' },
-        { value: 'cancelada', label: 'Cancelada', grade: '9' }
+        { value: 'em_preparacao', label: 'Em Preparacao' },
+        { value: 'em_producao', label: 'Em Producao' },
+        { value: 'expedido', label: 'Expedido' },
+        { value: 'entregue', label: 'Entregue' }
     ];
     const sourceSteps = Array.isArray(window.ORDER_WORKFLOW_STEPS) && window.ORDER_WORKFLOW_STEPS.length > 0
         ? window.ORDER_WORKFLOW_STEPS
         : defaultSteps;
-    const normalSteps = sourceSteps.filter((step) => step.value !== 'cancelada');
-    const cancelStep = sourceSteps.find((step) => step.value === 'cancelada') || defaultSteps[8];
 
-    if (workflowStatus !== 'cancelada') {
-        return normalSteps;
-    }
-
-    const history = Array.isArray(splitMeta?.meta?.statusHistory) ? splitMeta.meta.statusHistory : [];
-    const previousStatus = history
-        .slice()
-        .reverse()
-        .map((entry) => String(entry?.status || '').trim())
-        .find((status) => status && status !== 'cancelada' && normalSteps.some((step) => step.value === status));
-    const previousIndex = Math.max(0, normalSteps.findIndex((step) => step.value === previousStatus));
-
-    return [
-        ...normalSteps.slice(0, previousIndex + 1),
-        cancelStep
-    ];
+    return sourceSteps.filter((step) => ['em_preparacao', 'em_producao', 'expedido', 'entregue'].includes(step.value));
 }
 
 function renderOrderProgress(order, workflowStatus, splitMeta) {
     const progressEl = document.getElementById('order-progressbar');
     const summaryEl = document.getElementById('order-progress-summary');
-    const normalizedStatus = String(workflowStatus || '').trim();
+    const normalizedStatus = typeof normalizeWorkflowStatusValue === 'function'
+        ? normalizeWorkflowStatusValue(workflowStatus)
+        : String(workflowStatus || '').trim();
 
     if (!progressEl) {
         return;
@@ -80,7 +56,7 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
     const steps = getOrderProgressSteps(normalizedStatus, splitMeta);
     let currentIndex = steps.findIndex((step) => step.value === normalizedStatus);
     if (currentIndex === -1) {
-        currentIndex = Math.max(0, steps.findIndex((step) => step.value === 'pendente_confirmacao'));
+        currentIndex = Math.max(0, steps.findIndex((step) => step.value === 'em_preparacao'));
     }
 
     const progressPercent = steps.length <= 1
@@ -93,8 +69,8 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
     progressEl.setAttribute('aria-valuemin', '0');
     progressEl.setAttribute('aria-valuemax', String(Math.max(0, steps.length - 1)));
     progressEl.setAttribute('aria-valuenow', String(currentIndex));
-    progressEl.setAttribute('aria-valuetext', typeof getWorkflowStatusLabelWithGrade === 'function'
-        ? getWorkflowStatusLabelWithGrade(normalizedStatus)
+    progressEl.setAttribute('aria-valuetext', typeof getWorkflowStatusLabel === 'function'
+        ? getWorkflowStatusLabel(normalizedStatus)
         : normalizedStatus);
     progressEl.innerHTML = steps.map((step, index) => {
         const status = index < currentIndex
@@ -103,14 +79,12 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
                 ? 'current'
                 : 'upcoming';
         const label = step.label || (typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(step.value) : step.value);
-        const grade = step.grade || (typeof getWorkflowStatusGrade === 'function' ? getWorkflowStatusGrade(step.value) : '');
 
         return `
             <div class="order-progress-step is-${status}" data-progress-step="${escapeHtml(step.value)}">
-                <div class="order-progress-marker" aria-hidden="true">${escapeHtml(grade || index + 1)}</div>
+                <div class="order-progress-marker" aria-hidden="true">${escapeHtml(index + 1)}</div>
                 <div class="order-progress-copy">
                     <span class="order-progress-label">${escapeHtml(label)}</span>
-                    ${grade ? `<span class="order-progress-grade">Grau ${escapeHtml(grade)}</span>` : ''}
                 </div>
             </div>
         `;

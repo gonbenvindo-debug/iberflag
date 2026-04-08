@@ -2119,18 +2119,6 @@ a[href="/checkout.html"].block.w-full:hover {
     font-weight: 600;
 }
 
-.workflow-grade {
-    display: inline-flex;
-    align-items: center;
-    padding-left: 0.5rem;
-    border-left: 1px solid currentColor;
-    font-size: 0.6875rem;
-    font-weight: 700;
-    line-height: 1;
-    opacity: 0.72;
-    white-space: nowrap;
-}
-
 .badge-success {
     background: #d1fae5;
     color: #065f46;
