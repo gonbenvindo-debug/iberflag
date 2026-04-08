@@ -11,6 +11,7 @@ const {
     issueFacturalusaDocumentForOrder
 } = require('../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../lib/server/schema-safe');
+const { sendOrderEmailNotification } = require('../../lib/server/email-notifications');
 
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
@@ -366,6 +367,18 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         }
 
                         console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
+                    }
+
+                    const emailResult = await sendOrderEmailNotification({
+                        supabase,
+                        req,
+                        order: paidOrder,
+                        templateKey: 'order_confirmation',
+                        dedupeKey: `order_confirmation:${paidOrder.id}`
+                    });
+
+                    if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
+                        console.warn('Email de confirmacao nao enviado:', emailResult.reason || emailResult.message || emailResult);
                     }
                 }
             }

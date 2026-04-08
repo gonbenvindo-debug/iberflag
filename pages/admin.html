@@ -136,6 +136,14 @@
                             Contactos
                         </button>
                     </li>
+                    <li>
+                        <button
+                            class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
+                            data-tab="email-templates">
+                            <i data-lucide="mail-check" class="w-5 h-5"></i>
+                            Templates Email
+                        </button>
+                    </li>
                 </ul>
             </nav>
         </aside>
@@ -373,6 +381,159 @@
                             </tbody>
                         </table>
                     </div>
+                </div>
+            </div>
+
+            <!-- Email Templates Tab -->
+            <div id="email-templates-tab" class="tab-panel hidden">
+                <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8">
+                    <div>
+                        <h1 class="text-3xl font-bold text-gray-900">Templates Email</h1>
+                        <p class="text-sm text-gray-500 mt-2 max-w-3xl">
+                            Edite os emails transacionais usados no fluxo de encomenda. Os detalhes completos devem
+                            continuar a ser consultados apenas na app de tracking.
+                        </p>
+                    </div>
+                    <div id="email-mail-config-status" class="text-sm text-gray-600 bg-white border border-gray-200 rounded-xl px-4 py-3 min-w-[280px]">
+                        A carregar configuracao de email...
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 xl:grid-cols-12 gap-6">
+                    <section class="xl:col-span-4 admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <div>
+                                <h2 class="text-lg font-bold text-gray-900">Templates</h2>
+                                <p class="text-sm text-gray-500">Eventos disponiveis para envio.</p>
+                            </div>
+                            <button id="reload-email-templates-btn" type="button"
+                                class="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">
+                                <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+                                Atualizar
+                            </button>
+                        </div>
+                        <div id="email-templates-list" class="space-y-2">
+                            <div class="text-sm text-gray-500 border border-dashed border-gray-200 rounded-xl p-4">
+                                A carregar templates...
+                            </div>
+                        </div>
+                    </section>
+
+                    <section class="xl:col-span-8 space-y-6">
+                        <form id="email-template-form" class="admin-card space-y-5">
+                            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
+                                <div>
+                                    <h2 class="text-lg font-bold text-gray-900">Editor HTML</h2>
+                                    <p class="text-sm text-gray-500">Use variaveis com o formato {{order.code}}.</p>
+                                </div>
+                                <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
+                                    <input id="email-template-active" type="checkbox"
+                                        class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
+                                    Ativo
+                                </label>
+                            </div>
+
+                            <input id="email-template-id" type="hidden">
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <div>
+                                    <label for="email-template-key" class="form-label">Chave</label>
+                                    <input id="email-template-key" type="text" class="form-input" readonly>
+                                </div>
+                                <div>
+                                    <label for="email-template-event-type" class="form-label">Evento</label>
+                                    <input id="email-template-event-type" type="text" class="form-input">
+                                </div>
+                            </div>
+
+                            <div>
+                                <label for="email-template-name" class="form-label">Nome</label>
+                                <input id="email-template-name" type="text" class="form-input">
+                            </div>
+
+                            <div>
+                                <label for="email-template-description" class="form-label">Descricao interna</label>
+                                <input id="email-template-description" type="text" class="form-input">
+                            </div>
+
+                            <div>
+                                <label for="email-template-subject" class="form-label">Assunto</label>
+                                <input id="email-template-subject" type="text" class="form-input" data-email-editor="subject">
+                            </div>
+
+                            <div>
+                                <label for="email-template-preheader" class="form-label">Preheader</label>
+                                <input id="email-template-preheader" type="text" class="form-input" data-email-editor="preheader">
+                            </div>
+
+                            <div class="border border-gray-200 rounded-xl overflow-hidden">
+                                <div class="flex flex-wrap items-center gap-2 p-3 border-b border-gray-200 bg-gray-50">
+                                    <button type="button" data-email-snippet="section"
+                                        class="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-100">Seccao</button>
+                                    <button type="button" data-email-snippet="paragraph"
+                                        class="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-100">Paragrafo</button>
+                                    <button type="button" data-email-snippet="button"
+                                        class="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-100">Botao tracking</button>
+                                    <button type="button" data-email-snippet="divider"
+                                        class="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-100">Separador</button>
+                                </div>
+                                <textarea id="email-template-html" rows="18"
+                                    class="w-full p-4 text-sm font-mono leading-6 border-0 focus:outline-none focus:ring-0 bg-white"
+                                    spellcheck="false" data-email-editor="html"></textarea>
+                            </div>
+
+                            <div>
+                                <label for="email-template-text" class="form-label">Texto alternativo</label>
+                                <textarea id="email-template-text" rows="7" class="form-input font-mono text-sm"
+                                    data-email-editor="text"></textarea>
+                            </div>
+
+                            <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pt-2">
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <button id="save-email-template-btn" type="submit"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                                        <i data-lucide="save" class="w-4 h-4"></i>
+                                        Guardar template
+                                    </button>
+                                    <button id="preview-email-template-btn" type="button"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
+                                        <i data-lucide="eye" class="w-4 h-4"></i>
+                                        Pre-visualizar
+                                    </button>
+                                </div>
+                                <div class="flex flex-col sm:flex-row gap-3">
+                                    <input id="email-template-test-recipient" type="email"
+                                        class="form-input min-w-[260px]" placeholder="email de teste">
+                                    <button id="send-test-email-template-btn" type="button"
+                                        class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
+                                        <i data-lucide="send" class="w-4 h-4"></i>
+                                        Enviar teste
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+
+                        <div class="grid grid-cols-1 xl:grid-cols-2 gap-6">
+                            <section class="admin-card">
+                                <h2 class="text-lg font-bold text-gray-900 mb-2">Variaveis inteligentes</h2>
+                                <p class="text-sm text-gray-500 mb-4">Clique numa variavel para inserir no campo ativo.</p>
+                                <div id="email-template-variables" class="space-y-4"></div>
+                            </section>
+
+                            <section class="admin-card">
+                                <div class="flex items-center justify-between mb-4">
+                                    <div>
+                                        <h2 class="text-lg font-bold text-gray-900">Preview</h2>
+                                        <p class="text-sm text-gray-500">Dados simulados, sem enviar email.</p>
+                                    </div>
+                                    <span id="email-template-preview-status" class="text-xs text-gray-500"></span>
+                                </div>
+                                <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
+                                    <iframe id="email-template-preview-frame" title="Preview do email"
+                                        class="w-full h-[520px] bg-white"></iframe>
+                                </div>
+                            </section>
+                        </div>
+                    </section>
                 </div>
             </div>
         </main>
@@ -800,7 +961,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408a"></script>
-    <script src="/assets/js/pages/admin.js?v=20260408a"></script>
+    <script src="/assets/js/pages/admin.js?v=20260408b"></script>
     <script>lucide.createIcons();</script>
 </body>
 

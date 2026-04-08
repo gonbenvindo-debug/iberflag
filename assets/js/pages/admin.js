@@ -135,6 +135,31 @@ async function getAdminAccessToken() {
     return accessToken;
 }
 
+async function fetchAdminJson(url, options = {}) {
+    const accessToken = await getAdminAccessToken();
+    const headers = {
+        Accept: 'application/json',
+        Authorization: `Bearer ${accessToken}`,
+        ...(options.headers || {})
+    };
+
+    const response = await fetch(url, {
+        ...options,
+        headers
+    });
+
+    const payload = await response.json().catch(() => ({}));
+    if (!response.ok) {
+        const message = payload?.message || payload?.error || `Pedido admin falhou (${response.status})`;
+        const error = new Error(message);
+        error.status = response.status;
+        error.payload = payload;
+        throw error;
+    }
+
+    return payload;
+}
+
 function showLoginOverlay() {
     const overlay = document.getElementById('admin-login-overlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -258,6 +283,10 @@ let currentOrderMeta = null;
 let currentOrderPublicNotes = '';
 let ordersCache = new Map();
 const adminDesignCache = new Map();
+let emailTemplatesCache = [];
+let currentEmailTemplate = null;
+let emailTemplateVariables = [];
+let lastEmailEditorEl = null;
 
 // ===== DOM ELEMENTS =====
 const navTabs = document.querySelectorAll('.nav-tab');
@@ -371,6 +400,9 @@ async function loadTabData(tabName) {
             break;
         case 'contactos':
             await loadContacts();
+            break;
+        case 'email-templates':
+            await loadEmailTemplates();
             break;
     }
 }
@@ -2296,6 +2328,21 @@ if (saveOrderBtn) {
             if (error) throw error;
 
             showToast('Encomenda atualizada com sucesso!', 'success');
+
+            if (nextWorkflowStatus !== previousWorkflowStatus) {
+                try {
+                    const emailResult = await sendOrderStatusUpdateEmail(currentOrderId, nextWorkflowStatus);
+                    if (emailResult?.sent) {
+                        showToast('Email de atualizacao enviado ao cliente', 'success');
+                    } else if (emailResult?.reason && emailResult.reason !== 'DUPLICATE_EMAIL') {
+                        showToast(`Email nao enviado: ${emailResult.message || emailResult.reason}`, 'warning');
+                    }
+                } catch (emailError) {
+                    console.warn('Encomenda atualizada, mas o email de estado falhou:', emailError);
+                    showToast(`Encomenda atualizada. Email nao enviado: ${emailError?.message || 'erro de email'}`, 'warning');
+                }
+            }
+
             await loadOrders();
             await viewOrder(currentOrderId);
         } catch (error) {
@@ -2536,9 +2583,381 @@ async function reemitFacturalusaDocument(orderId) {
     return payload;
 }
 
+async function sendOrderStatusUpdateEmail(orderId, status) {
+    return fetchAdminJson('/api/admin/email/send-order-update', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ orderId, status })
+    });
+}
+
+function getEmailTemplateElements() {
+    return {
+        list: document.getElementById('email-templates-list'),
+        configStatus: document.getElementById('email-mail-config-status'),
+        form: document.getElementById('email-template-form'),
+        id: document.getElementById('email-template-id'),
+        key: document.getElementById('email-template-key'),
+        eventType: document.getElementById('email-template-event-type'),
+        name: document.getElementById('email-template-name'),
+        description: document.getElementById('email-template-description'),
+        subject: document.getElementById('email-template-subject'),
+        preheader: document.getElementById('email-template-preheader'),
+        html: document.getElementById('email-template-html'),
+        text: document.getElementById('email-template-text'),
+        active: document.getElementById('email-template-active'),
+        variables: document.getElementById('email-template-variables'),
+        previewFrame: document.getElementById('email-template-preview-frame'),
+        previewStatus: document.getElementById('email-template-preview-status'),
+        testRecipient: document.getElementById('email-template-test-recipient')
+    };
+}
+
+function renderEmailMailConfigStatus(status) {
+    const { configStatus } = getEmailTemplateElements();
+    if (!configStatus) return;
+
+    const smtp = status?.smtp || {};
+    const imap = status?.imap || {};
+    const smtpText = smtp.configured
+        ? 'SMTP configurado'
+        : `SMTP aguarda credenciais${smtp.missing?.length ? `: ${smtp.missing.join(', ')}` : ''}`;
+    const imapText = imap.configured
+        ? 'IMAP configurado'
+        : `IMAP aguarda credenciais${imap.missing?.length ? `: ${imap.missing.join(', ')}` : ''}`;
+
+    configStatus.innerHTML = `
+        <div class="flex items-start gap-3">
+            <i data-lucide="server" class="w-4 h-4 text-gray-500 mt-0.5"></i>
+            <div>
+                <p class="font-semibold text-gray-900">Configuracao email</p>
+                <p class="mt-1 text-gray-600">${escapeHtml(smtpText)}</p>
+                <p class="mt-1 text-gray-600">${escapeHtml(imapText)}</p>
+            </div>
+        </div>
+    `;
+
+    if (typeof lucide !== 'undefined') lucide.createIcons();
+}
+
+function renderEmailTemplatesList() {
+    const { list } = getEmailTemplateElements();
+    if (!list) return;
+
+    if (!emailTemplatesCache.length) {
+        list.innerHTML = `
+            <div class="text-sm text-gray-500 border border-dashed border-gray-200 rounded-xl p-4">
+                Nenhum template de email encontrado.
+            </div>
+        `;
+        return;
+    }
+
+    list.innerHTML = emailTemplatesCache.map((template) => {
+        const active = currentEmailTemplate?.id === template.id;
+        const statusClass = template.active
+            ? 'bg-green-50 text-green-700 border-green-200'
+            : 'bg-gray-50 text-gray-500 border-gray-200';
+        return `
+            <button type="button"
+                class="email-template-list-item w-full text-left border ${active ? 'border-blue-400 bg-blue-50' : 'border-gray-200 bg-white hover:bg-gray-50'} rounded-xl p-4 transition"
+                data-email-template-id="${escapeHtml(template.id)}">
+                <div class="flex items-start justify-between gap-3">
+                    <div>
+                        <p class="font-semibold text-gray-900">${escapeHtml(template.name)}</p>
+                        <p class="text-xs text-gray-500 mt-1">${escapeHtml(template.template_key)}</p>
+                    </div>
+                    <span class="text-xs font-semibold px-2 py-1 rounded-full border ${statusClass}">
+                        ${template.active ? 'Ativo' : 'Inativo'}
+                    </span>
+                </div>
+                <p class="text-sm text-gray-600 mt-3 line-clamp-2">${escapeHtml(template.description || 'Sem descricao.')}</p>
+            </button>
+        `;
+    }).join('');
+}
+
+function renderEmailTemplateVariables(variables) {
+    const { variables: container } = getEmailTemplateElements();
+    if (!container) return;
+
+    const grouped = (Array.isArray(variables) ? variables : []).reduce((acc, variable) => {
+        const group = variable.group || 'Geral';
+        if (!acc[group]) acc[group] = [];
+        acc[group].push(variable);
+        return acc;
+    }, {});
+
+    container.innerHTML = Object.entries(grouped).map(([group, items]) => `
+        <div>
+            <p class="text-xs font-bold uppercase tracking-wide text-gray-500 mb-2">${escapeHtml(group)}</p>
+            <div class="flex flex-wrap gap-2">
+                ${items.map((item) => `
+                    <button type="button"
+                        class="email-variable-chip px-3 py-2 text-xs font-semibold rounded-lg border border-gray-200 bg-white text-gray-700 hover:bg-gray-50"
+                        data-email-variable="${escapeHtml(item.key)}"
+                        title="${escapeHtml(item.label || item.key)}">
+                        {{${escapeHtml(item.key)}}}
+                    </button>
+                `).join('')}
+            </div>
+        </div>
+    `).join('');
+}
+
+function fillEmailTemplateForm(template) {
+    const els = getEmailTemplateElements();
+    if (!template || !els.form) return;
+
+    currentEmailTemplate = template;
+    emailTemplateVariables = template.variables || emailTemplateVariables || [];
+
+    els.id.value = template.id || '';
+    els.key.value = template.template_key || '';
+    els.eventType.value = template.event_type || template.template_key || '';
+    els.name.value = template.name || '';
+    els.description.value = template.description || '';
+    els.subject.value = template.subject || '';
+    els.preheader.value = template.preheader || '';
+    els.html.value = template.html_body || '';
+    els.text.value = template.text_body || '';
+    els.active.checked = template.active !== false;
+
+    renderEmailTemplatesList();
+    renderEmailTemplateVariables(emailTemplateVariables);
+    previewEmailTemplate().catch((error) => {
+        console.warn('Preview inicial de email falhou:', error?.message || error);
+    });
+}
+
+function getEmailTemplateFormPayload() {
+    const els = getEmailTemplateElements();
+    return {
+        id: els.id?.value || '',
+        template_key: els.key?.value || '',
+        event_type: els.eventType?.value || '',
+        name: els.name?.value || '',
+        description: els.description?.value || '',
+        subject: els.subject?.value || '',
+        preheader: els.preheader?.value || '',
+        html_body: els.html?.value || '',
+        text_body: els.text?.value || '',
+        variables: emailTemplateVariables,
+        active: Boolean(els.active?.checked)
+    };
+}
+
+async function loadEmailTemplates(force = false) {
+    if (!force && emailTemplatesCache.length) {
+        renderEmailTemplatesList();
+        if (!currentEmailTemplate) {
+            fillEmailTemplateForm(emailTemplatesCache[0]);
+        }
+        return;
+    }
+
+    const { list } = getEmailTemplateElements();
+    if (list) {
+        list.innerHTML = `
+            <div class="text-sm text-gray-500 border border-dashed border-gray-200 rounded-xl p-4">
+                A carregar templates...
+            </div>
+        `;
+    }
+
+    try {
+        const payload = await fetchAdminJson('/api/admin/email/templates');
+        emailTemplatesCache = payload.templates || [];
+        emailTemplateVariables = payload.variables || [];
+        renderEmailMailConfigStatus(payload.mailConfig || {});
+
+        const selectedId = currentEmailTemplate?.id;
+        const nextTemplate = emailTemplatesCache.find((template) => template.id === selectedId) || emailTemplatesCache[0] || null;
+        if (nextTemplate) {
+            fillEmailTemplateForm(nextTemplate);
+        } else {
+            renderEmailTemplatesList();
+            renderEmailTemplateVariables(emailTemplateVariables);
+        }
+    } catch (error) {
+        console.error('Erro ao carregar templates email:', error);
+        if (list) {
+            list.innerHTML = `
+                <div class="text-sm text-red-700 bg-red-50 border border-red-200 rounded-xl p-4">
+                    ${escapeHtml(error?.message || 'Erro ao carregar templates email.')}
+                </div>
+            `;
+        }
+        showToast(error?.message || 'Erro ao carregar templates email', 'error');
+    }
+}
+
+async function saveEmailTemplate(event) {
+    if (event) event.preventDefault();
+
+    try {
+        const payload = await fetchAdminJson('/api/admin/email/templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'save-template',
+                template: getEmailTemplateFormPayload()
+            })
+        });
+
+        const saved = payload.template;
+        if (saved) {
+            const index = emailTemplatesCache.findIndex((template) => template.id === saved.id);
+            if (index >= 0) {
+                emailTemplatesCache[index] = saved;
+            } else {
+                emailTemplatesCache.push(saved);
+            }
+            fillEmailTemplateForm(saved);
+        }
+
+        showToast('Template de email guardado', 'success');
+    } catch (error) {
+        console.error('Erro ao guardar template email:', error);
+        showToast(error?.message || 'Erro ao guardar template email', 'error');
+    }
+}
+
+async function previewEmailTemplate() {
+    const { previewFrame, previewStatus } = getEmailTemplateElements();
+    if (previewStatus) previewStatus.textContent = 'A gerar preview...';
+
+    try {
+        const payload = await fetchAdminJson('/api/admin/email/templates', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                action: 'render-preview',
+                template: getEmailTemplateFormPayload()
+            })
+        });
+
+        const rendered = payload.rendered || {};
+        if (previewFrame) {
+            previewFrame.srcdoc = rendered.html || '<p style="font-family:Arial,sans-serif;padding:24px;">Sem HTML.</p>';
+        }
+        if (previewStatus) {
+            previewStatus.textContent = rendered.subject ? `Assunto: ${rendered.subject}` : 'Preview atualizado';
+        }
+    } catch (error) {
+        console.error('Erro ao gerar preview email:', error);
+        if (previewStatus) previewStatus.textContent = 'Erro no preview';
+        showToast(error?.message || 'Erro ao gerar preview email', 'error');
+    }
+}
+
+async function sendTestEmailTemplate() {
+    const { testRecipient } = getEmailTemplateElements();
+    const recipient = String(testRecipient?.value || '').trim();
+    if (!recipient) {
+        showToast('Indique o email de destino para teste', 'warning');
+        testRecipient?.focus();
+        return;
+    }
+
+    try {
+        await fetchAdminJson('/api/admin/email/send-test', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                recipient,
+                template: getEmailTemplateFormPayload()
+            })
+        });
+
+        showToast('Email de teste enviado', 'success');
+        await loadEmailTemplates(true);
+    } catch (error) {
+        console.error('Erro ao enviar email de teste:', error);
+        showToast(error?.message || 'Erro ao enviar email de teste', 'error');
+    }
+}
+
+function insertIntoEmailEditor(text, fallbackEditorId = 'email-template-html') {
+    const fallback = document.getElementById(fallbackEditorId);
+    const target = lastEmailEditorEl && document.body.contains(lastEmailEditorEl)
+        ? lastEmailEditorEl
+        : fallback;
+
+    if (!target) return;
+
+    target.focus();
+    const start = Number.isFinite(target.selectionStart) ? target.selectionStart : target.value.length;
+    const end = Number.isFinite(target.selectionEnd) ? target.selectionEnd : target.value.length;
+    const value = target.value || '';
+    target.value = `${value.slice(0, start)}${text}${value.slice(end)}`;
+    const cursor = start + text.length;
+    target.setSelectionRange(cursor, cursor);
+    target.dispatchEvent(new Event('input', { bubbles: true }));
+}
+
+function insertEmailSnippet(type) {
+    const snippets = {
+        section: `
+<table role="presentation" width="100%" cellspacing="0" cellpadding="0" style="margin:20px 0;border:1px solid #e5e7eb;border-radius:10px;">
+  <tr>
+    <td style="padding:16px;">
+      <p style="margin:0;font-size:14px;line-height:1.6;color:#374151;">Texto da seccao</p>
+    </td>
+  </tr>
+</table>`,
+        paragraph: '<p style="margin:0 0 16px 0;font-size:15px;line-height:1.6;color:#374151;">Texto do email sobre a encomenda {{order.code}}.</p>',
+        button: '<p style="margin:0 0 24px 0;"><a href="{{order.tracking_url}}" style="display:inline-block;background:#111827;color:#ffffff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 18px;border-radius:8px;">Ver estado na app</a></p>',
+        divider: '<hr style="border:0;border-top:1px solid #e5e7eb;margin:24px 0;">'
+    };
+
+    insertIntoEmailEditor(snippets[type] || '', 'email-template-html');
+}
+
+function setupEmailTemplateAdmin() {
+    const els = getEmailTemplateElements();
+
+    els.form?.addEventListener('submit', saveEmailTemplate);
+    document.getElementById('preview-email-template-btn')?.addEventListener('click', () => previewEmailTemplate());
+    document.getElementById('send-test-email-template-btn')?.addEventListener('click', () => sendTestEmailTemplate());
+    document.getElementById('reload-email-templates-btn')?.addEventListener('click', () => loadEmailTemplates(true));
+
+    document.querySelectorAll('[data-email-editor]').forEach((editor) => {
+        editor.addEventListener('focus', () => {
+            lastEmailEditorEl = editor;
+        });
+    });
+
+    document.addEventListener('click', (event) => {
+        const target = event.target;
+        if (!(target instanceof Element)) return;
+
+        const templateButton = target.closest('[data-email-template-id]');
+        if (templateButton) {
+            const templateId = templateButton.getAttribute('data-email-template-id');
+            const template = emailTemplatesCache.find((item) => item.id === templateId);
+            if (template) fillEmailTemplateForm(template);
+            return;
+        }
+
+        const variableButton = target.closest('[data-email-variable]');
+        if (variableButton) {
+            const variable = variableButton.getAttribute('data-email-variable');
+            insertIntoEmailEditor(`{{${variable}}}`);
+            return;
+        }
+
+        const snippetButton = target.closest('[data-email-snippet]');
+        if (snippetButton) {
+            insertEmailSnippet(snippetButton.getAttribute('data-email-snippet'));
+        }
+    });
+}
+
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     closeAllModals();
+    setupEmailTemplateAdmin();
     checkAdminAuth();
 });
 

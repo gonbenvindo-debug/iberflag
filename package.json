@@ -8,6 +8,7 @@
     "import:catalog:pt": "node scripts/import-supplier-catalog-pt.js",
     "provision:admin": "node scripts/provision-admin-user.js",
     "payments:check": "node scripts/check-payments-config.js",
+    "email:check": "node scripts/check-email-config.js",
     "test-flow:check": "node scripts/verify-test-checkout-flow.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:css"
@@ -16,6 +17,7 @@
     "@supabase/supabase-js": "^2.39.0",
     "cheerio": "^1.1.2",
     "dotenv": "^16.3.1",
+    "nodemailer": "^8.0.5",
     "sharp": "^0.34.4",
     "stripe": "^22.0.0",
     "supabase": "^2.84.4"
