@@ -1,0 +1,4 @@
+-- Placeholder for a migration version already recorded in the remote Supabase
+-- migration history before this checkout hardening work. The original remote
+-- migration is treated as already applied; keep this file so future `db push`
+-- operations can compare local and remote histories safely.

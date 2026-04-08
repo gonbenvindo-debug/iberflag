@@ -5,46 +5,55 @@
         {
             value: 'pendente_confirmacao',
             label: 'Pendente de Confirmacao',
+            grade: '1',
             description: 'Encomenda recebida e a aguardar validacao inicial.'
         },
         {
             value: 'aguarda_pagamento',
             label: 'Aguarda Pagamento',
+            grade: '2',
             description: 'A aguardar confirmacao de pagamento para avancar.'
         },
         {
             value: 'arte_em_validacao',
             label: 'Arte em Validacao',
+            grade: '3',
             description: 'Ficheiros e artes em revisao pre-producao.'
         },
         {
             value: 'producao',
             label: 'Em Producao',
+            grade: '4',
             description: 'Material em impressao e fabricacao.'
         },
         {
             value: 'acabamento',
             label: 'Acabamentos',
+            grade: '5',
             description: 'Corte, costura, ilhoses e controlo de qualidade.'
         },
         {
             value: 'embalagem',
             label: 'Embalagem',
+            grade: '6',
             description: 'Pedido preparado para expedicao.'
         },
         {
             value: 'expedida',
             label: 'Expedida',
+            grade: '7',
             description: 'Encomenda entregue ao transportador.'
         },
         {
             value: 'entregue',
             label: 'Entregue',
+            grade: '8',
             description: 'Encomenda concluida com sucesso.'
         },
         {
             value: 'cancelada',
             label: 'Cancelada',
+            grade: '9',
             description: 'Encomenda cancelada.'
         }
     ];
@@ -111,7 +120,7 @@
         const facturalusaLastError = typeof source.facturalusaLastError === 'string' ? source.facturalusaLastError.trim() : '';
         const facturalusaStatus = typeof source.facturalusaStatus === 'string' && source.facturalusaStatus.trim()
             ? source.facturalusaStatus.trim()
-            : (facturalusaDocumentNumber ? 'emitted' : facturalusaLastError ? 'blocked' : 'pending');
+            : (facturalusaDocumentNumber ? 'emitted' : facturalusaLastError ? 'blocked' : '');
         const facturalusaLastAttemptAt = typeof source.facturalusaLastAttemptAt === 'string' ? source.facturalusaLastAttemptAt.trim() : '';
 
         const statusHistory = Array.isArray(source.statusHistory)
@@ -205,6 +214,22 @@
             .replace(/\b\w/g, (char) => char.toUpperCase());
     }
 
+    function getWorkflowStatusGrade(statusValue) {
+        const normalized = String(statusValue || '').trim();
+        const foundIndex = ORDER_WORKFLOW_STEPS.findIndex((step) => step.value === normalized);
+        if (foundIndex === -1) {
+            return '';
+        }
+
+        return String(ORDER_WORKFLOW_STEPS[foundIndex].grade || foundIndex + 1);
+    }
+
+    function getWorkflowStatusLabelWithGrade(statusValue) {
+        const label = getWorkflowStatusLabel(statusValue);
+        const grade = getWorkflowStatusGrade(statusValue);
+        return grade ? `${label} - Grau ${grade}` : label;
+    }
+
     function getWorkflowStatusColor(statusValue) {
         return WORKFLOW_BADGE_COLORS[String(statusValue || '').trim()] || 'info';
     }
@@ -277,6 +302,8 @@
     global.splitOrderNotesAndMeta = splitOrderNotesAndMeta;
     global.buildOrderNotesWithMeta = buildOrderNotesWithMeta;
     global.getWorkflowStatusLabel = getWorkflowStatusLabel;
+    global.getWorkflowStatusGrade = getWorkflowStatusGrade;
+    global.getWorkflowStatusLabelWithGrade = getWorkflowStatusLabelWithGrade;
     global.getWorkflowStatusColor = getWorkflowStatusColor;
     global.getLegacyStatusFromWorkflow = getLegacyStatusFromWorkflow;
     global.getWorkflowStatusFromLegacy = getWorkflowStatusFromLegacy;
@@ -288,9 +315,13 @@
         const meta = split.meta || {};
         const status = String(meta.facturalusaStatus || '').trim();
         if (status) return status;
+        const rowStatus = String(order?.facturalusa_status || '').trim();
+        if (rowStatus) return rowStatus;
         if (meta.facturalusaDocumentNumber) return 'emitted';
+        if (order?.facturalusa_document_number) return 'emitted';
         if (meta.facturalusaLastError) return 'blocked';
-        return meta.paymentStatus === 'paid' ? 'pending' : 'not_required';
+        const paymentStatus = String(meta.paymentStatus || order?.payment_status || '').trim();
+        return paymentStatus === 'paid' ? 'pending' : 'not_required';
     };
     global.getFacturalusaStatusLabel = function getFacturalusaStatusLabel(status) {
         const normalized = String(status || '').trim();

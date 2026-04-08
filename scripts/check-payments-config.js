@@ -3,13 +3,21 @@ const dotenv = require('dotenv');
 
 const rootDir = path.resolve(__dirname, '..');
 dotenv.config({
-    path: [path.join(rootDir, '.env.local'), path.join(rootDir, '.env')],
+    path: [
+        path.join(rootDir, '.env.local'),
+        path.join(rootDir, '.env.vercel.local'),
+        path.join(rootDir, '.env.test.local'),
+        path.join(rootDir, '.env')
+    ],
     override: false
 });
 
 function normalizeMode(value) {
-    const mode = String(value || 'live').trim().toLowerCase();
-    return mode === 'test' ? 'test' : 'live';
+    const mode = String(value || 'test').trim().toLowerCase();
+    if (mode === 'live' && String(process.env.PAYMENT_LIVE_ENABLED || '').trim().toLowerCase() === 'true') {
+        return 'live';
+    }
+    return 'test';
 }
 
 function firstEnv(keys) {
@@ -44,7 +52,9 @@ const stripeGroups = mode === 'test'
 
 const facturalusaGroups = mode === 'test'
     ? [
-        { label: 'FACTURALUSA_API_TOKEN_TEST', keys: ['FACTURALUSA_API_TOKEN_TEST', 'FACTURALUSA_BEARER_TOKEN_TEST'] }
+        { label: 'FACTURALUSA_API_TOKEN_TEST', keys: ['FACTURALUSA_API_TOKEN_TEST', 'FACTURALUSA_BEARER_TOKEN_TEST'] },
+        { label: 'FACTURALUSA_BASE_URL_TEST', keys: ['FACTURALUSA_BASE_URL_TEST'] },
+        { label: 'FACTURALUSA_SERIE_ID_TEST', keys: ['FACTURALUSA_SERIE_ID_TEST'] }
     ]
     : [
         { label: 'FACTURALUSA_API_TOKEN_LIVE or FACTURALUSA_API_TOKEN', keys: ['FACTURALUSA_API_TOKEN_LIVE', 'FACTURALUSA_BEARER_TOKEN_LIVE', 'FACTURALUSA_API_TOKEN', 'FACTURALUSA_BEARER_TOKEN'] }
@@ -66,6 +76,7 @@ console.log(`Payments environment: ${mode}`);
 
 if (mode === 'test') {
     console.log('Recommended for test: FACTURALUSA_FORCE_SEND_EMAIL=false');
+    console.log('Live payment variables are ignored unless PAYMENT_LIVE_ENABLED=true and PAYMENT_ENVIRONMENT=live.');
 }
 
 if (missing.length > 0) {

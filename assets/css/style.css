@@ -2112,10 +2112,23 @@ a[href="/checkout.html"].block.w-full:hover {
 .badge {
     display: inline-flex;
     align-items: center;
+    gap: 0.5rem;
     padding: 0.25rem 0.75rem;
     border-radius: 9999px;
     font-size: 0.75rem;
     font-weight: 600;
+}
+
+.workflow-grade {
+    display: inline-flex;
+    align-items: center;
+    padding-left: 0.5rem;
+    border-left: 1px solid currentColor;
+    font-size: 0.6875rem;
+    font-weight: 700;
+    line-height: 1;
+    opacity: 0.72;
+    white-space: nowrap;
 }
 
 .badge-success {

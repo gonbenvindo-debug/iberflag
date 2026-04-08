@@ -121,6 +121,20 @@ async function ensureAdminWriteSession() {
     }
 }
 
+async function getAdminAccessToken() {
+    if (!await ensureAdminWriteSession()) {
+        throw new Error(adminWriteSessionLastError || 'Sessao admin obrigatoria.');
+    }
+
+    const { data: { session } } = await supabaseClient.auth.getSession();
+    const accessToken = session?.access_token || '';
+    if (!accessToken) {
+        throw new Error('Sessao admin invalida.');
+    }
+
+    return accessToken;
+}
+
 function showLoginOverlay() {
     const overlay = document.getElementById('admin-login-overlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -251,6 +265,7 @@ const tabPanels = document.querySelectorAll('.tab-panel');
 const productModal = document.getElementById('product-modal');
 const baseModal = document.getElementById('base-modal');
 const contactModal = document.getElementById('contact-modal');
+const clientModal = document.getElementById('client-modal');
 const orderModal = document.getElementById('order-modal');
 const productForm = document.getElementById('product-form');
 const baseForm = document.getElementById('base-form');
@@ -261,6 +276,7 @@ const cancelModalBtn = document.getElementById('cancel-modal');
 const closeBaseModalBtn = document.getElementById('close-base-modal');
 const cancelBaseModalBtn = document.getElementById('cancel-base-modal');
 const closeContactModalBtns = document.querySelectorAll('.close-contact-modal');
+const closeClientModalBtns = document.querySelectorAll('.close-client-modal');
 const closeOrderModalBtns = document.querySelectorAll('.close-order-modal');
 const markRespondedBtn = document.getElementById('mark-responded');
 const saveOrderBtn = document.getElementById('save-order-btn');
@@ -269,7 +285,7 @@ const openSvgPreviewBtn = document.getElementById('open-svg-preview');
 const closeSvgPreviewBtns = document.querySelectorAll('.close-svg-preview');
 const svgPreviewCanvas = document.getElementById('svg-preview-canvas');
 const svgPreviewStatus = document.getElementById('svg-preview-status');
-const adminModals = [productModal, baseModal, contactModal, orderModal, svgPreviewModal].filter(Boolean);
+const adminModals = [productModal, baseModal, contactModal, clientModal, orderModal, svgPreviewModal].filter(Boolean);
 
 const productBasesAssignments = document.getElementById('product-bases-assignments');
 let baseCatalogCache = [];
@@ -1576,8 +1592,23 @@ function buildStatusOptionsHtml(activeStatus) {
     const steps = Array.isArray(window.ORDER_WORKFLOW_STEPS) ? window.ORDER_WORKFLOW_STEPS : [];
     return steps.map((step) => {
         const selected = step.value === activeStatus ? 'selected' : '';
-        return `<option value="${escapeHtml(step.value)}" ${selected}>${escapeHtml(step.label)}</option>`;
+        const label = typeof getWorkflowStatusLabelWithGrade === 'function'
+            ? getWorkflowStatusLabelWithGrade(step.value)
+            : step.label;
+        return `<option value="${escapeHtml(step.value)}" ${selected}>${escapeHtml(label)}</option>`;
     }).join('');
+}
+
+function buildWorkflowBadgeHtml(statusValue, style = '') {
+    const label = typeof getWorkflowStatusLabel === 'function'
+        ? getWorkflowStatusLabel(statusValue)
+        : String(statusValue || 'Sem estado');
+    const grade = typeof getWorkflowStatusGrade === 'function'
+        ? getWorkflowStatusGrade(statusValue)
+        : '';
+    const gradeHtml = grade ? `<span class="workflow-grade">Grau ${escapeHtml(grade)}</span>` : '';
+    const styleAttr = style ? ` style="${escapeHtml(style)}"` : '';
+    return `<span class="badge badge-${getStatusColor(statusValue)}"${styleAttr}>${escapeHtml(label)}${gradeHtml}</span>`;
 }
 
 function collectTrackableColumns(orderData) {
@@ -1612,9 +1643,7 @@ async function loadOrders() {
                     <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
                     <td class="font-bold text-blue-600">${formatCurrency(o.total)}</td>
                     <td>
-                        <span class="badge badge-${getStatusColor(deriveWorkflowStatus(o))}">
-                            ${escapeHtml(getWorkflowStatusLabel(deriveWorkflowStatus(o)))}
-                        </span>
+                        ${buildWorkflowBadgeHtml(deriveWorkflowStatus(o))}
                     </td>
                     <td>
                         <span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
@@ -1738,7 +1767,7 @@ const facturalusaStatus = resolveFacturalusaStatus(order);
                     </div>
                     <div>
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Estado</p>
-                        <span class="badge badge-${getStatusColor(workflowStatus)}">${escapeHtml(getWorkflowStatusLabel(workflowStatus))}</span>
+                        ${buildWorkflowBadgeHtml(workflowStatus)}
                     </div>
                     ${tracking.trackingCode ? `<div>
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Tracking</p>
@@ -1930,7 +1959,7 @@ const canEmit = resolveFacturalusaStatus(order) !== 'emitted' && String(split.me
                         return `<tr style="border-bottom:1px solid #f3f4f6;">
                             <td style="padding:0.5rem 0.75rem 0.5rem 0;vertical-align:top;">
                                 <div style="display:flex;align-items:center;gap:0.5rem;">
-                                    <span class="badge badge-${getStatusColor(entry.status)}" style="font-size:0.75rem;">${escapeHtml(getWorkflowStatusLabel(entry.status))}</span>
+                                    ${buildWorkflowBadgeHtml(entry.status, 'font-size:0.75rem;')}
                                 </div>
                                 ${noteHtml}
                             </td>
@@ -1969,13 +1998,13 @@ async function loadClients() {
         if (data && data.length > 0) {
             tbody.innerHTML = data.map(c => `
                 <tr>
-                    <td class="font-semibold">${c.nome}</td>
-                    <td>${c.email}</td>
-                    <td>${c.telefone || 'N/A'}</td>
-                    <td>${c.empresa || 'N/A'}</td>
-                    <td>${new Date(c.created_at).toLocaleDateString('pt-PT')}</td>
+                    <td class="font-semibold">${escapeHtml(c.nome || 'N/A')}</td>
+                    <td>${escapeHtml(c.email || 'N/A')}</td>
+                    <td>${escapeHtml(c.telefone || 'N/A')}</td>
+                    <td>${escapeHtml(c.empresa || 'N/A')}</td>
+                    <td>${escapeHtml(new Date(c.created_at).toLocaleDateString('pt-PT'))}</td>
                     <td>
-                        <button onclick="viewClient('${c.id}')" class="text-blue-600 hover:text-blue-800">
+                        <button onclick="viewClient('${escapeHtml(c.id)}')" class="text-blue-600 hover:text-blue-800">
                             <i data-lucide="eye" class="w-4 h-4"></i>
                         </button>
                     </td>
@@ -2117,6 +2146,12 @@ if (markRespondedBtn) {
 closeContactModalBtns.forEach(btn => {
     btn.addEventListener('click', () => {
         closeModal(contactModal);
+    });
+});
+
+closeClientModalBtns.forEach(btn => {
+    btn.addEventListener('click', () => {
+        closeModal(clientModal);
     });
 });
 
@@ -2345,9 +2380,12 @@ function resolveFacturalusaStatus(order) {
         : { meta: {} };
     const meta = split.meta || {};
     if (meta.facturalusaStatus) return meta.facturalusaStatus;
+    if (order?.facturalusa_status) return order.facturalusa_status;
     if (meta.facturalusaDocumentNumber) return 'emitted';
+    if (order?.facturalusa_document_number) return 'emitted';
     if (meta.facturalusaLastError) return 'blocked';
-    return meta.paymentStatus === 'paid' ? 'pending' : 'not_required';
+    const paymentStatus = String(meta.paymentStatus || order?.payment_status || '').trim();
+    return paymentStatus === 'paid' ? 'pending' : 'not_required';
 }
 
 function resolveFacturalusaStatusLabel(status) {
@@ -2382,16 +2420,113 @@ function resolveFacturalusaStatusColor(status) {
     return colors[String(status || '').trim()] || 'info';
 }
 
-function viewClient(id) {
-    showToast('Funcionalidade de visualização de cliente em desenvolvimento', 'info');
+async function viewClient(id) {
+    const clientId = String(id || '').trim();
+    if (!clientId || !clientModal) {
+        return;
+    }
+
+    const titleEl = document.getElementById('client-modal-title');
+    const metaEl = document.getElementById('client-modal-meta');
+    const bodyEl = document.getElementById('client-modal-body');
+
+    if (titleEl) titleEl.textContent = 'Cliente';
+    if (metaEl) metaEl.textContent = 'A carregar detalhes...';
+    if (bodyEl) bodyEl.innerHTML = '<p class="text-sm text-gray-500">A carregar cliente...</p>';
+    openModal(clientModal);
+
+    try {
+        const [{ data: client, error: clientError }, { data: orders, error: ordersError }] = await Promise.all([
+            supabaseClient
+                .from('clientes')
+                .select('*')
+                .eq('id', clientId)
+                .maybeSingle(),
+            supabaseClient
+                .from('encomendas')
+                .select('id,numero_encomenda,status,total,created_at')
+                .eq('cliente_id', clientId)
+                .order('created_at', { ascending: false })
+        ]);
+
+        if (clientError) throw clientError;
+        if (ordersError) throw ordersError;
+        if (!client) {
+            throw new Error('Cliente não encontrado.');
+        }
+
+        if (titleEl) titleEl.textContent = client.nome || 'Cliente sem nome';
+        if (metaEl) metaEl.textContent = client.email || 'Sem email registado';
+
+        const orderRows = Array.isArray(orders) && orders.length > 0
+            ? orders.map((order) => `
+                <tr>
+                    <td class="py-2 pr-3 font-semibold text-gray-900">${escapeHtml(order.numero_encomenda || `#${order.id}`)}</td>
+                    <td class="py-2 pr-3 text-gray-600">${escapeHtml(order.status || '—')}</td>
+                    <td class="py-2 pr-3 text-gray-600">${Number(order.total || 0).toFixed(2)}€</td>
+                    <td class="py-2 text-gray-500">${escapeHtml(formatDateTime(order.created_at))}</td>
+                </tr>
+            `).join('')
+            : '<tr><td colspan="4" class="py-3 text-gray-500">Sem encomendas associadas.</td></tr>';
+
+        if (bodyEl) {
+            bodyEl.innerHTML = `
+                <div class="grid gap-3 sm:grid-cols-2">
+                    <div class="rounded-lg bg-white p-4 border border-gray-200">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Contacto</p>
+                        <p class="mt-2 text-gray-900">${escapeHtml(client.email || '—')}</p>
+                        <p class="mt-1 text-gray-700">${escapeHtml(client.telefone || '—')}</p>
+                    </div>
+                    <div class="rounded-lg bg-white p-4 border border-gray-200">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Faturação</p>
+                        <p class="mt-2 text-gray-900">${escapeHtml(client.empresa || 'Particular')}</p>
+                        <p class="mt-1 text-gray-700">NIF: ${escapeHtml(client.nif || '—')}</p>
+                    </div>
+                    <div class="rounded-lg bg-white p-4 border border-gray-200 sm:col-span-2">
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Morada</p>
+                        <p class="mt-2 text-gray-900">${escapeHtml(client.morada || '—')}</p>
+                        <p class="mt-1 text-gray-700">${escapeHtml([client.codigo_postal, client.cidade].filter(Boolean).join(' ') || '—')}</p>
+                    </div>
+                </div>
+                <div class="rounded-lg bg-white p-4 border border-gray-200">
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500 mb-3">Encomendas</p>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-sm">
+                            <thead>
+                                <tr class="text-xs uppercase tracking-wide text-gray-500">
+                                    <th class="pb-2 pr-3">Código</th>
+                                    <th class="pb-2 pr-3">Estado</th>
+                                    <th class="pb-2 pr-3">Total</th>
+                                    <th class="pb-2">Data</th>
+                                </tr>
+                            </thead>
+                            <tbody>${orderRows}</tbody>
+                        </table>
+                    </div>
+                </div>
+            `;
+        }
+
+        if (typeof lucide !== 'undefined') {
+            lucide.createIcons();
+        }
+    } catch (error) {
+        console.error('Erro ao carregar cliente:', error);
+        if (bodyEl) {
+            bodyEl.innerHTML = `<p class="text-sm text-red-600">${escapeHtml(error?.message || 'Erro ao carregar cliente.')}</p>`;
+        }
+        showToast('Erro ao carregar cliente', 'error');
+    }
 }
 
 async function reemitFacturalusaDocument(orderId) {
+    const accessToken = await getAdminAccessToken();
     const response = await fetch('/api/admin/orders/reemit-facturalusa', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json',
-            'Accept': 'application/json'
+            'Accept': 'application/json',
+            'Authorization': `Bearer ${accessToken}`
         },
         body: JSON.stringify({ orderId })
     });

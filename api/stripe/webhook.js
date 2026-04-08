@@ -10,6 +10,7 @@ const {
     classifyFacturalusaError,
     issueFacturalusaDocumentForOrder
 } = require('../../lib/server/facturalusa');
+const { updateWithOptionalColumns } = require('../../lib/server/schema-safe');
 
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
@@ -111,21 +112,46 @@ async function finalizeWebhookEvent(supabase, eventId, status, lastError = null)
 
 async function findOrderByStripeSession(supabase, session) {
     const orderCode = String(session?.metadata?.order_code || '').trim();
-    if (!orderCode) {
+    if (orderCode) {
+        const { data, error } = await supabase
+            .from('encomendas')
+            .select('*')
+            .eq('numero_encomenda', orderCode)
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        if (data) {
+            return data;
+        }
+    }
+
+    const sessionId = String(session?.id || '').trim();
+    if (!sessionId) {
         return null;
     }
 
-    const { data, error } = await supabase
-        .from('encomendas')
-        .select('*')
-        .eq('numero_encomenda', orderCode)
-        .maybeSingle();
+    try {
+        const { data, error } = await supabase
+            .from('encomendas')
+            .select('*')
+            .eq('stripe_session_id', sessionId)
+            .maybeSingle();
 
-    if (error) {
+        if (error) {
+            throw error;
+        }
+
+        return data || null;
+    } catch (error) {
+        const raw = String(error?.message || '').toLowerCase();
+        if (error?.code === 'PGRST204' || raw.includes('stripe_session_id')) {
+            return null;
+        }
         throw error;
     }
-
-    return data || null;
 }
 
 async function updateOrderPaymentStatus(supabase, order, session, paymentStatus) {
@@ -143,14 +169,23 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus)
     meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
     meta.facturalusaStatus = meta.facturalusaStatus || (paymentStatus === 'paid' ? 'pending' : '');
 
-    const updates = {
-        notas: buildOrderNotesWithMeta(split.publicNotes, meta)
-    };
-
-    const { error } = await supabase
-        .from('encomendas')
-        .update(updates)
-        .eq('id', order.id);
+    const { error } = await updateWithOptionalColumns(
+        supabase,
+        'encomendas',
+        'id',
+        order.id,
+        {
+            notas: buildOrderNotesWithMeta(split.publicNotes, meta),
+            payment_provider: 'stripe',
+            payment_status: paymentStatus,
+            stripe_session_id: session?.id || null,
+            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+            stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || '',
+            payment_confirmed_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
+            facturalusa_status: meta.facturalusaStatus || null,
+            stripe_metadata: session || {}
+        }
+    );
 
     if (error) {
         throw error;
@@ -188,12 +223,27 @@ async function emitFacturalusaDocument(supabase, order, session) {
     nextMeta.facturalusaStatus = 'emitted';
     nextMeta.facturalusaLastAttemptAt = new Date().toISOString();
 
-    const { error } = await supabase
-        .from('encomendas')
-        .update({
-            notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta)
-        })
-        .eq('id', order.id);
+    const { error } = await updateWithOptionalColumns(
+        supabase,
+        'encomendas',
+        'id',
+        order.id,
+        {
+            notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+            payment_provider: 'stripe',
+            payment_status: 'paid',
+            stripe_session_id: session?.id || null,
+            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+            stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
+            payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
+            facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
+            facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
+            facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
+            facturalusa_last_error: null,
+            facturalusa_status: 'emitted',
+            facturalusa_payload: sale || {}
+        }
+    );
 
     if (error) {
         throw error;
@@ -212,12 +262,20 @@ async function markOrderFailed(supabase, order, session, paymentStatus) {
     meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
     meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
 
-    const { error } = await supabase
-        .from('encomendas')
-        .update({
-            notas: buildOrderNotesWithMeta(split.publicNotes, meta)
-        })
-        .eq('id', order.id);
+    const { error } = await updateWithOptionalColumns(
+        supabase,
+        'encomendas',
+        'id',
+        order.id,
+        {
+            notas: buildOrderNotesWithMeta(split.publicNotes, meta),
+            payment_provider: 'stripe',
+            payment_status: paymentStatus,
+            stripe_session_id: session?.id || null,
+            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+            stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || ''
+        }
+    );
 
     if (error) {
         throw error;
@@ -273,12 +331,27 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         meta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
                         meta.facturalusaLastAttemptAt = new Date().toISOString();
 
-                        await supabase
-                            .from('encomendas')
-                            .update({
-                                notas: buildOrderNotesWithMeta(split.publicNotes, meta)
-                            })
-                            .eq('id', order.id);
+                        const { error: facturalusaUpdateError } = await updateWithOptionalColumns(
+                            supabase,
+                            'encomendas',
+                            'id',
+                            order.id,
+                            {
+                                notas: buildOrderNotesWithMeta(split.publicNotes, meta),
+                                payment_provider: 'stripe',
+                                payment_status: 'paid',
+                                stripe_session_id: session?.id || null,
+                                stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+                                stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
+                                payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
+                                facturalusa_last_error: meta.facturalusaLastError,
+                                facturalusa_status: meta.facturalusaStatus
+                            }
+                        );
+
+                        if (facturalusaUpdateError) {
+                            throw facturalusaUpdateError;
+                        }
 
                         console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
                     }

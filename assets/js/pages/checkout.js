@@ -60,6 +60,14 @@ function getCheckoutErrorMessage(error) {
         return 'Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.';
     }
 
+    if (error?.code === 'PRODUCT_INACTIVE') {
+        return 'Um produto do carrinho deixou de estar disponivel. Atualize o carrinho e tente novamente.';
+    }
+
+    if (error?.code === 'BASE_INVALIDA') {
+        return 'Uma base selecionada ja nao esta disponivel para esse produto. Reabra o personalizador e escolha outra base.';
+    }
+
     if (error?.code === '23503') {
         return 'Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.';
     }
@@ -95,191 +103,19 @@ function getCheckoutErrorMessage(error) {
     return 'Erro ao iniciar o checkout. Por favor, tente novamente.';
 }
 
-function buildOrderItemSnapshots(items) {
-    return items.map((item) => ({
-        designId: item.designId || item.design_id || null,
-        produtoId: Number(item.id) || null,
-        nome: item.nome || 'Produto',
-        quantidade: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
-        precoUnitario: Number(item.preco || 0),
-        imagem: item.imagem || '',
-        customized: Boolean(item.customized),
-        baseNome: item.baseNome || '',
-        basePrecoExtra: Number(item.basePrecoExtra || 0)
-    }));
-}
-
 function buildCheckoutRequestCart(items) {
     return items.map((item) => ({
         id: item.id ?? null,
         nome: String(item.nome || 'Produto').trim(),
         quantity: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
-        preco: Number(item.preco || 0),
         customized: Boolean(item.customized),
+        imagem: String(item.imagem || '').trim(),
+        design: String(item.design || '').trim(),
+        designPreview: String(item.designPreview || '').trim(),
         baseNome: String(item.baseNome || '').trim(),
-        basePrecoExtra: Number(item.basePrecoExtra || 0),
+        baseId: item.baseId || item.base_id || null,
         designId: item.designId || item.design_id || null
     }));
-}
-
-async function insertOrderItemsWithFallback(orderId, items) {
-    const normalizeName = (value) => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ');
-
-    const { data: dbProducts, error: dbProductsError } = await supabaseClient
-        .from('produtos')
-        .select('id, nome');
-
-    if (dbProductsError) {
-        throw dbProductsError;
-    }
-
-    const productIdSet = new Set((dbProducts || []).map((product) => Number(product.id)).filter(Number.isFinite));
-    const productIdByName = new Map();
-
-    (dbProducts || []).forEach((product) => {
-        const normalized = normalizeName(product.nome);
-        if (normalized && !productIdByName.has(normalized)) {
-            productIdByName.set(normalized, Number(product.id));
-        }
-    });
-
-    const unresolvedItems = [];
-
-    const normalizedItems = items.map((item) => {
-        const candidateId = Number(item.id);
-        const normalizedName = normalizeName(item.nome);
-
-        let resolvedProductId = null;
-
-        if (Number.isFinite(candidateId) && productIdSet.has(candidateId)) {
-            resolvedProductId = candidateId;
-        } else if (normalizedName && productIdByName.has(normalizedName)) {
-            resolvedProductId = productIdByName.get(normalizedName);
-        }
-
-        if (!resolvedProductId) {
-            unresolvedItems.push(item.nome || `ID ${item.id}`);
-        }
-
-        return {
-            ...item,
-            resolvedProductId
-        };
-    });
-
-    if (unresolvedItems.length > 0) {
-        throw {
-            code: 'MISSING_PRODUCT_MAPPING',
-            message: `Produtos nao encontrados na base de dados: ${unresolvedItems.join(', ')}`,
-            details: unresolvedItems
-        };
-    }
-
-    const baseItems = normalizedItems.map((item) => ({
-        encomenda_id: orderId,
-        produto_id: item.resolvedProductId,
-        quantidade: item.quantity,
-        preco_unitario: item.preco,
-        subtotal: item.preco * item.quantity
-    }));
-
-    // These columns are optional because schemas can differ between environments.
-    const optionalColumns = ['design_id', 'design_svg', 'design_preview', 'nome_produto', 'imagem_produto'];
-    const optionalValueByColumn = {
-        design_id: (item) => item.designId || item.design_id || null,
-        design_svg: (item) => item.design || null,
-        design_preview: (item) => item.designPreview || (typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem || null),
-        nome_produto: (item) => item.nome || null,
-        imagem_produto: (item) => item.imagem || null
-    };
-
-    const getSupportedOptionalColumns = async () => {
-        // Prefer a schema-safe approach: inspect existing row keys when possible.
-        // If there are no rows yet (or read restrictions), skip optional columns to avoid noisy 400 retries.
-        try {
-            const { data, error } = await supabaseClient
-                .from('itens_encomenda')
-                .select('*')
-                .limit(1);
-
-            if (error || !Array.isArray(data) || data.length === 0) {
-                return [];
-            }
-
-            const available = new Set(Object.keys(data[0] || {}));
-            return optionalColumns.filter((columnName) => available.has(columnName));
-        } catch (error) {
-            return [];
-        }
-    };
-
-    let activeOptionalColumns = await getSupportedOptionalColumns();
-
-    const getMissingColumnFromError = (error) => {
-        const raw = [error?.message, error?.details, error?.hint]
-            .filter(Boolean)
-            .join(' | ')
-            .toLowerCase();
-
-        // PostgreSQL style: column "x" of relation "itens_encomenda" does not exist
-        let match = raw.match(/column\s+"([a-z0-9_]+)"\s+of\s+relation\s+"itens_encomenda"\s+does\s+not\s+exist/);
-        if (match) return match[1];
-
-        // PostgREST schema cache style: Could not find the 'x' column of 'itens_encomenda' in the schema cache
-        match = raw.match(/could\s+not\s+find\s+the\s+'([a-z0-9_]+)'\s+column\s+of\s+'itens_encomenda'/);
-        if (match) return match[1];
-
-        // Alternative quoting styles
-        match = raw.match(/could\s+not\s+find\s+the\s+"([a-z0-9_]+)"\s+column\s+of\s+"itens_encomenda"/);
-        if (match) return match[1];
-
-        return null;
-    };
-
-    while (true) {
-        const payload = baseItems.map((baseItem, index) => {
-            const sourceItem = normalizedItems[index];
-            const enriched = { ...baseItem };
-
-            activeOptionalColumns.forEach((columnName) => {
-                enriched[columnName] = optionalValueByColumn[columnName](sourceItem);
-            });
-
-            return enriched;
-        });
-
-        const { error } = await supabaseClient
-            .from('itens_encomenda')
-            .insert(payload);
-
-        if (!error) {
-            return;
-        }
-
-        const missingColumn = getMissingColumnFromError(error);
-        if (!missingColumn) {
-            throw error;
-        }
-
-        const columnIndex = activeOptionalColumns.indexOf(missingColumn);
-
-        if (columnIndex === -1) {
-            throw error;
-        }
-
-        activeOptionalColumns.splice(columnIndex, 1);
-
-        if (activeOptionalColumns.length === 0) {
-            const retry = await supabaseClient
-                .from('itens_encomenda')
-                .insert(baseItems);
-
-            if (retry.error) {
-                throw retry.error;
-            }
-            return;
-        }
-    }
 }
 
 // ===== LOAD CART =====

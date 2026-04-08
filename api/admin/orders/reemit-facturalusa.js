@@ -1,4 +1,5 @@
 const { getSupabaseAdmin } = require('../../../lib/server/supabase-admin');
+const { requireAdminRequest } = require('../../../lib/server/admin-auth');
 const { readJsonBody, sendJson } = require('../../../lib/server/http');
 const {
     appendWorkflowHistory,
@@ -9,6 +10,7 @@ const {
     classifyFacturalusaError,
     issueFacturalusaDocumentForOrder
 } = require('../../../lib/server/facturalusa');
+const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
 
 async function findOrderByIdOrCode(supabase, orderId, orderCode) {
     if (orderId) {
@@ -43,6 +45,8 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
     }
 
     try {
+        await requireAdminRequest(req);
+
         const body = await readJsonBody(req);
         const orderId = String(body?.orderId || body?.id || '').trim();
         const orderCode = String(body?.orderCode || body?.codigo || '').trim();
@@ -118,12 +122,25 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
             nextMeta.facturalusaStatus = 'emitted';
             nextMeta.facturalusaLastAttemptAt = new Date().toISOString();
 
-            const { error: updateError } = await supabase
-                .from('encomendas')
-                .update({
-                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta)
-                })
-                .eq('id', order.id);
+            const { error: updateError } = await updateWithOptionalColumns(
+                supabase,
+                'encomendas',
+                'id',
+                order.id,
+                {
+                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+                    payment_provider: 'stripe',
+                    payment_status: 'paid',
+                    stripe_session_id: session.id || null,
+                    stripe_payment_method_type: session.metadata.payment_method || 'card',
+                    facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
+                    facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
+                    facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
+                    facturalusa_last_error: null,
+                    facturalusa_status: 'emitted',
+                    facturalusa_payload: sale || {}
+                }
+            );
 
             if (updateError) {
                 throw updateError;
@@ -146,16 +163,37 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
             nextMeta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
             nextMeta.facturalusaLastAttemptAt = new Date().toISOString();
 
-            await supabase
-                .from('encomendas')
-                .update({
-                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta)
-                })
-                .eq('id', order.id);
+            const { error: updateError } = await updateWithOptionalColumns(
+                supabase,
+                'encomendas',
+                'id',
+                order.id,
+                {
+                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+                    payment_provider: 'stripe',
+                    payment_status: 'paid',
+                    stripe_session_id: session.id || null,
+                    stripe_payment_method_type: session.metadata.payment_method || 'card',
+                    facturalusa_last_error: nextMeta.facturalusaLastError,
+                    facturalusa_status: nextMeta.facturalusaStatus
+                }
+            );
+
+            if (updateError) {
+                throw updateError;
+            }
 
             throw invoiceError;
         }
     } catch (error) {
+        if (error?.code === 'ADMIN_AUTH_REQUIRED' || error?.code === 'ADMIN_UNAUTHORIZED' || error?.code === 'ADMIN_FORBIDDEN' || error?.code === 'ADMIN_AUTH_NOT_CONFIGURED') {
+            sendJson(res, error.statusCode || 401, {
+                error: error.code,
+                message: error.message || 'Acesso admin negado.'
+            });
+            return;
+        }
+
         const classified = classifyFacturalusaError(error);
         console.error('Erro ao reenviar Facturalusa:', error);
         sendJson(res, 500, {

@@ -21,6 +21,17 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function buildWorkflowLabelWithGradeHtml(statusValue) {
+    const label = typeof getWorkflowStatusLabel === 'function'
+        ? getWorkflowStatusLabel(statusValue)
+        : String(statusValue || 'Sem estado');
+    const grade = typeof getWorkflowStatusGrade === 'function'
+        ? getWorkflowStatusGrade(statusValue)
+        : '';
+    const gradeHtml = grade ? `<span class="workflow-grade">Grau ${escapeHtml(grade)}</span>` : '';
+    return `${escapeHtml(label)}${gradeHtml}`;
+}
+
 function formatCurrency(value) {
     const amount = Number(value || 0);
     return `${amount.toFixed(2)}€`;
@@ -325,7 +336,11 @@ function renderOrderHeader(order, workflowStatus) {
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `Criada em ${formatDateTime(order.created_at)}`;
     document.getElementById('order-total').textContent = formatCurrency(order.total);
-    document.getElementById('order-status-badge').textContent = statusLabel;
+    const statusBadgeEl = document.getElementById('order-status-badge');
+    if (statusBadgeEl) {
+        statusBadgeEl.className = 'inline-flex items-center gap-2 mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700';
+        statusBadgeEl.innerHTML = buildWorkflowLabelWithGradeHtml(workflowStatus || statusLabel);
+    }
     if (paymentBadge) {
         paymentBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${paymentClassMap[paymentStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
         paymentBadge.textContent = paymentLabelMap[paymentStatus] || 'Pagamento online';
@@ -365,12 +380,11 @@ function renderOrderSidebar(order, splitMeta) {
         trackingLinkEl.removeAttribute('href');
     }
 
-    shippingEl.textContent = order.morada_envio || 'Morada nao disponivel';
+    shippingEl.textContent = order.morada_envio || 'Disponivel no email de confirmacao';
     notesEl.textContent = splitMeta.publicNotes || 'Sem notas adicionais.';
 
-    // Preencher NIF se disponivel
     if (nifEl) {
-        nifEl.textContent = order.clientes?.nif || 'Nao fornecido';
+        nifEl.textContent = order.clientes?.nif || 'Disponivel no email de confirmacao';
     }
     if (facturalusaStatusEl) {
         facturalusaStatusEl.textContent = typeof getFacturalusaStatusLabel === 'function'
@@ -378,10 +392,12 @@ function renderOrderSidebar(order, splitMeta) {
             : facturalusaStatus;
     }
     if (facturalusaNumberEl) {
-        facturalusaNumberEl.textContent = splitMeta.meta.facturalusaDocumentNumber
-            ? `Nº ${splitMeta.meta.facturalusaDocumentNumber}`
-            : splitMeta.meta.facturalusaLastError
-                ? `Erro: ${splitMeta.meta.facturalusaLastError}`
+        const documentNumber = splitMeta.meta.facturalusaDocumentNumber || order.facturalusa_document_number || '';
+        const lastError = splitMeta.meta.facturalusaLastError || '';
+        facturalusaNumberEl.textContent = documentNumber
+            ? `Nº ${documentNumber}`
+            : lastError
+                ? `Erro: ${lastError}`
                 : 'A aguardar emissão automática';
     }
     if (facturalusaLinkEl) {
@@ -421,7 +437,9 @@ function renderStatusTable(order, workflowStatus, splitMeta) {
 
     statusTableBody.innerHTML = rows.map((row) => `
         <tr>
-            <td class="text-sm font-semibold text-gray-800">${escapeHtml(typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(row.status) : row.status)}</td>
+            <td class="text-sm font-semibold text-gray-800">
+                <span class="inline-flex items-center gap-2">${buildWorkflowLabelWithGradeHtml(row.status)}</span>
+            </td>
             <td class="text-sm text-gray-600">${escapeHtml(formatDateTime(row.at))}</td>
             <td class="text-sm text-gray-600">${escapeHtml(row.note || '-')}</td>
         </tr>

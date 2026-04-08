@@ -20,6 +20,10 @@ function parseProductPrice(product) {
     return Number.isFinite(numericPrice) ? numericPrice : 0;
 }
 
+function isProductPurchasable(product) {
+    return product?.ativo !== false && parseProductPrice(product) > 0;
+}
+
 // ===== DOM ELEMENTS =====
 const productsGrid = document.getElementById('products-grid');
 const productCount = document.getElementById('product-count');
@@ -79,7 +83,9 @@ function renderProductsGrid(products) {
             const safeName = escapeHtml(product?.nome || 'Produto sem nome');
             const safeCategory = escapeHtml(getCategoryName(product?.categoria || 'outros'));
             const safeImage = escapeHtml(product?.imagem || '/assets/images/template-placeholder.svg');
-            const safePrice = parseProductPrice(product).toFixed(2);
+            const price = parseProductPrice(product);
+            const purchasable = isProductPurchasable(product);
+            const safePrice = price.toFixed(2);
             const safeProductId = escapeHtml(String(product?.id || ''));
             const safeProductNameParam = encodeURIComponent(String(product?.nome || 'Produto sem nome'));
             return `
@@ -87,7 +93,7 @@ function renderProductsGrid(products) {
             <div class="product-card-image image-zoom">
                 <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover" loading="lazy">
                 <div class="product-badge">
-                    ${safePrice}€
+                    ${purchasable ? `${safePrice}€` : 'Sob consulta'}
                 </div>
                 ${product.destaque ? '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
             </div>
@@ -99,9 +105,10 @@ function renderProductsGrid(products) {
                     data-open-templates="true"
                     data-product-id="${safeProductId}"
                     data-product-name="${safeProductNameParam}"
-                    class="product-card-cta cursor-pointer min-h-[44px]">
+                    ${purchasable ? '' : 'disabled aria-disabled="true"'}
+                    class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 cursor-not-allowed'}">
                     <i data-lucide="palette" class="w-4 h-4"></i>
-                    Personalizar e Comprar
+                    ${purchasable ? 'Personalizar e Comprar' : 'Indisponível para checkout'}
                 </button>
             </div>
         </div>
@@ -448,6 +455,13 @@ let templatesLoadToken = 0;
 async function openTemplatesModal(productId, productName) {
     currentProductId = productId;
     currentProduct = allProducts.find((product) => Number(product?.id) === Number(productId)) || null;
+    if (!isProductPurchasable(currentProduct)) {
+        showToast('Este produto ainda não tem preço válido para checkout.', 'error');
+        currentProductId = null;
+        currentProduct = null;
+        return;
+    }
+
     const modalProductName = document.getElementById('modal-product-name');
     const modal = document.getElementById('templates-modal');
 

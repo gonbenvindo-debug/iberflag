@@ -48,6 +48,12 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        if (!this.isAdminMode && (this.currentProduct.ativo === false || !(Number(this.currentProduct.preco) > 0))) {
+            showToast('Este produto ainda não tem preço válido para checkout.', 'error');
+            setTimeout(() => window.location.href = '/produtos.html', 2000);
+            return;
+        }
+
         document.getElementById('product-name').textContent = this.currentProduct.nome;
         await this.loadProductBases();
 

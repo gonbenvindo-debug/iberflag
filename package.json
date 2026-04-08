@@ -8,6 +8,7 @@
     "import:catalog:pt": "node scripts/import-supplier-catalog-pt.js",
     "provision:admin": "node scripts/provision-admin-user.js",
     "payments:check": "node scripts/check-payments-config.js",
+    "test-flow:check": "node scripts/verify-test-checkout-flow.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:css"
   },

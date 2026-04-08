@@ -78,7 +78,11 @@ function refreshCartDomReferences() {
 }
 
 function buildCartSidebarMarkup() {
-    return;
+    // The active cart flow goes directly to checkout; keep the legacy sidebar isolated.
+    return null;
+}
+
+function buildLegacyCartSidebarMarkup() {
     if (cartSidebar && cartSidebar.dataset.cartEnhanced === '1') {
         return;
     }
@@ -456,6 +460,15 @@ function categoryMatches(productCategory, targetCategory, productName = '', prod
     });
 }
 
+function parseCatalogPrice(product) {
+    const price = Number(product?.preco);
+    return Number.isFinite(price) ? price : 0;
+}
+
+function isCatalogProductPurchasable(product) {
+    return product?.ativo !== false && parseCatalogPrice(product) > 0;
+}
+
 function pickRandomItem(items) {
     if (!Array.isArray(items) || items.length === 0) {
         return null;
@@ -471,7 +484,8 @@ function updateHomepageCategoryCards(products) {
         return;
     }
 
-    const sourceProducts = Array.isArray(products) && products.length > 0 ? products : initialProducts;
+    const validProducts = (Array.isArray(products) ? products : []).filter(isCatalogProductPurchasable);
+    const sourceProducts = validProducts.length > 0 ? validProducts : initialProducts;
 
     categoryCards.forEach((card) => {
         const categoryKey = card.getAttribute('data-category');
@@ -733,15 +747,17 @@ function renderProducts(products) {
     }
 
     // Filter only featured products for homepage
-    const featuredProducts = products.filter(p => p.destaque).slice(0, 3);
-    const displayProducts = featuredProducts.length > 0 ? featuredProducts : products.slice(0, 3);
+    const purchasableProducts = products.filter(isCatalogProductPurchasable);
+    const displaySource = purchasableProducts.length > 0 ? purchasableProducts : products;
+    const featuredProducts = displaySource.filter(p => p.destaque).slice(0, 3);
+    const displayProducts = featuredProducts.length > 0 ? featuredProducts : displaySource.slice(0, 3);
 
     productsContainer.innerHTML = displayProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}">
             <div class="product-card-image image-zoom">
                 <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
                 <div class="product-badge">
-                    ${product.preco.toFixed(2)}€
+                    ${isCatalogProductPurchasable(product) ? `${parseCatalogPrice(product).toFixed(2)}€` : 'Sob consulta'}
                 </div>
             </div>
             <div class="product-card-body">
@@ -881,7 +897,6 @@ function closeCart() {
 }
 
 function injectOrdersTrackingLink() {
-    return;
     if (!cartSidebar) return;
 
     const checkoutLink = cartSidebar.querySelector('a[href="/checkout.html"]');

@@ -2,40 +2,79 @@ const { getStripeClient } = require('../../lib/server/stripe');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { readJsonBody, sendJson } = require('../../lib/server/http');
 const { splitOrderNotesAndMeta } = require('../../lib/server/checkout');
+const {
+    buildOrderItemsFromSnapshots,
+    buildPublicOrderItemsFromRows,
+    buildPublicOrderPayload
+} = require('../../lib/server/order-flow');
 
-async function resolveOrderBySession(supabase, session) {
-    const orderCode = String(session?.metadata?.order_code || '').trim();
-    if (!orderCode) {
+async function resolveOrderBySession(supabase, session, fallbackOrderCode = '') {
+    const orderCode = String(session?.metadata?.order_code || fallbackOrderCode || '').trim();
+    if (orderCode) {
+        const { data, error } = await supabase
+            .from('encomendas')
+            .select('*')
+            .eq('numero_encomenda', orderCode)
+            .maybeSingle();
+
+        if (error) {
+            throw error;
+        }
+
+        if (data) {
+            return data;
+        }
+    }
+
+    const sessionId = String(session?.id || '').trim();
+    if (!sessionId) {
         return null;
     }
 
-    const { data, error } = await supabase
-        .from('encomendas')
-        .select('*')
-        .eq('numero_encomenda', orderCode)
-        .maybeSingle();
+    try {
+        const { data, error } = await supabase
+            .from('encomendas')
+            .select('*')
+            .eq('stripe_session_id', sessionId)
+            .maybeSingle();
 
-    if (error) {
+        if (error) {
+            throw error;
+        }
+
+        return data || null;
+    } catch (error) {
+        const raw = String(error?.message || '').toLowerCase();
+        if (error?.code === 'PGRST204' || raw.includes('stripe_session_id')) {
+            return null;
+        }
         throw error;
     }
-
-    return data || null;
 }
 
-function buildOrderItemsFromSnapshots(splitMeta) {
-    const snapshots = Array.isArray(splitMeta?.meta?.itemSnapshots) ? splitMeta.meta.itemSnapshots : [];
-    return snapshots.map((snapshot) => ({
-        produto_id: snapshot.produtoId || null,
-        quantidade: snapshot.quantidade || 1,
-        preco_unitario: snapshot.precoUnitario || 0,
-        subtotal: (Number(snapshot.precoUnitario || 0) * Number(snapshot.quantidade || 1)),
-        produtos: {
-            id: snapshot.produtoId || null,
-            nome: snapshot.nome || 'Produto',
-            imagem: snapshot.imagem || '',
-            preco: snapshot.precoUnitario || 0
+async function fetchPublicOrderItems(supabase, orderId) {
+    if (!orderId) {
+        return [];
+    }
+
+    try {
+        const { data, error } = await supabase
+            .from('itens_encomenda')
+            .select('*, produtos(id,nome,imagem,preco)')
+            .eq('encomenda_id', orderId);
+
+        if (error) {
+            throw error;
         }
-    }));
+
+        return buildPublicOrderItemsFromRows(data || []);
+    } catch (error) {
+        const raw = String(error?.message || '').toLowerCase();
+        if (error?.code === 'PGRST200' || error?.code === 'PGRST205' || raw.includes('itens_encomenda')) {
+            return [];
+        }
+        throw error;
+    }
 }
 
 module.exports = async function checkoutSessionStatusHandler(req, res) {
@@ -58,46 +97,27 @@ module.exports = async function checkoutSessionStatusHandler(req, res) {
             return;
         }
 
-        const stripe = getStripeClient();
         const supabase = getSupabaseAdmin();
 
         let session = null;
         if (sessionId) {
+            const stripe = getStripeClient();
             session = await stripe.checkout.sessions.retrieve(sessionId);
         }
 
-        const order = await resolveOrderBySession(supabase, session || { id: sessionId, metadata: { order_code: orderCodeFromQuery } });
+        const order = await resolveOrderBySession(supabase, session, orderCodeFromQuery);
         const splitMeta = splitOrderNotesAndMeta(order?.notas || '');
+        const dbItems = order?.id ? await fetchPublicOrderItems(supabase, order.id) : [];
+        const snapshotItems = buildOrderItemsFromSnapshots(splitMeta.meta);
 
         sendJson(res, 200, {
             session: session ? {
-                id: session.id,
                 status: session.status,
                 payment_status: session.payment_status,
-                customer_email: session.customer_email,
-                client_reference_id: session.client_reference_id,
-                metadata: session.metadata
+                client_reference_id: session.client_reference_id
             } : null,
-            order: order ? {
-                id: order.id,
-                numero_encomenda: order.numero_encomenda,
-                payment_status: splitMeta.meta.paymentStatus || 'pending',
-                payment_provider: splitMeta.meta.paymentProvider || 'stripe',
-                stripe_session_id: splitMeta.meta.stripeSessionId || null,
-                stripe_payment_intent: splitMeta.meta.stripePaymentIntent || null,
-                facturalusa_status: splitMeta.meta.facturalusaStatus || (
-                    splitMeta.meta.facturalusaDocumentNumber
-                        ? 'emitted'
-                        : splitMeta.meta.facturalusaLastError
-                            ? 'blocked'
-                            : (splitMeta.meta.paymentStatus === 'paid' ? 'pending' : null)
-                ),
-                facturalusa_last_error: splitMeta.meta.facturalusaLastError || null,
-                facturalusa_document_number: splitMeta.meta.facturalusaDocumentNumber || null,
-                facturalusa_document_url: splitMeta.meta.facturalusaDocumentUrl || null,
-                facturalusa_last_attempt_at: splitMeta.meta.facturalusaLastAttemptAt || null
-            } : null,
-            items: buildOrderItemsFromSnapshots(splitMeta),
+            order: order ? buildPublicOrderPayload(order, splitMeta.meta) : null,
+            items: dbItems.length > 0 ? dbItems : snapshotItems,
             orderCode: order?.numero_encomenda || orderCodeFromQuery || session?.metadata?.order_code || null
         });
     } catch (error) {

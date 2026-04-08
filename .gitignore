@@ -3,10 +3,8 @@ node_modules
 .vercel
 dist
 .DS_Store
-supabase/
 .supabase/
-.vercel
-.vercel
+supabase/.temp/
 .env*.local
 .local
 setup-security.js

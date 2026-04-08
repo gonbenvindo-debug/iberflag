@@ -1,7 +1,6 @@
 const {
-    buildCheckoutPayloadSnapshot,
-    buildOrderItemSnapshots,
     buildOrderNotesWithMeta,
+    buildStripeLineItem,
     generateOrderNumber,
     normalizePaymentMethodType,
     resolveStripePaymentMethodTypes
@@ -10,55 +9,17 @@ const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { getStripeClient } = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
 const { readJsonBody, sendJson, getPublicBaseUrl } = require('../../lib/server/http');
-
-// Checkout flow version bump to force a fresh production deploy.
-function buildCheckoutCustomerSnapshot(customer = {}) {
-    return {
-        nome: String(customer.nome || '').trim(),
-        email: String(customer.email || '').trim().toLowerCase(),
-        telefone: String(customer.telefone || '').trim(),
-        empresa: String(customer.empresa || '').trim(),
-        nif: String(customer.nif || '').trim(),
-        morada: String(customer.morada || '').trim(),
-        codigo_postal: String(customer.codigo_postal || '').trim(),
-        cidade: String(customer.cidade || '').trim()
-    };
-}
-
-async function findOrCreateCheckoutCustomer(supabase, customer) {
-    const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
-    if (!customerSnapshot.email) {
-        const error = new Error('EMAIL_REQUIRED');
-        error.code = 'EMAIL_REQUIRED';
-        throw error;
-    }
-
-    const { data: existingCustomer, error: lookupError } = await supabase
-        .from('clientes')
-        .select('id')
-        .eq('email', customerSnapshot.email)
-        .maybeSingle();
-
-    if (lookupError) {
-        throw lookupError;
-    }
-
-    if (existingCustomer?.id) {
-        return existingCustomer.id;
-    }
-
-    const { data: createdCustomer, error: createError } = await supabase
-        .from('clientes')
-        .insert([customerSnapshot])
-        .select('id')
-        .single();
-
-    if (createError) {
-        throw createError;
-    }
-
-    return createdCustomer?.id || null;
-}
+const {
+    insertWithOptionalColumns,
+    updateWithOptionalColumns
+} = require('../../lib/server/schema-safe');
+const {
+    buildCheckoutCustomerSnapshot,
+    buildInitialOrderMeta,
+    calculateCheckoutTotals,
+    findOrCreateCheckoutCustomer,
+    resolveCheckoutCart
+} = require('../../lib/server/order-flow');
 
 function getCheckoutErrorMessage(error) {
     const raw = String(error?.message || error?.details || error?.hint || '').toLowerCase();
@@ -104,6 +65,14 @@ function getCheckoutErrorMessage(error) {
         return 'Existem produtos no carrinho que ja nao existem na base de dados.';
     }
 
+    if (error?.code === 'PRODUCT_INACTIVE') {
+        return 'Um dos produtos do carrinho deixou de estar disponivel.';
+    }
+
+    if (error?.code === 'BASE_INVALIDA') {
+        return 'Uma das bases selecionadas ja nao esta disponivel para o produto.';
+    }
+
     if (raw.includes('itens_encomenda') || raw.includes('encomendas') || raw.includes('clientes')) {
         return 'A base de dados do checkout nao corresponde ao esperado.';
     }
@@ -143,11 +112,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
     try {
         const body = await readJsonBody(req);
         const customer = body?.customer || {};
-        const cart = Array.isArray(body?.cart) ? body.cart : [];
+        const rawCart = Array.isArray(body?.cart) ? body.cart : [];
         const selectedPaymentMethod = normalizePaymentMethodType(body?.paymentMethod);
         const notes = String(body?.notes || '').trim();
 
-        if (!Array.isArray(cart) || cart.length === 0) {
+        if (!Array.isArray(rawCart) || rawCart.length === 0) {
             sendJson(res, 400, { error: 'CARRINHO_VAZIO' });
             return;
         }
@@ -165,9 +134,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const supabase = getSupabaseAdmin();
         const stripe = getStripeClient();
         const baseUrl = getPublicBaseUrl(req);
-        const subtotal = cart.reduce((sum, item) => sum + (Number(item.preco || 0) * Number(item.quantity || 1)), 0);
-        const shipping = 0;
-        const total = subtotal + shipping;
+        const cart = await resolveCheckoutCart(supabase, rawCart);
+        const { subtotal, shipping, total } = calculateCheckoutTotals(cart);
 
         if (total <= 0) {
             sendJson(res, 400, { error: 'TOTAL_INVALIDO' });
@@ -178,37 +146,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const customerId = await findOrCreateCheckoutCustomer(supabase, customerSnapshot);
 
         const orderNumber = generateOrderNumber();
-        const itemSnapshots = buildOrderItemSnapshots(cart);
-        const orderMeta = {
-            workflowStatus: 'pendente_confirmacao',
-            paymentStatus: 'pending',
-            paymentProvider: 'stripe',
-            paymentMethod: selectedPaymentMethod,
-            trackingCode: '',
-            trackingUrl: '',
-            stripeSessionId: '',
-            stripePaymentIntent: '',
-            facturalusaCustomerCode: '',
-            facturalusaDocumentNumber: '',
-            facturalusaDocumentUrl: '',
-            facturalusaLastError: '',
-            facturalusaStatus: 'pending',
-            facturalusaLastAttemptAt: '',
-            statusHistory: [
-                {
-                    status: 'pendente_confirmacao',
-                    at: new Date().toISOString(),
-                    note: 'Encomenda criada no checkout'
-                }
-            ],
-            itemSnapshots,
-            checkoutCustomer: customerSnapshot,
-            checkoutSnapshot: buildCheckoutPayloadSnapshot(customerSnapshot, cart, selectedPaymentMethod, notes)
-        };
+        const orderMeta = buildInitialOrderMeta(customerSnapshot, cart, selectedPaymentMethod, notes);
 
-        const { data: order, error: orderError } = await supabase
-            .from('encomendas')
-            .insert([{
+        const { data: order, error: orderError } = await insertWithOptionalColumns(
+            supabase,
+            'encomendas',
+            {
                 cliente_id: customerId,
                 numero_encomenda: orderNumber,
                 status: 'pendente',
@@ -218,9 +161,17 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 notas: buildOrderNotesWithMeta(notes, orderMeta),
                 morada_envio: `${customer.morada}, ${customer.codigo_postal} ${customer.cidade}`,
                 metodo_pagamento: selectedPaymentMethod
-            }])
-            .select('*')
-            .single();
+            },
+            {
+                payment_provider: 'stripe',
+                payment_status: 'pending',
+                stripe_payment_method_type: selectedPaymentMethod,
+                facturalusa_status: 'pending',
+                checkout_payload: orderMeta.checkoutSnapshot || {},
+                stripe_metadata: {},
+                facturalusa_payload: {}
+            }
+        );
 
         if (orderError) {
             throw orderError;
@@ -228,11 +179,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
 
         orderIdForCleanup = order.id;
 
-        try {
-            await insertOrderItemsWithFallback(supabase, order.id, cart);
-        } catch (itemError) {
-            console.warn('Falha ao gravar itens da encomenda:', itemError);
-        }
+        await insertOrderItemsWithFallback(supabase, order.id, cart);
 
         const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
         const successUrl = `${baseUrl}/checkout-sucesso.html?session_id={CHECKOUT_SESSION_ID}&codigo=${encodeURIComponent(orderNumber)}`;
@@ -251,20 +198,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 customer_id: String(customerId),
                 payment_method: selectedPaymentMethod
             },
-            line_items: cart.map((item) => ({
-                quantity: Math.max(1, Number(item.quantity || 1)),
-                price_data: {
-                    currency: 'eur',
-                    unit_amount: Math.max(0, Math.round(Number(item.preco || 0) * 100)),
-                    product_data: {
-                        name: String(item.nome || 'Produto').trim(),
-                        description: [item.baseNome, item.customized ? 'Personalizado' : '', item.designId ? `Design ${item.designId}` : '']
-                            .filter(Boolean)
-                            .join(' | ') || undefined,
-                        images: String(item.imagem || '').trim() ? [String(item.imagem).trim()] : undefined
-                    }
-                }
-            })),
+            line_items: cart.map(buildStripeLineItem),
             billing_address_collection: 'required'
         });
 
@@ -273,12 +207,25 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             stripeSessionId: session.id
         });
 
-        const { error: notesUpdateError } = await supabase
-            .from('encomendas')
-            .update({
-                notas: orderNotesWithSession
-            })
-            .eq('id', order.id);
+        const { error: notesUpdateError } = await updateWithOptionalColumns(
+            supabase,
+            'encomendas',
+            'id',
+            order.id,
+            {
+                notas: orderNotesWithSession,
+                stripe_session_id: session.id,
+                stripe_checkout_url: session.url || '',
+                stripe_payment_method_type: selectedPaymentMethod,
+                stripe_metadata: {
+                    id: session.id,
+                    status: session.status || '',
+                    payment_status: session.payment_status || '',
+                    client_reference_id: session.client_reference_id || '',
+                    payment_method_types: paymentMethodTypes
+                }
+            }
+        );
 
         if (notesUpdateError) {
             console.warn('Nao foi possivel atualizar as notas da encomenda com o stripe_session_id:', notesUpdateError);
