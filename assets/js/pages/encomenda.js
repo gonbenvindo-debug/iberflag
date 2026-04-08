@@ -370,18 +370,26 @@ function renderOrderSidebar(order, splitMeta) {
         ? getFacturalusaStatus(order)
         : (splitMeta.meta.facturalusaDocumentNumber ? 'emitted' : splitMeta.meta.facturalusaLastError ? 'blocked' : (splitMeta.meta.paymentStatus === 'paid' ? 'pending' : 'not_required'));
 
-    trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
-
-    if (tracking.trackingUrl) {
-        trackingLinkEl.href = tracking.trackingUrl;
-        trackingLinkEl.classList.remove('hidden');
-    } else {
-        trackingLinkEl.classList.add('hidden');
-        trackingLinkEl.removeAttribute('href');
+    if (trackingCodeEl) {
+        trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
     }
 
-    shippingEl.textContent = order.morada_envio || 'Disponivel no email de confirmacao';
-    notesEl.textContent = splitMeta.publicNotes || 'Sem notas adicionais.';
+    if (trackingLinkEl) {
+        if (tracking.trackingUrl) {
+            trackingLinkEl.href = tracking.trackingUrl;
+            trackingLinkEl.classList.remove('hidden');
+        } else {
+            trackingLinkEl.classList.add('hidden');
+            trackingLinkEl.removeAttribute('href');
+        }
+    }
+
+    if (shippingEl) {
+        shippingEl.textContent = order.morada_envio || 'Disponivel no email de confirmacao';
+    }
+    if (notesEl) {
+        notesEl.textContent = splitMeta.publicNotes || 'Sem notas adicionais.';
+    }
 
     if (nifEl) {
         nifEl.textContent = order.clientes?.nif || 'Disponivel no email de confirmacao';
