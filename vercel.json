@@ -1,6 +1,7 @@
 {
   "version": 2,
   "cleanUrls": false,
+  "outputDirectory": ".",
   "rewrites": [
     { "source": "/", "destination": "/pages/index.html" },
     { "source": "/index", "destination": "/pages/index.html" },
