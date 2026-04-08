@@ -63,6 +63,112 @@
             object-fit: contain;
         }
 
+        .order-progress-card {
+            overflow: hidden;
+        }
+
+        .order-progressbar {
+            --order-progress-width: 0%;
+            --order-progress-min-width: 760px;
+            position: relative;
+            display: grid;
+            grid-template-columns: repeat(var(--order-progress-count, 8), minmax(5rem, 1fr));
+            gap: 0.5rem;
+            min-width: var(--order-progress-min-width);
+            padding-top: 0.25rem;
+        }
+
+        .order-progressbar::before,
+        .order-progressbar::after {
+            content: "";
+            position: absolute;
+            left: 1.625rem;
+            right: 1.625rem;
+            top: 1.125rem;
+            height: 2px;
+            background: #e5e7eb;
+        }
+
+        .order-progressbar::after {
+            right: auto;
+            width: var(--order-progress-width);
+            max-width: calc(100% - 3.25rem);
+            background: #2563eb;
+        }
+
+        .order-progress-scroll {
+            overflow-x: auto;
+            padding-bottom: 0.25rem;
+        }
+
+        .order-progress-step {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.5rem;
+            text-align: center;
+            color: #6b7280;
+        }
+
+        .order-progress-marker {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 1.875rem;
+            height: 1.875rem;
+            border-radius: 9999px;
+            border: 1px solid #d1d5db;
+            background: #ffffff;
+            color: #6b7280;
+            font-size: 0.75rem;
+            font-weight: 700;
+        }
+
+        .order-progress-copy {
+            display: flex;
+            flex-direction: column;
+            gap: 0.125rem;
+            min-width: 0;
+        }
+
+        .order-progress-label {
+            font-size: 0.72rem;
+            font-weight: 700;
+            line-height: 1.25;
+            color: #374151;
+        }
+
+        .order-progress-grade {
+            font-size: 0.66rem;
+            font-weight: 600;
+            color: #6b7280;
+        }
+
+        .order-progress-step.is-complete .order-progress-marker {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .order-progress-step.is-current .order-progress-marker {
+            border-color: #2563eb;
+            background: #ffffff;
+            color: #2563eb;
+            box-shadow: 0 0 0 3px #dbeafe;
+        }
+
+        .order-progress-step.is-current .order-progress-label {
+            color: #111827;
+        }
+
+        .order-progress-step[data-progress-step="cancelada"].is-current .order-progress-marker {
+            border-color: #dc2626;
+            color: #dc2626;
+            box-shadow: 0 0 0 3px #fee2e2;
+        }
+
         @media (max-width: 640px) {
             .order-tracking-compact main {
                 padding-top: 0.75rem;
@@ -133,6 +239,19 @@
         </div>
 
         <div id="order-detail" class="hidden space-y-4">
+            <section class="admin-card order-progress-card p-4 md:p-5">
+                <div class="flex flex-wrap items-start justify-between gap-2 mb-4">
+                    <div>
+                        <p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Progresso</p>
+                        <h2 class="text-sm font-bold text-gray-900 mt-1">Estado da encomenda</h2>
+                    </div>
+                    <p id="order-progress-summary" class="text-xs text-gray-500 text-left md:text-right">A carregar estado...</p>
+                </div>
+                <div class="order-progress-scroll">
+                    <div id="order-progressbar" class="order-progressbar" role="progressbar" aria-label="Progresso da encomenda"></div>
+                </div>
+            </section>
+
             <section class="admin-card p-4 md:p-5">
                 <div class="flex flex-wrap items-start justify-between gap-3">
                     <div class="min-w-0">
@@ -244,7 +363,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260401e"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260319c"></script>
-    <script src="/assets/js/pages/encomenda.js?v=20260408a"></script>
+    <script src="/assets/js/pages/encomenda.js?v=20260408b"></script>
     <script>lucide.createIcons();</script>
 </body>
 
