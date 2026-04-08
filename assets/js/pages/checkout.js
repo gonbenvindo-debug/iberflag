@@ -14,6 +14,18 @@ const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
 const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
+const customerTypeInputs = Array.from(document.querySelectorAll('input[name="tipo_cliente"]'));
+const customerTypeDescription = document.getElementById('customer-type-description');
+const nifInput = document.getElementById('nif-input');
+const phoneInput = checkoutForm?.elements?.telefone || null;
+const emailInput = checkoutForm?.elements?.email || null;
+const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
+const companyInput = checkoutForm?.elements?.empresa || null;
+const companyLabel = document.getElementById('company-label');
+const nifLabel = document.getElementById('nif-label');
+const nifHelp = document.getElementById('nif-help');
+const companyLookupBtn = document.getElementById('lookup-company-btn');
+const companyLookupStatus = document.getElementById('company-lookup-status');
 
 const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
 const COMMON_EMAIL_DOMAIN_FIXES = {
@@ -26,6 +38,8 @@ const COMMON_EMAIL_DOMAIN_FIXES = {
     'hotmail.con': 'hotmail.com',
     'outlook.con': 'outlook.com'
 };
+const companyLookupCache = new Map();
+let companyLookupInFlight = false;
 
 function normalizeTaxId(value) {
     return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -75,6 +89,24 @@ function updateEmailValidity({ normalizeInput = false } = {}) {
     }
     emailInput.setCustomValidity(validation.valid ? '' : validation.message);
     return validation;
+}
+
+function normalizeCustomerType(value) {
+    const normalized = String(value || '').trim().toLowerCase();
+    if (normalized === 'empresa') {
+        return 'empresa';
+    }
+    return 'particular';
+}
+
+function getSelectedCustomerType() {
+    return normalizeCustomerType(
+        customerTypeInputs.find((input) => input.checked)?.value || 'particular'
+    );
+}
+
+function isBusinessCustomerSelected() {
+    return getSelectedCustomerType() === 'empresa';
 }
 
 function detectTaxCountry(value, postalCode = '') {
@@ -172,21 +204,357 @@ function validateTaxId(value, postalCode = '') {
             ? ''
             : country === 'ES'
                 ? 'NIF/NIE espanhol invalido. Verifique o numero fiscal antes de continuar.'
-                : 'NIF portugues invalido. Verifique os 9 digitos antes de continuar.'
+            : 'NIF portugues invalido. Verifique os 9 digitos antes de continuar.'
     };
 }
 
+function normalizeCheckoutPhone(value) {
+    const raw = String(value || '').trim();
+    if (!raw) {
+        return '';
+    }
+
+    let normalized = raw.replace(/[^\d+]/g, '');
+    if (normalized.startsWith('00')) {
+        normalized = `+${normalized.slice(2)}`;
+    }
+
+    if (normalized.startsWith('+')) {
+        return `+${normalized.slice(1).replace(/\D/g, '')}`;
+    }
+
+    return normalized.replace(/\D/g, '');
+}
+
+function normalizePostalCode(value, country = 'PT') {
+    const normalized = String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (!normalized) {
+        return '';
+    }
+
+    if (String(country || '').toUpperCase() === 'ES') {
+        return normalized.replace(/[^\d]/g, '').slice(0, 5);
+    }
+
+    const digits = normalized.replace(/[^\d]/g, '').slice(0, 7);
+    if (digits.length === 7) {
+        return `${digits.slice(0, 4)}-${digits.slice(4)}`;
+    }
+
+    return normalized;
+}
+
+function validateCheckoutPhone(value, postalCode = '', taxId = '') {
+    const normalized = normalizeCheckoutPhone(value);
+    const country = detectTaxCountry(taxId, postalCode);
+    if (!normalized) {
+        return {
+            valid: false,
+            normalized,
+            message: 'Introduza um numero de telemovel ou telefone valido.'
+        };
+    }
+
+    const digits = normalized.replace(/^\+/, '');
+
+    if (digits.startsWith('351')) {
+        const localNumber = digits.slice(3);
+        return {
+            valid: /^[29]\d{8}$/.test(localNumber),
+            normalized: `+${digits}`,
+            message: /^[29]\d{8}$/.test(localNumber)
+                ? ''
+                : 'O numero de contacto portugues parece invalido.'
+        };
+    }
+
+    if (digits.startsWith('34')) {
+        const localNumber = digits.slice(2);
+        return {
+            valid: /^[6789]\d{8}$/.test(localNumber),
+            normalized: `+${digits}`,
+            message: /^[6789]\d{8}$/.test(localNumber)
+                ? ''
+                : 'O numero de contacto espanhol parece invalido.'
+        };
+    }
+
+    if (country === 'ES' || /^[678]\d{8}$/.test(digits)) {
+        return {
+            valid: /^[6789]\d{8}$/.test(digits),
+            normalized: `+34${digits}`,
+            country: 'ES',
+            message: /^[6789]\d{8}$/.test(digits)
+                ? ''
+                : 'Introduza um numero espanhol com 9 digitos valido.'
+        };
+    }
+
+    return {
+        valid: /^[29]\d{8}$/.test(digits),
+        normalized: `+351${digits}`,
+        message: /^[29]\d{8}$/.test(digits)
+            ? ''
+            : 'Introduza um numero portugues com 9 digitos valido.'
+    };
+}
+
+function updatePhoneValidity({ normalizeInput = false } = {}) {
+    if (!phoneInput) {
+        return { valid: true, normalized: '', message: '' };
+    }
+
+    const validation = validateCheckoutPhone(
+        phoneInput.value,
+        postalCodeInput?.value || '',
+        nifInput?.value || ''
+    );
+    if (normalizeInput) {
+        phoneInput.value = validation.normalized;
+    }
+    phoneInput.setCustomValidity(validation.valid ? '' : validation.message);
+    return validation;
+}
+
+function updatePostalCodeFormatting() {
+    if (!postalCodeInput) {
+        return '';
+    }
+
+    const normalizedCountry = detectTaxCountry(nifInput?.value || '', postalCodeInput.value);
+    const normalized = normalizePostalCode(postalCodeInput.value, normalizedCountry);
+    postalCodeInput.value = normalized;
+    return normalized;
+}
+
 function updateTaxIdValidity() {
-    const nifInput = checkoutForm?.elements?.nif;
     if (!nifInput) {
         return { valid: true, normalized: '', message: '' };
     }
 
-    const postalCode = checkoutForm?.elements?.codigo_postal?.value || '';
+    const postalCode = postalCodeInput?.value || '';
     const validation = validateTaxId(nifInput.value, postalCode);
     nifInput.value = validation.normalized;
+    const nifRequired = isBusinessCustomerSelected();
+    if (nifRequired && !validation.normalized) {
+        nifInput.setCustomValidity('Para faturacao empresarial o NIF e obrigatorio.');
+        return {
+            valid: false,
+            normalized: validation.normalized,
+            message: 'Para faturacao empresarial o NIF e obrigatorio.'
+        };
+    }
+
     nifInput.setCustomValidity(validation.valid ? '' : validation.message);
     return validation;
+}
+
+function updateCompanyValidity() {
+    if (!companyInput) {
+        return { valid: true, normalized: '', message: '' };
+    }
+
+    const normalized = String(companyInput.value || '').trim();
+    const required = isBusinessCustomerSelected();
+    const message = required && !normalized
+        ? 'Indique o nome fiscal da empresa.'
+        : '';
+
+    companyInput.setCustomValidity(message);
+    return {
+        valid: !message,
+        normalized,
+        message
+    };
+}
+
+function setCompanyLookupStatus(message = '', type = 'info') {
+    if (!companyLookupStatus) {
+        return;
+    }
+
+    if (!message) {
+        companyLookupStatus.classList.add('hidden');
+        companyLookupStatus.textContent = '';
+        companyLookupStatus.className = 'hidden';
+        return;
+    }
+
+    const palette = {
+        info: 'checkout-inline-status text-slate-600 bg-slate-50 border-slate-200',
+        success: 'checkout-inline-status text-emerald-700 bg-emerald-50 border-emerald-200',
+        warning: 'checkout-inline-status text-amber-700 bg-amber-50 border-amber-200',
+        error: 'checkout-inline-status text-red-700 bg-red-50 border-red-200'
+    };
+
+    companyLookupStatus.className = palette[type] || palette.info;
+    companyLookupStatus.textContent = message;
+}
+
+function setCompanyLookupLoading(isLoading) {
+    companyLookupInFlight = isLoading;
+    if (!companyLookupBtn) {
+        return;
+    }
+
+    companyLookupBtn.disabled = isLoading;
+    companyLookupBtn.textContent = isLoading ? 'A procurar...' : 'Preencher por NIF';
+}
+
+function applyCompanyLookupResult(customer = {}) {
+    if (!customer || typeof customer !== 'object') {
+        return;
+    }
+
+    if (companyInput && !String(companyInput.value || '').trim() && String(customer.empresa || '').trim()) {
+        companyInput.value = String(customer.empresa || '').trim();
+    }
+
+    if (phoneInput && !String(phoneInput.value || '').trim() && String(customer.telefone || '').trim()) {
+        phoneInput.value = normalizeCheckoutPhone(customer.telefone);
+    }
+
+    if (emailInput && !String(emailInput.value || '').trim() && String(customer.email || '').trim()) {
+        emailInput.value = normalizeCheckoutEmail(customer.email);
+    }
+
+    if (checkoutForm?.elements?.morada && !String(checkoutForm.elements.morada.value || '').trim() && String(customer.morada || '').trim()) {
+        checkoutForm.elements.morada.value = String(customer.morada || '').trim();
+    }
+
+    if (postalCodeInput && !String(postalCodeInput.value || '').trim() && String(customer.codigo_postal || '').trim()) {
+        postalCodeInput.value = String(customer.codigo_postal || '').trim();
+    }
+
+    if (checkoutForm?.elements?.cidade && !String(checkoutForm.elements.cidade.value || '').trim() && String(customer.cidade || '').trim()) {
+        checkoutForm.elements.cidade.value = String(customer.cidade || '').trim();
+    }
+
+    updateCompanyValidity();
+    updatePhoneValidity();
+    updateEmailValidity();
+    updatePostalCodeFormatting();
+}
+
+async function lookupCompanyByTaxId({ force = false } = {}) {
+    if (!isBusinessCustomerSelected() || !nifInput) {
+        return null;
+    }
+
+    const taxValidation = updateTaxIdValidity();
+    if (!taxValidation.valid || !taxValidation.normalized) {
+        return null;
+    }
+
+    const cacheKey = taxValidation.normalized;
+    if (!force && companyLookupCache.has(cacheKey)) {
+        const cached = companyLookupCache.get(cacheKey);
+        if (cached?.found && cached.customer) {
+            applyCompanyLookupResult(cached.customer);
+            setCompanyLookupStatus(`Dados encontrados em ${cached.sourceLabel || 'registos anteriores'}.`, 'success');
+        }
+        return cached;
+    }
+
+    if (companyLookupInFlight) {
+        return null;
+    }
+
+    setCompanyLookupLoading(true);
+    setCompanyLookupStatus('A procurar dados fiscais para este NIF...', 'info');
+
+    try {
+        const response = await fetch('/api/checkout/company-lookup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                taxId: taxValidation.normalized,
+                postalCode: postalCodeInput?.value || '',
+                customerType: getSelectedCustomerType()
+            })
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            const message = String(payload?.message || 'Nao foi possivel procurar a empresa pelo NIF.');
+            setCompanyLookupStatus(message, 'warning');
+            return null;
+        }
+
+        companyLookupCache.set(cacheKey, payload || {});
+
+        if (payload?.found && payload?.customer) {
+            applyCompanyLookupResult(payload.customer);
+            setCompanyLookupStatus(
+                `Dados encontrados em ${payload.sourceLabel || 'registos existentes'} e preenchidos nos campos em falta.`,
+                'success'
+            );
+            return payload;
+        }
+
+        setCompanyLookupStatus('Nao encontrámos dados automaticos para este NIF. Podes continuar e preencher manualmente.', 'info');
+        return payload;
+    } catch (error) {
+        console.warn('Falha ao procurar empresa por NIF:', error);
+        setCompanyLookupStatus('Nao foi possivel procurar dados automaticos agora. Podes continuar manualmente.', 'warning');
+        return null;
+    } finally {
+        setCompanyLookupLoading(false);
+    }
+}
+
+function syncCustomerTypeUI() {
+    const business = isBusinessCustomerSelected();
+
+    if (customerTypeDescription) {
+        customerTypeDescription.textContent = business
+            ? 'A fatura sera emitida para uma empresa. NIF e nome fiscal passam a ser obrigatorios.'
+            : 'A fatura sera emitida para um particular. O NIF continua opcional, mas se o preencher tem de ser valido.';
+    }
+
+    if (companyLabel) {
+        companyLabel.textContent = business ? 'Empresa *' : 'Empresa (opcional)';
+    }
+
+    if (nifLabel) {
+        nifLabel.textContent = business ? 'NIF / VAT / CIF *' : 'NIF / NIE (opcional)';
+    }
+
+    if (nifHelp) {
+        nifHelp.textContent = business
+            ? 'Para faturacao empresarial precisamos do NIF valido e, se existir, tentamos preencher os dados automaticamente.'
+            : 'Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.';
+    }
+
+    if (companyLookupBtn) {
+        companyLookupBtn.classList.toggle('hidden', !business);
+    }
+
+    if (companyInput) {
+        companyInput.required = business;
+    }
+
+    if (nifInput) {
+        nifInput.required = business;
+    }
+
+    customerTypeInputs.forEach((input) => {
+        const choice = input.closest('[data-checkout-customer-choice]');
+        if (!choice) {
+            return;
+        }
+        choice.classList.toggle('is-active', input.checked);
+    });
+
+    updateCompanyValidity();
+    updateTaxIdValidity();
+    clearCheckoutFeedback();
+
+    if (!business) {
+        setCompanyLookupStatus('');
+    }
 }
 
 function isSupabaseReady() {
@@ -256,8 +624,16 @@ function getCheckoutErrorMessage(error) {
         return error?.message || 'Introduza um email valido para iniciar o checkout.';
     }
 
+    if (error?.code === 'TELEFONE_INVALIDO') {
+        return error?.message || 'Introduza um numero de contacto valido.';
+    }
+
     if (error?.code === 'MORADA_INVALIDA') {
         return 'Preencha morada, codigo postal e cidade.';
+    }
+
+    if (error?.code === 'CODIGO_POSTAL_INVALIDO') {
+        return error?.message || 'Introduza um codigo postal valido.';
     }
 
     if (error?.code === 'TOTAL_INVALIDO') {
@@ -266,6 +642,18 @@ function getCheckoutErrorMessage(error) {
 
     if (error?.code === 'NIF_INVALIDO') {
         return error?.message || 'NIF invalido. Verifique o numero fiscal antes de continuar.';
+    }
+
+    if (error?.code === 'NIF_REQUIRED') {
+        return error?.message || 'Para faturacao empresarial o NIF e obrigatorio.';
+    }
+
+    if (error?.code === 'EMPRESA_REQUIRED') {
+        return error?.message || 'Indique o nome fiscal da empresa.';
+    }
+
+    if (error?.code === 'TIPO_CLIENTE_INVALIDO') {
+        return error?.message || 'Escolha se a faturacao e para particular ou empresa.';
     }
 
     if (error?.code === 'CHECKOUT_SESSION_FAILED') {
@@ -289,9 +677,6 @@ function buildCheckoutRequestCart(items) {
         nome: String(item.nome || 'Produto').trim(),
         quantity: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
         customized: Boolean(item.customized),
-        imagem: String(item.imagem || '').trim(),
-        design: String(item.design || '').trim(),
-        designPreview: String(item.designPreview || '').trim(),
         baseNome: String(item.baseNome || '').trim(),
         baseId: item.baseId || item.base_id || null,
         designId: item.designId || item.design_id || null
@@ -372,6 +757,8 @@ if (placeOrderBtn) {
         }
 
         clearCheckoutFeedback();
+        const customerType = getSelectedCustomerType();
+        syncCustomerTypeUI();
         const emailValidation = updateEmailValidity({ normalizeInput: true });
         if (!emailValidation.valid) {
             setCheckoutFeedback(emailValidation.message, 'error');
@@ -379,9 +766,25 @@ if (placeOrderBtn) {
             return;
         }
 
+        const phoneValidation = updatePhoneValidity({ normalizeInput: true });
+        if (!phoneValidation.valid) {
+            setCheckoutFeedback(phoneValidation.message, 'error');
+            checkoutForm.reportValidity();
+            return;
+        }
+
+        updatePostalCodeFormatting();
+
         const taxIdValidation = updateTaxIdValidity();
         if (!taxIdValidation.valid) {
             setCheckoutFeedback(taxIdValidation.message, 'error');
+            checkoutForm.reportValidity();
+            return;
+        }
+
+        const companyValidation = updateCompanyValidity();
+        if (!companyValidation.valid) {
+            setCheckoutFeedback(companyValidation.message, 'error');
             checkoutForm.reportValidity();
             return;
         }
@@ -410,6 +813,7 @@ if (placeOrderBtn) {
             nome: formData.get('nome'),
             email: formData.get('email'),
             telefone: formData.get('telefone'),
+            tipo_cliente: customerType,
             nif: formData.get('nif') || null,
             empresa: formData.get('empresa') || null,
             morada: formData.get('morada'),
@@ -489,9 +893,6 @@ if (placeOrderBtn) {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
-    const emailInput = checkoutForm?.elements?.email;
-    const nifInput = checkoutForm?.elements?.nif;
-    const postalCodeInput = checkoutForm?.elements?.codigo_postal;
     if (emailInput) {
         emailInput.addEventListener('input', () => {
             updateEmailValidity();
@@ -503,22 +904,61 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
-    if (nifInput) {
-        nifInput.addEventListener('input', () => {
-            updateTaxIdValidity();
+    if (phoneInput) {
+        phoneInput.addEventListener('input', () => {
+            updatePhoneValidity();
         });
-        nifInput.addEventListener('blur', () => {
-            const validation = updateTaxIdValidity();
+        phoneInput.addEventListener('blur', () => {
+            const validation = updatePhoneValidity({ normalizeInput: true });
             if (!validation.valid) {
                 setCheckoutFeedback(validation.message, 'error');
             }
         });
     }
-    if (postalCodeInput) {
-        postalCodeInput.addEventListener('blur', () => {
+    if (nifInput) {
+        nifInput.addEventListener('input', () => {
             updateTaxIdValidity();
+            setCompanyLookupStatus('');
+        });
+        nifInput.addEventListener('blur', () => {
+            const validation = updateTaxIdValidity();
+            if (!validation.valid) {
+                setCheckoutFeedback(validation.message, 'error');
+                return;
+            }
+            if (isBusinessCustomerSelected() && validation.normalized) {
+                void lookupCompanyByTaxId();
+            }
         });
     }
+    if (postalCodeInput) {
+        postalCodeInput.addEventListener('input', () => {
+            updatePostalCodeFormatting();
+            updateTaxIdValidity();
+        });
+        postalCodeInput.addEventListener('blur', () => {
+            updatePostalCodeFormatting();
+            updateTaxIdValidity();
+            updatePhoneValidity();
+        });
+    }
+    if (companyInput) {
+        companyInput.addEventListener('input', () => {
+            updateCompanyValidity();
+        });
+    }
+    if (companyLookupBtn) {
+        companyLookupBtn.addEventListener('click', async () => {
+            await lookupCompanyByTaxId({ force: true });
+        });
+    }
+    customerTypeInputs.forEach((input) => {
+        input.addEventListener('change', () => {
+            syncCustomerTypeUI();
+        });
+    });
+
+    syncCustomerTypeUI();
 
     void loadCart();
 });

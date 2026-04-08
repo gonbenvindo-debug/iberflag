@@ -22,7 +22,7 @@
     <script src="/assets/js/config.js"></script>
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/logic.js?v=20260401e"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260408x">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -93,44 +93,79 @@
                             <p class="app-section-subtitle mt-1">Preencha os dados para emissao e entrega.</p>
                         </div>
                         <form id="checkout-form" class="space-y-4">
+                            <div class="checkout-customer-step">
+                                <div class="flex items-start gap-3">
+                                    <span class="checkout-customer-step-index">1</span>
+                                    <div class="min-w-0">
+                                        <p class="checkout-customer-step-title">Quem vai na fatura?</p>
+                                        <p id="customer-type-description" class="checkout-customer-step-copy">Escolha se a faturacao e para particular ou empresa.</p>
+                                    </div>
+                                </div>
+                                <div class="mt-4 grid grid-cols-1 sm:grid-cols-2 gap-3">
+                                    <label class="checkout-customer-choice" data-checkout-customer-choice>
+                                        <input type="radio" name="tipo_cliente" value="particular" class="sr-only" checked>
+                                        <span class="checkout-customer-choice-title">Particular</span>
+                                        <span class="checkout-customer-choice-copy">Nome pessoal na fatura. NIF opcional.</span>
+                                    </label>
+                                    <label class="checkout-customer-choice" data-checkout-customer-choice>
+                                        <input type="radio" name="tipo_cliente" value="empresa" class="sr-only">
+                                        <span class="checkout-customer-choice-title">Empresa</span>
+                                        <span class="checkout-customer-choice-copy">Nome fiscal da empresa e NIF obrigatorios.</span>
+                                    </label>
+                                </div>
+                            </div>
+
+                            <div class="checkout-customer-step">
+                                <div class="flex items-start gap-3">
+                                    <span class="checkout-customer-step-index">2</span>
+                                    <div class="min-w-0">
+                                        <p class="checkout-customer-step-title">Contacto e faturacao</p>
+                                        <p class="checkout-customer-step-copy">Estes dados seguem para a encomenda, emails e documento fiscal.</p>
+                                    </div>
+                                </div>
+                            </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">Nome completo *</label>
-                                    <input type="text" name="nome" required class="form-input">
+                                    <label class="form-label">Nome de contacto *</label>
+                                    <input type="text" name="nome" required class="form-input" autocomplete="name">
                                 </div>
                                 <div>
                                     <label class="form-label">Email *</label>
-                                    <input type="email" name="email" required class="form-input">
+                                    <input type="email" name="email" required class="form-input" autocomplete="email" placeholder="nome@empresa.com">
                                 </div>
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label class="form-label">Telefone *</label>
-                                    <input type="tel" name="telefone" required class="form-input">
+                                    <label class="form-label">Telemovel / telefone *</label>
+                                    <input type="tel" name="telefone" required class="form-input" autocomplete="tel" placeholder="+351 912 345 678">
                                 </div>
                                 <div>
-                                    <label class="form-label">NIF / NIE (opcional)</label>
-                                    <input type="text" name="nif" id="nif-input" class="form-input" maxlength="9"
-                                        placeholder="PT: 123456789 | ES: 12345678A" autocomplete="off">
-                                    <p class="mt-1 text-xs text-slate-500">Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.</p>
+                                    <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
+                                    <div class="checkout-inline-action">
+                                        <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12"
+                                            placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
+                                        <button type="button" id="lookup-company-btn" class="checkout-inline-btn">Preencher por NIF</button>
+                                    </div>
+                                    <p id="nif-help" class="mt-1 text-xs text-slate-500">Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.</p>
+                                    <p id="company-lookup-status" class="hidden"></p>
                                 </div>
                             </div>
                             <div>
-                                <label class="form-label">Empresa (opcional)</label>
-                                <input type="text" name="empresa" class="form-input">
+                                <label id="company-label" class="form-label">Empresa (opcional)</label>
+                                <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
                             </div>
                             <div>
                                 <label class="form-label">Morada *</label>
-                                <input type="text" name="morada" required class="form-input">
+                                <input type="text" name="morada" required class="form-input" autocomplete="street-address">
                             </div>
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
                                     <label class="form-label">Codigo postal *</label>
-                                    <input type="text" name="codigo_postal" required class="form-input" placeholder="0000-000">
+                                    <input type="text" name="codigo_postal" required class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code">
                                 </div>
                                 <div>
                                     <label class="form-label">Cidade *</label>
-                                    <input type="text" name="cidade" required class="form-input">
+                                    <input type="text" name="cidade" required class="form-input" autocomplete="address-level2">
                                 </div>
                             </div>
                             <div>
@@ -282,7 +317,7 @@
                             </div>
                             <div class="flex items-center gap-2">
                                 <i data-lucide="package" class="w-4 h-4 text-slate-700"></i>
-                                <span>Tracking enviado por email (Seg-Sex)</span>
+                                <span>Tracking enviado por email assim que a expedicao for criada</span>
                             </div>
                             <div class="flex items-center gap-2">
                                 <i data-lucide="pen-tool" class="w-4 h-4 text-slate-700"></i>
@@ -340,7 +375,7 @@
     </footer>
 
     <script src="/assets/js/core/order-workflow.js"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260408b"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260408f"></script>
     <script>
         lucide.createIcons();
     </script>

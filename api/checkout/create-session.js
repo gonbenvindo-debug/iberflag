@@ -25,6 +25,9 @@ const {
     findOrCreateCheckoutCustomer,
     resolveCheckoutCart,
     validateCheckoutCustomerEmail,
+    validateCheckoutCustomerPhone,
+    validateCheckoutCustomerType,
+    validateCheckoutPostalCode,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
 
@@ -74,6 +77,26 @@ function getCheckoutErrorMessage(error) {
 
     if (errorCode === 'NIF_INVALIDO') {
         return error?.message || 'NIF invalido. Verifique o numero fiscal antes de continuar.';
+    }
+
+    if (errorCode === 'NIF_REQUIRED') {
+        return error?.message || 'Para faturacao empresarial o NIF e obrigatorio.';
+    }
+
+    if (errorCode === 'EMPRESA_REQUIRED') {
+        return error?.message || 'Indique o nome fiscal da empresa para emitir a fatura.';
+    }
+
+    if (errorCode === 'TELEFONE_INVALIDO') {
+        return error?.message || 'Introduza um numero de contacto valido.';
+    }
+
+    if (errorCode === 'TIPO_CLIENTE_INVALIDO') {
+        return error?.message || 'Escolha se a faturacao e para particular ou empresa.';
+    }
+
+    if (errorCode === 'CODIGO_POSTAL_INVALIDO') {
+        return error?.message || 'Introduza um codigo postal valido.';
     }
 
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
@@ -156,6 +179,16 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         }
 
         const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+        const customerTypeValidation = validateCheckoutCustomerType(customerSnapshot);
+        if (!customerTypeValidation.valid) {
+            sendJson(res, 400, {
+                error: 'TIPO_CLIENTE_INVALIDO',
+                message: customerTypeValidation.message,
+                field: 'tipo_cliente'
+            });
+            return;
+        }
+
         const emailValidation = validateCheckoutCustomerEmail(customerSnapshot.email);
         if (!emailValidation.valid) {
             sendJson(res, 400, {
@@ -167,6 +200,28 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
+        const phoneValidation = validateCheckoutCustomerPhone(customerSnapshot);
+        if (!phoneValidation.valid) {
+            sendJson(res, 400, {
+                error: 'TELEFONE_INVALIDO',
+                message: phoneValidation.message,
+                field: 'telefone'
+            });
+            return;
+        }
+        customerSnapshot.telefone = phoneValidation.normalized;
+
+        const postalCodeValidation = validateCheckoutPostalCode(customerSnapshot);
+        if (!postalCodeValidation.valid) {
+            sendJson(res, 400, {
+                error: 'CODIGO_POSTAL_INVALIDO',
+                message: postalCodeValidation.message,
+                field: 'codigo_postal'
+            });
+            return;
+        }
+        customerSnapshot.codigo_postal = postalCodeValidation.normalized;
+
         const taxIdValidation = validateCheckoutCustomerTaxId(customerSnapshot);
         if (!taxIdValidation.valid) {
             sendJson(res, 400, {
@@ -175,6 +230,27 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 field: 'nif'
             });
             return;
+        }
+        customerSnapshot.nif = taxIdValidation.normalized;
+
+        if (customerSnapshot.tipo_cliente === 'empresa') {
+            if (!String(customerSnapshot.empresa || '').trim()) {
+                sendJson(res, 400, {
+                    error: 'EMPRESA_REQUIRED',
+                    message: 'Indique o nome fiscal da empresa para emitir a fatura.',
+                    field: 'empresa'
+                });
+                return;
+            }
+
+            if (!String(customerSnapshot.nif || '').trim()) {
+                sendJson(res, 400, {
+                    error: 'NIF_REQUIRED',
+                    message: 'Para faturacao empresarial o NIF e obrigatorio.',
+                    field: 'nif'
+                });
+                return;
+            }
         }
 
         const supabase = getSupabaseAdmin();
