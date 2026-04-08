@@ -7,7 +7,5 @@ dump.sql
 *.bak
 .git
 populate-products.js
-package.json
-package-lock.json
 supabase-schema.sql
 README.md
