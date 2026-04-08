@@ -111,7 +111,8 @@
                                 <div>
                                     <label class="form-label">NIF / NIE (opcional)</label>
                                     <input type="text" name="nif" id="nif-input" class="form-input" maxlength="9"
-                                        placeholder="PT: 123456789 | ES: 12345678A">
+                                        placeholder="PT: 123456789 | ES: 12345678A" autocomplete="off">
+                                    <p class="mt-1 text-xs text-slate-500">Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.</p>
                                 </div>
                             </div>
                             <div>
@@ -305,12 +306,6 @@
     <script src="/assets/js/pages/checkout.js?v=20260407a"></script>
     <script>
         lucide.createIcons();
-        const nifInput = document.getElementById('nif-input');
-        if (nifInput) {
-            nifInput.addEventListener('input', (event) => {
-                event.target.value = event.target.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 9);
-            });
-        }
     </script>
 </body>
 

@@ -168,28 +168,35 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus)
     meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
     meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
     meta.facturalusaStatus = meta.facturalusaStatus || (paymentStatus === 'paid' ? 'pending' : '');
+    const nextNotes = buildOrderNotesWithMeta(split.publicNotes, meta);
+    const updates = {
+        notas: nextNotes,
+        payment_provider: 'stripe',
+        payment_status: paymentStatus,
+        stripe_session_id: session?.id || null,
+        stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+        stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || '',
+        payment_confirmed_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
+        facturalusa_status: meta.facturalusaStatus || null,
+        stripe_metadata: session || {}
+    };
 
     const { error } = await updateWithOptionalColumns(
         supabase,
         'encomendas',
         'id',
         order.id,
-        {
-            notas: buildOrderNotesWithMeta(split.publicNotes, meta),
-            payment_provider: 'stripe',
-            payment_status: paymentStatus,
-            stripe_session_id: session?.id || null,
-            stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
-            stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || '',
-            payment_confirmed_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
-            facturalusa_status: meta.facturalusaStatus || null,
-            stripe_metadata: session || {}
-        }
+        updates
     );
 
     if (error) {
         throw error;
     }
+
+    return {
+        ...order,
+        ...updates
+    };
 }
 
 async function emitFacturalusaDocument(supabase, order, session) {
@@ -319,14 +326,19 @@ module.exports = async function stripeWebhookHandler(req, res) {
                 const order = await findOrderByStripeSession(supabase, session);
 
                 if (order) {
-                    await updateOrderPaymentStatus(supabase, order, session, 'paid');
+                    const paidOrder = await updateOrderPaymentStatus(supabase, order, session, 'paid');
 
                     try {
-                        await emitFacturalusaDocument(supabase, order, session);
+                        await emitFacturalusaDocument(supabase, paidOrder, session);
                     } catch (facturalusaError) {
-                        const split = splitOrderNotesAndMeta(order?.notas || '');
+                        const split = splitOrderNotesAndMeta(paidOrder?.notas || order?.notas || '');
                         const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
                         const classified = classifyFacturalusaError(facturalusaError);
+                        meta.paymentStatus = 'paid';
+                        meta.paymentProvider = 'stripe';
+                        meta.paymentMethod = session?.metadata?.payment_method || paidOrder?.metodo_pagamento || order?.metodo_pagamento || 'card';
+                        meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
+                        meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
                         meta.facturalusaLastError = classified.message || facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
                         meta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
                         meta.facturalusaLastAttemptAt = new Date().toISOString();
@@ -342,8 +354,8 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 payment_status: 'paid',
                                 stripe_session_id: session?.id || null,
                                 stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
-                                stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
-                                payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
+                                stripe_payment_method_type: session?.metadata?.payment_method || paidOrder?.metodo_pagamento || order?.metodo_pagamento || 'card',
+                                payment_confirmed_at: paidOrder?.payment_confirmed_at || order?.payment_confirmed_at || new Date().toISOString(),
                                 facturalusa_last_error: meta.facturalusaLastError,
                                 facturalusa_status: meta.facturalusaStatus
                             }

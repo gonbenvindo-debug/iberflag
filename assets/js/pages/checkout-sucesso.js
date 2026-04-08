@@ -45,7 +45,7 @@ async function pollUntilReady(sessionId, orderCode) {
         try {
             const payload = await fetchCheckoutStatus(sessionId, orderCode);
             const resolvedOrderCode = normalizeOrderCode(payload?.order?.numero_encomenda || payload?.orderCode || orderCode);
-            const paymentStatus = String(payload?.order?.payment_status || payload?.session?.payment_status || '').toLowerCase();
+            const paymentStatus = String(payload?.session?.payment_status || payload?.order?.payment_status || '').toLowerCase();
 
             if (paymentStatus === 'paid') {
                 updateState('Pagamento confirmado', 'A abrir o tracking da encomenda...');

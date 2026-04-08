@@ -18,7 +18,8 @@ const {
     buildInitialOrderMeta,
     calculateCheckoutTotals,
     findOrCreateCheckoutCustomer,
-    resolveCheckoutCart
+    resolveCheckoutCart,
+    validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
 
 function getCheckoutErrorMessage(error) {
@@ -59,6 +60,10 @@ function getCheckoutErrorMessage(error) {
 
     if (errorCode === 'EMAIL_REQUIRED') {
         return 'Introduza um email valido para iniciar o checkout.';
+    }
+
+    if (errorCode === 'NIF_INVALIDO') {
+        return error?.message || 'NIF invalido. Verifique o numero fiscal antes de continuar.';
     }
 
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
@@ -131,6 +136,17 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
+        const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+        const taxIdValidation = validateCheckoutCustomerTaxId(customerSnapshot);
+        if (!taxIdValidation.valid) {
+            sendJson(res, 400, {
+                error: 'NIF_INVALIDO',
+                message: taxIdValidation.message,
+                field: 'nif'
+            });
+            return;
+        }
+
         const supabase = getSupabaseAdmin();
         const stripe = getStripeClient();
         const baseUrl = getPublicBaseUrl(req);
@@ -142,7 +158,6 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
-        const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
         const customerId = await findOrCreateCheckoutCustomer(supabase, customerSnapshot);
 
         const orderNumber = generateOrderNumber();
@@ -159,7 +174,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 envio: shipping,
                 total,
                 notas: buildOrderNotesWithMeta(notes, orderMeta),
-                morada_envio: `${customer.morada}, ${customer.codigo_postal} ${customer.cidade}`,
+                morada_envio: `${customerSnapshot.morada}, ${customerSnapshot.codigo_postal} ${customerSnapshot.cidade}`,
                 metodo_pagamento: selectedPaymentMethod
             },
             {

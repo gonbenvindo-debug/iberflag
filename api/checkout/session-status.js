@@ -102,7 +102,14 @@ module.exports = async function checkoutSessionStatusHandler(req, res) {
         let session = null;
         if (sessionId) {
             const stripe = getStripeClient();
-            session = await stripe.checkout.sessions.retrieve(sessionId);
+            try {
+                session = await stripe.checkout.sessions.retrieve(sessionId);
+            } catch (stripeError) {
+                if (!orderCodeFromQuery) {
+                    throw stripeError;
+                }
+                console.warn('Nao foi possivel consultar a sessao Stripe; a usar codigo da encomenda como fallback:', stripeError);
+            }
         }
 
         const order = await resolveOrderBySession(supabase, session, orderCodeFromQuery);
