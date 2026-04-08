@@ -495,7 +495,7 @@
         // Inicializar Supabase
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
-        const ADMIN_EMAIL = 'admin123@iberflag.pt';
+        const ADMIN_EMAIL = 'admin123@iberflag.com';
         const adminTemplateSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Verificar autenticacao
@@ -597,7 +597,7 @@
                     };
                 case 'qrcode':
                     return {
-                        content: 'https://iberflag.pt',
+                        content: 'https://iberflag.com',
                         color: '#000000',
                         bgColor: '#ffffff'
                     };

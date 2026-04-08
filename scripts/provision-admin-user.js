@@ -1,6 +1,6 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin123@iberflag.pt';
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin123@iberflag.com';
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
 
 function buildHeaders() {

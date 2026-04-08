@@ -2,7 +2,7 @@
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
-const ADMIN_EMAIL = 'admin123@iberflag.pt';
+const ADMIN_EMAIL = 'admin123@iberflag.com';
 let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;

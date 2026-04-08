@@ -260,7 +260,7 @@ Adicione produtos através de:
 ## 📞 Suporte
 
 Para dúvidas ou problemas:
-- Email: geral@iberflag.pt
+- Email: geral@iberflag.com
 - Telefone: +351 900 000 000
 
 ## 📄 Licença
