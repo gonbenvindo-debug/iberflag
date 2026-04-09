@@ -2082,6 +2082,11 @@ tbody tr:hover {
     gap: 1.5rem;
 }
 
+.checkout-form-stack > .checkout-form-section:first-child {
+    padding-top: 0;
+    border-top: 0;
+}
+
 .checkout-form-section {
     padding-top: 1.5rem;
     border-top: 1px solid rgba(226, 232, 240, 0.9);
@@ -2089,71 +2094,6 @@ tbody tr:hover {
 
 .checkout-form-section-optional {
     padding-top: 1.25rem;
-}
-
-.checkout-customer-toggle-wrap {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-}
-
-.checkout-customer-toggle-header {
-    display: flex;
-    flex-direction: column;
-    gap: 0.2rem;
-}
-
-.checkout-field-caption {
-    font-size: 0.78rem;
-    font-weight: 700;
-    letter-spacing: 0.02em;
-    text-transform: uppercase;
-    color: #64748b;
-}
-
-.checkout-inline-copy {
-    font-size: 0.9rem;
-    color: #64748b;
-    line-height: 1.5;
-}
-
-.checkout-customer-toggle {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    padding: 0.35rem;
-    border: 1px solid rgba(148, 163, 184, 0.24);
-    border-radius: 9999px;
-    background: #f8fafc;
-    width: fit-content;
-}
-
-.checkout-customer-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    min-height: 2.5rem;
-    padding: 0.5rem 0.9rem;
-    border-radius: 9999px;
-    color: #475569;
-    cursor: pointer;
-    transition: background 0.18s ease, color 0.18s ease;
-}
-
-.checkout-customer-chip.is-active {
-    background: #ffffff;
-    color: #0f172a;
-    box-shadow: 0 1px 2px rgba(15, 23, 42, 0.06);
-}
-
-.checkout-customer-chip-title {
-    font-size: 0.9rem;
-    font-weight: 700;
-}
-
-.checkout-customer-chip-copy {
-    font-size: 0.78rem;
-    color: #64748b;
 }
 
 .checkout-inline-action {
@@ -2286,15 +2226,6 @@ a[href="/checkout.html"].block.w-full:hover {
 }
 
 @media (max-width: 767px) {
-    .checkout-customer-toggle {
-        width: 100%;
-    }
-
-    .checkout-customer-chip {
-        flex: 1 1 0;
-        justify-content: center;
-    }
-
     .checkout-inline-action {
         flex-direction: column;
         gap: 0.65rem;

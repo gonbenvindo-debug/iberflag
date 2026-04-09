@@ -14,7 +14,7 @@ const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
 const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
-const customerTypeInputs = Array.from(document.querySelectorAll('input[name="tipo_cliente"]'));
+const customerTypeSelect = document.getElementById('customer-type-select');
 const customerTypeDescription = document.getElementById('customer-type-description');
 const nifInput = document.getElementById('nif-input');
 const phoneInput = checkoutForm?.elements?.telefone || null;
@@ -114,9 +114,7 @@ function normalizeCustomerType(value) {
 }
 
 function getSelectedCustomerType() {
-    return normalizeCustomerType(
-        customerTypeInputs.find((input) => input.checked)?.value || 'particular'
-    );
+    return normalizeCustomerType(customerTypeSelect?.value || 'particular');
 }
 
 function isBusinessCustomerSelected() {
@@ -546,14 +544,6 @@ function syncCustomerTypeUI() {
     if (nifInput) {
         nifInput.required = business;
     }
-
-    customerTypeInputs.forEach((input) => {
-        const choice = input.closest('[data-checkout-customer-choice]');
-        if (!choice) {
-            return;
-        }
-        choice.classList.toggle('is-active', input.checked);
-    });
 
     updateCompanyValidity();
     updateTaxIdValidity();
@@ -995,11 +985,11 @@ document.addEventListener('DOMContentLoaded', () => {
             await lookupCompanyByTaxId({ force: true });
         });
     }
-    customerTypeInputs.forEach((input) => {
-        input.addEventListener('change', () => {
+    if (customerTypeSelect) {
+        customerTypeSelect.addEventListener('change', () => {
             syncCustomerTypeUI();
         });
-    });
+    }
 
     syncCustomerTypeUI();
     syncOrderNotesVisibility();
