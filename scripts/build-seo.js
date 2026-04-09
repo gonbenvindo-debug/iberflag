@@ -50,6 +50,47 @@ function summarize(value, maxLength = 160) {
     return `${normalized.slice(0, Math.max(0, maxLength - 1)).trim()}…`;
 }
 
+function includesNormalized(haystack, needle) {
+    const normalizedHaystack = SiteRoutes.slugify(haystack).replace(/-/g, ' ');
+    const normalizedNeedle = SiteRoutes.slugify(needle).replace(/-/g, ' ');
+    if (!normalizedHaystack || !normalizedNeedle) return false;
+    return normalizedHaystack.includes(normalizedNeedle);
+}
+
+function buildProductSeoTitle(product, category) {
+    const fallbackTitle = `${product.nome} | ${category.shortLabel} | IberFlag`;
+    const providedTitle = normalizeText(product.seo_title);
+    if (!providedTitle) return fallbackTitle;
+
+    const titleSegments = providedTitle
+        .split('|')
+        .map((segment) => normalizeText(segment))
+        .filter(Boolean);
+
+    const hasBrand = includesNormalized(providedTitle, 'IberFlag');
+    const hasProductName = includesNormalized(providedTitle, product.nome);
+
+    if (hasBrand && hasProductName && titleSegments.length >= 3) {
+        return providedTitle;
+    }
+
+    return fallbackTitle;
+}
+
+function buildProductSeoDescription(product, category) {
+    const productDescription = normalizeText(product.descricao);
+    if (productDescription) {
+        return summarize(productDescription, 155);
+    }
+
+    const providedDescription = normalizeText(product.seo_description);
+    if (providedDescription) {
+        return summarize(providedDescription, 155);
+    }
+
+    return summarize(`${product.nome} personalizado da categoria ${category.label}.`, 155);
+}
+
 function formatCurrency(value) {
     const amount = Number(value || 0);
     if (!Number.isFinite(amount)) return 'Sob consulta';
@@ -124,8 +165,8 @@ function assignUniqueProductSlugs(products) {
             categorySlug: category.slug,
             categoryLabel: category.label,
             categoryDescription: category.description,
-            seo_title: String(product.seo_title || '').trim() || `${product.nome} | ${category.shortLabel} | IberFlag`,
-            seo_description: String(product.seo_description || '').trim() || summarize(product.descricao || `${product.nome} personalizado da categoria ${category.label}.`, 155),
+            seo_title: buildProductSeoTitle(product, category),
+            seo_description: buildProductSeoDescription(product, category),
             canonicalPath: SiteRoutes.buildProductPath(finalSlug),
             personalizePath: SiteRoutes.buildProductPersonalizerPath(finalSlug),
             imageUrl: safeImageUrl(product.imagem)
@@ -194,8 +235,8 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
-  <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260409seo1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260409seo1">
+  <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260409seo2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260409seo2">
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
 }
@@ -470,6 +511,124 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
 </html>`;
 }
 
+function renderProductsLandingPage(categoryEntries, productEntries) {
+    const featuredCategories = categoryEntries.slice(0, 8);
+    const highlightedProducts = productEntries
+        .slice()
+        .sort((left, right) => {
+            const featuredDelta = Number(Boolean(right.destaque)) - Number(Boolean(left.destaque));
+            if (featuredDelta !== 0) return featuredDelta;
+            return String(left.nome || '').localeCompare(String(right.nome || ''), 'pt-PT');
+        })
+        .slice(0, 12);
+    const primaryImage = highlightedProducts[0]?.imageUrl || `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`;
+    const structuredData = [
+        {
+            '@context': 'https://schema.org',
+            '@type': 'CollectionPage',
+            name: 'Catalogo de Produtos IberFlag',
+            description: 'Catalogo IberFlag com categorias e produtos publicitarios personalizados para eventos, retail e comunicacao fisica.',
+            url: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products)
+        },
+        {
+            '@context': 'https://schema.org',
+            '@type': 'BreadcrumbList',
+            itemListElement: [
+                { '@type': 'ListItem', position: 1, name: 'Inicio', item: SiteRoutes.buildPublicUrl('/') },
+                { '@type': 'ListItem', position: 2, name: 'Produtos', item: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products) }
+            ]
+        },
+        {
+            '@context': 'https://schema.org',
+            '@type': 'ItemList',
+            itemListElement: highlightedProducts.map((product, index) => ({
+                '@type': 'ListItem',
+                position: index + 1,
+                name: product.nome,
+                url: SiteRoutes.buildPublicUrl(product.canonicalPath)
+            }))
+        }
+    ];
+
+    return `${renderHead({
+        title: 'Catalogo de Produtos Publicitarios | IberFlag',
+        description: 'Explore o catalogo IberFlag com fly banners, roll ups, bandeiras, photocalls, tendas e suportes promocionais personalizados.',
+        canonicalPath: SiteRoutes.STATIC_PATHS.products,
+        imageUrl: primaryImage,
+        structuredData
+    })}
+<body class="bg-slate-50 text-slate-900">
+  ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
+  <main>
+    <section class="border-b border-slate-200 bg-white">
+      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+        <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+          <a href="/" class="hover:text-slate-900">Inicio</a>
+          <span>/</span>
+          <span class="text-slate-900">Produtos</span>
+        </nav>
+        <div class="max-w-3xl">
+          <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
+          <p class="mt-4 text-base leading-7 text-slate-600">Navegue por categorias e descubra os produtos IberFlag com pagina propria, ligacoes internas claras e acesso direto ao personalizador apenas quando fizer sentido.</p>
+        </div>
+        <div class="mt-8 flex flex-wrap gap-3">
+          ${featuredCategories.map((category) => `
+            <a href="${category.canonicalPath}" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900">${escapeHtml(category.label)}</a>
+          `).join('')}
+        </div>
+      </div>
+    </section>
+    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        ${highlightedProducts.map((product) => `
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+            <a href="${product.canonicalPath}" class="block">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full object-cover" loading="lazy" width="720" height="540" decoding="async">
+            </a>
+            <div class="p-6">
+              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(product.categoryLabel)}</p>
+              <h2 class="mt-2 text-lg font-semibold text-slate-900"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+              <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
+              <div class="mt-5 flex items-center justify-between">
+                <span class="text-base font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</span>
+                <a href="${product.canonicalPath}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver produto</a>
+              </div>
+            </div>
+          </article>
+        `).join('')}
+      </div>
+      <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6">
+        <div class="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
+          <div>
+            <h2 class="text-xl font-semibold text-slate-900">Categorias principais</h2>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Cada categoria tem pagina propria para facilitar descoberta, navegacao interna e indexacao canónica.</p>
+            <div class="mt-5 grid gap-3 sm:grid-cols-2">
+              ${categoryEntries.map((category) => `
+                <a href="${category.canonicalPath}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">
+                  <strong class="block text-slate-900">${escapeHtml(category.label)}</strong>
+                  <span class="mt-1 block text-slate-500">${escapeHtml(category.products.length)} produto(s)</span>
+                </a>
+              `).join('')}
+            </div>
+          </div>
+          <div>
+            <h2 class="text-xl font-semibold text-slate-900">Ligacoes uteis</h2>
+            <div class="mt-5 grid gap-3">
+              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Consultar envios e prazos</a>
+              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Perguntas frequentes</a>
+              <a href="${SiteRoutes.STATIC_PATHS.contact}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Falar com apoio comercial</a>
+              <a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Abrir mapa do site</a>
+            </div>
+          </div>
+        </div>
+      </section>
+    </section>
+  </main>
+  ${renderFooter(categoryEntries, productEntries)}
+</body>
+</html>`;
+}
+
 function renderHtmlSitemap(categoryEntries, productEntries) {
     return `${renderHead({
         title: 'Mapa do Site | IberFlag',
@@ -550,7 +709,6 @@ Sitemap: ${CANONICAL_ORIGIN}/sitemap.xml
 
 function renderCatalogManifest(products, categories) {
     const manifest = {
-        generatedAt: new Date().toISOString(),
         canonicalOrigin: CANONICAL_ORIGIN,
         products: products.map((product) => ({
             id: product.id,
@@ -626,6 +784,7 @@ async function buildSeoArtifacts() {
         return writeFile(filePath, renderCategoryPage(category, categories, products));
     }));
 
+    await writeFile(path.join(PRODUCTS_DIR, 'index.html'), renderProductsLandingPage(categories, products));
     await writeFile(path.join(HTML_SITEMAP_DIR, 'index.html'), renderHtmlSitemap(categories, products));
     await writeFile(path.join(GENERATED_JS_DIR, 'catalog-seo-manifest.js'), renderCatalogManifest(products, categories));
 

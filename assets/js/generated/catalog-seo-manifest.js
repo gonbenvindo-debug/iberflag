@@ -6,7 +6,6 @@
   root.CatalogSeoManifest = factory();
 }(typeof globalThis !== 'undefined' ? globalThis : this, function () {
   return {
-  "generatedAt": "2026-04-09T12:23:51.495Z",
   "canonicalOrigin": "https://iberflag.com",
   "products": [
     {

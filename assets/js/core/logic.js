@@ -787,7 +787,7 @@ function renderProducts(products) {
             </div>
             <div class="product-card-body">
                 <h3 class="product-card-title">${product.nome}</h3>
-                <a href="${buildProductDetailsUrl(product)}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="product-card-cta">
+                <a href="${buildProductDetailsUrl(product)}" class="product-card-cta">
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     Ver produto
                 </a>
@@ -988,29 +988,6 @@ function toggleMobileMenu() {
 if (cartBtn) {
     cartBtn.addEventListener('click', openCart);
 }
-
-document.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) {
-        return;
-    }
-
-    const customizeLink = target.closest('a[data-customize-product-id]');
-    if (!customizeLink) {
-        return;
-    }
-
-    const productId = Number(customizeLink.getAttribute('data-customize-product-id'));
-    if (!Number.isFinite(productId)) {
-        return;
-    }
-
-    event.preventDefault();
-    openProductCustomizationChoice({
-        id: productId,
-        nome: customizeLink.getAttribute('data-product-name') || ''
-    });
-});
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
