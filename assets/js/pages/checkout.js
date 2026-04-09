@@ -25,7 +25,6 @@ const contactNameLabel = document.getElementById('contact-name-label');
 const companyLabel = document.getElementById('company-label');
 const nifLabel = document.getElementById('nif-label');
 const nifHelp = document.getElementById('nif-help');
-const companyLookupBtn = document.getElementById('lookup-company-btn');
 const companyLookupStatus = document.getElementById('company-lookup-status');
 const companyFieldRow = document.getElementById('company-field-row');
 const toggleOrderNotesBtn = document.getElementById('toggle-order-notes');
@@ -44,7 +43,9 @@ const COMMON_EMAIL_DOMAIN_FIXES = {
     'outlook.con': 'outlook.com'
 };
 const companyLookupCache = new Map();
+const COMPANY_LOOKUP_DEBOUNCE_MS = 500;
 let companyLookupInFlight = false;
+let companyLookupDebounceTimer = null;
 
 function setElementHidden(element, hidden) {
     if (!element) {
@@ -405,12 +406,54 @@ function setCompanyLookupStatus(message = '', type = 'info') {
 
 function setCompanyLookupLoading(isLoading) {
     companyLookupInFlight = isLoading;
-    if (!companyLookupBtn) {
+    if (!nifInput) {
         return;
     }
 
-    companyLookupBtn.disabled = isLoading;
-    companyLookupBtn.textContent = isLoading ? 'A procurar...' : 'Preencher empresa';
+    nifInput.setAttribute('aria-busy', isLoading ? 'true' : 'false');
+}
+
+function clearCompanyLookupDebounce() {
+    if (companyLookupDebounceTimer) {
+        window.clearTimeout(companyLookupDebounceTimer);
+        companyLookupDebounceTimer = null;
+    }
+}
+
+function isTaxIdLookupReady(normalized, postalCode = '') {
+    if (!normalized) {
+        return false;
+    }
+
+    const country = detectTaxCountry(normalized, postalCode);
+    if (country === 'PT') {
+        return /^\d{9}$/.test(normalized);
+    }
+
+    return /^[A-Z]\d{7}[A-Z0-9]$/.test(normalized) || /^\d{8}[A-Z]$/.test(normalized);
+}
+
+function scheduleCompanyLookup() {
+    clearCompanyLookupDebounce();
+
+    if (!isBusinessCustomerSelected() || !nifInput) {
+        return;
+    }
+
+    const validation = updateTaxIdValidity();
+    if (!validation.normalized) {
+        setCompanyLookupStatus('');
+        return;
+    }
+
+    if (!isTaxIdLookupReady(validation.normalized, postalCodeInput?.value || '') || !validation.valid) {
+        return;
+    }
+
+    companyLookupDebounceTimer = window.setTimeout(() => {
+        companyLookupDebounceTimer = null;
+        void lookupCompanyByTaxId();
+    }, COMPANY_LOOKUP_DEBOUNCE_MS);
 }
 
 function applyCompanyLookupResult(customer = {}) {
@@ -525,10 +568,6 @@ function syncCustomerTypeUI() {
             : 'Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.';
     }
 
-    if (companyLookupBtn) {
-        setElementHidden(companyLookupBtn, !business);
-    }
-
     if (companyFieldRow) {
         setElementHidden(companyFieldRow, !business);
     }
@@ -550,6 +589,7 @@ function syncCustomerTypeUI() {
     clearCheckoutFeedback();
 
     if (!business) {
+        clearCompanyLookupDebounce();
         setCompanyLookupStatus('');
     }
 }
@@ -939,14 +979,16 @@ document.addEventListener('DOMContentLoaded', () => {
         nifInput.addEventListener('input', () => {
             updateTaxIdValidity();
             setCompanyLookupStatus('');
+            scheduleCompanyLookup();
         });
         nifInput.addEventListener('blur', () => {
+            clearCompanyLookupDebounce();
             const validation = updateTaxIdValidity();
             if (!validation.valid) {
                 setCheckoutFeedback(validation.message, 'error');
                 return;
             }
-            if (isBusinessCustomerSelected() && validation.normalized) {
+            if (isBusinessCustomerSelected() && validation.normalized && isTaxIdLookupReady(validation.normalized, postalCodeInput?.value || '')) {
                 void lookupCompanyByTaxId();
             }
         });
@@ -955,11 +997,13 @@ document.addEventListener('DOMContentLoaded', () => {
         postalCodeInput.addEventListener('input', () => {
             updatePostalCodeFormatting();
             updateTaxIdValidity();
+            scheduleCompanyLookup();
         });
         postalCodeInput.addEventListener('blur', () => {
             updatePostalCodeFormatting();
             updateTaxIdValidity();
             updatePhoneValidity();
+            scheduleCompanyLookup();
         });
     }
     if (companyInput) {
@@ -978,11 +1022,6 @@ document.addEventListener('DOMContentLoaded', () => {
             if (String(notesTextarea.value || '').trim()) {
                 syncOrderNotesVisibility({ forceOpen: true });
             }
-        });
-    }
-    if (companyLookupBtn) {
-        companyLookupBtn.addEventListener('click', async () => {
-            await lookupCompanyByTaxId({ force: true });
         });
     }
     if (customerTypeSelect) {

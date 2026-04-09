@@ -22,7 +22,7 @@
     <script src="/assets/js/config.js"></script>
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/logic.js?v=20260401e"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260409b">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260409c">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -105,11 +105,8 @@
                                     </div>
                                     <div id="tax-field-row">
                                         <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
-                                        <div class="checkout-inline-action">
-                                            <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12"
-                                                placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
-                                            <button type="button" id="lookup-company-btn" class="checkout-inline-btn hidden">Preencher por NIF</button>
-                                        </div>
+                                        <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12"
+                                            placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
                                         <p id="nif-help" class="mt-2 text-xs text-slate-500">Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.</p>
                                         <p id="company-lookup-status" class="hidden"></p>
                                     </div>
@@ -345,7 +342,7 @@
     </footer>
 
     <script src="/assets/js/core/order-workflow.js"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260409b"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260409c"></script>
     <script>
         lucide.createIcons();
     </script>
