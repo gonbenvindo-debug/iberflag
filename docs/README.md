@@ -36,6 +36,7 @@ Plataforma completa de e-commerce especializada em flybanners e produtos publici
 - `docs/reference/INVOICING_LIVE_READINESS.md` - checklist de passagem a live para faturacao, VIES, evidencia fiscal e estados internos
 - `docs/seo/README.md` - dossier local sobre SEO tecnico, indexacao, Core Web Vitals e Search Console
 - `docs/conversion-psychology/README.md` - dossier local sobre psicologia digital, persuasao etica, estudos de conversao e aplicacao pratica a e-commerce
+- `docs/business/README.md` - pack base de negocio com plano mestre, oferta, margem, operacao e compliance
 
 ### Personalizador (Novo!)
 - **Interface Estilo Canva**: Layout moderno com 3 painéis (Ferramentas | Canvas | Camadas)
