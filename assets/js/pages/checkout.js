@@ -604,8 +604,8 @@ function syncOrderNotesVisibility({ forceOpen = null } = {}) {
     if (toggleOrderNotesBtn) {
         toggleOrderNotesBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         toggleOrderNotesBtn.textContent = shouldOpen
-            ? 'Remover nota interna'
-            : 'Adicionar nota interna';
+            ? 'Remover nota da encomenda'
+            : 'Adicionar nota a encomenda';
     }
 
     if (!shouldOpen && notesTextarea) {

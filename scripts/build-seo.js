@@ -378,7 +378,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </div>
               <a href="${product.personalizePath}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
             </div>
-            <p class="mt-4 text-sm leading-6 text-slate-500">O editor abre num passo separado para manter esta pagina leve, indexavel e orientada a descoberta do produto.</p>
+            <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opcoes, envie o design e finalize a encomenda no passo seguinte.</p>
           </div>
           <div class="grid gap-4 sm:grid-cols-3">
             <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">Envios</strong>Prazos, expedicao e entrega.</a>
@@ -393,7 +393,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 class="text-2xl font-semibold text-slate-900">Produtos relacionados</h2>
-            <p class="mt-2 text-sm text-slate-600">Mais solucoes da categoria ${escapeHtml(product.categoryLabel)} para reforcar a navegacao entre paginas.</p>
+            <p class="mt-2 text-sm text-slate-600">Veja mais modelos da categoria ${escapeHtml(product.categoryLabel)} e compare formatos, tamanhos e precos.</p>
           </div>
           <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver categoria completa</a>
         </div>
@@ -569,7 +569,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         </nav>
         <div class="max-w-3xl">
           <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
-          <p class="mt-4 text-base leading-7 text-slate-600">Navegue por categorias e descubra os produtos IberFlag com pagina propria, ligacoes internas claras e acesso direto ao personalizador apenas quando fizer sentido.</p>
+          <p class="mt-4 text-base leading-7 text-slate-600">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
         <div class="mt-8 flex flex-wrap gap-3">
           ${featuredCategories.map((category) => `
@@ -601,7 +601,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         <div class="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
           <div>
             <h2 class="text-xl font-semibold text-slate-900">Categorias principais</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Cada categoria tem pagina propria para facilitar descoberta, navegacao interna e indexacao canónica.</p>
+            <p class="mt-2 text-sm leading-6 text-slate-600">Cada categoria junta os modelos mais procurados para encontrar rapidamente a opcao certa.</p>
             <div class="mt-5 grid gap-3 sm:grid-cols-2">
               ${categoryEntries.map((category) => `
                 <a href="${category.canonicalPath}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">
@@ -632,7 +632,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
 function renderHtmlSitemap(categoryEntries, productEntries) {
     return `${renderHead({
         title: 'Mapa do Site | IberFlag',
-        description: 'Pagina de navegacao com ligacoes para categorias, produtos e paginas principais da IberFlag.',
+        description: 'Encontre rapidamente categorias, produtos e paginas principais da IberFlag.',
         canonicalPath: SiteRoutes.STATIC_PATHS.sitemap,
         imageUrl: `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`,
         structuredData: {
@@ -647,7 +647,7 @@ function renderHtmlSitemap(categoryEntries, productEntries) {
   <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <div class="max-w-3xl">
       <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Mapa do site</h1>
-      <p class="mt-4 text-base leading-7 text-slate-600">Pagina criada para reforcar descoberta interna, navegacao transversal e ligacoes entre categorias, produtos e conteudos institucionais.</p>
+      <p class="mt-4 text-base leading-7 text-slate-600">Encontre num so lugar as categorias, os produtos e as paginas mais uteis do site.</p>
     </div>
     <div class="mt-10 grid gap-8 lg:grid-cols-3">
       <section class="rounded-2xl border border-slate-200 bg-white p-6">
