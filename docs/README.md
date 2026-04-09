@@ -28,6 +28,13 @@ Plataforma completa de e-commerce especializada em flybanners e produtos publici
 - **Gestão de Clientes**: Base de dados de clientes
 - **Gestão de Contactos**: Mensagens recebidas via formulário
 
+## 📚 Dossiers de Referencia Offline
+
+- `docs/reference/README.md` - indice dos dossiers locais para Stripe, Facturalusa e passagem a live
+- `docs/reference/STRIPE_API_OFFLINE_SUMMARY.md` - resumo operacional da API Stripe para Checkout, tax IDs, webhooks e live readiness
+- `docs/reference/FACTURALUSA_API_OFFLINE_SUMMARY.md` - resumo operacional da API Facturalusa para clientes, vendas, IVA, series e riscos de emissao
+- `docs/reference/INVOICING_LIVE_READINESS.md` - checklist de passagem a live para faturacao, VIES, evidencia fiscal e estados internos
+
 ### Personalizador (Novo!)
 - **Interface Estilo Canva**: Layout moderno com 3 painéis (Ferramentas | Canvas | Camadas)
 - **Resize Handles**: 8 handles de redimensionamento (cantos + lados)
