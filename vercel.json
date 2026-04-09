@@ -212,17 +212,6 @@
       "permanent": true
     },
     {
-      "source": "/:path*",
-      "has": [
-        {
-          "type": "host",
-          "value": "(.*)\\.vercel\\.app"
-        }
-      ],
-      "destination": "https://iberflag.com/:path*",
-      "permanent": true
-    },
-    {
       "source": "/index",
       "destination": "/",
       "permanent": true
