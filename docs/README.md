@@ -34,6 +34,7 @@ Plataforma completa de e-commerce especializada em flybanners e produtos publici
 - `docs/reference/STRIPE_API_OFFLINE_SUMMARY.md` - resumo operacional da API Stripe para Checkout, tax IDs, webhooks e live readiness
 - `docs/reference/FACTURALUSA_API_OFFLINE_SUMMARY.md` - resumo operacional da API Facturalusa para clientes, vendas, IVA, series e riscos de emissao
 - `docs/reference/INVOICING_LIVE_READINESS.md` - checklist de passagem a live para faturacao, VIES, evidencia fiscal e estados internos
+- `docs/reference/IBERFLAG_VAT_MATRIX_PT_EU_EXTRA_EU.md` - matriz fiscal operacional para vendas de bens em Portugal, UE e extra-UE
 - `docs/seo/README.md` - dossier local sobre SEO tecnico, indexacao, Core Web Vitals e Search Console
 - `docs/conversion-psychology/README.md` - dossier local sobre psicologia digital, persuasao etica, estudos de conversao e aplicacao pratica a e-commerce
 - `docs/business/README.md` - pack base de negocio com plano mestre, oferta, margem, operacao e compliance

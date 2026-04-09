@@ -13,12 +13,16 @@ Files in this folder:
 - [STRIPE_API_OFFLINE_SUMMARY.md](C:/Users/Suporte/Desktop/iberflag/iberflag-main/docs/reference/STRIPE_API_OFFLINE_SUMMARY.md)
 - [FACTURALUSA_API_OFFLINE_SUMMARY.md](C:/Users/Suporte/Desktop/iberflag/iberflag-main/docs/reference/FACTURALUSA_API_OFFLINE_SUMMARY.md)
 - [INVOICING_LIVE_READINESS.md](C:/Users/Suporte/Desktop/iberflag/iberflag-main/docs/reference/INVOICING_LIVE_READINESS.md)
+- [IBERFLAG_VAT_MATRIX_PT_EU_EXTRA_EU.md](C:/Users/Suporte/Desktop/iberflag/iberflag-main/docs/reference/IBERFLAG_VAT_MATRIX_PT_EU_EXTRA_EU.md)
+- [IBERFLAG_VAT_MATRIX_SOURCE_MANIFEST.md](C:/Users/Suporte/Desktop/iberflag/iberflag-main/docs/reference/IBERFLAG_VAT_MATRIX_SOURCE_MANIFEST.md)
 
 How to use this pack:
 
 1. Read `INVOICING_LIVE_READINESS.md` first for the go-live rules and unresolved decisions.
 2. Use `STRIPE_API_OFFLINE_SUMMARY.md` for Checkout, tax ID collection, tax validation status, webhooks, idempotency, and testing.
 3. Use `FACTURALUSA_API_OFFLINE_SUMMARY.md` for document emission, customer records, VAT rate and exemption mapping, and operational constraints.
+4. Use `IBERFLAG_VAT_MATRIX_PT_EU_EXTRA_EU.md` for the goods-focused decision matrix across Portugal, EU, and extra-EU scenarios.
+5. Use `IBERFLAG_VAT_MATRIX_SOURCE_MANIFEST.md` when you need to return to the official legal baseline sources.
 
 Important limits:
 
