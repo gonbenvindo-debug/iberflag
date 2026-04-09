@@ -3,7 +3,10 @@ node_modules
 .env*
 .supabase
 supabase/.temp
+docs
+supabase
 dump.sql
+mobile-properties-check.png
 *.bak
 .git
 populate-products.js

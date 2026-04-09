@@ -324,6 +324,62 @@
   ],
   "rewrites": [
     {
+      "source": "/docs",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/docs/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/pages",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/pages/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/scripts",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/scripts/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/supabase",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/supabase/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/config",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/config/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/lib",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/lib/:path*",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/dump.sql",
+      "destination": "/404.html"
+    },
+    {
+      "source": "/mobile-properties-check.png",
+      "destination": "/404.html"
+    },
+    {
       "source": "/",
       "destination": "/pages/index.html"
     },
