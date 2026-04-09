@@ -410,30 +410,11 @@ function applyCompanyLookupResult(customer = {}) {
         companyInput.value = String(customer.empresa || '').trim();
     }
 
-    if (phoneInput && !String(phoneInput.value || '').trim() && String(customer.telefone || '').trim()) {
-        phoneInput.value = normalizeCheckoutPhone(customer.telefone);
-    }
-
-    if (emailInput && !String(emailInput.value || '').trim() && String(customer.email || '').trim()) {
-        emailInput.value = normalizeCheckoutEmail(customer.email);
-    }
-
-    if (checkoutForm?.elements?.morada && !String(checkoutForm.elements.morada.value || '').trim() && String(customer.morada || '').trim()) {
-        checkoutForm.elements.morada.value = String(customer.morada || '').trim();
-    }
-
-    if (postalCodeInput && !String(postalCodeInput.value || '').trim() && String(customer.codigo_postal || '').trim()) {
-        postalCodeInput.value = String(customer.codigo_postal || '').trim();
-    }
-
     if (checkoutForm?.elements?.cidade && !String(checkoutForm.elements.cidade.value || '').trim() && String(customer.cidade || '').trim()) {
         checkoutForm.elements.cidade.value = String(customer.cidade || '').trim();
     }
 
     updateCompanyValidity();
-    updatePhoneValidity();
-    updateEmailValidity();
-    updatePostalCodeFormatting();
 }
 
 async function lookupCompanyByTaxId({ force = false } = {}) {
@@ -488,7 +469,7 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
         if (payload?.found && payload?.customer) {
             applyCompanyLookupResult(payload.customer);
             setCompanyLookupStatus(
-                `Dados encontrados em ${payload.sourceLabel || 'registos existentes'} e preenchidos nos campos em falta.`,
+                `Nome fiscal encontrado em ${payload.sourceLabel || 'registos existentes'} e aplicado aos campos em falta.`,
                 'success'
             );
             return payload;
@@ -622,6 +603,10 @@ function getCheckoutErrorMessage(error) {
 
     if (error?.code === 'EMAIL_INVALIDO') {
         return error?.message || 'Introduza um email valido para iniciar o checkout.';
+    }
+
+    if (error?.code === 'CUSTOMER_IDENTITY_CONFLICT') {
+        return error?.message || 'Ja existe um cliente com este NIF associado a outro contacto. Confirme o email e o nome fiscal antes de continuar.';
     }
 
     if (error?.code === 'TELEFONE_INVALIDO') {

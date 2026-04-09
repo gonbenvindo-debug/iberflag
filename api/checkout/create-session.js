@@ -83,6 +83,10 @@ function getCheckoutErrorMessage(error) {
         return error?.message || 'Para faturacao empresarial o NIF e obrigatorio.';
     }
 
+    if (errorCode === 'CUSTOMER_IDENTITY_CONFLICT') {
+        return error?.message || 'Ja existe um cliente com este NIF associado a outro contacto. Confirme o email e o nome fiscal antes de continuar.';
+    }
+
     if (errorCode === 'EMPRESA_REQUIRED') {
         return error?.message || 'Indique o nome fiscal da empresa para emitir a fatura.';
     }
@@ -128,6 +132,47 @@ function getCheckoutErrorMessage(error) {
     }
 
     return 'Nao foi possivel iniciar o checkout.';
+}
+
+function getCheckoutErrorStatus(error) {
+    const errorCode = String(error?.code || '').toUpperCase();
+    const errorMessage = String(error?.message || '').toUpperCase();
+
+    if (errorMessage === 'REQUEST_BODY_TOO_LARGE') {
+        return 413;
+    }
+
+    if (errorCode === 'INVALID_JSON_BODY' || errorMessage === 'INVALID_JSON_BODY') {
+        return 400;
+    }
+
+    if ([
+        'CARRINHO_VAZIO',
+        'DADOS_CLIENTE_INVALIDOS',
+        'MORADA_INVALIDA',
+        'TOTAL_INVALIDO',
+        'EMAIL_REQUIRED',
+        'EMAIL_INVALIDO',
+        'NIF_INVALIDO',
+        'NIF_REQUIRED',
+        'EMPRESA_REQUIRED',
+        'TELEFONE_INVALIDO',
+        'TIPO_CLIENTE_INVALIDO',
+        'CODIGO_POSTAL_INVALIDO',
+        'BASE_INVALIDA',
+        'CUSTOMER_IDENTITY_CONFLICT'
+    ].includes(errorCode)) {
+        return 400;
+    }
+
+    if ([
+        'MISSING_PRODUCT_MAPPING',
+        'PRODUCT_INACTIVE'
+    ].includes(errorCode)) {
+        return 409;
+    }
+
+    return 500;
 }
 
 async function deleteOrderWithItems(supabase, orderId) {
@@ -369,8 +414,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             console.warn('Falha ao limpar encomenda provisoria:', cleanupError);
         }
 
-        sendJson(res, 500, {
-            error: 'CHECKOUT_SESSION_FAILED',
+        const statusCode = getCheckoutErrorStatus(error);
+        sendJson(res, statusCode, {
+            error: statusCode >= 500 ? 'CHECKOUT_SESSION_FAILED' : (error?.code || 'CHECKOUT_SESSION_FAILED'),
             message: getCheckoutErrorMessage(error)
         });
     }

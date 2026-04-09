@@ -2,6 +2,7 @@ const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { applyRateLimit, readJsonBody, sendJson } = require('../../lib/server/http');
 const {
     buildCheckoutCustomerSnapshot,
+    validateCheckoutCustomerType,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
 const { findCustomerByVatNumber } = require('../../lib/server/facturalusa');
@@ -20,13 +21,7 @@ function pickString(source, keys) {
 
 function mapDatabaseCustomer(customer = {}) {
     return {
-        nome: String(customer.nome || '').trim(),
         empresa: String(customer.empresa || customer.nome || '').trim(),
-        email: String(customer.email || '').trim(),
-        telefone: String(customer.telefone || '').trim(),
-        nif: String(customer.nif || '').trim(),
-        morada: String(customer.morada || '').trim(),
-        codigo_postal: String(customer.codigo_postal || '').trim(),
         cidade: String(customer.cidade || '').trim(),
         tipo_cliente: normalizeCustomerType(customer.tipo_cliente, customer)
     };
@@ -40,22 +35,12 @@ function mapFacturalusaCustomer(customer = {}, normalizedTaxId = '') {
         'business_name',
         'description'
     ]);
-    const phone = pickString(customer, ['mobile', 'telephone', 'phone']);
-    const address = pickString(customer, ['address', 'address_1', 'street']);
-    const postalCode = pickString(customer, ['postal_code', 'zip_code', 'zipcode']);
     const city = pickString(customer, ['city', 'locality']);
-    const email = pickString(customer, ['email']);
     const vatNumber = pickString(customer, ['vat_number', 'vat', 'nif']) || normalizedTaxId;
     const rawType = pickString(customer, ['type']);
 
     return {
-        nome: '',
         empresa: companyName,
-        email,
-        telefone: phone,
-        nif: vatNumber,
-        morada: address,
-        codigo_postal: postalCode,
         cidade: city,
         tipo_cliente: normalizeCustomerType(rawType, {
             empresa: companyName,
@@ -67,7 +52,7 @@ function mapFacturalusaCustomer(customer = {}, normalizedTaxId = '') {
 async function findCustomerInDatabase(supabase, taxId) {
     const { data, error } = await supabase
         .from('clientes')
-        .select('id,nome,email,telefone,empresa,nif,morada,codigo_postal,cidade')
+        .select('id,nome,empresa,cidade')
         .eq('nif', taxId)
         .limit(1)
         .maybeSingle();
@@ -101,6 +86,14 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
             codigo_postal: body?.postalCode || '',
             tipo_cliente: body?.customerType || 'empresa'
         });
+        const customerTypeValidation = validateCheckoutCustomerType(customerSnapshot);
+        if (!customerTypeValidation.valid || customerSnapshot.tipo_cliente !== 'empresa') {
+            sendJson(res, 400, {
+                error: 'COMPANY_LOOKUP_ONLY_FOR_BUSINESS',
+                message: 'O preenchimento automatico por NIF so esta disponivel para faturacao empresarial.'
+            });
+            return;
+        }
 
         const taxIdValidation = validateCheckoutCustomerTaxId(customerSnapshot);
         if (!taxIdValidation.valid || !taxIdValidation.normalized) {

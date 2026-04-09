@@ -35,11 +35,12 @@ async function saveTemplate(supabase, payload) {
         const { data, error } = await supabase
             .from('email_templates')
             .update(template)
-            .eq('id', id);
+            .eq('id', id)
+            .select('*')
+            .maybeSingle();
 
         if (error) throw error;
-        const updated = (data || [])[0] || null;
-        if (updated) return sanitizeTemplateRow(updated);
+        if (data) return sanitizeTemplateRow(data);
     }
 
     const { data: existing, error: lookupError } = await supabase
@@ -54,18 +55,22 @@ async function saveTemplate(supabase, payload) {
         const { data, error } = await supabase
             .from('email_templates')
             .update(template)
-            .eq('id', existing.id);
+            .eq('id', existing.id)
+            .select('*')
+            .single();
 
         if (error) throw error;
-        return sanitizeTemplateRow((data || [])[0] || null);
+        return sanitizeTemplateRow(data);
     }
 
     const { data, error } = await supabase
         .from('email_templates')
-        .insert(template);
+        .insert(template)
+        .select('*')
+        .single();
 
     if (error) throw error;
-    return sanitizeTemplateRow((data || [])[0] || null);
+    return sanitizeTemplateRow(data);
 }
 
 module.exports = async function adminEmailTemplatesHandler(req, res) {

@@ -2969,6 +2969,8 @@ async function saveEmailTemplate(event) {
                 emailTemplatesCache.push(saved);
             }
             fillEmailTemplateForm(saved);
+        } else {
+            await loadEmailTemplates(true);
         }
 
         showToast('Template de email guardado', 'success');
