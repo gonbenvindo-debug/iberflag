@@ -487,7 +487,7 @@ Object.assign(DesignEditor.prototype, {
             closeEditorLink.addEventListener('click', async (event) => {
                 event.preventDefault();
 
-                const targetHref = closeEditorLink.getAttribute('href') || '/produtos.html';
+                const targetHref = closeEditorLink.getAttribute('href') || '/produtos';
                 const clearAutosaveAndExit = () => {
                     const saveKeys = [this.getAutosaveKey?.(), ...(this.getLegacyAutosaveKeys?.() || [])]
                         .filter(Boolean);
@@ -1274,3 +1274,4 @@ Object.assign(DesignEditor.prototype, {
 
 
 });
+

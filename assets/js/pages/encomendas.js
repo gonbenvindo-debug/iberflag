@@ -24,6 +24,9 @@ if (ordersSearchForm) {
         ordersSearchBtn.disabled = true;
         ordersSearchBtn.innerHTML = '<div class="spinner"></div>';
 
-        window.location.href = `/encomenda.html?codigo=${encodeURIComponent(normalizedCode)}`;
+        const nextPath = typeof SiteRoutes !== 'undefined'
+            ? SiteRoutes.buildOrderPath(normalizedCode)
+            : `/encomenda/${encodeURIComponent(normalizedCode)}`;
+        window.location.href = nextPath;
     });
 }

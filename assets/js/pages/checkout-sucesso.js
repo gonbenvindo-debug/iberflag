@@ -49,7 +49,10 @@ async function pollUntilReady(sessionId, orderCode) {
 
             if (paymentStatus === 'paid') {
                 updateState('Pagamento confirmado', 'A abrir o tracking da encomenda...');
-                window.location.href = `/encomenda.html?codigo=${encodeURIComponent(resolvedOrderCode)}`;
+                const nextPath = typeof SiteRoutes !== 'undefined'
+                    ? SiteRoutes.buildOrderPath(resolvedOrderCode)
+                    : `/encomenda/${encodeURIComponent(resolvedOrderCode)}`;
+                window.location.href = nextPath;
                 return;
             }
 

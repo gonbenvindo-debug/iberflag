@@ -79,6 +79,24 @@ function ensureAdminSupabaseReady() {
     return false;
 }
 
+function buildAdminCustomizerUrl(productId, extraParams = {}) {
+    const normalizedProductId = String(productId || '').trim();
+    const params = { admin: 'true', ...extraParams };
+
+    if (typeof SiteRoutes !== 'undefined') {
+        const manifestProduct = typeof SiteRoutes.findProductById === 'function'
+            ? SiteRoutes.findProductById(normalizedProductId)
+            : null;
+        if (manifestProduct && typeof SiteRoutes.buildProductPersonalizerPath === 'function') {
+            return SiteRoutes.buildProductPersonalizerPath(manifestProduct, params);
+        }
+    }
+
+    return typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.withQuery === 'function'
+        ? SiteRoutes.withQuery('/personalizar', { produto: normalizedProductId, ...params })
+        : `/personalizar?produto=${encodeURIComponent(normalizedProductId)}&${new URLSearchParams(params).toString()}`;
+}
+
 function getSessionEmail(session) {
     return (session?.user?.email || '').trim().toLowerCase();
 }
@@ -924,7 +942,7 @@ document.addEventListener('click', (e) => {
         showToast('Guarde o produto primeiro', 'warning');
         return;
     }
-    window.open(`/personalizar.html?produto=${currentProductId}&admin=true`, '_blank');
+    window.open(buildAdminCustomizerUrl(currentProductId), '_blank');
 });
 
 // ===== SVG FILE UPLOAD HANDLER =====
@@ -3179,7 +3197,7 @@ function openTemplateInCustomizerFromCard(templateId) {
         return;
     }
 
-    const customizerUrl = `/personalizar.html?produto=${encodeURIComponent(String(productId))}&admin=true&editTemplate=${encodeURIComponent(String(templateId))}`;
+    const customizerUrl = buildAdminCustomizerUrl(productId, { editTemplate: String(templateId) });
     window.open(customizerUrl, '_blank', 'noopener,noreferrer');
 }
 

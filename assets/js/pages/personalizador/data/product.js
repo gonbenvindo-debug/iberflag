@@ -5,10 +5,21 @@ Object.assign(DesignEditor.prototype, {
 
     async loadProduct() {
         const urlParams = new URLSearchParams(window.location.search);
-        const productId = urlParams.get('produto');
+        const locationState = typeof SiteRoutes !== 'undefined'
+            ? SiteRoutes.parseLocationPath(window.location.pathname)
+            : { productSlug: '', isProductPersonalizer: false };
+        const productSlug = String(urlParams.get('slug') || locationState.productSlug || '').trim();
+        let productId = urlParams.get('produto');
+        const manifestProduct = typeof SiteRoutes !== 'undefined' && productSlug
+            ? SiteRoutes.findProductBySlug(productSlug)
+            : null;
+        if (!productId && manifestProduct?.id) {
+            productId = String(manifestProduct.id);
+        }
         this.editIndex = urlParams.get('edit');
         this.editDesignId = urlParams.get('design');
         this.productId = productId;
+        this.productSlug = productSlug || String(manifestProduct?.slug || '').trim();
         this.isAdminMode = urlParams.get('admin') === 'true';
         this.editingTemplateId = urlParams.get('editTemplate') || null;
 
@@ -16,8 +27,10 @@ Object.assign(DesignEditor.prototype, {
             this.setupAdminMode();
         }
 
-        if (!productId) {
-            window.location.href = '/produtos.html';
+        if (!productId && !productSlug) {
+            window.location.href = typeof SiteRoutes !== 'undefined'
+                ? SiteRoutes.STATIC_PATHS.products
+                : '/produtos';
             return;
         }
 
@@ -38,20 +51,62 @@ Object.assign(DesignEditor.prototype, {
             } catch (error) {
                 console.warn('Falha ao carregar produto da base de dados:', error);
             }
+        } else if (typeof supabaseClient !== 'undefined' && productSlug) {
+            try {
+                const { data, error } = await supabaseClient
+                    .from('produtos')
+                    .select('*')
+                    .eq('slug', productSlug)
+                    .maybeSingle();
+
+                if (!error && data) {
+                    dbProduct = data;
+                }
+            } catch (error) {
+                console.warn('Falha ao carregar produto por slug:', error);
+            }
         }
 
-        this.currentProduct = dbProduct || initialProducts.find(p => p.id == productId);
+        this.currentProduct = dbProduct
+            || initialProducts.find((product) => String(product.id) === String(productId))
+            || initialProducts.find((product) => typeof SiteRoutes !== 'undefined' && SiteRoutes.inferProductSlug(product) === productSlug);
 
         if (!this.currentProduct) {
             showToast('Produto não encontrado', 'error');
-            setTimeout(() => window.location.href = '/produtos.html', 2000);
+            setTimeout(() => {
+                window.location.href = typeof SiteRoutes !== 'undefined'
+                    ? SiteRoutes.STATIC_PATHS.products
+                    : '/produtos';
+            }, 2000);
             return;
         }
 
+        this.productId = String(this.currentProduct.id || productId || '');
+        this.productSlug = typeof SiteRoutes !== 'undefined'
+            ? SiteRoutes.inferProductSlug(this.currentProduct)
+            : productSlug;
+
         if (!this.isAdminMode && (this.currentProduct.ativo === false || !(Number(this.currentProduct.preco) > 0))) {
             showToast('Este produto ainda não tem preço válido para checkout.', 'error');
-            setTimeout(() => window.location.href = '/produtos.html', 2000);
+            setTimeout(() => {
+                window.location.href = typeof SiteRoutes !== 'undefined'
+                    ? SiteRoutes.STATIC_PATHS.products
+                    : '/produtos';
+            }, 2000);
             return;
+        }
+
+        if (typeof SiteRoutes !== 'undefined' && !this.isAdminMode) {
+            const nextPath = SiteRoutes.buildProductPersonalizerPath(this.currentProduct, {
+                template: urlParams.get('template') || undefined,
+                edit: this.editIndex || undefined,
+                design: this.editDesignId || undefined,
+                editTemplate: this.editingTemplateId || undefined
+            });
+            const currentPathWithSearch = `${window.location.pathname}${window.location.search}`;
+            if (currentPathWithSearch !== nextPath && window.history?.replaceState) {
+                window.history.replaceState({}, '', nextPath);
+            }
         }
 
         document.getElementById('product-name').textContent = this.currentProduct.nome;
@@ -506,9 +561,9 @@ Object.assign(DesignEditor.prototype, {
         const priceEl = document.getElementById('product-price');
         if (priceEl) priceEl.style.display = 'none';
 
-        const closeLink = document.querySelector('#editor-nav a[href="/produtos.html"]');
+        const closeLink = document.querySelector('#editor-nav a[href="/produtos"], #editor-nav a[href="/produtos"]');
         if (closeLink) {
-            closeLink.href = '/admin.html#produtos';
+            closeLink.href = '/admin#produtos';
             closeLink.title = 'Voltar ao Admin';
         }
     },
@@ -592,7 +647,7 @@ Object.assign(DesignEditor.prototype, {
             }
 
             setTimeout(() => {
-                window.location.href = '/admin.html#produtos';
+                window.location.href = '/admin#produtos';
             }, 1200);
         } catch (err) {
             console.error('Erro ao guardar design:', err);
@@ -601,3 +656,4 @@ Object.assign(DesignEditor.prototype, {
     }
 
 });
+

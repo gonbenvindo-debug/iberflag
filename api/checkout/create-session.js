@@ -30,6 +30,7 @@ const {
     validateCheckoutPostalCode,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
+const SiteRoutes = require('../../assets/js/core/site-routes.js');
 
 function getCheckoutErrorMessage(error) {
     const raw = String(error?.message || error?.details || error?.hint || '').toLowerCase();
@@ -348,8 +349,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         await insertOrderItemsWithFallback(supabase, order.id, cart);
 
         const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
-        const successUrl = `${baseUrl}/checkout-sucesso.html?session_id={CHECKOUT_SESSION_ID}&codigo=${encodeURIComponent(orderNumber)}`;
-        const cancelUrl = `${baseUrl}/checkout.html?cancelled=1`;
+        const successUrl = `${baseUrl}${SiteRoutes.buildCheckoutSuccessPath({
+            session_id: '{CHECKOUT_SESSION_ID}',
+            codigo: orderNumber
+        })}`;
+        const cancelUrl = `${baseUrl}${SiteRoutes.withQuery(SiteRoutes.STATIC_PATHS.checkout, { cancelled: 1 })}`;
 
         const session = await stripe.checkout.sessions.create({
             mode: 'payment',

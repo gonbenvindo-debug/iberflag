@@ -743,6 +743,12 @@ function buildCheckoutRequestCart(items) {
     }));
 }
 
+function getCatalogPath() {
+    return typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.products
+        : '/produtos';
+}
+
 // ===== LOAD CART =====
 async function loadCart() {
     if (window.cartHydrationPromise) {
@@ -750,7 +756,7 @@ async function loadCart() {
     }
 
     if (!cart || cart.length === 0) {
-        window.location.href = '/produtos.html';
+        window.location.href = getCatalogPath();
         return;
     }
 
@@ -799,7 +805,7 @@ function validateCustomization() {
     if (hasUncustomized) {
         showToast('Todos os produtos devem ser personalizados antes da compra', 'error');
         setTimeout(() => {
-            window.location.href = '/produtos.html';
+            window.location.href = getCatalogPath();
         }, 2000);
         return false;
     }
@@ -936,7 +942,10 @@ if (placeOrderBtn) {
                     return;
                 }
 
-                window.location.href = `/checkout-sucesso.html?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
+                const fallbackSuccessPath = typeof SiteRoutes !== 'undefined'
+                    ? SiteRoutes.buildCheckoutSuccessPath({ codigo: payload?.orderCode || '' })
+                    : `/checkout/sucesso?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
+                window.location.href = fallbackSuccessPath;
             }, 1000);
 
         } catch (error) {

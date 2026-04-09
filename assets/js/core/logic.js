@@ -87,6 +87,10 @@ function buildLegacyCartSidebarMarkup() {
         return;
     }
 
+    const checkoutPath = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.checkout
+        : '/checkout';
+
     if (!cartSidebar) {
         const sidebar = document.createElement('div');
         sidebar.id = 'cart-sidebar';
@@ -111,7 +115,7 @@ function buildLegacyCartSidebarMarkup() {
                         <span>Total:</span>
                         <span id="cart-total">0.00€</span>
                     </div>
-                    <a href="/checkout.html"
+                    <a href="${checkoutPath}"
                         class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                         Finalizar Encomenda
                     </a>
@@ -166,7 +170,7 @@ function buildLegacyCartSidebarMarkup() {
                     <span>Total</span>
                     <span id="cart-total">0.00€</span>
                 </div>
-                <a href="/checkout.html"
+                <a href="${checkoutPath}"
                     class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700">
                     Finalizar Encomenda
                 </a>
@@ -576,15 +580,36 @@ function getCartItemImage(item) {
 }
 
 function getCartItemEditorLink(item, index) {
+    const productPath = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.buildProductPersonalizerPath(item, {
+            edit: index,
+            design: item?.designId || undefined
+        })
+        : null;
+
     if (item?.customized && item?.designId) {
-        return `/personalizar.html?produto=${item.id}&edit=${index}&design=${encodeURIComponent(item.designId)}`;
+        return productPath || `/produto/${encodeURIComponent(item.id)}/personalizar?edit=${index}&design=${encodeURIComponent(item.designId)}`;
     }
 
-    return `/personalizar.html?produto=${item.id}&edit=${index}`;
+    return productPath || `/produto/${encodeURIComponent(item.id)}/personalizar?edit=${index}`;
 }
 
-function buildProductCustomizeUrl(productId) {
-    return `/personalizar.html?produto=${encodeURIComponent(productId)}`;
+function buildProductCustomizeUrl(product) {
+    if (typeof SiteRoutes !== 'undefined') {
+        return SiteRoutes.buildProductPersonalizerPath(product);
+    }
+
+    const productId = typeof product === 'object' ? product?.id : product;
+    return `/produto/${encodeURIComponent(productId)}/personalizar`;
+}
+
+function buildProductDetailsUrl(product) {
+    if (typeof SiteRoutes !== 'undefined') {
+        return SiteRoutes.buildProductPath(product);
+    }
+
+    const productId = typeof product === 'object' ? product?.id : product;
+    return `/produto/${encodeURIComponent(productId)}`;
 }
 
 function closeCustomizationChoiceModal() {
@@ -607,7 +632,7 @@ function openProductCustomizationChoice(productData = {}) {
         .filter(({ item }) => Number(item.id) === productId);
 
     if (matchingItems.length === 0) {
-        window.location.href = buildProductCustomizeUrl(productId);
+        window.location.href = buildProductCustomizeUrl(productData);
         return false;
     }
 
@@ -624,7 +649,7 @@ function openProductCustomizationChoice(productData = {}) {
         const designLabel = item.designId ? ` • ${String(item.designId).slice(-6).toUpperCase()}` : '';
 
         return `
-            <a href="${link}" class="choice-edit-item block w-full text-left border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition">
+                <a href="${link}" class="choice-edit-item block w-full text-left border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition">
                 <span class="block text-sm font-semibold text-gray-900">Editar item ${position + 1}</span>
                 <span class="block text-xs text-gray-500">${status}${designLabel}</span>
             </a>
@@ -762,9 +787,9 @@ function renderProducts(products) {
             </div>
             <div class="product-card-body">
                 <h3 class="product-card-title">${product.nome}</h3>
-                <a href="/personalizar.html?produto=${product.id}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="product-card-cta">
-                    <i data-lucide="palette" class="w-4 h-4"></i>
-                    Personalizar e Comprar
+                <a href="${buildProductDetailsUrl(product)}" data-customize-product-id="${product.id}" data-product-name="${product.nome}" class="product-card-cta">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    Ver produto
                 </a>
             </div>
         </div>
@@ -888,7 +913,9 @@ function updateQuantity(index, newQuantity) {
 }
 
 function openCart() {
-    window.location.href = '/checkout.html';
+    window.location.href = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.checkout
+        : '/checkout';
 }
 
 function closeCart() {
@@ -899,14 +926,19 @@ function closeCart() {
 function injectOrdersTrackingLink() {
     if (!cartSidebar) return;
 
-    const checkoutLink = cartSidebar.querySelector('a[href="/checkout.html"]');
+    const checkoutHref = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.checkout
+        : '/checkout';
+    const checkoutLink = cartSidebar.querySelector(`a[href="${checkoutHref}"]`);
     if (!checkoutLink) return;
 
     const existingLink = cartSidebar.querySelector('.orders-tracking-link');
     if (existingLink) return;
 
     const trackLink = document.createElement('a');
-    trackLink.href = '/encomendas.html';
+    trackLink.href = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.orders
+        : '/encomendas';
     trackLink.className = 'orders-tracking-link block w-full mt-2 border border-blue-200 text-blue-700 text-center py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition';
     trackLink.innerHTML = '<i data-lucide="package-search" class="w-4 h-4 inline-block mr-1"></i> Acompanhar Encomendas';
 

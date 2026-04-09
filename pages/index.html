@@ -7,19 +7,48 @@
     <title>IberFlag - Flybanners e Publicidade para a Peninsula Iberica</title>
     <meta name="description"
         content="Especialistas em flybanners, roll-ups e produtos publicitarios para Portugal e Espanha. Producao rapida, qualidade premium e precos competitivos.">
-    <link rel="canonical" href="https://iberflag.vercel.app/">
+    <link rel="canonical" href="https://iberflag.com/">
     <meta property="og:type" content="website">
     <meta property="og:title" content="IberFlag - Flybanners e Publicidade para a Peninsula Iberica">
     <meta property="og:description"
         content="Especialistas em flybanners, roll-ups e produtos publicitarios para Portugal e Espanha.">
-    <meta property="og:url" content="https://iberflag.vercel.app/">
-    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <meta property="og:url" content="https://iberflag.com/">
+    <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@graph": [
+                {
+                    "@type": "Organization",
+                    "name": "IberFlag",
+                    "url": "https://iberflag.com",
+                    "logo": "https://iberflag.com/assets/logos/logo-completo.svg",
+                    "sameAs": [
+                        "https://iberflag.com"
+                    ]
+                },
+                {
+                    "@type": "WebSite",
+                    "name": "IberFlag",
+                    "url": "https://iberflag.com",
+                    "potentialAction": {
+                        "@type": "SearchAction",
+                        "target": "https://iberflag.com/produtos",
+                        "query-input": "required name=search_term_string"
+                    }
+                }
+            ]
+        }
+    </script>
  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260406j4"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260406h17">
@@ -36,10 +65,10 @@
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
                     <a href="/" class="nav-link">Início</a>
-                    <a href="/produtos.html" class="nav-link">Produtos</a>
-                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
-                    <a href="/faq.html" class="nav-link">FAQ</a>
-                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <a href="/produtos" class="nav-link">Produtos</a>
+                    <a href="/sobre" class="nav-link">Sobre Nós</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/contacto" class="nav-link">Contacto</a>
                     <button id="cart-btn"
                         class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -67,10 +96,10 @@
     <div id="mobile-menu" class="hidden md:hidden bg-white border-b">
         <div class="px-4 py-2 space-y-1">
             <a href="/" class="block px-4 py-3 hover:bg-gray-100 font-medium">Início</a>
-            <a href="/produtos.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Produtos</a>
-            <a href="/sobre.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Sobre Nós</a>
-            <a href="/faq.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">FAQ</a>
-            <a href="/contacto.html" class="block px-4 py-3 hover:bg-gray-100 font-medium">Contacto</a>
+            <a href="/produtos" class="block px-4 py-3 hover:bg-gray-100 font-medium">Produtos</a>
+            <a href="/sobre" class="block px-4 py-3 hover:bg-gray-100 font-medium">Sobre Nós</a>
+            <a href="/faq" class="block px-4 py-3 hover:bg-gray-100 font-medium">FAQ</a>
+            <a href="/contacto" class="block px-4 py-3 hover:bg-gray-100 font-medium">Contacto</a>
         </div>
     </div>
 
@@ -88,12 +117,12 @@
                         presença forte no momento em que o cliente entra no espaço.
                     </p>
                     <div class="flex flex-col sm:flex-row gap-4 mb-10">
-                        <a href="/produtos.html" class="btn-primary group homepage-primary-action">
+                        <a href="/produtos" class="btn-primary group homepage-primary-action">
                             Ver Catálogo
                             <i data-lucide="arrow-right"
                                 class="w-5 h-5 group-hover:translate-x-1 transition-transform"></i>
                         </a>
-                        <a href="/contacto.html" class="btn-secondary homepage-secondary-action">
+                        <a href="/contacto" class="btn-secondary homepage-secondary-action">
                             Falar com Consultor
                         </a>
                     </div>
@@ -151,7 +180,7 @@
                 </div>
             </div>
             <div class="text-center mt-14 md:mt-16 mb-10 md:mb-14 homepage-products-cta">
-                <a href="/produtos.html" class="btn-primary inline-flex">
+                <a href="/produtos" class="btn-primary inline-flex">
                     Ver Todos os Produtos
                     <i data-lucide="arrow-right" class="w-5 h-5 ml-2"></i>
                 </a>
@@ -197,7 +226,7 @@
                     leitura clara, montagem simples e impacto imediato.</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
-                <a href="/produtos.html?categoria=flybanners" class="category-card group" data-category-card data-category="flybanners">
+                <a href="/produtos/fly-banner" class="category-card group" data-category-card data-category="flybanners">
                     <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1557804506-669a67965ba0?auto=format&fit=crop&q=80"
                             alt="Flybanners"
@@ -226,7 +255,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="/produtos.html?categoria=rollups" class="category-card group" data-category-card data-category="rollups">
+                <a href="/produtos/roll-up" class="category-card group" data-category-card data-category="rollups">
                     <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1583508915901-b5f84c1dcde1?auto=format&fit=crop&q=80"
                             alt="Roll-ups"
@@ -255,7 +284,7 @@
                         </div>
                     </div>
                 </a>
-                <a href="/produtos.html?categoria=lonas" class="category-card group" data-category-card data-category="lonas">
+                <a href="/produtos/wall-banner" class="category-card group" data-category-card data-category="lonas">
                     <div class="relative h-72 overflow-hidden border border-b-0 border-stone-200">
                         <img src="https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80"
                             alt="Lonas"
@@ -302,7 +331,7 @@
                             <span>Resposta comercial rápida</span>
                         </div>
                     </div>
-                    <form class="homepage-inline-form" action="/contacto.html" method="get">
+                    <form class="homepage-inline-form" action="/contacto" method="get">
                         <div class="homepage-form-grid">
                             <label class="homepage-field">
                                 <span>Nome</span>
@@ -380,20 +409,21 @@
                     <h4 class="text-gray-900 font-bold mb-4">Links Rápidos</h4>
                     <ul class="space-y-3">
                         <li><a href="/" class="hover:text-gray-900 transition">Início</a></li>
-                        <li><a href="/produtos.html" class="hover:text-gray-900 transition">Produtos</a></li>
-                        <li><a href="/sobre.html" class="hover:text-gray-900 transition">Sobre Nós</a></li>
-                        <li><a href="/faq.html" class="hover:text-gray-900 transition">FAQ</a></li>
-                        <li><a href="/contacto.html" class="hover:text-gray-900 transition">Contacto</a></li>
+                        <li><a href="/produtos" class="hover:text-gray-900 transition">Produtos</a></li>
+                        <li><a href="/sobre" class="hover:text-gray-900 transition">Sobre Nós</a></li>
+                        <li><a href="/faq" class="hover:text-gray-900 transition">FAQ</a></li>
+                        <li><a href="/contacto" class="hover:text-gray-900 transition">Contacto</a></li>
+                        <li><a href="/mapa-do-site" class="hover:text-gray-900 transition">Mapa do Site</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-gray-900 font-bold mb-4">Informações</h4>
                     <ul class="space-y-3">
-                        <li><a href="/envios.html" class="hover:text-gray-900 transition">Envios e Entregas</a></li>
-                        <li><a href="/termos.html" class="hover:text-gray-900 transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-gray-900 transition">Política de
+                        <li><a href="/envios" class="hover:text-gray-900 transition">Envios e Entregas</a></li>
+                        <li><a href="/termos" class="hover:text-gray-900 transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade" class="hover:text-gray-900 transition">Política de
                                 Privacidade</a></li>
-                        <li><a href="/devolucoes.html" class="hover:text-gray-900 transition">Devoluções</a></li>
+                        <li><a href="/devolucoes" class="hover:text-gray-900 transition">Devoluções</a></li>
                     </ul>
                 </div>
             </div>
@@ -421,3 +451,5 @@
 </body>
 
 </html>
+
+

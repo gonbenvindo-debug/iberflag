@@ -2213,7 +2213,7 @@ tbody tr:hover {
     color: #94a3b8;
 }
 
-a[href="/checkout.html"].block.w-full {
+a[href="/checkout"].block.w-full {
     border-radius: 0.85rem;
     font-weight: 700;
     background: var(--primary);
@@ -2221,7 +2221,7 @@ a[href="/checkout.html"].block.w-full {
     box-shadow: 0 14px 32px rgba(15, 23, 42, 0.15);
 }
 
-a[href="/checkout.html"].block.w-full:hover {
+a[href="/checkout"].block.w-full:hover {
     background: #17233c;
 }
 
@@ -3054,7 +3054,7 @@ button:active,
 .btn-primary,
 .homepage-primary-action,
 .checkout-place-order-btn,
-a[href="/checkout.html"].block.w-full,
+a[href="/checkout"].block.w-full,
 .tool-tab.active,
 .homepage-cart-btn,
 .app-page #cart-btn,
@@ -3069,7 +3069,7 @@ a[href="/checkout.html"].block.w-full,
 .btn-primary:hover,
 .homepage-primary-action:hover,
 .checkout-place-order-btn:hover,
-a[href="/checkout.html"].block.w-full:hover,
+a[href="/checkout"].block.w-full:hover,
 .tool-tab.active:hover,
 .homepage-cart-btn:hover,
 .app-page #cart-btn:hover,

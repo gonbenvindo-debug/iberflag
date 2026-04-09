@@ -157,7 +157,7 @@ npx serve
 
 ## 📊 Aceder ao Painel Admin
 
-1. Navegue para `/admin` (ou `/admin.html`)
+1. Navegue para `/admin` (ou `/admin`)
 2. O email do admin fica fixo no backend do painel e nao aparece na interface
 3. Use apenas a password do utilizador autorizado no Supabase
 4. O painel só aceita sessão do utilizador admin definido no código
@@ -184,13 +184,13 @@ Edite as variáveis CSS em `style.css`:
 
 ### Conteúdo
 - **Contactos**: Atualize email e telefone em todos os ficheiros HTML
-- **Morada**: Edite em `pages/contacto.html` e `pages/envios.html`
+- **Morada**: Edite em `pages/contacto` e `pages/envios`
 - **Redes Sociais**: Adicione links reais no footer
 - **Imagens**: Substitua URLs do Unsplash por imagens próprias
 
 ### Produtos
 Adicione produtos através de:
-1. Painel Admin (`/admin` ou `/admin.html`)
+1. Painel Admin (`/admin` ou `/admin`)
 2. Diretamente no Supabase
 3. SQL: `INSERT INTO produtos (...) VALUES (...)`
 
@@ -225,11 +225,11 @@ Adicione produtos através de:
 ## 📱 Páginas Criadas
 
 - ✅ **Homepage** (`pages/index.html`) - Hero, categorias, produtos em destaque
-- ✅ **Produtos** (`pages/produtos.html`) - Catálogo completo com filtros
-- ✅ **Contacto** (`pages/contacto.html`) - Formulário funcional
-- ✅ **FAQ** (`pages/faq.html`) - Accordion com pesquisa
-- ✅ **Envios** (`pages/envios.html`) - Informações de entrega
-- ✅ **Admin** (`pages/admin.html`) - Painel de gestão completo
+- ✅ **Produtos** (`pages/produtos`) - Catálogo completo com filtros
+- ✅ **Contacto** (`pages/contacto`) - Formulário funcional
+- ✅ **FAQ** (`pages/faq`) - Accordion com pesquisa
+- ✅ **Envios** (`pages/envios`) - Informações de entrega
+- ✅ **Admin** (`pages/admin`) - Painel de gestão completo
 
 ## 🔐 Segurança
 
@@ -319,3 +319,4 @@ No ficheiro `logic.js`, substitua as constantes:
 - **Lucide Icons** (Ícones modernos)
 - **Supabase** (Backend as a Service)
 - **Vercel** (Hosting)
+

@@ -6,12 +6,14 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pagamento em processamento - IberFlag</title>
     <meta name="description" content="A confirmar o pagamento e a preparar o tracking da sua encomenda IberFlag.">
-    <link rel="canonical" href="https://iberflag.vercel.app/checkout-sucesso.html">
+    <meta name="robots" content="noindex,follow">
+    <link rel="canonical" href="https://iberflag.com/checkout/sucesso">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Pagamento em processamento - IberFlag">
     <meta property="og:description" content="A confirmar o pagamento e a preparar a sua encomenda.">
-    <meta property="og:url" content="https://iberflag.vercel.app/checkout-sucesso.html">
-    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <meta property="og:url" content="https://iberflag.com/checkout/sucesso">
+    <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
+    <meta name="twitter:card" content="summary_large_image">
     <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260407a">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
@@ -19,6 +21,7 @@
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
 </head>
 
 <body class="app-page bg-slate-50 min-h-screen">
@@ -28,7 +31,7 @@
                 <a href="/" aria-label="IberFlag">
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
-                <a href="/encomendas.html" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
+                <a href="/encomendas" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
                     <i data-lucide="search" class="w-4 h-4"></i>
                     Consultar encomenda
                 </a>
@@ -53,10 +56,10 @@
             </div>
 
             <div class="mt-6 flex flex-col sm:flex-row gap-3 justify-center">
-                <a href="/encomendas.html" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800 transition">
+                <a href="/encomendas" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 font-semibold text-white hover:bg-slate-800 transition">
                     Consultar manualmente
                 </a>
-                <a href="/produtos.html" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50 transition">
+                <a href="/produtos" class="inline-flex items-center justify-center rounded-xl border border-slate-200 bg-white px-5 py-3 font-semibold text-slate-700 hover:bg-slate-50 transition">
                     Voltar aos produtos
                 </a>
             </div>
@@ -68,3 +71,4 @@
 </body>
 
 </html>
+

@@ -7,13 +7,23 @@
     <title>Contacto - IberFlag</title>
     <meta name="description"
         content="Entre em contacto com a IberFlag para orcamentos, apoio de design, estado de encomendas e informacoes comerciais.">
-    <link rel="canonical" href="https://iberflag.vercel.app/contacto.html">
+    <link rel="canonical" href="https://iberflag.com/contacto">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Contacto - IberFlag">
     <meta property="og:description"
         content="Fale com a equipa IberFlag para apoio comercial e tecnico.">
-    <meta property="og:url" content="https://iberflag.vercel.app/contacto.html">
-    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <meta property="og:url" content="https://iberflag.com/contacto">
+    <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "ContactPage",
+            "name": "Contacto - IberFlag",
+            "url": "https://iberflag.com/contacto",
+            "description": "Pagina de contacto para pedidos comerciais, apoio tecnico e acompanhamento de encomendas."
+        }
+    </script>
  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
@@ -35,10 +45,10 @@
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
                     <a href="/" class="nav-link">Início</a>
-                    <a href="/produtos.html" class="nav-link">Produtos</a>
-                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
-                    <a href="/faq.html" class="nav-link">FAQ</a>
-                    <a href="/contacto.html" class="nav-link text-blue-600">Contacto</a>
+                    <a href="/produtos" class="nav-link">Produtos</a>
+                    <a href="/sobre" class="nav-link">Sobre Nós</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/contacto" class="nav-link text-blue-600">Contacto</a>
                     <button id="cart-btn"
                         class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -55,10 +65,10 @@
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
             <div class="px-4 py-4 space-y-3">
                 <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
-                <a href="/produtos.html" class="block py-2 hover:text-blue-600 transition">Produtos</a>
-                <a href="/sobre.html" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
-                <a href="/faq.html" class="block py-2 hover:text-blue-600 transition">FAQ</a>
-                <a href="/contacto.html" class="block py-2 text-blue-600">Contacto</a>
+                <a href="/produtos" class="block py-2 hover:text-blue-600 transition">Produtos</a>
+                <a href="/sobre" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
+                <a href="/faq" class="block py-2 hover:text-blue-600 transition">FAQ</a>
+                <a href="/contacto" class="block py-2 text-blue-600">Contacto</a>
             </div>
         </div>
     </nav>
@@ -158,7 +168,7 @@
                             <div class="flex items-start gap-3">
                                 <input type="checkbox" id="privacy" required class="custom-checkbox mt-1">
                                 <label for="privacy" class="text-sm text-gray-600">
-                                    Aceito a <a href="/privacidade.html" class="text-blue-600 hover:underline">Política
+                                    Aceito a <a href="/privacidade" class="text-blue-600 hover:underline">Política
                                         de Privacidade</a> e autorizo o tratamento dos meus dados pessoais.
                                 </label>
                             </div>
@@ -183,17 +193,17 @@
                 <p class="text-gray-600">Talvez a sua resposta já esteja aqui</p>
             </div>
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <a href="/faq.html#prazos" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                <a href="/faq#prazos" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
                     <i data-lucide="clock" class="w-8 h-8 text-blue-600 mb-3"></i>
                     <h3 class="font-bold mb-2">Prazos de Entrega</h3>
                     <p class="text-sm text-gray-600">Informação sobre tempos de produção e envio</p>
                 </a>
-                <a href="/faq.html#pagamento" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                <a href="/faq#pagamento" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
                     <i data-lucide="credit-card" class="w-8 h-8 text-blue-600 mb-3"></i>
                     <h3 class="font-bold mb-2">Métodos de Pagamento</h3>
                     <p class="text-sm text-gray-600">Formas de pagamento aceites</p>
                 </a>
-                <a href="/faq.html#design" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
+                <a href="/faq#design" class="bg-gray-50 p-6 rounded-xl hover:bg-gray-100 transition">
                     <i data-lucide="palette" class="w-8 h-8 text-blue-600 mb-3"></i>
                     <h3 class="font-bold mb-2">Design Gráfico</h3>
                     <p class="text-sm text-gray-600">Apoio no design dos seus produtos</p>
@@ -241,20 +251,20 @@
                     <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
                     <ul class="space-y-3">
                         <li><a href="/" class="hover:text-white transition">Início</a></li>
-                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
-                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
-                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                        <li><a href="/produtos" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto" class="hover:text-white transition">Contacto</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white font-bold mb-4">Informações</h4>
                     <ul class="space-y-3">
-                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
-                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a>
+                        <li><a href="/envios" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a>
                         </li>
-                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/devolucoes" class="hover:text-white transition">Devoluções</a></li>
                     </ul>
                 </div>
             </div>
@@ -291,7 +301,7 @@
                     <span>Total:</span>
                     <span id="cart-total">0.00€</span>
                 </div>
-                <a href="/checkout.html"
+                <a href="/checkout"
                     class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                     Finalizar Encomenda
                 </a>
@@ -305,3 +315,4 @@
 </body>
 
 </html>
+

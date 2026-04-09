@@ -447,8 +447,9 @@ Object.assign(DesignEditor.prototype, {
         this.closeCartStepsModal();
 
         setTimeout(() => {
-            window.location.href = '/produtos.html';
+            window.location.href = '/produtos';
         }, 1000);
     }
 
 });
+

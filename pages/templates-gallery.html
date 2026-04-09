@@ -6,17 +6,21 @@
     <title>Escolher Template - IberFlag</title>
     <meta name="description"
         content="Escolha um template pronto para personalizar rapidamente o seu produto na IberFlag.">
-    <link rel="canonical" href="https://iberflag.vercel.app/templates-gallery.html">
+    <meta name="robots" content="noindex,follow">
+    <link rel="canonical" href="https://iberflag.com/modelos">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Escolher Template - IberFlag">
     <meta property="og:description"
         content="Galeria de templates para acelerar a criacao de designs publicitarios.">
-    <meta property="og:url" content="https://iberflag.vercel.app/templates-gallery.html">
-    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <meta property="og:url" content="https://iberflag.com/modelos">
+    <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
+    <meta name="twitter:card" content="summary_large_image">
  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
     <script src="/assets/js/core/design-svg.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
     <style>
@@ -34,22 +38,21 @@
 
         .template-card {
             background: white;
-            border-radius: 16px;
+            border-radius: 14px;
             overflow: hidden;
-            border: 2px solid transparent;
-            transition: all 0.3s ease;
+            border: 1px solid var(--border);
+            transition: border-color 0.2s ease, transform 0.2s ease;
             cursor: pointer;
         }
 
         .template-card:hover {
             border-color: var(--primary);
-            transform: translateY(-4px);
-            box-shadow: 0 20px 40px rgba(37, 99, 235, 0.15);
+            transform: translateY(-1px);
         }
 
         .template-preview {
             aspect-ratio: var(--preview-ratio, 4/3);
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            background: #f8fafc;
             position: relative;
             overflow: hidden;
         }
@@ -174,7 +177,7 @@
         }
 
         .loading-skeleton {
-            background: linear-gradient(90deg, #f1f5f9 25%, #e2e8f0 50%, #f1f5f9 75%);
+            background: linear-gradient(90deg, #f8fafc 25%, #e5e7eb 50%, #f8fafc 75%);
             background-size: 200% 100%;
             animation: shimmer 1.5s infinite;
         }
@@ -203,7 +206,7 @@
         <div class="container mx-auto px-4">
             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
                 <div>
-                    <a href="/produtos.html" class="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 mb-2">
+                    <a href="/produtos" class="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1 mb-2">
                         <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                         Voltar aos produtos
                     </a>
@@ -264,8 +267,15 @@
     <script>
         // Obter parametros da URL
         const urlParams = new URLSearchParams(window.location.search);
+        const routeMatch = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.parseLocationPath === 'function'
+            ? SiteRoutes.parseLocationPath(window.location.pathname)
+            : null;
         const productId = urlParams.get('produto');
-        const productName = urlParams.get('nome') || 'Produto';
+        const productSlug = routeMatch?.productSlug || urlParams.get('slug') || '';
+        const manifestProduct = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.findProductBySlug === 'function'
+            ? SiteRoutes.findProductBySlug(productSlug)
+            : null;
+        const productName = urlParams.get('nome') || manifestProduct?.nome || 'Produto';
 
         // Atualizar nome do produto
         document.getElementById('product-name').textContent = `Personalize: ${decodeURIComponent(productName)}`;
@@ -399,7 +409,7 @@
             div.innerHTML = `
                 <div class="template-preview">
                     ${previewMarkup
-                         previewMarkup
+                        ? previewMarkup
                         : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
                             onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>
@@ -414,19 +424,26 @@
 
         // Selecionar template
         function selectTemplate(template) {
-            if (!productId) {
+            const resolvedProduct = manifestProduct || (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.findProductById === 'function'
+                ? SiteRoutes.findProductById(productId)
+                : null);
+            if (!resolvedProduct && !productId) {
                 alert('Erro: Produto nao especificado');
                 return;
             }
 
-            const params = new URLSearchParams();
-            params.set('produto', productId);
-            params.set('nome', productName);
+            const routeParams = {};
             if (template) {
-                params.set('template', template.id);
+                routeParams.template = template.id;
             }
 
-            window.location.href = `/personalizar.html?${params.toString()}`;
+            if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildProductPersonalizerPath === 'function' && resolvedProduct) {
+                window.location.href = SiteRoutes.buildProductPersonalizerPath(resolvedProduct, routeParams);
+                return;
+            }
+
+            const params = new URLSearchParams({ produto: productId, nome: productName, ...routeParams });
+            window.location.href = `/personalizar?${params.toString()}`;
         }
 
         // Filtrar por categoria
@@ -472,3 +489,4 @@
     </script>
 </body>
 </html>
+

@@ -1,4 +1,4 @@
-﻿const orderLoading = document.getElementById('order-loading');
+const orderLoading = document.getElementById('order-loading');
 const orderNotFound = document.getElementById('order-not-found');
 const orderError = document.getElementById('order-error');
 const orderErrorMessage = document.getElementById('order-error-message');
@@ -606,7 +606,7 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
         const params = new URLSearchParams();
         if (orderCode) params.set('codigo', orderCode);
         params.set('assunto', 'Apoio a encomenda');
-        orderContactSupportBtn.href = `/contacto.html?${params.toString()}`;
+        orderContactSupportBtn.href = `/contacto?${params.toString()}`;
     }
 }
 
@@ -884,11 +884,21 @@ function getOrderLoadErrorMessage(error) {
 
 async function initOrderPage() {
     const params = new URLSearchParams(window.location.search);
-    const code = normalizeOrderCode(params.get('codigo'));
+    const routeMatch = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.parseLocationPath === 'function'
+        ? SiteRoutes.parseLocationPath(window.location.pathname)
+        : null;
+    const code = normalizeOrderCode(routeMatch?.orderCode || params.get('codigo'));
 
     if (!code) {
         showNotFound();
         return;
+    }
+
+    if (routeMatch?.orderCode && window.location.search) {
+        const cleanPath = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildOrderPath === 'function'
+            ? SiteRoutes.buildOrderPath(code)
+            : `/encomenda/${encodeURIComponent(code)}`;
+        window.history.replaceState({}, '', cleanPath);
     }
 
     try {
@@ -964,3 +974,4 @@ document.addEventListener('DOMContentLoaded', () => {
 
     initOrderPage();
 });
+

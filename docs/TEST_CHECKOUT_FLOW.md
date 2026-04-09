@@ -19,7 +19,7 @@ Variáveis mínimas:
 - `FACTURALUSA_BASE_URL_TEST`
 - `FACTURALUSA_SERIE_ID_TEST`
 - `FACTURALUSA_FORCE_SEND_EMAIL=false`
-- `PUBLIC_SITE_URL=https://iberflag.vercel.app`
+- `PUBLIC_SITE_URL=https://iberflag.com`
 
 Para validar localmente:
 
@@ -53,5 +53,6 @@ Sem acesso SQL remoto (`SUPABASE_ACCESS_TOKEN` para a CLI, ou connection string 
 5. Confirmar redirect para sucesso.
 6. Confirmar webhook Stripe e estado `paid`.
 7. Confirmar emissão ou erro reemitível da Facturalusa test.
-8. Confirmar que `/encomenda.html?codigo=...` não mostra PII.
+8. Confirmar que `/encomenda/:codigo` não mostra PII.
 9. Confirmar no admin que a encomenda tem dados completos e reemissão protegida.
+

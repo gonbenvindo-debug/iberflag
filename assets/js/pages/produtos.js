@@ -34,6 +34,38 @@ const categoryFiltersContainer = document.getElementById('category-filters');
 const priceCheckboxes = document.querySelectorAll('.price-filter');
 let categoryRadios = [];
 
+function getCatalogBasePath() {
+    return typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.STATIC_PATHS.products
+        : '/produtos';
+}
+
+function buildProductDetailsPath(product) {
+    return typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.buildProductPath(product)
+        : `/produto/${encodeURIComponent(String(product?.id || ''))}`;
+}
+
+function buildProductPersonalizerPath(product, params = {}) {
+    return typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.buildProductPersonalizerPath(product, params)
+        : `/produto/${encodeURIComponent(String(product?.id || ''))}/personalizar`;
+}
+
+function syncCategoryUrl() {
+    if (typeof window === 'undefined' || typeof history === 'undefined' || !history.replaceState) {
+        return;
+    }
+
+    const nextPath = currentCategory !== 'all' && typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.buildCategoryPath(currentCategory)
+        : getCatalogBasePath();
+
+    if (window.location.pathname !== nextPath) {
+        history.replaceState({}, '', nextPath);
+    }
+}
+
 // ===== LOAD PRODUCTS =====
 async function loadAllProducts() {
     try {
@@ -100,16 +132,16 @@ function renderProductsGrid(products) {
             <div class="product-card-body">
                 <div class="product-card-meta">${safeCategory}</div>
                 <h3 class="product-card-title">${safeName}</h3>
-                <button
-                    type="button"
-                    data-open-templates="true"
+                <a
+                    href="${purchasable ? buildProductDetailsPath(product) : '#'}"
+                    data-open-product="${safeProductId}"
                     data-product-id="${safeProductId}"
                     data-product-name="${safeProductNameParam}"
-                    ${purchasable ? '' : 'disabled aria-disabled="true"'}
-                    class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 cursor-not-allowed'}">
-                    <i data-lucide="palette" class="w-4 h-4"></i>
-                    ${purchasable ? 'Personalizar e Comprar' : 'Indisponível para checkout'}
-                </button>
+                    ${purchasable ? '' : 'aria-disabled="true" tabindex="-1"'}
+                    class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 pointer-events-none'}">
+                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                    ${purchasable ? 'Ver produto' : 'Indisponivel para checkout'}
+                </a>
             </div>
         </div>
     `;
@@ -164,6 +196,7 @@ function applyFilters() {
 
     filteredProducts = products;
     renderProductsGrid(products);
+    syncCategoryUrl();
 }
 
 // ===== HELPER FUNCTIONS =====
@@ -298,14 +331,22 @@ if (clearFiltersBtn) {
 
 // ===== CHECK URL PARAMETERS =====
 function checkUrlParams() {
+    const locationState = typeof SiteRoutes !== 'undefined'
+        ? SiteRoutes.parseLocationPath(window.location.pathname)
+        : { categorySlug: '' };
     const urlParams = new URLSearchParams(window.location.search);
     const categoria = urlParams.get('categoria');
 
-    if (categoria) {
+    if (locationState.categorySlug) {
+        currentCategory = String(locationState.categorySlug).trim().toLowerCase();
+    } else if (categoria) {
         currentCategory = String(categoria).trim().toLowerCase();
         const radio = document.querySelector(`input[name="category"][value="${currentCategory}"]`);
         if (radio) {
             radio.checked = true;
+        }
+        if (typeof SiteRoutes !== 'undefined') {
+            window.location.replace(SiteRoutes.buildCategoryPath(currentCategory));
         }
     }
 }
@@ -466,7 +507,7 @@ async function openTemplatesModal(productId, productName) {
     const modal = document.getElementById('templates-modal');
 
     if (!modalProductName || !modal) {
-        window.location.href = `/personalizar.html?produto=${productId}`;
+        window.location.href = buildProductDetailsPath(currentProduct);
         return;
     }
 
@@ -488,12 +529,12 @@ function closeTemplatesModal() {
 
 function startBlank() {
     if (!currentProductId) return;
-    window.location.href = `/personalizar.html?produto=${currentProductId}`;
+    window.location.href = buildProductPersonalizerPath(currentProduct || { id: currentProductId });
 }
 
 function selectTemplate(templateId) {
     if (!currentProductId) return;
-    window.location.href = `/personalizar.html?produto=${currentProductId}&template=${templateId}`;
+    window.location.href = buildProductPersonalizerPath(currentProduct || { id: currentProductId }, { template: templateId });
 }
 
 function renderTemplatesLoading(message = 'A carregar templates...') {

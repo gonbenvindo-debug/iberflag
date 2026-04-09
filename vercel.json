@@ -2,50 +2,513 @@
   "version": 2,
   "cleanUrls": false,
   "outputDirectory": ".",
+  "redirects": [
+    {
+      "source": "/index",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/",
+      "permanent": true
+    },
+    {
+      "source": "/produtos.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        },
+        {
+          "type": "query",
+          "key": "categoria",
+          "value": "(?<categoria>.*)"
+        }
+      ],
+      "destination": "https://iberflag.com/produtos/:categoria",
+      "permanent": true
+    },
+    {
+      "source": "/encomenda.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        },
+        {
+          "type": "query",
+          "key": "codigo",
+          "value": "(?<codigo>.*)"
+        }
+      ],
+      "destination": "https://iberflag.com/encomenda/:codigo",
+      "permanent": true
+    },
+    {
+      "source": "/checkout-sucesso.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/checkout/sucesso",
+      "permanent": true
+    },
+    {
+      "source": "/produtos.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/checkout.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/checkout",
+      "permanent": true
+    },
+    {
+      "source": "/contacto.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/contacto",
+      "permanent": true
+    },
+    {
+      "source": "/encomendas.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/encomendas",
+      "permanent": true
+    },
+    {
+      "source": "/envios.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/envios",
+      "permanent": true
+    },
+    {
+      "source": "/faq.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/faq",
+      "permanent": true
+    },
+    {
+      "source": "/sobre.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/sobre",
+      "permanent": true
+    },
+    {
+      "source": "/termos.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/termos",
+      "permanent": true
+    },
+    {
+      "source": "/privacidade.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/privacidade",
+      "permanent": true
+    },
+    {
+      "source": "/devolucoes.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/devolucoes",
+      "permanent": true
+    },
+    {
+      "source": "/templates-gallery.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/modelos",
+      "permanent": true
+    },
+    {
+      "source": "/personalizar.html",
+      "has": [
+        {
+          "type": "host",
+          "value": "((.*)\\.vercel\\.app|www\\.iberflag\\.com)"
+        }
+      ],
+      "destination": "https://iberflag.com/personalizar",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "www.iberflag.com"
+        }
+      ],
+      "destination": "https://iberflag.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/:path*",
+      "has": [
+        {
+          "type": "host",
+          "value": "(.*)\\.vercel\\.app"
+        }
+      ],
+      "destination": "https://iberflag.com/:path*",
+      "permanent": true
+    },
+    {
+      "source": "/index",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/index.html",
+      "destination": "/",
+      "permanent": true
+    },
+    {
+      "source": "/produtos.html",
+      "has": [
+        {
+          "type": "query",
+          "key": "categoria",
+          "value": "(?<categoria>.*)"
+        }
+      ],
+      "destination": "/produtos/:categoria",
+      "permanent": true
+    },
+    {
+      "source": "/encomenda.html",
+      "has": [
+        {
+          "type": "query",
+          "key": "codigo",
+          "value": "(?<codigo>.*)"
+        }
+      ],
+      "destination": "/encomenda/:codigo",
+      "permanent": true
+    },
+    {
+      "source": "/checkout-sucesso.html",
+      "destination": "/checkout/sucesso",
+      "permanent": true
+    },
+    {
+      "source": "/produtos.html",
+      "destination": "/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/checkout.html",
+      "destination": "/checkout",
+      "permanent": true
+    },
+    {
+      "source": "/contacto.html",
+      "destination": "/contacto",
+      "permanent": true
+    },
+    {
+      "source": "/encomendas.html",
+      "destination": "/encomendas",
+      "permanent": true
+    },
+    {
+      "source": "/envios.html",
+      "destination": "/envios",
+      "permanent": true
+    },
+    {
+      "source": "/faq.html",
+      "destination": "/faq",
+      "permanent": true
+    },
+    {
+      "source": "/sobre.html",
+      "destination": "/sobre",
+      "permanent": true
+    },
+    {
+      "source": "/termos.html",
+      "destination": "/termos",
+      "permanent": true
+    },
+    {
+      "source": "/privacidade.html",
+      "destination": "/privacidade",
+      "permanent": true
+    },
+    {
+      "source": "/devolucoes.html",
+      "destination": "/devolucoes",
+      "permanent": true
+    },
+    {
+      "source": "/templates-gallery.html",
+      "destination": "/modelos",
+      "permanent": true
+    },
+    {
+      "source": "/personalizar.html",
+      "destination": "/personalizar",
+      "permanent": true
+    }
+  ],
   "rewrites": [
-    { "source": "/", "destination": "/pages/index.html" },
-    { "source": "/index", "destination": "/pages/index.html" },
-    { "source": "/index.html", "destination": "/pages/index.html" },
-    { "source": "/admin", "destination": "/pages/admin.html" },
-    { "source": "/admin.html", "destination": "/pages/admin.html" },
-    { "source": "/admin-template-editor", "destination": "/pages/admin-template-editor.html" },
-    { "source": "/admin-template-editor.html", "destination": "/pages/admin-template-editor.html" },
-    { "source": "/checkout", "destination": "/pages/checkout.html" },
-    { "source": "/checkout.html", "destination": "/pages/checkout.html" },
-    { "source": "/checkout-sucesso", "destination": "/pages/checkout-sucesso.html" },
-    { "source": "/checkout-sucesso.html", "destination": "/pages/checkout-sucesso.html" },
-    { "source": "/contacto", "destination": "/pages/contacto.html" },
-    { "source": "/contacto.html", "destination": "/pages/contacto.html" },
-    { "source": "/encomenda", "destination": "/pages/encomenda.html" },
-    { "source": "/encomenda.html", "destination": "/pages/encomenda.html" },
-    { "source": "/encomendas", "destination": "/pages/encomendas.html" },
-    { "source": "/encomendas.html", "destination": "/pages/encomendas.html" },
-    { "source": "/envios", "destination": "/pages/envios.html" },
-    { "source": "/envios.html", "destination": "/pages/envios.html" },
-    { "source": "/faq", "destination": "/pages/faq.html" },
-    { "source": "/faq.html", "destination": "/pages/faq.html" },
-    { "source": "/personalizar", "destination": "/pages/personalizar.html" },
-    { "source": "/personalizar.html", "destination": "/pages/personalizar.html" },
-    { "source": "/templates-gallery", "destination": "/pages/templates-gallery.html" },
-    { "source": "/templates-gallery.html", "destination": "/pages/templates-gallery.html" },
-    { "source": "/produtos", "destination": "/pages/produtos.html" },
-    { "source": "/produtos.html", "destination": "/pages/produtos.html" },
-    { "source": "/sobre", "destination": "/pages/sobre.html" },
-    { "source": "/sobre.html", "destination": "/pages/sobre.html" },
-    { "source": "/termos", "destination": "/pages/termos.html" },
-    { "source": "/termos.html", "destination": "/pages/termos.html" },
-    { "source": "/privacidade", "destination": "/pages/privacidade.html" },
-    { "source": "/privacidade.html", "destination": "/pages/privacidade.html" },
-    { "source": "/devolucoes", "destination": "/pages/devolucoes.html" },
-    { "source": "/devolucoes.html", "destination": "/pages/devolucoes.html" }
+    {
+      "source": "/",
+      "destination": "/pages/index.html"
+    },
+    {
+      "source": "/admin",
+      "destination": "/pages/admin.html"
+    },
+    {
+      "source": "/admin-template-editor",
+      "destination": "/pages/admin-template-editor.html"
+    },
+    {
+      "source": "/checkout",
+      "destination": "/pages/checkout.html"
+    },
+    {
+      "source": "/checkout/sucesso",
+      "destination": "/pages/checkout-sucesso.html"
+    },
+    {
+      "source": "/contacto",
+      "destination": "/pages/contacto.html"
+    },
+    {
+      "source": "/encomendas",
+      "destination": "/pages/encomendas.html"
+    },
+    {
+      "source": "/envios",
+      "destination": "/pages/envios.html"
+    },
+    {
+      "source": "/faq",
+      "destination": "/pages/faq.html"
+    },
+    {
+      "source": "/modelos",
+      "destination": "/pages/templates-gallery.html"
+    },
+    {
+      "source": "/personalizar",
+      "destination": "/pages/personalizar.html"
+    },
+    {
+      "source": "/sobre",
+      "destination": "/pages/sobre.html"
+    },
+    {
+      "source": "/termos",
+      "destination": "/pages/termos.html"
+    },
+    {
+      "source": "/privacidade",
+      "destination": "/pages/privacidade.html"
+    },
+    {
+      "source": "/devolucoes",
+      "destination": "/pages/devolucoes.html"
+    },
+    {
+      "source": "/produto/:slug/personalizar",
+      "destination": "/pages/personalizar.html?slug=:slug"
+    },
+    {
+      "source": "/encomenda/:codigo",
+      "destination": "/pages/encomenda.html?codigo=:codigo"
+    }
   ],
   "headers": [
+    {
+      "source": "/api/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/admin(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
+      "source": "/checkout(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/encomenda(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/encomendas(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/modelos(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/assets/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
+    },
+    {
+      "source": "/sitemap.xml",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/sitemaps/(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
+    {
+      "source": "/robots.txt",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, must-revalidate"
+        }
+      ]
+    },
     {
       "source": "/(.*)",
       "headers": [
         {
           "key": "Cache-Control",
-          "value": "no-store, no-cache, must-revalidate"
+          "value": "public, max-age=0, must-revalidate"
         },
         {
           "key": "X-Content-Type-Options",
@@ -66,24 +529,6 @@
         {
           "key": "Content-Security-Policy",
           "value": "base-uri 'self'; object-src 'none'; frame-ancestors 'none'; form-action 'self' https://checkout.stripe.com; upgrade-insecure-requests"
-        }
-      ]
-    },
-    {
-      "source": "/assets/css/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, must-revalidate"
-        }
-      ]
-    },
-    {
-      "source": "/assets/js/(.*)",
-      "headers": [
-        {
-          "key": "Cache-Control",
-          "value": "public, max-age=300, must-revalidate"
         }
       ]
     }

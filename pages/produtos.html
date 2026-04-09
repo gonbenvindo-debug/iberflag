@@ -7,19 +7,53 @@
     <title>Produtos - IberFlag | Flybanners e Publicidade Iberica</title>
     <meta name="description"
         content="Catalogo completo de flybanners, roll-ups e produtos publicitarios para Portugal e Espanha. Qualidade premium e precos competitivos.">
-    <link rel="canonical" href="https://iberflag.vercel.app/produtos.html">
+    <link rel="canonical" href="https://iberflag.com/produtos">
     <meta property="og:type" content="website">
     <meta property="og:title" content="Produtos - IberFlag">
     <meta property="og:description"
         content="Catalogo de flybanners, roll-ups e formatos promocionais para o mercado iberico.">
-    <meta property="og:url" content="https://iberflag.vercel.app/produtos.html">
-    <meta property="og:image" content="https://iberflag.vercel.app/assets/logos/logo-completo.svg">
+    <meta property="og:url" content="https://iberflag.com/produtos">
+    <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
+    <meta name="twitter:card" content="summary_large_image">
+    <script type="application/ld+json">
+        {
+            "@context": "https://schema.org",
+            "@type": "CollectionPage",
+            "name": "Catalogo de Produtos IberFlag",
+            "url": "https://iberflag.com/produtos",
+            "description": "Catalogo de fly banners, roll ups, bandeiras, tendas, photocalls e publicidade fisica personalizada.",
+            "isPartOf": {
+                "@type": "WebSite",
+                "name": "IberFlag",
+                "url": "https://iberflag.com"
+            },
+            "breadcrumb": {
+                "@type": "BreadcrumbList",
+                "itemListElement": [
+                    {
+                        "@type": "ListItem",
+                        "position": 1,
+                        "name": "Inicio",
+                        "item": "https://iberflag.com/"
+                    },
+                    {
+                        "@type": "ListItem",
+                        "position": 2,
+                        "name": "Produtos",
+                        "item": "https://iberflag.com/produtos"
+                    }
+                ]
+            }
+        }
+    </script>
  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="/assets/js/core/icon-engine.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
+    <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/logic.js?v=20260406j4"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260406h17">
@@ -36,10 +70,10 @@
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
                     <a href="/" class="nav-link">Início</a>
-                    <a href="/produtos.html" class="nav-link text-blue-600">Produtos</a>
-                    <a href="/sobre.html" class="nav-link">Sobre Nós</a>
-                    <a href="/faq.html" class="nav-link">FAQ</a>
-                    <a href="/contacto.html" class="nav-link">Contacto</a>
+                    <a href="/produtos" class="nav-link text-blue-600">Produtos</a>
+                    <a href="/sobre" class="nav-link">Sobre Nós</a>
+                    <a href="/faq" class="nav-link">FAQ</a>
+                    <a href="/contacto" class="nav-link">Contacto</a>
                     <button id="cart-btn"
                         class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
@@ -65,11 +99,11 @@
     <div id="mobile-menu" class="hidden md:hidden bg-white border-b shadow-lg slide-down">
         <div class="px-4 py-2 space-y-1">
             <a href="/" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">Início</a>
-            <a href="/produtos.html"
+            <a href="/produtos"
                 class="block px-4 py-3 bg-blue-50 text-blue-600 rounded-lg font-medium">Produtos</a>
-            <a href="/sobre.html" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">Sobre Nós</a>
-            <a href="/faq.html" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">FAQ</a>
-            <a href="/contacto.html" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">Contacto</a>
+            <a href="/sobre" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">Sobre Nós</a>
+            <a href="/faq" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">FAQ</a>
+            <a href="/contacto" class="block px-4 py-3 hover:bg-gray-100 rounded-lg font-medium">Contacto</a>
         </div>
     </div>
 
@@ -220,20 +254,21 @@
                     <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
                     <ul class="space-y-3">
                         <li><a href="/" class="hover:text-white transition">Início</a></li>
-                        <li><a href="/produtos.html" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="/sobre.html" class="hover:text-white transition">Sobre Nós</a></li>
-                        <li><a href="/faq.html" class="hover:text-white transition">FAQ</a></li>
-                        <li><a href="/contacto.html" class="hover:text-white transition">Contacto</a></li>
+                        <li><a href="/produtos" class="hover:text-white transition">Produtos</a></li>
+                        <li><a href="/sobre" class="hover:text-white transition">Sobre Nós</a></li>
+                        <li><a href="/faq" class="hover:text-white transition">FAQ</a></li>
+                        <li><a href="/contacto" class="hover:text-white transition">Contacto</a></li>
+                        <li><a href="/mapa-do-site" class="hover:text-white transition">Mapa do Site</a></li>
                     </ul>
                 </div>
                 <div>
                     <h4 class="text-white font-bold mb-4">Informações</h4>
                     <ul class="space-y-3">
-                        <li><a href="/envios.html" class="hover:text-white transition">Envios e Entregas</a></li>
-                        <li><a href="/termos.html" class="hover:text-white transition">Termos e Condições</a></li>
-                        <li><a href="/privacidade.html" class="hover:text-white transition">Política de Privacidade</a>
+                        <li><a href="/envios" class="hover:text-white transition">Envios e Entregas</a></li>
+                        <li><a href="/termos" class="hover:text-white transition">Termos e Condições</a></li>
+                        <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a>
                         </li>
-                        <li><a href="/devolucoes.html" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/devolucoes" class="hover:text-white transition">Devoluções</a></li>
                     </ul>
                 </div>
             </div>
@@ -272,7 +307,7 @@
                     <span>Total:</span>
                     <span id="cart-total">0.00€</span>
                 </div>
-                <a href="/checkout.html"
+                <a href="/checkout"
                     class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
                     Finalizar Encomenda
                 </a>
@@ -339,3 +374,4 @@
 </body>
 
 </html>
+
