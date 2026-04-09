@@ -21,11 +21,16 @@ const phoneInput = checkoutForm?.elements?.telefone || null;
 const emailInput = checkoutForm?.elements?.email || null;
 const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
 const companyInput = checkoutForm?.elements?.empresa || null;
+const contactNameLabel = document.getElementById('contact-name-label');
 const companyLabel = document.getElementById('company-label');
 const nifLabel = document.getElementById('nif-label');
 const nifHelp = document.getElementById('nif-help');
 const companyLookupBtn = document.getElementById('lookup-company-btn');
 const companyLookupStatus = document.getElementById('company-lookup-status');
+const companyFieldRow = document.getElementById('company-field-row');
+const toggleOrderNotesBtn = document.getElementById('toggle-order-notes');
+const orderNotesField = document.getElementById('order-notes-field');
+const notesTextarea = checkoutForm?.elements?.notas || null;
 
 const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
 const COMMON_EMAIL_DOMAIN_FIXES = {
@@ -40,6 +45,15 @@ const COMMON_EMAIL_DOMAIN_FIXES = {
 };
 const companyLookupCache = new Map();
 let companyLookupInFlight = false;
+
+function setElementHidden(element, hidden) {
+    if (!element) {
+        return;
+    }
+
+    element.classList.toggle('hidden', hidden);
+    element.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+}
 
 function normalizeTaxId(value) {
     return String(value || '').trim().toUpperCase().replace(/[^A-Z0-9]/g, '');
@@ -398,7 +412,7 @@ function setCompanyLookupLoading(isLoading) {
     }
 
     companyLookupBtn.disabled = isLoading;
-    companyLookupBtn.textContent = isLoading ? 'A procurar...' : 'Preencher por NIF';
+    companyLookupBtn.textContent = isLoading ? 'A procurar...' : 'Preencher empresa';
 }
 
 function applyCompanyLookupResult(customer = {}) {
@@ -491,12 +505,16 @@ function syncCustomerTypeUI() {
 
     if (customerTypeDescription) {
         customerTypeDescription.textContent = business
-            ? 'A fatura sera emitida para uma empresa. NIF e nome fiscal passam a ser obrigatorios.'
-            : 'A fatura sera emitida para um particular. O NIF continua opcional, mas se o preencher tem de ser valido.';
+            ? 'Mostramos os campos fiscais da empresa e tentamos preencher o nome fiscal pelo NIF.'
+            : 'Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.';
+    }
+
+    if (contactNameLabel) {
+        contactNameLabel.textContent = business ? 'Pessoa de contacto *' : 'Nome completo *';
     }
 
     if (companyLabel) {
-        companyLabel.textContent = business ? 'Empresa *' : 'Empresa (opcional)';
+        companyLabel.textContent = 'Empresa *';
     }
 
     if (nifLabel) {
@@ -510,11 +528,19 @@ function syncCustomerTypeUI() {
     }
 
     if (companyLookupBtn) {
-        companyLookupBtn.classList.toggle('hidden', !business);
+        setElementHidden(companyLookupBtn, !business);
+    }
+
+    if (companyFieldRow) {
+        setElementHidden(companyFieldRow, !business);
     }
 
     if (companyInput) {
         companyInput.required = business;
+        if (!business) {
+            companyInput.value = '';
+            companyInput.setCustomValidity('');
+        }
     }
 
     if (nifInput) {
@@ -535,6 +561,25 @@ function syncCustomerTypeUI() {
 
     if (!business) {
         setCompanyLookupStatus('');
+    }
+}
+
+function syncOrderNotesVisibility({ forceOpen = null } = {}) {
+    const shouldOpen = forceOpen === null
+        ? Boolean(String(notesTextarea?.value || '').trim())
+        : Boolean(forceOpen);
+
+    setElementHidden(orderNotesField, !shouldOpen);
+
+    if (toggleOrderNotesBtn) {
+        toggleOrderNotesBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
+        toggleOrderNotesBtn.textContent = shouldOpen
+            ? 'Remover nota interna'
+            : 'Adicionar nota interna';
+    }
+
+    if (!shouldOpen && notesTextarea) {
+        notesTextarea.value = '';
     }
 }
 
@@ -932,6 +977,19 @@ document.addEventListener('DOMContentLoaded', () => {
             updateCompanyValidity();
         });
     }
+    if (toggleOrderNotesBtn) {
+        toggleOrderNotesBtn.addEventListener('click', () => {
+            const isOpen = toggleOrderNotesBtn.getAttribute('aria-expanded') === 'true';
+            syncOrderNotesVisibility({ forceOpen: !isOpen });
+        });
+    }
+    if (notesTextarea) {
+        notesTextarea.addEventListener('input', () => {
+            if (String(notesTextarea.value || '').trim()) {
+                syncOrderNotesVisibility({ forceOpen: true });
+            }
+        });
+    }
     if (companyLookupBtn) {
         companyLookupBtn.addEventListener('click', async () => {
             await lookupCompanyByTaxId({ force: true });
@@ -944,6 +1002,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     syncCustomerTypeUI();
+    syncOrderNotesVisibility();
 
     void loadCart();
 });
