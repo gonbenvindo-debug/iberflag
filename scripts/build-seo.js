@@ -237,65 +237,137 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260409seo2">
   <link rel="stylesheet" href="/assets/css/style.css?v=20260409seo2">
+  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script src="/assets/js/core/icon-engine.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="/assets/js/config.js"></script>
+  <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+  <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
+  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+  <script src="/assets/js/core/logic.js?v=20260409k1"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
 }
 
 function renderHeader(currentPath = '') {
     const links = [
+        { path: SiteRoutes.STATIC_PATHS.home, label: 'Inicio' },
         { path: SiteRoutes.STATIC_PATHS.products, label: 'Produtos' },
-        { path: SiteRoutes.STATIC_PATHS.about, label: 'Sobre' },
+        { path: SiteRoutes.STATIC_PATHS.about, label: 'Sobre Nos' },
         { path: SiteRoutes.STATIC_PATHS.faq, label: 'FAQ' },
         { path: SiteRoutes.STATIC_PATHS.contact, label: 'Contacto' }
     ];
 
-    return `<header class="border-b border-slate-200 bg-white">
-  <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-    <a href="/" class="flex items-center gap-3" aria-label="IberFlag">
-      <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="h-10 w-auto">
-    </a>
-    <nav class="hidden items-center gap-6 text-sm font-medium text-slate-600 md:flex">
-      ${links.map((link) => {
-            const isCurrent = currentPath === link.path || currentPath.startsWith(`${link.path}/`);
-            return `<a href="${link.path}" class="${isCurrent ? 'text-slate-900' : 'hover:text-slate-900'}">${escapeHtml(link.label)}</a>`;
-        }).join('')}
-    </nav>
+    const renderDesktopLink = (link) => {
+        const isHome = link.path === SiteRoutes.STATIC_PATHS.home;
+        const isCurrent = isHome
+            ? currentPath === SiteRoutes.STATIC_PATHS.home
+            : currentPath === link.path || currentPath.startsWith(`${link.path}/`);
+        return `<a href="${link.path}" class="nav-link${isCurrent ? ' text-blue-600' : ''}">${escapeHtml(link.label)}</a>`;
+    };
+
+    const renderMobileLink = (link) => {
+        const isHome = link.path === SiteRoutes.STATIC_PATHS.home;
+        const isCurrent = isHome
+            ? currentPath === SiteRoutes.STATIC_PATHS.home
+            : currentPath === link.path || currentPath.startsWith(`${link.path}/`);
+        return `<a href="${link.path}" class="block px-4 py-3 hover:bg-gray-100 font-medium${isCurrent ? ' text-blue-600' : ''}">${escapeHtml(link.label)}</a>`;
+    };
+
+    return `<nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="flex justify-between h-16 items-center">
+      <a href="/" class="flex items-center gap-2 group" aria-label="IberFlag">
+        <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
+      </a>
+      <div class="hidden md:flex space-x-6 items-center">
+        ${links.map(renderDesktopLink).join('')}
+        <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+          <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+          <span class="hidden sm:inline">Carrinho</span>
+          <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+        </button>
+      </div>
+      <div class="md:hidden flex items-center gap-2">
+        <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100 rounded-lg">
+          <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+          <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
+        </button>
+        <button id="mobile-menu-btn" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
+          <i data-lucide="menu" class="w-6 h-6"></i>
+        </button>
+      </div>
+    </div>
   </div>
-</header>`;
+</nav>
+<div id="mobile-menu" class="hidden md:hidden bg-white border-b">
+  <div class="px-4 py-2 space-y-1">
+    ${links.map(renderMobileLink).join('')}
+  </div>
+</div>`;
 }
 
-function renderFooter(categoryEntries, productEntries) {
-    const featuredCategories = categoryEntries.slice(0, 6);
-    const featuredProducts = productEntries.slice(0, 6);
-
-    return `<footer class="border-t border-slate-200 bg-white">
-  <div class="mx-auto grid max-w-7xl gap-10 px-4 py-12 sm:px-6 lg:grid-cols-[1.4fr,1fr,1fr] lg:px-8">
-    <div>
-      <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="mb-4 h-10 w-auto">
-      <p class="max-w-md text-sm leading-6 text-slate-600">Producao publicitaria personalizada para marcas, eventos e espacos comerciais em Portugal e Espanha.</p>
+function renderFooter() {
+    return `<footer class="bg-gray-900 text-gray-400 py-16">
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="grid grid-cols-1 md:grid-cols-4 gap-12 mb-12">
+      <div class="col-span-1 md:col-span-2">
+        <div class="mb-6">
+          <a href="/" class="brand-logo-badge" aria-label="IberFlag">
+            <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
+          </a>
+        </div>
+        <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+        <div class="flex gap-4">
+          <a href="#" class="social-icon" aria-label="Facebook">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+            </svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="Instagram">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect width="20" height="20" x="2" y="2" rx="5" />
+              <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
+              <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+            </svg>
+          </a>
+          <a href="#" class="social-icon" aria-label="LinkedIn">
+            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
+              <rect width="4" height="12" x="2" y="9" />
+              <circle cx="4" cy="4" r="2" />
+            </svg>
+          </a>
+        </div>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+        <ul class="space-y-3">
+          <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-white transition">Produtos</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.about}" class="hover:text-white transition">Sobre Nos</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-white transition">FAQ</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-white transition">Contacto</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="hover:text-white transition">Mapa do Site</a></li>
+        </ul>
+      </div>
+      <div>
+        <h4 class="text-white font-bold mb-4">Informacoes</h4>
+        <ul class="space-y-3">
+          <li><a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-white transition">Envios e Entregas</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.terms}" class="hover:text-white transition">Termos e Condicoes</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.privacy}" class="hover:text-white transition">Politica de Privacidade</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.returns}" class="hover:text-white transition">Devolucoes</a></li>
+        </ul>
+      </div>
     </div>
-    <div>
-      <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-900">Categorias</h2>
-      <ul class="mt-4 space-y-3 text-sm text-slate-600">
-        ${featuredCategories.map((category) => `<li><a href="${category.canonicalPath}" class="hover:text-slate-900">${escapeHtml(category.label)}</a></li>`).join('')}
-      </ul>
-    </div>
-    <div>
-      <h2 class="text-sm font-semibold uppercase tracking-wide text-slate-900">Acesso rapido</h2>
-      <ul class="mt-4 space-y-3 text-sm text-slate-600">
-        <li><a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-slate-900">Contacto</a></li>
-        <li><a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-slate-900">Envios</a></li>
-        <li><a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-slate-900">FAQ</a></li>
-        <li><a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="hover:text-slate-900">Mapa do site</a></li>
-        <li><a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-slate-900">Catalogo</a></li>
-      </ul>
-    </div>
-  </div>
-  <div class="border-t border-slate-200">
-    <div class="mx-auto flex max-w-7xl flex-col gap-3 px-4 py-4 text-sm text-slate-500 sm:px-6 lg:flex-row lg:items-center lg:justify-between lg:px-8">
-      <span>© 2026 IberFlag</span>
-      <div class="flex flex-wrap gap-4">
-        ${featuredProducts.map((product) => `<a href="${product.canonicalPath}" class="hover:text-slate-900">${escapeHtml(product.nome)}</a>`).join('')}
+    <div class="border-t border-gray-800 pt-8">
+      <div class="flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="text-sm">© 2026 IberFlag. Todos os direitos reservados.</div>
+        <div class="flex items-center gap-2 text-sm">
+          <i data-lucide="mail" class="w-4 h-4"></i>
+          <a href="mailto:geral@iberflag.com" class="hover:text-white transition">geral@iberflag.com</a>
+        </div>
       </div>
     </div>
   </div>
