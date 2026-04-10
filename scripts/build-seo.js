@@ -12,12 +12,12 @@ const GENERATED_JS_DIR = path.join(ROOT_DIR, 'assets', 'js', 'generated');
 const CANONICAL_ORIGIN = SiteRoutes.getCanonicalOrigin();
 
 const STATIC_INDEXABLE_PAGES = [
-    { path: SiteRoutes.STATIC_PATHS.home, title: 'IberFlag - Fly Banners, Roll Ups e Publicidade Fisica Personalizada', description: 'Especialistas em fly banners, roll ups, bandeiras, photocalls e publicidade fisica personalizada para Portugal e Espanha.' },
+    { path: SiteRoutes.STATIC_PATHS.home, title: 'IberFlag - Fly Banners, Roll Ups e Publicidade Fisica Personalizada', description: 'Especialistas em fly banners, roll ups, bandeiras, photocalls e publicidade fisica personalizada com operacao principal em Portugal.' },
     { path: SiteRoutes.STATIC_PATHS.products, title: 'Catalogo de Produtos Publicitarios | IberFlag', description: 'Explore o catalogo IberFlag com fly banners, roll ups, bandeiras, tendas, photocalls e suportes promocionais personalizados.' },
     { path: SiteRoutes.STATIC_PATHS.about, title: 'Sobre a IberFlag | Producao Publicitaria para Marcas', description: 'Conheca a IberFlag, a operacao, a abordagem de producao e o foco em materiais promocionais personalizados para marcas e eventos.' },
     { path: SiteRoutes.STATIC_PATHS.contact, title: 'Contacto IberFlag | Orcamentos e Apoio Comercial', description: 'Fale com a equipa IberFlag para pedir orcamento, confirmar prazos de producao ou esclarecer duvidas sobre produtos publicitarios.' },
     { path: SiteRoutes.STATIC_PATHS.faq, title: 'FAQ IberFlag | Perguntas Frequentes', description: 'Respostas a perguntas frequentes sobre prazos, personalizacao, pagamento, envio e funcionamento das encomendas na IberFlag.' },
-    { path: SiteRoutes.STATIC_PATHS.shipping, title: 'Envios e Entregas | IberFlag', description: 'Informacoes sobre producao, expedicao, prazos e entregas dos produtos personalizados IberFlag em Portugal e Espanha.' },
+    { path: SiteRoutes.STATIC_PATHS.shipping, title: 'Envios e Entregas | IberFlag', description: 'Informacoes sobre producao, expedicao, prazos e entregas dos produtos personalizados IberFlag com foco operacional em Portugal.' },
     { path: SiteRoutes.STATIC_PATHS.returns, title: 'Devolucoes e Reclamacoes | IberFlag', description: 'Politica de devolucoes, nao conformidades e processo de reclamacao para encomendas IberFlag.' },
     { path: SiteRoutes.STATIC_PATHS.privacy, title: 'Politica de Privacidade | IberFlag', description: 'Saiba como a IberFlag trata dados pessoais, pedidos de contacto, encomendas e comunicacoes comerciais.' },
     { path: SiteRoutes.STATIC_PATHS.terms, title: 'Termos e Condicoes | IberFlag', description: 'Consulte os termos e condicoes de venda, producao, faturacao, pagamentos e responsabilidade da IberFlag.' },
@@ -244,7 +244,8 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
   <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
   <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
-  <script src="/assets/js/core/logic.js?v=20260409k1"></script>
+  <script src="/assets/js/core/analytics.js?v=20260410a"></script>
+  <script src="/assets/js/core/logic.js?v=20260410a"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
 }
@@ -317,7 +318,7 @@ function renderFooter() {
             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
           </a>
         </div>
-        <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios para marcas em Portugal e Espanha. Producao rapida, qualidade premium e cobertura iberica.</p>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios com operacao principal em Portugal, producao rapida e apoio dedicado.</p>
         <div class="flex gap-4">
           <a href="#" class="social-icon" aria-label="Facebook">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -415,7 +416,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         imageUrl: product.imageUrl,
         structuredData
     })}
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900" data-analytics-event="view_product" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}">
   ${renderHeader(product.canonicalPath)}
   <main>
     <div class="border-b border-slate-200 bg-white">
@@ -448,7 +449,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <div class="text-sm font-medium uppercase tracking-wide text-slate-500">Preco base</div>
                 <div class="mt-2 text-3xl font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</div>
               </div>
-              <a href="${product.personalizePath}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
+              <a href="${product.personalizePath}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
             </div>
             <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opcoes, envie o design e finalize a encomenda no passo seguinte.</p>
           </div>
@@ -531,7 +532,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
         imageUrl: category.products[0]?.imageUrl,
         structuredData
     })}
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900" data-analytics-event="view_category" data-analytics-category-slug="${escapeHtml(category.slug)}">
   ${renderHeader(category.canonicalPath)}
   <main>
     <section class="border-b border-slate-200 bg-white">
@@ -629,7 +630,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         imageUrl: primaryImage,
         structuredData
     })}
-<body class="bg-slate-50 text-slate-900">
+<body class="bg-slate-50 text-slate-900" data-analytics-event="view_category">
   ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
   <main>
     <section class="border-b border-slate-200 bg-white">

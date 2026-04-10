@@ -178,6 +178,26 @@ async function fetchAdminJson(url, options = {}) {
     return payload;
 }
 
+async function postAnalyticsEvent(eventName, payload = {}) {
+    try {
+        await fetch('/api/analytics/collect', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                eventName,
+                orderId: payload.orderId || null,
+                productId: payload.productId || null,
+                countryCode: payload.countryCode || null,
+                metadata: payload.metadata || {}
+            })
+        });
+    } catch (error) {
+        console.warn('Nao foi possivel registar evento analitico:', error);
+    }
+}
+
 function showLoginOverlay() {
     const overlay = document.getElementById('admin-login-overlay');
     if (overlay) overlay.classList.remove('hidden');
@@ -461,6 +481,107 @@ async function loadTabData(tabName) {
         case 'email-templates':
             await loadEmailTemplates();
             break;
+    }
+}
+
+function setDashboardMetricValue(id, value) {
+    const element = document.getElementById(id);
+    if (element) {
+        element.textContent = String(value ?? 0);
+    }
+}
+
+function renderDashboardSimpleList(containerId, items, renderItem, emptyMessage) {
+    const container = document.getElementById(containerId);
+    if (!container) {
+        return;
+    }
+
+    if (!Array.isArray(items) || items.length === 0) {
+        container.innerHTML = `<p class="text-sm text-gray-400">${escapeHtml(emptyMessage || 'Sem registos.')}</p>`;
+        return;
+    }
+
+    container.innerHTML = items.map(renderItem).join('');
+}
+
+async function loadOperationsDashboard() {
+    try {
+        const payload = await fetchAdminJson('/api/admin/dashboard/operations');
+        const metrics = payload?.metrics || {};
+
+        setDashboardMetricValue('ops-metric-review-queue', metrics.reviewQueueOpen || 0);
+        setDashboardMetricValue('ops-metric-failed-emails', metrics.failedEmails || 0);
+        setDashboardMetricValue('ops-metric-incomplete-products', metrics.incompleteProducts || 0);
+        setDashboardMetricValue('ops-metric-sla-breaches', metrics.slaBreaches || 0);
+
+        renderDashboardSimpleList(
+            'dashboard-review-queue',
+            payload?.reviewQueue || [],
+            (item) => `
+                <div class="rounded-lg bg-gray-50 px-3 py-3">
+                    <div class="flex items-start justify-between gap-3">
+                        <div class="min-w-0">
+                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.title || 'Revisão manual')}</p>
+                            <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.details || 'Sem detalhe adicional.')}</p>
+                        </div>
+                        <span class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 rounded-full px-2 py-1">${escapeHtml(item.priority || 'normal')}</span>
+                    </div>
+                </div>
+            `,
+            'Sem itens em revisão.'
+        );
+
+        renderDashboardSimpleList(
+            'dashboard-products-missing-setup',
+            payload?.incompleteProducts || [],
+            (item) => `
+                <div class="rounded-lg bg-gray-50 px-3 py-3">
+                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.nome || 'Produto sem nome')}</p>
+                    <p class="mt-1 text-xs text-gray-600">Falta: ${escapeHtml(Array.isArray(item.missing) ? item.missing.join(', ') : 'configuração base')}</p>
+                </div>
+            `,
+            'Todos os produtos têm custo, preço e SLA base.'
+        );
+
+        renderDashboardSimpleList(
+            'dashboard-email-failures',
+            payload?.failedEmails || [],
+            (item) => `
+                <div class="rounded-lg bg-gray-50 px-3 py-3">
+                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.recipient || 'Sem destinatário')}</p>
+                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.subject || 'Sem assunto')}</p>
+                    <p class="mt-1 text-xs text-red-600">${escapeHtml(item.error_message || 'Falha desconhecida')}</p>
+                </div>
+            `,
+            'Sem falhas recentes de email.'
+        );
+
+        renderDashboardSimpleList(
+            'dashboard-sla-breaches',
+            payload?.slaBreaches || [],
+            (item) => `
+                <div class="rounded-lg bg-gray-50 px-3 py-3">
+                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.numero_encomenda || 'Encomenda')}</p>
+                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.clientes?.nome || item.clientes?.email || 'Cliente sem identificação')}</p>
+                    <div class="mt-2 flex items-center justify-between gap-3 text-xs text-gray-500">
+                        <span>${escapeHtml(formatDateTime(item.sla_target_at))}</span>
+                        <span class="font-semibold text-amber-700">${escapeHtml(formatMarginEstimate(item.margin_estimate))}</span>
+                    </div>
+                </div>
+            `,
+            'Sem encomendas fora do prazo alvo.'
+        );
+    } catch (error) {
+        console.warn('Nao foi possivel carregar o dashboard operacional:', error);
+        setDashboardMetricValue('ops-metric-review-queue', 0);
+        setDashboardMetricValue('ops-metric-failed-emails', 0);
+        setDashboardMetricValue('ops-metric-incomplete-products', 0);
+        setDashboardMetricValue('ops-metric-sla-breaches', 0);
+        renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revisão.');
+        renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos têm custo, preço e SLA base.');
+        renderDashboardSimpleList('dashboard-email-failures', [], () => '', 'Sem falhas recentes de email.');
+        renderDashboardSimpleList('dashboard-sla-breaches', [], () => '', 'Sem encomendas fora do prazo alvo.');
     }
 }
 
@@ -840,6 +961,8 @@ async function loadDashboard() {
         } else {
             contactsContainer.innerHTML = '<p class="text-center text-gray-400 py-4">Nenhum contacto recente</p>';
         }
+
+        await loadOperationsDashboard();
 
     } catch (error) {
         console.error('Erro ao carregar dashboard:', error);
@@ -1503,6 +1626,46 @@ function formatCurrency(value) {
     return `${amount.toFixed(2)}€`;
 }
 
+function formatMarginEstimate(value) {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) {
+        return '—';
+    }
+
+    const sign = amount > 0 ? '+' : '';
+    return `${sign}${formatCurrency(amount)}`;
+}
+
+function formatFiscalScenarioLabel(value) {
+    switch (String(value || '').trim()) {
+        case 'pt_domestic':
+            return 'PT doméstico';
+        case 'es_compatible_manual_review':
+            return 'ES compatível';
+        case 'international_manual_review':
+            return 'Internacional';
+        default:
+            return 'Por definir';
+    }
+}
+
+function formatInvoiceStateLabel(value) {
+    switch (String(value || '').trim()) {
+        case 'pending_payment':
+            return 'Pagamento pendente';
+        case 'ready_to_emit':
+            return 'Pronta a emitir';
+        case 'pending_manual_review':
+            return 'Revisão manual';
+        case 'invoice_error':
+            return 'Erro de emissão';
+        case 'emitted':
+            return 'Emitida';
+        default:
+            return 'Sem estado';
+    }
+}
+
 function formatDate(value) {
     if (!value) return '-';
     return new Date(value).toLocaleDateString('pt-PT');
@@ -1794,6 +1957,7 @@ function renderOrdersTable(orders) {
                 </td>
                 <td>${new Date(o.created_at).toLocaleDateString('pt-PT')}</td>
                 <td class="font-bold text-blue-600">${formatCurrency(o.total)}</td>
+                <td class="font-semibold text-gray-700">${formatMarginEstimate(o.margin_estimate)}</td>
                 <td>
                     ${buildWorkflowBadgeHtml(deriveWorkflowStatus(o))}
                 </td>
@@ -1810,7 +1974,7 @@ function renderOrdersTable(orders) {
             </tr>
         `).join('');
     } else {
-        tbody.innerHTML = '<tr><td colspan="7" class="text-center py-8 text-gray-400">Nenhuma encomenda corresponde aos filtros atuais</td></tr>';
+        tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">Nenhuma encomenda corresponde aos filtros atuais</td></tr>';
     }
 
     if (typeof lucide !== 'undefined') {
@@ -1960,6 +2124,10 @@ const facturalusaStatus = resolveFacturalusaStatus(order);
                         <p style="font-size:1rem;font-weight:700;color:#1d4ed8;margin:0;">${formatCurrency(order.total)}</p>
                     </div>
                     <div>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Margem estimada</p>
+                        <p style="font-size:0.875rem;font-weight:700;color:#111827;margin:0;">${formatMarginEstimate(order.margin_estimate)}</p>
+                    </div>
+                    <div>
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Estado</p>
                         ${buildWorkflowBadgeHtml(workflowStatus)}
                     </div>
@@ -1970,6 +2138,11 @@ const facturalusaStatus = resolveFacturalusaStatus(order);
                     <div>
                         <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Faturação</p>
 <span class="badge badge-${resolveFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(resolveFacturalusaStatusLabel(facturalusaStatus))}</span>
+                    </div>
+                    <div>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Decisão fiscal</p>
+                        <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${escapeHtml(formatFiscalScenarioLabel(order.fiscal_scenario))}</p>
+                        <p style="font-size:0.6875rem;color:#9ca3af;margin:0.2rem 0 0;">${escapeHtml(formatInvoiceStateLabel(order.invoice_state))}</p>
                     </div>
                 </div>
             `;
@@ -2507,6 +2680,15 @@ if (saveOrderBtn) {
                     console.warn('Encomenda atualizada, mas o email de estado falhou:', emailError);
                     showToast(`Encomenda atualizada. Email nao enviado: ${emailError?.message || 'erro de email'}`, 'warning');
                 }
+            }
+
+            if (nextWorkflowStatus === 'entregue' && previousWorkflowStatus !== 'entregue') {
+                await postAnalyticsEvent('order_delivered', {
+                    orderId: currentOrderId,
+                    metadata: {
+                        orderCode: currentOrderData?.numero_encomenda || ''
+                    }
+                });
             }
 
             await loadOrders();

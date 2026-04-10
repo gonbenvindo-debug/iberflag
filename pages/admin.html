@@ -227,6 +227,74 @@
                         </div>
                     </div>
                 </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Revisão Fiscal</h3>
+                            <i data-lucide="shield-alert" class="w-8 h-8 text-amber-600"></i>
+                        </div>
+                        <div class="stat-number" id="ops-metric-review-queue">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Encomendas com revisão manual aberta</p>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Emails Falhados</h3>
+                            <i data-lucide="mail-warning" class="w-8 h-8 text-red-600"></i>
+                        </div>
+                        <div class="stat-number" id="ops-metric-failed-emails">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Notificações que não saíram</p>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">Produtos Incompletos</h3>
+                            <i data-lucide="package-x" class="w-8 h-8 text-slate-600"></i>
+                        </div>
+                        <div class="stat-number" id="ops-metric-incomplete-products">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Sem custo, preço recomendado ou SLA</p>
+                    </div>
+
+                    <div class="admin-card">
+                        <div class="flex items-center justify-between mb-4">
+                            <h3 class="text-gray-600 font-semibold">SLA em Risco</h3>
+                            <i data-lucide="clock-3" class="w-8 h-8 text-blue-600"></i>
+                        </div>
+                        <div class="stat-number" id="ops-metric-sla-breaches">0</div>
+                        <p class="text-sm text-gray-500 mt-2">Encomendas além do prazo alvo</p>
+                    </div>
+                </div>
+
+                <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mt-6">
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">Fila de Revisão</h3>
+                        <div id="dashboard-review-queue" class="space-y-3">
+                            <p class="text-sm text-gray-400">A carregar...</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">Produtos Sem Setup</h3>
+                        <div id="dashboard-products-missing-setup" class="space-y-3">
+                            <p class="text-sm text-gray-400">A carregar...</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">Emails Falhados</h3>
+                        <div id="dashboard-email-failures" class="space-y-3">
+                            <p class="text-sm text-gray-400">A carregar...</p>
+                        </div>
+                    </div>
+
+                    <div class="admin-card">
+                        <h3 class="font-bold text-lg mb-4">SLA em Risco</h3>
+                        <div id="dashboard-sla-breaches" class="space-y-3">
+                            <p class="text-sm text-gray-400">A carregar...</p>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <!-- Bases Tab -->
@@ -375,6 +443,7 @@
                                     <th>Cliente</th>
                                     <th>Data</th>
                                     <th>Total</th>
+                                    <th>Margem</th>
                                     <th>Status</th>
                                     <th>Faturação</th>
                                     <th>Ações</th>
@@ -382,7 +451,7 @@
                             </thead>
                             <tbody id="orders-tbody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-400">
+                                    <td colspan="8" class="text-center py-8 text-gray-400">
                                         Nenhuma encomenda paga encontrada
                                     </td>
                                 </tr>
@@ -1028,9 +1097,9 @@
 
     <script src="/assets/js/templates-data.js"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260409k1"></script>
+ <script src="/assets/js/core/logic.js?v=20260410a"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408c"></script>
-    <script src="/assets/js/pages/admin.js?v=20260408e"></script>
+    <script src="/assets/js/pages/admin.js?v=20260410b"></script>
     <script>lucide.createIcons();</script>
 </body>
 

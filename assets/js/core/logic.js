@@ -890,6 +890,14 @@ function addToCart(productId) {
     }
 
     updateCart();
+    if (typeof window.trackAnalyticsEvent === 'function') {
+        window.trackAnalyticsEvent('add_to_cart', {
+            productId,
+            metadata: {
+                sourcePath: window.location.pathname
+            }
+        });
+    }
     showToast('Produto adicionado ao carrinho!', 'success');
     openCart();
 }

@@ -46,6 +46,7 @@ const companyLookupCache = new Map();
 const COMPANY_LOOKUP_DEBOUNCE_MS = 500;
 let companyLookupInFlight = false;
 let companyLookupDebounceTimer = null;
+let beginCheckoutTracked = false;
 
 function setElementHidden(element, hidden) {
     if (!element) {
@@ -787,10 +788,22 @@ async function loadCart() {
 
     // Free shipping message
     if (freeShippingMsg) {
-        freeShippingMsg.innerHTML = '<p class="font-semibold">Envio gratis aplicado na Peninsula Iberica.</p>';
+        freeShippingMsg.innerHTML = '<p class="font-semibold">Envio gratis aplicado nas zonas operacionais ativas.</p>';
     }
     if (remainingEl) {
         remainingEl.textContent = '0.00€';
+    }
+
+    if (!beginCheckoutTracked && typeof window.trackAnalyticsEvent === 'function') {
+        beginCheckoutTracked = true;
+        void window.trackAnalyticsEvent('begin_checkout', {
+            productId: cart[0]?.id || null,
+            countryCode: detectTaxCountry(nifInput?.value || '', postalCodeInput?.value || ''),
+            metadata: {
+                itemCount: cart.length,
+                total
+            }
+        });
     }
 
     if (typeof lucide !== 'undefined') {

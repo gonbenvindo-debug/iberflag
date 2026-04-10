@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Encomenda - IberFlag</title>
     <meta name="description"
-        content="Finalize a sua encomenda IberFlag com pagamento online via Stripe e envio gratis para a Peninsula Iberica.">
+        content="Finalize a sua encomenda IberFlag com pagamento online via Stripe, faturacao validada e envio para a morada indicada.">
     <meta name="robots" content="noindex,follow">
     <link rel="canonical" href="https://iberflag.com/checkout">
     <meta property="og:type" content="website">
@@ -24,7 +24,8 @@
     <script src="/assets/js/config.js"></script>
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
-    <script src="/assets/js/core/logic.js?v=20260409k1"></script>
+    <script src="/assets/js/core/analytics.js?v=20260410a"></script>
+    <script src="/assets/js/core/logic.js?v=20260410a"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260409c">
 </head>
 
@@ -250,7 +251,7 @@
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Entrega total em 24-48h na Peninsula Iberica apos pagamento.</p>
+                        <p class="app-section-subtitle mb-6">Prazo comunicado apos pagamento confirmado e validacao da encomenda.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -271,7 +272,7 @@
                                 <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
                                 <div class="text-sm text-emerald-900">
                                     <p class="font-semibold">Envio gratis</p>
-                                    <p id="free-shipping-msg">Cobertura exclusiva na Peninsula Iberica.</p>
+                                    <p id="free-shipping-msg">Cobertura confirmada com base na morada de entrega.</p>
                                     <span id="remaining" class="hidden">0.00€</span>
                                 </div>
                             </div>
@@ -309,8 +310,7 @@
                             <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho na
-                        Peninsula Iberica.</p>
+                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho com operacao principal em Portugal.</p>
                 </div>
                 <div>
                     <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
@@ -345,7 +345,7 @@
     </footer>
 
     <script src="/assets/js/core/order-workflow.js"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260409d"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260410a"></script>
     <script>
         lucide.createIcons();
     </script>

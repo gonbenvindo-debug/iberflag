@@ -9,6 +9,7 @@
     "provision:admin": "node scripts/provision-admin-user.js",
     "payments:check": "node scripts/check-payments-config.js",
     "email:check": "node scripts/check-email-config.js",
+    "test": "node --test tests/*.test.js",
     "test-flow:check": "node scripts/verify-test-checkout-flow.js",
     "build:seo": "node scripts/build-seo.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",

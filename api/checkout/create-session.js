@@ -30,6 +30,13 @@ const {
     validateCheckoutPostalCode,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
+const { buildOrderFiscalFields, resolveCheckoutCountryCode } = require('../../lib/server/fiscal-engine');
+const {
+    calculateOrderMarginEstimate,
+    logAnalyticsEvent,
+    logOperationalEvent,
+    recordFiscalDecision
+} = require('../../lib/server/ops');
 const SiteRoutes = require('../../assets/js/core/site-routes.js');
 
 function getCheckoutErrorMessage(error) {
@@ -304,6 +311,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const baseUrl = getPublicBaseUrl(req);
         const cart = await resolveCheckoutCart(supabase, rawCart);
         const { subtotal, shipping, total } = calculateCheckoutTotals(cart);
+        const fiscalFields = buildOrderFiscalFields({
+            customer: customerSnapshot,
+            paymentStatus: 'pending',
+            referenceDate: new Date()
+        });
+        const marginEstimate = await calculateOrderMarginEstimate(supabase, cart, total);
 
         if (total <= 0) {
             sendJson(res, 400, { error: 'TOTAL_INVALIDO' });
@@ -334,6 +347,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 payment_status: 'pending',
                 stripe_payment_method_type: selectedPaymentMethod,
                 facturalusa_status: 'pending',
+                ...fiscalFields,
+                margin_estimate: marginEstimate,
                 checkout_payload: orderMeta.checkoutSnapshot || {},
                 stripe_metadata: {},
                 facturalusa_payload: {}
@@ -347,6 +362,44 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         orderIdForCleanup = order.id;
 
         await insertOrderItemsWithFallback(supabase, order.id, cart);
+        await logAnalyticsEvent(supabase, {
+            event_name: 'begin_checkout',
+            order_id: order.id,
+            country_code: resolveCheckoutCountryCode(customerSnapshot),
+            metadata: {
+                orderCode: orderNumber,
+                itemCount: cart.length,
+                total
+            }
+        });
+        await logOperationalEvent(supabase, {
+            event_name: 'checkout_session_created',
+            level: 'info',
+            order_id: order.id,
+            payload: {
+                orderCode: orderNumber,
+                fiscalScenario: fiscalFields.fiscal_scenario,
+                fiscalDecisionMode: fiscalFields.fiscal_decision_mode,
+                shippingZoneCode: fiscalFields.shipping_zone_code,
+                marginEstimate
+            }
+        });
+        await recordFiscalDecision(supabase, {
+            order_id: order.id,
+            scenario: fiscalFields.fiscal_scenario,
+            decision_mode: fiscalFields.fiscal_decision_mode,
+            evidence_status: fiscalFields.fiscal_evidence_status,
+            vat_rate: fiscalFields.vat_rate_applied,
+            vat_exemption: fiscalFields.vat_exemption_applied,
+            reason: fiscalFields.fiscal_decision_reason,
+            payload: {
+                orderCode: orderNumber,
+                phase: 'checkout_created',
+                paymentStatus: 'pending',
+                shippingZoneCode: fiscalFields.shipping_zone_code,
+                countryCode: resolveCheckoutCountryCode(customerSnapshot)
+            }
+        });
 
         const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
         const successUrl = `${baseUrl}${SiteRoutes.buildCheckoutSuccessPath({

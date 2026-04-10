@@ -12,6 +12,14 @@ const {
 } = require('../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../lib/server/email-notifications');
+const { buildFiscalDecision, buildOrderFiscalFields } = require('../../lib/server/fiscal-engine');
+const {
+    logAnalyticsEvent,
+    logOperationalEvent,
+    recordFiscalDecision,
+    queueReviewItem,
+    resolveReviewItem
+} = require('../../lib/server/ops');
 
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
@@ -289,6 +297,7 @@ async function markOrderFailed(supabase, order, session, paymentStatus) {
             notas: buildOrderNotesWithMeta(split.publicNotes, meta),
             payment_provider: 'stripe',
             payment_status: paymentStatus,
+            invoice_state: 'pending_payment',
             stripe_session_id: session?.id || null,
             stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
             stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || ''
@@ -298,6 +307,120 @@ async function markOrderFailed(supabase, order, session, paymentStatus) {
     if (error) {
         throw error;
     }
+}
+
+function buildWebhookCustomerSnapshot(order) {
+    const split = splitOrderNotesAndMeta(order?.notas || '');
+    const payloadCustomer = order?.checkout_payload?.customer && typeof order.checkout_payload.customer === 'object'
+        ? order.checkout_payload.customer
+        : {};
+
+    return {
+        ...(payloadCustomer || {}),
+        ...(split.meta?.checkoutCustomer || {})
+    };
+}
+
+async function applyPaidFiscalFields(supabase, order, customerSnapshot) {
+    const fiscalFields = buildOrderFiscalFields({
+        customer: customerSnapshot,
+        paymentStatus: 'paid',
+        referenceDate: new Date()
+    });
+
+    const { error } = await updateWithOptionalColumns(
+        supabase,
+        'encomendas',
+        'id',
+        order.id,
+        fiscalFields
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    return {
+        ...order,
+        ...fiscalFields
+    };
+}
+
+async function queueManualFiscalReview(supabase, order, session, reason) {
+    const split = splitOrderNotesAndMeta(order?.notas || '');
+    const meta = appendWorkflowHistory(
+        split.meta,
+        split.meta.workflowStatus,
+        reason || 'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
+    );
+    meta.paymentStatus = 'paid';
+    meta.paymentProvider = 'stripe';
+    meta.paymentMethod = session?.metadata?.payment_method || meta.paymentMethod || order?.metodo_pagamento || 'card';
+    meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
+    meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
+    meta.facturalusaStatus = 'blocked';
+    meta.facturalusaLastError = '';
+
+    const customerSnapshot = buildWebhookCustomerSnapshot(order);
+    const fiscalFields = buildOrderFiscalFields({
+        customer: customerSnapshot,
+        paymentStatus: 'paid',
+        referenceDate: new Date()
+    });
+
+    const updates = {
+        notas: buildOrderNotesWithMeta(split.publicNotes, meta),
+        payment_provider: 'stripe',
+        payment_status: 'paid',
+        stripe_session_id: session?.id || null,
+        stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+        stripe_payment_method_type: session?.metadata?.payment_method || order?.metodo_pagamento || 'card',
+        payment_confirmed_at: order?.payment_confirmed_at || new Date().toISOString(),
+        facturalusa_status: 'blocked',
+        facturalusa_last_error: null,
+        ...fiscalFields
+    };
+
+    const { error } = await updateWithOptionalColumns(
+        supabase,
+        'encomendas',
+        'id',
+        order.id,
+        updates
+    );
+
+    if (error) {
+        throw error;
+    }
+
+    await queueReviewItem(supabase, {
+        queue_key: `invoice:${order.id}`,
+        order_id: order.id,
+        type: 'fiscal_manual_review',
+        priority: 'high',
+        title: 'Faturacao pendente de revisao manual',
+        details: reason || fiscalFields.fiscal_decision_reason || 'Pagamento confirmado com revisao fiscal pendente.',
+        payload: {
+            orderCode: order.numero_encomenda || '',
+            scenario: fiscalFields.fiscal_scenario || '',
+            countryCode: buildFiscalDecision({ customer: customerSnapshot, paymentStatus: 'paid' }).countryCode
+        }
+    });
+
+    await logOperationalEvent(supabase, {
+        event_name: 'order_sent_to_manual_fiscal_review',
+        level: 'warning',
+        order_id: order.id,
+        payload: {
+            reason: reason || fiscalFields.fiscal_decision_reason || '',
+            scenario: fiscalFields.fiscal_scenario || ''
+        }
+    });
+
+    return {
+        ...order,
+        ...updates
+    };
 }
 
 module.exports = async function stripeWebhookHandler(req, res) {
@@ -338,60 +461,184 @@ module.exports = async function stripeWebhookHandler(req, res) {
 
                 if (order) {
                     const paidOrder = await updateOrderPaymentStatus(supabase, order, session, 'paid');
+                    const customerSnapshot = buildWebhookCustomerSnapshot(paidOrder);
+                    const fiscalDecision = buildFiscalDecision({
+                        customer: customerSnapshot,
+                        paymentStatus: 'paid'
+                    });
+                    const paidOrderWithFiscal = await applyPaidFiscalFields(supabase, paidOrder, customerSnapshot);
 
-                    try {
-                        const invoiceResult = await emitFacturalusaDocument(supabase, paidOrder, session);
-                        if (invoiceResult?.emitted && invoiceResult.order) {
-                            await sendOrderEmailNotification({
-                                supabase,
-                                req,
-                                order: invoiceResult.order,
-                                templateKey: 'invoice_document_ready',
-                                dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
-                            });
+                    await logAnalyticsEvent(supabase, {
+                        event_name: 'purchase_completed',
+                        order_id: paidOrder.id,
+                        country_code: fiscalDecision.countryCode,
+                        metadata: {
+                            orderCode: paidOrder.numero_encomenda || '',
+                            total: paidOrder.total || 0,
+                            fiscalScenario: fiscalDecision.scenario
                         }
-                    } catch (facturalusaError) {
-                        const split = splitOrderNotesAndMeta(paidOrder?.notas || order?.notas || '');
-                        const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
-                        const classified = classifyFacturalusaError(facturalusaError);
-                        meta.paymentStatus = 'paid';
-                        meta.paymentProvider = 'stripe';
-                        meta.paymentMethod = session?.metadata?.payment_method || paidOrder?.metodo_pagamento || order?.metodo_pagamento || 'card';
-                        meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
-                        meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
-                        meta.facturalusaLastError = classified.message || facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
-                        meta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
-                        meta.facturalusaLastAttemptAt = new Date().toISOString();
+                    });
+                    await logOperationalEvent(supabase, {
+                        event_name: 'stripe_payment_confirmed',
+                        level: 'info',
+                        order_id: paidOrder.id,
+                        payload: {
+                            orderCode: paidOrder.numero_encomenda || '',
+                            paymentIntent: session?.payment_intent || null,
+                            fiscalScenario: fiscalDecision.scenario,
+                            fiscalDecisionMode: fiscalDecision.decisionMode
+                        }
+                    });
+                    await recordFiscalDecision(supabase, {
+                        order_id: paidOrder.id,
+                        scenario: fiscalDecision.scenario,
+                        decision_mode: fiscalDecision.decisionMode,
+                        evidence_status: fiscalDecision.evidenceStatus,
+                        vat_rate: fiscalDecision.vatRate,
+                        vat_exemption: fiscalDecision.vatExemption,
+                        reason: fiscalDecision.reason,
+                        payload: {
+                            phase: 'payment_confirmed',
+                            paymentStatus: 'paid',
+                            orderCode: paidOrder.numero_encomenda || '',
+                            countryCode: fiscalDecision.countryCode
+                        }
+                    });
 
-                        const { error: facturalusaUpdateError } = await updateWithOptionalColumns(
-                            supabase,
-                            'encomendas',
-                            'id',
-                            order.id,
-                            {
+                    let confirmationEmailOrder = paidOrderWithFiscal;
+
+                    if (fiscalDecision.decisionMode === 'auto_emit') {
+                        try {
+                            const invoiceResult = await emitFacturalusaDocument(supabase, paidOrderWithFiscal, session);
+                            if (invoiceResult?.emitted && invoiceResult.order) {
+                                confirmationEmailOrder = {
+                                    ...invoiceResult.order,
+                                    invoice_state: 'emitted'
+                                };
+                                await updateWithOptionalColumns(
+                                    supabase,
+                                    'encomendas',
+                                    'id',
+                                    invoiceResult.order.id,
+                                    {
+                                        invoice_state: 'emitted'
+                                    }
+                                );
+                                await resolveReviewItem(supabase, `invoice:${invoiceResult.order.id}`);
+                                await logAnalyticsEvent(supabase, {
+                                    event_name: 'invoice_issued',
+                                    order_id: invoiceResult.order.id,
+                                    country_code: fiscalDecision.countryCode,
+                                    metadata: {
+                                        orderCode: invoiceResult.order.numero_encomenda || '',
+                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                    }
+                                });
+                                await logOperationalEvent(supabase, {
+                                    event_name: 'invoice_issued',
+                                    level: 'info',
+                                    order_id: invoiceResult.order.id,
+                                    payload: {
+                                        orderCode: invoiceResult.order.numero_encomenda || '',
+                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                    }
+                                });
+                                await sendOrderEmailNotification({
+                                    supabase,
+                                    req,
+                                    order: confirmationEmailOrder,
+                                    templateKey: 'invoice_document_ready',
+                                    dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
+                                });
+                            }
+                        } catch (facturalusaError) {
+                            const split = splitOrderNotesAndMeta(paidOrderWithFiscal?.notas || order?.notas || '');
+                            const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
+                            const classified = classifyFacturalusaError(facturalusaError);
+                            meta.paymentStatus = 'paid';
+                            meta.paymentProvider = 'stripe';
+                            meta.paymentMethod = session?.metadata?.payment_method || paidOrderWithFiscal?.metodo_pagamento || order?.metodo_pagamento || 'card';
+                            meta.stripeSessionId = session?.id || meta.stripeSessionId || '';
+                            meta.stripePaymentIntent = session?.payment_intent ? String(session.payment_intent) : meta.stripePaymentIntent || '';
+                            meta.facturalusaLastError = classified.message || facturalusaError?.message || 'Falha ao emitir documento no Facturalusa';
+                            meta.facturalusaStatus = classified.retryable ? 'error' : 'blocked';
+                            meta.facturalusaLastAttemptAt = new Date().toISOString();
+
+                            const { error: facturalusaUpdateError } = await updateWithOptionalColumns(
+                                supabase,
+                                'encomendas',
+                                'id',
+                                order.id,
+                                {
+                                    notas: buildOrderNotesWithMeta(split.publicNotes, meta),
+                                    payment_provider: 'stripe',
+                                    payment_status: 'paid',
+                                    stripe_session_id: session?.id || null,
+                                    stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
+                                    stripe_payment_method_type: session?.metadata?.payment_method || paidOrderWithFiscal?.metodo_pagamento || order?.metodo_pagamento || 'card',
+                                    payment_confirmed_at: paidOrderWithFiscal?.payment_confirmed_at || order?.payment_confirmed_at || new Date().toISOString(),
+                                    facturalusa_last_error: meta.facturalusaLastError,
+                                    facturalusa_status: meta.facturalusaStatus,
+                                    invoice_state: classified.retryable ? 'invoice_error' : 'pending_manual_review'
+                                }
+                            );
+
+                            if (facturalusaUpdateError) {
+                                throw facturalusaUpdateError;
+                            }
+
+                            confirmationEmailOrder = {
+                                ...paidOrderWithFiscal,
                                 notas: buildOrderNotesWithMeta(split.publicNotes, meta),
                                 payment_provider: 'stripe',
                                 payment_status: 'paid',
                                 stripe_session_id: session?.id || null,
                                 stripe_payment_intent: session?.payment_intent ? String(session.payment_intent) : null,
-                                stripe_payment_method_type: session?.metadata?.payment_method || paidOrder?.metodo_pagamento || order?.metodo_pagamento || 'card',
-                                payment_confirmed_at: paidOrder?.payment_confirmed_at || order?.payment_confirmed_at || new Date().toISOString(),
+                                stripe_payment_method_type: session?.metadata?.payment_method || paidOrderWithFiscal?.metodo_pagamento || order?.metodo_pagamento || 'card',
+                                payment_confirmed_at: paidOrderWithFiscal?.payment_confirmed_at || order?.payment_confirmed_at || new Date().toISOString(),
                                 facturalusa_last_error: meta.facturalusaLastError,
-                                facturalusa_status: meta.facturalusaStatus
-                            }
-                        );
+                                facturalusa_status: meta.facturalusaStatus,
+                                invoice_state: classified.retryable ? 'invoice_error' : 'pending_manual_review'
+                            };
 
-                        if (facturalusaUpdateError) {
-                            throw facturalusaUpdateError;
+                            await queueReviewItem(supabase, {
+                                queue_key: `invoice:${order.id}`,
+                                order_id: order.id,
+                                type: 'invoice_retry',
+                                priority: classified.retryable ? 'normal' : 'high',
+                                title: 'Falha ao emitir documento no Facturalusa',
+                                details: meta.facturalusaLastError,
+                                payload: {
+                                    orderCode: order.numero_encomenda || '',
+                                    retryable: classified.retryable
+                                }
+                            });
+                            await logOperationalEvent(supabase, {
+                                event_name: 'invoice_issue_failed',
+                                level: classified.retryable ? 'warning' : 'error',
+                                order_id: order.id,
+                                payload: {
+                                    orderCode: order.numero_encomenda || '',
+                                    message: meta.facturalusaLastError,
+                                    retryable: classified.retryable
+                                }
+                            });
+
+                            console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
                         }
-
-                        console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
+                    } else {
+                        confirmationEmailOrder = await queueManualFiscalReview(
+                            supabase,
+                            paidOrderWithFiscal,
+                            session,
+                            'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
+                        );
                     }
 
                     const emailResult = await sendOrderEmailNotification({
                         supabase,
                         req,
-                        order: paidOrder,
+                        order: confirmationEmailOrder,
                         templateKey: 'order_confirmation',
                         dedupeKey: `order_confirmation:${paidOrder.id}`
                     });

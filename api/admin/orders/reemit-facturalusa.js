@@ -12,6 +12,7 @@ const {
 } = require('../../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../../lib/server/email-notifications');
+const { logAnalyticsEvent, logOperationalEvent, queueReviewItem, resolveReviewItem } = require('../../../lib/server/ops');
 
 async function findOrderByIdOrCode(supabase, orderId, orderCode) {
     if (orderId) {
@@ -139,6 +140,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
                     facturalusa_last_error: null,
                     facturalusa_status: 'emitted',
+                    invoice_state: 'emitted',
                     facturalusa_payload: sale || {}
                 }
             );
@@ -146,6 +148,25 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
             if (updateError) {
                 throw updateError;
             }
+
+            await resolveReviewItem(supabase, `invoice:${order.id}`);
+            await logAnalyticsEvent(supabase, {
+                event_name: 'invoice_issued',
+                order_id: order.id,
+                metadata: {
+                    orderCode: order.numero_encomenda || '',
+                    documentNumber: facturalusaDocumentNumber || ''
+                }
+            });
+            await logOperationalEvent(supabase, {
+                event_name: 'invoice_reemitted_from_admin',
+                level: 'info',
+                order_id: order.id,
+                payload: {
+                    orderCode: order.numero_encomenda || '',
+                    documentNumber: facturalusaDocumentNumber || ''
+                }
+            });
 
             await sendOrderEmailNotification({
                 supabase,
@@ -162,6 +183,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
                     facturalusa_last_error: null,
                     facturalusa_status: 'emitted',
+                    invoice_state: 'emitted',
                     facturalusa_payload: sale || {}
                 },
                 templateKey: 'invoice_document_ready',
@@ -197,13 +219,37 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     stripe_session_id: session.id || null,
                     stripe_payment_method_type: session.metadata.payment_method || 'card',
                     facturalusa_last_error: nextMeta.facturalusaLastError,
-                    facturalusa_status: nextMeta.facturalusaStatus
+                    facturalusa_status: nextMeta.facturalusaStatus,
+                    invoice_state: classified.retryable ? 'invoice_error' : 'pending_manual_review'
                 }
             );
 
             if (updateError) {
                 throw updateError;
             }
+
+            await queueReviewItem(supabase, {
+                queue_key: `invoice:${order.id}`,
+                order_id: order.id,
+                type: 'invoice_retry',
+                priority: classified.retryable ? 'normal' : 'high',
+                title: 'Reemissao de documento falhou',
+                details: nextMeta.facturalusaLastError,
+                payload: {
+                    orderCode: order.numero_encomenda || '',
+                    retryable: classified.retryable
+                }
+            });
+            await logOperationalEvent(supabase, {
+                event_name: 'invoice_reemit_failed',
+                level: classified.retryable ? 'warning' : 'error',
+                order_id: order.id,
+                payload: {
+                    orderCode: order.numero_encomenda || '',
+                    message: nextMeta.facturalusaLastError,
+                    retryable: classified.retryable
+                }
+            });
 
             throw invoiceError;
         }
