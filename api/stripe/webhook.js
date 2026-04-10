@@ -508,49 +508,10 @@ module.exports = async function stripeWebhookHandler(req, res) {
                     let confirmationEmailOrder = paidOrderWithFiscal;
 
                     if (fiscalDecision.decisionMode === 'auto_emit') {
+                        let invoiceResult = null;
+
                         try {
-                            const invoiceResult = await emitFacturalusaDocument(supabase, paidOrderWithFiscal, session);
-                            if (invoiceResult?.emitted && invoiceResult.order) {
-                                confirmationEmailOrder = {
-                                    ...invoiceResult.order,
-                                    invoice_state: 'emitted'
-                                };
-                                await updateWithOptionalColumns(
-                                    supabase,
-                                    'encomendas',
-                                    'id',
-                                    invoiceResult.order.id,
-                                    {
-                                        invoice_state: 'emitted'
-                                    }
-                                );
-                                await resolveReviewItem(supabase, `invoice:${invoiceResult.order.id}`);
-                                await logAnalyticsEvent(supabase, {
-                                    event_name: 'invoice_issued',
-                                    order_id: invoiceResult.order.id,
-                                    country_code: fiscalDecision.countryCode,
-                                    metadata: {
-                                        orderCode: invoiceResult.order.numero_encomenda || '',
-                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
-                                    }
-                                });
-                                await logOperationalEvent(supabase, {
-                                    event_name: 'invoice_issued',
-                                    level: 'info',
-                                    order_id: invoiceResult.order.id,
-                                    payload: {
-                                        orderCode: invoiceResult.order.numero_encomenda || '',
-                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
-                                    }
-                                });
-                                await sendOrderEmailNotification({
-                                    supabase,
-                                    req,
-                                    order: confirmationEmailOrder,
-                                    templateKey: 'invoice_document_ready',
-                                    dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
-                                });
-                            }
+                            invoiceResult = await emitFacturalusaDocument(supabase, paidOrderWithFiscal, session);
                         } catch (facturalusaError) {
                             const split = splitOrderNotesAndMeta(paidOrderWithFiscal?.notas || order?.notas || '');
                             const meta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Falha ao emitir documento no Facturalusa');
@@ -625,6 +586,73 @@ module.exports = async function stripeWebhookHandler(req, res) {
                             });
 
                             console.warn('Facturalusa nao conseguiu emitir o documento, mas o pagamento ficou concluido:', facturalusaError);
+                        }
+
+                        if (invoiceResult?.emitted && invoiceResult.order) {
+                            confirmationEmailOrder = {
+                                ...invoiceResult.order,
+                                invoice_state: 'emitted'
+                            };
+
+                            try {
+                                await updateWithOptionalColumns(
+                                    supabase,
+                                    'encomendas',
+                                    'id',
+                                    invoiceResult.order.id,
+                                    {
+                                        invoice_state: 'emitted'
+                                    }
+                                );
+                            } catch (invoiceStateError) {
+                                console.warn('Nao foi possivel atualizar invoice_state para emitted:', invoiceStateError);
+                            }
+
+                            try {
+                                await resolveReviewItem(supabase, `invoice:${invoiceResult.order.id}`);
+                            } catch (reviewResolveError) {
+                                console.warn('Nao foi possivel resolver item de revisao fiscal:', reviewResolveError);
+                            }
+
+                            try {
+                                await logAnalyticsEvent(supabase, {
+                                    event_name: 'invoice_issued',
+                                    order_id: invoiceResult.order.id,
+                                    country_code: fiscalDecision.countryCode,
+                                    metadata: {
+                                        orderCode: invoiceResult.order.numero_encomenda || '',
+                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                    }
+                                });
+                            } catch (analyticsError) {
+                                console.warn('Nao foi possivel registar analytics de invoice_issued:', analyticsError);
+                            }
+
+                            try {
+                                await logOperationalEvent(supabase, {
+                                    event_name: 'invoice_issued',
+                                    level: 'info',
+                                    order_id: invoiceResult.order.id,
+                                    payload: {
+                                        orderCode: invoiceResult.order.numero_encomenda || '',
+                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                    }
+                                });
+                            } catch (opsError) {
+                                console.warn('Nao foi possivel registar operational log de invoice_issued:', opsError);
+                            }
+
+                            const invoiceEmailResult = await sendOrderEmailNotification({
+                                supabase,
+                                req,
+                                order: confirmationEmailOrder,
+                                templateKey: 'invoice_document_ready',
+                                dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
+                            });
+
+                            if (!invoiceEmailResult.sent && invoiceEmailResult.reason !== 'DUPLICATE_EMAIL') {
+                                console.warn('Email de documento fiscal nao enviado:', invoiceEmailResult.reason || invoiceEmailResult.message || invoiceEmailResult);
+                            }
                         }
                     } else {
                         confirmationEmailOrder = await queueManualFiscalReview(
