@@ -10,6 +10,8 @@ const {
     classifyFacturalusaError,
     issueFacturalusaDocumentForOrder
 } = require('../../../lib/server/facturalusa');
+const { resolveFacturalusaDocumentState } = require('../../../lib/server/invoice-state');
+const { runNonBlockingAction } = require('../../../lib/server/resilience');
 const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../../lib/server/email-notifications');
 const { logAnalyticsEvent, logOperationalEvent, queueReviewItem, resolveReviewItem } = require('../../../lib/server/ops');
@@ -73,12 +75,13 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
         }
 
         const split = splitOrderNotesAndMeta(order.notas || '');
-        if (split.meta.facturalusaDocumentNumber) {
+        const invoiceState = resolveFacturalusaDocumentState(order, split.meta);
+        if (invoiceState.emitted) {
             sendJson(res, 200, {
                 success: true,
                 alreadyEmitted: true,
-                documentNumber: split.meta.facturalusaDocumentNumber,
-                documentUrl: split.meta.facturalusaDocumentUrl || null
+                documentNumber: invoiceState.documentNumber,
+                documentUrl: invoiceState.documentUrl
             });
             return;
         }
@@ -149,16 +152,16 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 throw updateError;
             }
 
-            await resolveReviewItem(supabase, `invoice:${order.id}`);
-            await logAnalyticsEvent(supabase, {
+            await runNonBlockingAction('Nao foi possivel resolver a revisao fiscal no admin', () => resolveReviewItem(supabase, `invoice:${order.id}`));
+            await runNonBlockingAction('Nao foi possivel registar analytics de invoice_issued no admin', () => logAnalyticsEvent(supabase, {
                 event_name: 'invoice_issued',
                 order_id: order.id,
                 metadata: {
                     orderCode: order.numero_encomenda || '',
                     documentNumber: facturalusaDocumentNumber || ''
                 }
-            });
-            await logOperationalEvent(supabase, {
+            }));
+            await runNonBlockingAction('Nao foi possivel registar operational log de invoice_reemitted_from_admin', () => logOperationalEvent(supabase, {
                 event_name: 'invoice_reemitted_from_admin',
                 level: 'info',
                 order_id: order.id,
@@ -166,9 +169,9 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     orderCode: order.numero_encomenda || '',
                     documentNumber: facturalusaDocumentNumber || ''
                 }
-            });
+            }));
 
-            await sendOrderEmailNotification({
+            const emailResult = await sendOrderEmailNotification({
                 supabase,
                 req,
                 order: {
@@ -189,6 +192,10 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 templateKey: 'invoice_document_ready',
                 dedupeKey: `invoice_document_ready:${order.id}`
             });
+
+            if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
+                console.warn('Email de documento fiscal nao enviado a partir do admin:', emailResult.reason || emailResult.message || emailResult);
+            }
 
             sendJson(res, 200, {
                 success: true,
@@ -228,7 +235,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 throw updateError;
             }
 
-            await queueReviewItem(supabase, {
+            await runNonBlockingAction('Nao foi possivel colocar a falha de reemissao fiscal na fila de revisao', () => queueReviewItem(supabase, {
                 queue_key: `invoice:${order.id}`,
                 order_id: order.id,
                 type: 'invoice_retry',
@@ -239,8 +246,8 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     orderCode: order.numero_encomenda || '',
                     retryable: classified.retryable
                 }
-            });
-            await logOperationalEvent(supabase, {
+            }));
+            await runNonBlockingAction('Nao foi possivel registar operational log de invoice_reemit_failed', () => logOperationalEvent(supabase, {
                 event_name: 'invoice_reemit_failed',
                 level: classified.retryable ? 'warning' : 'error',
                 order_id: order.id,
@@ -249,7 +256,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     message: nextMeta.facturalusaLastError,
                     retryable: classified.retryable
                 }
-            });
+            }));
 
             throw invoiceError;
         }

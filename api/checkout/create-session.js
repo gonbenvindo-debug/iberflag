@@ -37,6 +37,7 @@ const {
     logOperationalEvent,
     recordFiscalDecision
 } = require('../../lib/server/ops');
+const { runNonBlockingAction } = require('../../lib/server/resilience');
 const SiteRoutes = require('../../assets/js/core/site-routes.js');
 
 function getCheckoutErrorMessage(error) {
@@ -362,7 +363,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         orderIdForCleanup = order.id;
 
         await insertOrderItemsWithFallback(supabase, order.id, cart);
-        await logAnalyticsEvent(supabase, {
+        await runNonBlockingAction('Nao foi possivel registar analytics de begin_checkout', () => logAnalyticsEvent(supabase, {
             event_name: 'begin_checkout',
             order_id: order.id,
             country_code: resolveCheckoutCountryCode(customerSnapshot),
@@ -371,8 +372,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 itemCount: cart.length,
                 total
             }
-        });
-        await logOperationalEvent(supabase, {
+        }));
+        await runNonBlockingAction('Nao foi possivel registar operational log de checkout_session_created', () => logOperationalEvent(supabase, {
             event_name: 'checkout_session_created',
             level: 'info',
             order_id: order.id,
@@ -383,8 +384,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 shippingZoneCode: fiscalFields.shipping_zone_code,
                 marginEstimate
             }
-        });
-        await recordFiscalDecision(supabase, {
+        }));
+        await runNonBlockingAction('Nao foi possivel registar fiscal decision do checkout', () => recordFiscalDecision(supabase, {
             order_id: order.id,
             scenario: fiscalFields.fiscal_scenario,
             decision_mode: fiscalFields.fiscal_decision_mode,
@@ -399,7 +400,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 shippingZoneCode: fiscalFields.shipping_zone_code,
                 countryCode: resolveCheckoutCountryCode(customerSnapshot)
             }
-        });
+        }));
 
         const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
         const successUrl = `${baseUrl}${SiteRoutes.buildCheckoutSuccessPath({
