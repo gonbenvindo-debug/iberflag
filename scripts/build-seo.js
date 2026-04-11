@@ -236,7 +236,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat2">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
