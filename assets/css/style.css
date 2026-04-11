@@ -2745,7 +2745,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         grid-template-columns: 1fr !important;
     }
 
-    .grid.grid-cols-2 {
+    .grid.grid-cols-2:not(.catalog-grid-two) {
         grid-template-columns: 1fr !important;
     }
 
@@ -2762,6 +2762,10 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     #products-grid {
         grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
         gap: 0.85rem !important;
+    }
+
+    .catalog-grid-two {
+        grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
     }
 
     .product-card-image > img {

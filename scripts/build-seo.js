@@ -470,7 +470,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
           </div>
           <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver categoria completa</a>
         </div>
-        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
           ${fallbackProducts.map((candidate) => `
             <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
               <a href="${candidate.canonicalPath}" class="block">
@@ -555,7 +555,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
         <p class="text-sm text-slate-500">${escapeHtml(category.products.length)} produto(s) nesta categoria</p>
         <a href="${SiteRoutes.STATIC_PATHS.products}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Voltar ao catalogo</a>
       </div>
-      <div class="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
         ${category.products.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <a href="${product.canonicalPath}" class="block">
@@ -648,7 +648,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
       </div>
     </section>
     <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
-      <div class="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         ${highlightedProducts.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <a href="${product.canonicalPath}" class="block">
