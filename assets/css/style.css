@@ -160,11 +160,17 @@ body {
     aspect-ratio: 495.24 / 117.49;
     object-fit: contain;
     flex-shrink: 0;
+    align-self: center;
 }
 
 .nav-blur a[aria-label="IberFlag"],
-.nav-blur .group {
+.nav-blur a.flex.items-center.gap-2.group {
+    display: inline-flex;
+    align-items: center;
+    align-self: center;
     min-width: 8.45rem;
+    min-height: 2rem;
+    line-height: 1;
 }
 
 .brand-logo-compact {
@@ -2802,8 +2808,8 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 
     .catalog-grid-two h2,
     .catalog-grid-two .product-card-title {
-        font-size: 0.6rem !important;
-        line-height: 1 !important;
+        font-size: 0.64rem !important;
+        line-height: 1.04 !important;
     }
 
     .product-card-cta {
