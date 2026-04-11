@@ -551,6 +551,10 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
       </div>
     </section>
     <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+      <div class="mb-8 flex items-center justify-between gap-4">
+        <p class="text-sm text-slate-500">${escapeHtml(category.products.length)} produto(s) nesta categoria</p>
+        <a href="${SiteRoutes.STATIC_PATHS.products}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Voltar ao catalogo</a>
+      </div>
       <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
         ${category.products.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
@@ -569,14 +573,6 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
           </article>
         `).join('')}
       </div>
-      <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6">
-        <h2 class="text-xl font-semibold text-slate-900">Ligacoes uteis</h2>
-        <div class="mt-5 grid gap-4 md:grid-cols-3">
-          <a href="${SiteRoutes.STATIC_PATHS.products}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Voltar ao catalogo geral</a>
-          <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Consultar envios e prazos</a>
-          <a href="${SiteRoutes.STATIC_PATHS.contact}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Pedir ajuda comercial</a>
-        </div>
-      </section>
     </section>
   </main>
   ${renderFooter(categoryEntries, productEntries)}
@@ -670,31 +666,11 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
           </article>
         `).join('')}
       </div>
-      <section class="mt-12 rounded-2xl border border-slate-200 bg-white p-6">
-        <div class="grid gap-8 lg:grid-cols-[1.1fr,0.9fr]">
-          <div>
-            <h2 class="text-xl font-semibold text-slate-900">Categorias principais</h2>
-            <p class="mt-2 text-sm leading-6 text-slate-600">Cada categoria junta os modelos mais procurados para encontrar rapidamente a opcao certa.</p>
-            <div class="mt-5 grid gap-3 sm:grid-cols-2">
-              ${categoryEntries.map((category) => `
-                <a href="${category.canonicalPath}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">
-                  <strong class="block text-slate-900">${escapeHtml(category.label)}</strong>
-                  <span class="mt-1 block text-slate-500">${escapeHtml(category.products.length)} produto(s)</span>
-                </a>
-              `).join('')}
-            </div>
-          </div>
-          <div>
-            <h2 class="text-xl font-semibold text-slate-900">Ligacoes uteis</h2>
-            <div class="mt-5 grid gap-3">
-              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Consultar envios e prazos</a>
-              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Perguntas frequentes</a>
-              <a href="${SiteRoutes.STATIC_PATHS.contact}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Falar com apoio comercial</a>
-              <a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="rounded-xl bg-slate-50 px-4 py-4 text-sm text-slate-700 hover:bg-slate-100">Abrir mapa do site</a>
-            </div>
-          </div>
-        </div>
-      </section>
+      <div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 border-t border-slate-200 pt-8 text-sm text-slate-600">
+        <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-slate-900">Envios e prazos</a>
+        <a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-slate-900">FAQ</a>
+        <a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-slate-900">Falar com a equipa</a>
+      </div>
     </section>
   </main>
   ${renderFooter(categoryEntries, productEntries)}
