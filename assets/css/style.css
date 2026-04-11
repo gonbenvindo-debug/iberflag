@@ -2808,8 +2808,8 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 
     .catalog-grid-two h2,
     .catalog-grid-two .product-card-title {
-        font-size: 0.64rem !important;
-        line-height: 1.04 !important;
+        font-size: 0.72rem !important;
+        line-height: 1.08 !important;
     }
 
     .product-card-cta {
