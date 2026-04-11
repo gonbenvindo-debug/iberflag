@@ -2787,8 +2787,8 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .product-card-title {
-        font-size: 0.82rem;
-        line-height: 1.15;
+        font-size: 0.68rem;
+        line-height: 1.05;
     }
 
     .product-card-cta {

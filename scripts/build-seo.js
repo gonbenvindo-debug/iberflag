@@ -692,7 +692,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
             </a>
             <div class="p-3 sm:p-5">
               <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-1.5 text-[0.82rem] font-semibold leading-[1.05] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+              <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 160))}</p>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
@@ -780,7 +780,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
             </a>
             <div class="p-3 sm:p-5">
               <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-1.5 text-[0.82rem] font-semibold leading-[1.05] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+              <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
