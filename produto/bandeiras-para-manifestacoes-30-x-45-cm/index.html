@@ -34,6 +34,44 @@
       }
     }
   </style>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      const applyCatalogTwoColumns = () => {
+        const grids = document.querySelectorAll('.catalog-grid-two');
+        const isMobile = window.matchMedia('(max-width: 767px)').matches;
+
+        grids.forEach((grid) => {
+          if (isMobile) {
+            grid.style.setProperty('display', 'grid', 'important');
+            grid.style.setProperty('grid-template-columns', 'repeat(2, minmax(0, 1fr))', 'important');
+            grid.style.setProperty('gap', '0.85rem', 'important');
+
+            Array.from(grid.children).forEach((item) => {
+              item.style.setProperty('width', 'auto', 'important');
+              item.style.setProperty('max-width', 'none', 'important');
+              item.style.setProperty('min-width', '0', 'important');
+              item.style.setProperty('grid-column', 'span 1', 'important');
+            });
+            return;
+          }
+
+          grid.style.removeProperty('display');
+          grid.style.removeProperty('grid-template-columns');
+          grid.style.removeProperty('gap');
+
+          Array.from(grid.children).forEach((item) => {
+            item.style.removeProperty('width');
+            item.style.removeProperty('max-width');
+            item.style.removeProperty('min-width');
+            item.style.removeProperty('grid-column');
+          });
+        });
+      };
+
+      applyCatalogTwoColumns();
+      window.addEventListener('resize', applyCatalogTwoColumns, { passive: true });
+    });
+  </script>
   <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
   <script src="/assets/js/core/icon-engine.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>

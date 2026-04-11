@@ -33,6 +33,40 @@ const clearFiltersBtn = document.getElementById('clear-filters');
 const categoryFiltersContainer = document.getElementById('category-filters');
 const priceCheckboxes = document.querySelectorAll('.price-filter');
 let categoryRadios = [];
+const catalogTwoColumnMedia = typeof window !== 'undefined' && typeof window.matchMedia === 'function'
+    ? window.matchMedia('(max-width: 767px)')
+    : null;
+
+function enforceCatalogMobileGrid() {
+    if (!productsGrid) return;
+
+    const shouldUseTwoColumns = Boolean(catalogTwoColumnMedia?.matches);
+
+    if (shouldUseTwoColumns) {
+        productsGrid.style.setProperty('display', 'grid', 'important');
+        productsGrid.style.setProperty('grid-template-columns', 'repeat(2, minmax(0, 1fr))', 'important');
+        productsGrid.style.setProperty('gap', '0.85rem', 'important');
+
+        Array.from(productsGrid.children).forEach((item) => {
+            item.style.setProperty('width', 'auto', 'important');
+            item.style.setProperty('max-width', 'none', 'important');
+            item.style.setProperty('min-width', '0', 'important');
+            item.style.setProperty('grid-column', 'span 1', 'important');
+        });
+        return;
+    }
+
+    productsGrid.style.removeProperty('display');
+    productsGrid.style.removeProperty('grid-template-columns');
+    productsGrid.style.removeProperty('gap');
+
+    Array.from(productsGrid.children).forEach((item) => {
+        item.style.removeProperty('width');
+        item.style.removeProperty('max-width');
+        item.style.removeProperty('min-width');
+        item.style.removeProperty('grid-column');
+    });
+}
 
 function getCatalogBasePath() {
     return typeof SiteRoutes !== 'undefined'
@@ -151,6 +185,8 @@ function renderProductsGrid(products) {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+
+    enforceCatalogMobileGrid();
 }
 
 // ===== FILTER & SORT =====
@@ -327,6 +363,10 @@ if (clearFiltersBtn) {
         applyFilters();
         showToast('Filtros limpos', 'info');
     });
+}
+
+if (catalogTwoColumnMedia && typeof catalogTwoColumnMedia.addEventListener === 'function') {
+    catalogTwoColumnMedia.addEventListener('change', enforceCatalogMobileGrid);
 }
 
 // ===== CHECK URL PARAMETERS =====
