@@ -630,24 +630,24 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
   ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-12 lg:px-8">
-        <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-12 lg:px-8">
+        <nav class="mb-3 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
           <span class="text-slate-900">Produtos</span>
         </nav>
         <div class="max-w-3xl">
-          <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
-          <p class="mt-4 text-base leading-7 text-slate-600">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
+          <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
-        <div class="mt-6 flex gap-3 overflow-x-auto pb-2 sm:mt-8 sm:flex-wrap sm:overflow-visible sm:pb-0">
+        <div class="mt-4 flex gap-2 overflow-x-auto pb-1 sm:mt-8 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
           ${featuredCategories.map((category) => `
-            <a href="${category.canonicalPath}" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900">${escapeHtml(category.label)}</a>
+            <a href="${category.canonicalPath}" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">${escapeHtml(category.label)}</a>
           `).join('')}
         </div>
       </div>
     </section>
-    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
       <div class="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         ${highlightedProducts.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
