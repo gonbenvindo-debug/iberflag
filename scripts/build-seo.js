@@ -605,23 +605,23 @@ function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', produ
     return `
       <div class="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
         <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">${escapeHtml(productCount)} produto(s)</p>
-        <div class="grid grid-cols-2 gap-2 sm:min-w-[30rem] sm:gap-3">
-          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+        <div class="grid grid-cols-2 gap-x-2 gap-y-1 sm:min-w-[30rem] sm:gap-x-3 sm:gap-y-2">
+          <label for="catalog-category-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
             Categoria
-            <select data-catalog-category-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
-              ${categoryOptions}
-            </select>
           </label>
-          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+          <label for="catalog-sort-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
             Ordenar
-            <select data-catalog-sort-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
-              <option value="default">Destaques</option>
-              <option value="price-asc">Preco: menor primeiro</option>
-              <option value="price-desc">Preco: maior primeiro</option>
-              <option value="name-asc">Nome: A-Z</option>
-              <option value="name-desc">Nome: Z-A</option>
-            </select>
           </label>
+          <select id="catalog-category-select" data-catalog-category-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+            ${categoryOptions}
+          </select>
+          <select id="catalog-sort-select" data-catalog-sort-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+            <option value="default">Destaques</option>
+            <option value="price-asc">Preco: menor primeiro</option>
+            <option value="price-desc">Preco: maior primeiro</option>
+            <option value="name-asc">Nome: A-Z</option>
+            <option value="name-desc">Nome: Z-A</option>
+          </select>
         </div>
       </div>
     `;
