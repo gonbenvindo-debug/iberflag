@@ -434,6 +434,21 @@ body {
     background-color: rgba(255, 255, 255, 0.95);
 }
 
+#mobile-menu {
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(-14px);
+    pointer-events: none;
+    transition: opacity 0.22s ease, transform 0.22s ease, visibility 0.22s ease;
+}
+
+#mobile-menu.mobile-menu-open {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+}
+
 .homepage .nav-blur {
     backdrop-filter: blur(18px);
     background-color: rgba(248, 250, 252, 0.72);
@@ -3324,6 +3339,20 @@ a[href="/checkout"].block.w-full:hover,
         grid-template-columns: repeat(2, calc(50% - 0.425rem)) !important;
         gap: 0.85rem !important;
         align-items: start !important;
+    }
+
+    #mobile-menu {
+        position: absolute !important;
+        top: calc(100% + 0.35rem) !important;
+        left: 0.75rem !important;
+        right: 0.75rem !important;
+        z-index: 80 !important;
+        display: block !important;
+        border: 1px solid rgba(15, 23, 42, 0.08) !important;
+        border-radius: 1rem !important;
+        background: rgba(255, 255, 255, 0.98) !important;
+        box-shadow: 0 18px 44px rgba(15, 23, 42, 0.14) !important;
+        backdrop-filter: blur(18px) !important;
     }
 
     .catalog-toolbar-grid {
