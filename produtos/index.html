@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat4">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -36,6 +36,7 @@
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const catalogRootPath = '/produtos';
       const applyCatalogTwoColumns = () => {
         const grids = document.querySelectorAll('.catalog-grid-two');
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -67,6 +68,54 @@
           });
         });
       };
+
+      const sortCatalogGrid = (grid, sortValue) => {
+        if (!grid) return;
+        const items = Array.from(grid.querySelectorAll('[data-catalog-item]'));
+        if (!items.length) return;
+
+        const collator = new Intl.Collator('pt-PT', { numeric: true, sensitivity: 'base' });
+        items.sort((left, right) => {
+          const leftPrice = Number(left.getAttribute('data-price') || 0);
+          const rightPrice = Number(right.getAttribute('data-price') || 0);
+          const leftName = left.getAttribute('data-name') || '';
+          const rightName = right.getAttribute('data-name') || '';
+          const leftOrder = Number(left.getAttribute('data-order-index') || 0);
+          const rightOrder = Number(right.getAttribute('data-order-index') || 0);
+
+          switch (sortValue) {
+            case 'price-asc':
+              return leftPrice - rightPrice || collator.compare(leftName, rightName);
+            case 'price-desc':
+              return rightPrice - leftPrice || collator.compare(leftName, rightName);
+            case 'name-asc':
+              return collator.compare(leftName, rightName);
+            case 'name-desc':
+              return collator.compare(rightName, leftName);
+            default:
+              return leftOrder - rightOrder;
+          }
+        });
+
+        items.forEach((item) => grid.appendChild(item));
+      };
+
+      document.querySelectorAll('[data-catalog-sort-select]').forEach((select) => {
+        const grid = document.querySelector('[data-catalog-grid]');
+        const applySort = () => sortCatalogGrid(grid, select.value || 'default');
+        select.addEventListener('change', applySort);
+        applySort();
+      });
+
+      document.querySelectorAll('[data-catalog-category-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+          const nextCategory = String(select.value || 'all').trim().toLowerCase();
+          const nextPath = nextCategory && nextCategory !== 'all'
+            ? catalogRootPath + '/' + encodeURIComponent(nextCategory)
+            : catalogRootPath;
+          window.location.assign(nextPath);
+        });
+      });
 
       applyCatalogTwoColumns();
       window.addEventListener('resize', applyCatalogTwoColumns, { passive: true });
@@ -225,7 +274,7 @@
 </div>
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-12 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-3 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
@@ -235,206 +284,210 @@
           <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
-        <div class="mt-4 flex gap-2 overflow-x-auto pb-1 sm:mt-8 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
-          
-            <a href="/produtos/balcao-promocional" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Balcao Promocional</a>
-          
-            <a href="/produtos/bandeiras" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Bandeiras</a>
-          
-            <a href="/produtos/bandeirolas-esportivas" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Bandeirolas Esportivas</a>
-          
-            <a href="/produtos/cubo-publicitario" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Cubo Publicitario</a>
-          
-            <a href="/produtos/fly-banner" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Fly Banner</a>
-          
-            <a href="/produtos/mastros" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Mastros</a>
-          
-            <a href="/produtos/photocall" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Photocall</a>
-          
-            <a href="/produtos/roll-up" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">Roll Up</a>
-          
+        
+      <div class="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-end sm:justify-between">
+        <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">12 produto(s)</p>
+        <div class="grid gap-2 sm:min-w-[30rem] sm:grid-cols-2 sm:gap-3">
+          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+            Categoria
+            <select data-catalog-category-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+              <option value="all" selected>Todas as categorias</option><option value="balcao-promocional">Balcao Promocional</option><option value="bandeiras">Bandeiras</option><option value="bandeirolas-esportivas">Bandeirolas Esportivas</option><option value="cubo-publicitario">Cubo Publicitario</option><option value="fly-banner">Fly Banner</option><option value="mastros">Mastros</option><option value="photocall">Photocall</option><option value="roll-up">Roll Up</option><option value="tenda-publicitaria">Tenda Publicitaria</option><option value="wall-banner">Wall Banner</option><option value="x-banner">X-Banner</option>
+            </select>
+          </label>
+          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+            Ordenar
+            <select data-catalog-sort-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+              <option value="default">Destaques</option>
+              <option value="price-asc">Preco: menor primeiro</option>
+              <option value="price-desc">Preco: maior primeiro</option>
+              <option value="name-asc">Nome: A-Z</option>
+              <option value="name-desc">Nome: Z-A</option>
+            </select>
+          </label>
         </div>
+      </div>
+    
       </div>
     </section>
     <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
-      <div class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+      <div data-catalog-grid class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="0" data-price="91.5" data-name="fly banner drop (145 x 446 cm)">
             <a href="/produto/fly-banner-drop-145-x-446-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp" alt="Fly Banner Drop (145 x 446 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Fly Banner</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/fly-banner-drop-145-x-446-cm" class="hover:text-slate-700">Fly Banner Drop (145 x 446 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Fly Banner</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/fly-banner-drop-145-x-446-cm" class="hover:text-slate-700">Fly Banner Drop (145 x 446 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">91.50€</span>
-                <a href="/produto/fly-banner-drop-145-x-446-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">91.50€</span>
+                <a href="/produto/fly-banner-drop-145-x-446-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="1" data-price="50" data-name="photocall (tamanho único)">
             <a href="/produto/photocall-tamanho-unico" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/photocall/photocall-469c5105b9.webp" alt="Photocall (Tamanho único)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Photocall</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/photocall-tamanho-unico" class="hover:text-slate-700">Photocall (Tamanho único)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Photocall</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/photocall-tamanho-unico" class="hover:text-slate-700">Photocall (Tamanho único)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Pacote completo de Photocall extensível com todo o necessário para a instalação e a montagem: – Tecido 100% poliéster (250 g/m²), impresso num d…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">50.00€</span>
-                <a href="/produto/photocall-tamanho-unico" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">50.00€</span>
+                <a href="/produto/photocall-tamanho-unico" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="2" data-price="70" data-name="wall banner (60 x 230 cm)">
             <a href="/produto/wall-banner-60-x-230-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp" alt="Wall Banner (60 x 230 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Wall Banner</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/wall-banner-60-x-230-cm" class="hover:text-slate-700">Wall Banner (60 x 230 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Wall Banner</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/wall-banner-60-x-230-cm" class="hover:text-slate-700">Wall Banner (60 x 230 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 60 x 230 cm</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">70.00€</span>
-                <a href="/produto/wall-banner-60-x-230-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">70.00€</span>
+                <a href="/produto/wall-banner-60-x-230-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="3" data-price="142.4" data-name="balcão dobrável (tamanho único)">
             <a href="/produto/balcao-dobravel-tamanho-unico" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/balcao-promocional/balcao-dobravel-d7dfcafe89.webp" alt="Balcão dobrável (Tamanho único)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Balcao Promocional</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/balcao-dobravel-tamanho-unico" class="hover:text-slate-700">Balcão dobrável (Tamanho único)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Balcao Promocional</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/balcao-dobravel-tamanho-unico" class="hover:text-slate-700">Balcão dobrável (Tamanho único)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Expositor leve e dobrável, uma solução ideal e portátil para eventos, feiras, demonstrações comerciais e pontos de venda que se destaca pela sua…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">142.40€</span>
-                <a href="/produto/balcao-dobravel-tamanho-unico" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">142.40€</span>
+                <a href="/produto/balcao-dobravel-tamanho-unico" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="4" data-price="34.9" data-name="bandeiras de mesa (15 x 25 cm)">
             <a href="/produto/bandeiras-de-mesa-15-x-25-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-de-mesa-57ffbbe884.webp" alt="Bandeiras de mesa (15 x 25 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-de-mesa-15-x-25-cm" class="hover:text-slate-700">Bandeiras de mesa (15 x 25 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-de-mesa-15-x-25-cm" class="hover:text-slate-700">Bandeiras de mesa (15 x 25 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Ideais para serem colocados em mesas e estantes de escritórios e escritórios, proporcionam um toque formal e profissional. Eles são muito popula…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">34.90€</span>
-                <a href="/produto/bandeiras-de-mesa-15-x-25-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">34.90€</span>
+                <a href="/produto/bandeiras-de-mesa-15-x-25-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="5" data-price="19.9" data-name="bandeiras de parede (150 x 100 cm)">
             <a href="/produto/bandeiras-de-parede-150-x-100-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-de-parede-8e6293fb75.webp" alt="Bandeiras de parede (150 x 100 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-de-parede-150-x-100-cm" class="hover:text-slate-700">Bandeiras de parede (150 x 100 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-de-parede-150-x-100-cm" class="hover:text-slate-700">Bandeiras de parede (150 x 100 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Este tipo de bandeiras são visíveis nas fachadas dos edifícios públicos com bandeiras institucionais e de empresas como sinal publicitário dos s…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">19.90€</span>
-                <a href="/produto/bandeiras-de-parede-150-x-100-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">19.90€</span>
+                <a href="/produto/bandeiras-de-parede-150-x-100-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="6" data-price="19.9" data-name="bandeiras horizontais (tamanho único)">
             <a href="/produto/bandeiras-horizontais-tamanho-unico" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-horizontais-f4aa29690d.webp" alt="Bandeiras Horizontais (Tamanho único)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-horizontais-tamanho-unico" class="hover:text-slate-700">Bandeiras Horizontais (Tamanho único)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-horizontais-tamanho-unico" class="hover:text-slate-700">Bandeiras Horizontais (Tamanho único)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">As bandeiras horizontais são feitas especialmente para exteriores. Indicado para instituições públicas ou para empresas que pretendem chamar a a…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">19.90€</span>
-                <a href="/produto/bandeiras-horizontais-tamanho-unico" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">19.90€</span>
+                <a href="/produto/bandeiras-horizontais-tamanho-unico" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="7" data-price="22.4" data-name="bandeiras para despacho (150 x 100 cm)">
             <a href="/produto/bandeiras-para-despacho-150-x-100-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-despacho-4bf3f0bd61.webp" alt="Bandeiras para despacho (150 x 100 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-para-despacho-150-x-100-cm" class="hover:text-slate-700">Bandeiras para despacho (150 x 100 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-para-despacho-150-x-100-cm" class="hover:text-slate-700">Bandeiras para despacho (150 x 100 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">As bandeiras para escritórios, escritórios e salas institucionais podem ser feitas de tecido de poliéster 115 g / m2 ou tecido cetim / cetim 130…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">22.40€</span>
-                <a href="/produto/bandeiras-para-despacho-150-x-100-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">22.40€</span>
+                <a href="/produto/bandeiras-para-despacho-150-x-100-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="8" data-price="34.9" data-name="bandeiras para manifestações (100 x 150 cm)">
             <a href="/produto/bandeiras-para-manifestacoes-100-x-150-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp" alt="Bandeiras para manifestações (100 x 150 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-para-manifestacoes-100-x-150-cm" class="hover:text-slate-700">Bandeiras para manifestações (100 x 150 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-para-manifestacoes-100-x-150-cm" class="hover:text-slate-700">Bandeiras para manifestações (100 x 150 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">34.90€</span>
-                <a href="/produto/bandeiras-para-manifestacoes-100-x-150-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">34.90€</span>
+                <a href="/produto/bandeiras-para-manifestacoes-100-x-150-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="9" data-price="24.9" data-name="bandeiras para manifestações (20 x 30 cm)">
             <a href="/produto/bandeiras-para-manifestacoes-20-x-30-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp" alt="Bandeiras para manifestações (20 x 30 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-para-manifestacoes-20-x-30-cm" class="hover:text-slate-700">Bandeiras para manifestações (20 x 30 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-para-manifestacoes-20-x-30-cm" class="hover:text-slate-700">Bandeiras para manifestações (20 x 30 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">24.90€</span>
-                <a href="/produto/bandeiras-para-manifestacoes-20-x-30-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">24.90€</span>
+                <a href="/produto/bandeiras-para-manifestacoes-20-x-30-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="10" data-price="27.4" data-name="bandeiras para manifestações (30 x 45 cm)">
             <a href="/produto/bandeiras-para-manifestacoes-30-x-45-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp" alt="Bandeiras para manifestações (30 x 45 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-para-manifestacoes-30-x-45-cm" class="hover:text-slate-700">Bandeiras para manifestações (30 x 45 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-para-manifestacoes-30-x-45-cm" class="hover:text-slate-700">Bandeiras para manifestações (30 x 45 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">27.40€</span>
-                <a href="/produto/bandeiras-para-manifestacoes-30-x-45-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">27.40€</span>
+                <a href="/produto/bandeiras-para-manifestacoes-30-x-45-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="11" data-price="29.9" data-name="bandeiras para manifestações (45 x 70 cm)">
             <a href="/produto/bandeiras-para-manifestacoes-45-x-70-cm" class="block">
               <img src="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp" alt="Bandeiras para manifestações (45 x 70 cm)" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">Bandeiras</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="/produto/bandeiras-para-manifestacoes-45-x-70-cm" class="hover:text-slate-700">Bandeiras para manifestações (45 x 70 cm)</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">Bandeiras</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="/produto/bandeiras-para-manifestacoes-45-x-70-cm" class="hover:text-slate-700">Bandeiras para manifestações (45 x 70 cm)</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação…</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">29.90€</span>
-                <a href="/produto/bandeiras-para-manifestacoes-45-x-70-cm" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">29.90€</span>
+                <a href="/produto/bandeiras-para-manifestacoes-45-x-70-cm" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>

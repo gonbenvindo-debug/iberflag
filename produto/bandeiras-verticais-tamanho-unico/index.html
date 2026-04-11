@@ -20,7 +20,7 @@
   <meta name="twitter:image" content="https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-verticais-0758ff2c44.webp">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat4">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -36,6 +36,7 @@
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const catalogRootPath = '/produtos';
       const applyCatalogTwoColumns = () => {
         const grids = document.querySelectorAll('.catalog-grid-two');
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -67,6 +68,54 @@
           });
         });
       };
+
+      const sortCatalogGrid = (grid, sortValue) => {
+        if (!grid) return;
+        const items = Array.from(grid.querySelectorAll('[data-catalog-item]'));
+        if (!items.length) return;
+
+        const collator = new Intl.Collator('pt-PT', { numeric: true, sensitivity: 'base' });
+        items.sort((left, right) => {
+          const leftPrice = Number(left.getAttribute('data-price') || 0);
+          const rightPrice = Number(right.getAttribute('data-price') || 0);
+          const leftName = left.getAttribute('data-name') || '';
+          const rightName = right.getAttribute('data-name') || '';
+          const leftOrder = Number(left.getAttribute('data-order-index') || 0);
+          const rightOrder = Number(right.getAttribute('data-order-index') || 0);
+
+          switch (sortValue) {
+            case 'price-asc':
+              return leftPrice - rightPrice || collator.compare(leftName, rightName);
+            case 'price-desc':
+              return rightPrice - leftPrice || collator.compare(leftName, rightName);
+            case 'name-asc':
+              return collator.compare(leftName, rightName);
+            case 'name-desc':
+              return collator.compare(rightName, leftName);
+            default:
+              return leftOrder - rightOrder;
+          }
+        });
+
+        items.forEach((item) => grid.appendChild(item));
+      };
+
+      document.querySelectorAll('[data-catalog-sort-select]').forEach((select) => {
+        const grid = document.querySelector('[data-catalog-grid]');
+        const applySort = () => sortCatalogGrid(grid, select.value || 'default');
+        select.addEventListener('change', applySort);
+        applySort();
+      });
+
+      document.querySelectorAll('[data-catalog-category-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+          const nextCategory = String(select.value || 'all').trim().toLowerCase();
+          const nextPath = nextCategory && nextCategory !== 'all'
+            ? catalogRootPath + '/' + encodeURIComponent(nextCategory)
+            : catalogRootPath;
+          window.location.assign(nextPath);
+        });
+      });
 
       applyCatalogTwoColumns();
       window.addEventListener('resize', applyCatalogTwoColumns, { passive: true });

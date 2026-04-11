@@ -236,7 +236,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260401b">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat4">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -252,6 +252,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   </style>
   <script>
     document.addEventListener('DOMContentLoaded', function () {
+      const catalogRootPath = '${SiteRoutes.STATIC_PATHS.products}';
       const applyCatalogTwoColumns = () => {
         const grids = document.querySelectorAll('.catalog-grid-two');
         const isMobile = window.matchMedia('(max-width: 767px)').matches;
@@ -283,6 +284,54 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
           });
         });
       };
+
+      const sortCatalogGrid = (grid, sortValue) => {
+        if (!grid) return;
+        const items = Array.from(grid.querySelectorAll('[data-catalog-item]'));
+        if (!items.length) return;
+
+        const collator = new Intl.Collator('pt-PT', { numeric: true, sensitivity: 'base' });
+        items.sort((left, right) => {
+          const leftPrice = Number(left.getAttribute('data-price') || 0);
+          const rightPrice = Number(right.getAttribute('data-price') || 0);
+          const leftName = left.getAttribute('data-name') || '';
+          const rightName = right.getAttribute('data-name') || '';
+          const leftOrder = Number(left.getAttribute('data-order-index') || 0);
+          const rightOrder = Number(right.getAttribute('data-order-index') || 0);
+
+          switch (sortValue) {
+            case 'price-asc':
+              return leftPrice - rightPrice || collator.compare(leftName, rightName);
+            case 'price-desc':
+              return rightPrice - leftPrice || collator.compare(leftName, rightName);
+            case 'name-asc':
+              return collator.compare(leftName, rightName);
+            case 'name-desc':
+              return collator.compare(rightName, leftName);
+            default:
+              return leftOrder - rightOrder;
+          }
+        });
+
+        items.forEach((item) => grid.appendChild(item));
+      };
+
+      document.querySelectorAll('[data-catalog-sort-select]').forEach((select) => {
+        const grid = document.querySelector('[data-catalog-grid]');
+        const applySort = () => sortCatalogGrid(grid, select.value || 'default');
+        select.addEventListener('change', applySort);
+        applySort();
+      });
+
+      document.querySelectorAll('[data-catalog-category-select]').forEach((select) => {
+        select.addEventListener('change', () => {
+          const nextCategory = String(select.value || 'all').trim().toLowerCase();
+          const nextPath = nextCategory && nextCategory !== 'all'
+            ? catalogRootPath + '/' + encodeURIComponent(nextCategory)
+            : catalogRootPath;
+          window.location.assign(nextPath);
+        });
+      });
 
       applyCatalogTwoColumns();
       window.addEventListener('resize', applyCatalogTwoColumns, { passive: true });
@@ -546,6 +595,38 @@ function renderProductPage(product, categoryEntries, productEntries) {
 </html>`;
 }
 
+function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', productCount = 0 } = {}) {
+    const safeSelectedCategory = String(selectedCategory || 'all').trim().toLowerCase() || 'all';
+    const categoryOptions = [
+        `<option value="all"${safeSelectedCategory === 'all' ? ' selected' : ''}>Todas as categorias</option>`,
+        ...categoryEntries.map((category) => `<option value="${escapeHtml(category.slug)}"${safeSelectedCategory === category.slug ? ' selected' : ''}>${escapeHtml(category.label)}</option>`)
+    ].join('');
+
+    return `
+      <div class="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-end sm:justify-between">
+        <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">${escapeHtml(productCount)} produto(s)</p>
+        <div class="grid gap-2 sm:min-w-[30rem] sm:grid-cols-2 sm:gap-3">
+          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+            Categoria
+            <select data-catalog-category-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+              ${categoryOptions}
+            </select>
+          </label>
+          <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+            Ordenar
+            <select data-catalog-sort-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+              <option value="default">Destaques</option>
+              <option value="price-asc">Preco: menor primeiro</option>
+              <option value="price-desc">Preco: maior primeiro</option>
+              <option value="name-asc">Nome: A-Z</option>
+              <option value="name-desc">Nome: Z-A</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    `;
+}
+
 function renderCategoryPage(category, categoryEntries, productEntries) {
     const structuredData = [
         {
@@ -587,8 +668,8 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
   ${renderHeader(category.canonicalPath)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
-        <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
+      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+        <nav class="mb-4 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
           <a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-slate-900">Produtos</a>
@@ -596,29 +677,26 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
           <span class="text-slate-900">${escapeHtml(category.label)}</span>
         </nav>
         <div class="max-w-3xl">
-          <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">${escapeHtml(category.label)} personalizados</h1>
-          <p class="mt-4 text-base leading-7 text-slate-600">${escapeHtml(category.description)}</p>
+          <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">${escapeHtml(category.label)} personalizados</h1>
+          <p class="mt-3 text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">${escapeHtml(category.description)}</p>
         </div>
+        ${renderCatalogToolbar(categoryEntries, { selectedCategory: category.slug, productCount: category.products.length })}
       </div>
     </section>
-    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
-      <div class="mb-8 flex items-center justify-between gap-4">
-        <p class="text-sm text-slate-500">${escapeHtml(category.products.length)} produto(s) nesta categoria</p>
-        <a href="${SiteRoutes.STATIC_PATHS.products}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Voltar ao catalogo</a>
-      </div>
-      <div class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
-        ${category.products.map((product) => `
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+    <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-8 lg:px-8">
+      <div data-catalog-grid class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
+        ${category.products.map((product, index) => `
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="${index}" data-price="${Number(product.preco || 0)}" data-name="${escapeHtml(String(product.nome || '').toLowerCase())}">
             <a href="${product.canonicalPath}" class="block">
               <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-xl"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 160))}</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
+                <a href="${product.canonicalPath}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
@@ -632,7 +710,6 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
 }
 
 function renderProductsLandingPage(categoryEntries, productEntries) {
-    const featuredCategories = categoryEntries.slice(0, 8);
     const highlightedProducts = productEntries
         .slice()
         .sort((left, right) => {
@@ -681,7 +758,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
   ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-12 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-3 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
@@ -691,27 +768,23 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
           <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
-        <div class="mt-4 flex gap-2 overflow-x-auto pb-1 sm:mt-8 sm:flex-wrap sm:gap-3 sm:overflow-visible sm:pb-0">
-          ${featuredCategories.map((category) => `
-            <a href="${category.canonicalPath}" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900 sm:px-4 sm:py-2 sm:text-sm">${escapeHtml(category.label)}</a>
-          `).join('')}
-        </div>
+        ${renderCatalogToolbar(categoryEntries, { selectedCategory: 'all', productCount: highlightedProducts.length })}
       </div>
     </section>
     <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
-      <div class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
-        ${highlightedProducts.map((product) => `
-          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
+      <div data-catalog-grid class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+        ${highlightedProducts.map((product, index) => `
+          <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="${index}" data-price="${Number(product.preco || 0)}" data-name="${escapeHtml(String(product.nome || '').toLowerCase())}">
             <a href="${product.canonicalPath}" class="block">
               <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-4 sm:p-6">
-              <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+            <div class="p-3 sm:p-5">
+              <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
+              <h2 class="mt-1.5 text-[0.9rem] font-semibold leading-[1.04] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
               <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
-              <div class="mt-5 flex items-center justify-between">
-                <span class="text-sm font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+              <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
+                <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
+                <a href="${product.canonicalPath}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
@@ -842,7 +915,14 @@ async function ensureDir(dirPath) {
 }
 
 async function removeGeneratedPath(targetPath) {
-    await fs.rm(targetPath, { recursive: true, force: true });
+    try {
+        await fs.rm(targetPath, { recursive: true, force: true });
+    } catch (error) {
+        if (error?.code === 'EBUSY' || error?.code === 'EPERM' || error?.code === 'ENOENT') {
+            return;
+        }
+        throw error;
+    }
 }
 
 async function writeFile(targetPath, content) {

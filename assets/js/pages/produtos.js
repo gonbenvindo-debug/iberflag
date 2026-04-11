@@ -29,6 +29,7 @@ const productsGrid = document.getElementById('products-grid');
 const productCount = document.getElementById('product-count');
 const emptyState = document.getElementById('empty-state');
 const sortSelect = document.getElementById('sort-select');
+const categorySelect = document.getElementById('category-select');
 const clearFiltersBtn = document.getElementById('clear-filters');
 const categoryFiltersContainer = document.getElementById('category-filters');
 const priceCheckboxes = document.querySelectorAll('.price-filter');
@@ -269,8 +270,6 @@ function getCategoryName(categoria) {
 }
 
 function buildDynamicCategoryFilters() {
-    if (!categoryFiltersContainer) return;
-
     const categoryCounts = new Map();
     allProducts.forEach((product) => {
         const key = String(product?.categoria || '').trim().toLowerCase();
@@ -286,23 +285,42 @@ function buildDynamicCategoryFilters() {
         currentCategory = 'all';
     }
 
-    categoryFiltersContainer.innerHTML = `
-        <label class="flex items-center cursor-pointer">
-            <input type="radio" name="category" value="all" class="custom-radio" ${currentCategory === 'all' ? 'checked' : ''}>
-            <span class="ml-2 text-sm">Todos os Produtos (${allProducts.length})</span>
-        </label>
-        ${categories.map((category) => `
+    if (categorySelect) {
+        categorySelect.innerHTML = `
+            <option value="all">Todas as categorias (${allProducts.length})</option>
+            ${categories.map((category) => `
+                <option value="${escapeHtml(category.value)}">${escapeHtml(category.label)} (${category.count})</option>
+            `).join('')}
+        `;
+        categorySelect.value = currentCategory;
+    }
+
+    if (categoryFiltersContainer) {
+        categoryFiltersContainer.innerHTML = `
             <label class="flex items-center cursor-pointer">
-                <input type="radio" name="category" value="${escapeHtml(category.value)}" class="custom-radio" ${String(currentCategory).toLowerCase() === category.value ? 'checked' : ''}>
-                <span class="ml-2 text-sm">${escapeHtml(category.label)} (${category.count})</span>
+                <input type="radio" name="category" value="all" class="custom-radio" ${currentCategory === 'all' ? 'checked' : ''}>
+                <span class="ml-2 text-sm">Todos os Produtos (${allProducts.length})</span>
             </label>
-        `).join('')}
-    `;
+            ${categories.map((category) => `
+                <label class="flex items-center cursor-pointer">
+                    <input type="radio" name="category" value="${escapeHtml(category.value)}" class="custom-radio" ${String(currentCategory).toLowerCase() === category.value ? 'checked' : ''}>
+                    <span class="ml-2 text-sm">${escapeHtml(category.label)} (${category.count})</span>
+                </label>
+            `).join('')}
+        `;
+    }
 
     bindCategoryFilterListeners();
 }
 
 function bindCategoryFilterListeners() {
+    if (categorySelect) {
+        categorySelect.onchange = (event) => {
+            currentCategory = String(event.target.value || 'all').trim().toLowerCase() || 'all';
+            applyFilters();
+        };
+    }
+
     categoryRadios = Array.from(document.querySelectorAll('input[name="category"]'));
     categoryRadios.forEach((radio) => {
         radio.addEventListener('change', (event) => {
@@ -349,6 +367,7 @@ if (clearFiltersBtn) {
     clearFiltersBtn.addEventListener('click', () => {
         // Reset category
         currentCategory = 'all';
+        if (categorySelect) categorySelect.value = 'all';
         const allRadio = document.querySelector('input[name="category"][value="all"]');
         if (allRadio) allRadio.checked = true;
 
@@ -381,6 +400,9 @@ function checkUrlParams() {
         currentCategory = String(locationState.categorySlug).trim().toLowerCase();
     } else if (categoria) {
         currentCategory = String(categoria).trim().toLowerCase();
+        if (categorySelect) {
+            categorySelect.value = currentCategory;
+        }
         const radio = document.querySelector(`input[name="category"][value="${currentCategory}"]`);
         if (radio) {
             radio.checked = true;
