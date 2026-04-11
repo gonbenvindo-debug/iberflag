@@ -154,8 +154,12 @@ body {
 
 .brand-logo-full {
     display: block;
-    width: auto;
+    width: 8.45rem;
+    max-width: 100%;
     height: 2rem;
+    aspect-ratio: 495.24 / 117.49;
+    object-fit: contain;
+    flex-shrink: 0;
 }
 
 .brand-logo-compact {
