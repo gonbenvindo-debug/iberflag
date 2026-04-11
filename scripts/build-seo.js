@@ -348,14 +348,14 @@ function renderFooter() {
           <li><a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-white transition">Produtos</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.about}" class="hover:text-white transition">Sobre Nos</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-white transition">FAQ</a></li>
-          <li><a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-white transition">Contacto</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-white transition">Falar com a equipa</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="hover:text-white transition">Mapa do Site</a></li>
         </ul>
       </div>
       <div>
         <h4 class="text-white font-bold mb-4">Informacoes</h4>
         <ul class="space-y-3">
-          <li><a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-white transition">Envios e Entregas</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-white transition">Envios e prazos</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.terms}" class="hover:text-white transition">Termos e Condicoes</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.privacy}" class="hover:text-white transition">Politica de Privacidade</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.returns}" class="hover:text-white transition">Devolucoes</a></li>
@@ -435,7 +435,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
     <section class="bg-white">
       <div class="mx-auto grid max-w-7xl gap-10 px-4 py-10 sm:px-6 lg:grid-cols-[minmax(0,1.1fr),minmax(320px,0.9fr)] lg:px-8 lg:py-14">
         <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-          <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full object-cover" width="1200" height="900" decoding="async">
+          <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-4 sm:p-6" width="1200" height="900" decoding="async">
         </div>
         <div class="flex flex-col gap-6">
           <div>
@@ -470,18 +470,18 @@ function renderProductPage(product, categoryEntries, productEntries) {
           </div>
           <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver categoria completa</a>
         </div>
-        <div class="mt-8 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
           ${fallbackProducts.map((candidate) => `
             <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
               <a href="${candidate.canonicalPath}" class="block">
-                <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full object-cover" loading="lazy" width="720" height="540" decoding="async">
+                <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
               </a>
-              <div class="p-5">
+              <div class="p-4 sm:p-5">
                 <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
-                <h3 class="mt-2 text-base font-semibold text-slate-900"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
+                <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
                 <div class="mt-4 flex items-center justify-between">
                   <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
-                  <a href="${candidate.canonicalPath}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver produto</a>
+                  <a href="${candidate.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
                 </div>
               </div>
             </article>
@@ -550,24 +550,24 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
         </div>
       </div>
     </section>
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
+    <section class="mx-auto max-w-7xl px-4 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div class="mb-8 flex items-center justify-between gap-4">
         <p class="text-sm text-slate-500">${escapeHtml(category.products.length)} produto(s) nesta categoria</p>
         <a href="${SiteRoutes.STATIC_PATHS.products}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Voltar ao catalogo</a>
       </div>
-      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-3">
+      <div class="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-3">
         ${category.products.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <a href="${product.canonicalPath}" class="block">
-              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full object-cover" loading="lazy" width="720" height="540" decoding="async">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
               <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-2 text-xl font-semibold text-slate-900"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
-              <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(summarize(product.descricao || product.seo_description, 160))}</p>
+              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-xl"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+              <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 160))}</p>
               <div class="mt-5 flex items-center justify-between">
-                <span class="text-base font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver produto</a>
+                <span class="text-sm font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
+                <a href="${product.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
@@ -630,7 +630,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
   ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-12 sm:px-6 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 py-7 sm:px-6 sm:py-12 lg:px-8">
         <nav class="mb-6 flex flex-wrap items-center gap-2 text-sm text-slate-500" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
@@ -640,36 +640,31 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
           <h1 class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
           <p class="mt-4 text-base leading-7 text-slate-600">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
-        <div class="mt-8 flex flex-wrap gap-3">
+        <div class="mt-6 flex gap-3 overflow-x-auto pb-2 sm:mt-8 sm:flex-wrap sm:overflow-visible sm:pb-0">
           ${featuredCategories.map((category) => `
-            <a href="${category.canonicalPath}" class="inline-flex items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900">${escapeHtml(category.label)}</a>
+            <a href="${category.canonicalPath}" class="inline-flex flex-shrink-0 items-center rounded-full border border-slate-200 bg-slate-50 px-4 py-2 text-sm font-medium text-slate-700 hover:border-slate-300 hover:bg-white hover:text-slate-900">${escapeHtml(category.label)}</a>
           `).join('')}
         </div>
       </div>
     </section>
-    <section class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
-      <div class="grid gap-6 md:grid-cols-2 xl:grid-cols-4">
+    <section class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div class="grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
         ${highlightedProducts.map((product) => `
           <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white">
             <a href="${product.canonicalPath}" class="block">
-              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full object-cover" loading="lazy" width="720" height="540" decoding="async">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
             </a>
-            <div class="p-6">
+            <div class="p-4 sm:p-6">
               <p class="text-xs font-medium uppercase tracking-wide text-slate-500">${escapeHtml(product.categoryLabel)}</p>
-              <h2 class="mt-2 text-lg font-semibold text-slate-900"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
-              <p class="mt-3 text-sm leading-6 text-slate-600">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
+              <h2 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-lg"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+              <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
               <div class="mt-5 flex items-center justify-between">
-                <span class="text-base font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver produto</a>
+                <span class="text-sm font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
+                <a href="${product.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
         `).join('')}
-      </div>
-      <div class="mt-10 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 border-t border-slate-200 pt-8 text-sm text-slate-600">
-        <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-slate-900">Envios e prazos</a>
-        <a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-slate-900">FAQ</a>
-        <a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-slate-900">Falar com a equipa</a>
       </div>
     </section>
   </main>

@@ -123,7 +123,7 @@ function renderProductsGrid(products) {
             return `
         <div class="product-card page-transition" data-product-id="${product.id}">
             <div class="product-card-image image-zoom">
-                <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-cover" loading="lazy">
+                <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-contain" loading="lazy">
                 <div class="product-badge">
                     ${purchasable ? `${safePrice}€` : 'Sob consulta'}
                 </div>
