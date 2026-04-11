@@ -603,9 +603,9 @@ function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', produ
     ].join('');
 
     return `
-      <div class="mt-5 flex flex-col gap-3 sm:mt-6 sm:flex-row sm:items-end sm:justify-between">
+      <div class="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
         <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">${escapeHtml(productCount)} produto(s)</p>
-        <div class="grid gap-2 sm:min-w-[30rem] sm:grid-cols-2 sm:gap-3">
+        <div class="grid grid-cols-2 gap-2 sm:min-w-[30rem] sm:gap-3">
           <label class="flex flex-col gap-1 text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
             Categoria
             <select data-catalog-category-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
@@ -668,7 +668,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
   ${renderHeader(category.canonicalPath)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-6 sm:px-6 sm:py-10 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 pb-5 pt-0 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-4 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
@@ -758,7 +758,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
   ${renderHeader(SiteRoutes.STATIC_PATHS.products)}
   <main>
     <section class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
+      <div class="mx-auto max-w-7xl px-4 pb-5 pt-0 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-3 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Inicio</a>
           <span>/</span>
