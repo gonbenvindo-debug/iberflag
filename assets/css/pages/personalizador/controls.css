@@ -1350,7 +1350,8 @@ body.is-camera-panning #canvas-stage {
     #editor-floating-context-bar[data-mobile-context="qr"] #top-font-group,
     #editor-floating-context-bar[data-mobile-context="qr"] #top-shape-group,
     #editor-floating-context-bar[data-mobile-context="qr"] #top-image-group,
-    #editor-floating-context-bar[data-mobile-context="qr"] #top-keep-aspect-btn {
+    #editor-floating-context-bar[data-mobile-context="qr"] #top-keep-aspect-btn,
+    #editor-floating-context-bar.is-qr-selection #top-keep-aspect-btn {
         display: none !important;
     }
 

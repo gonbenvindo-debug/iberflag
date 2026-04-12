@@ -1038,6 +1038,8 @@ Object.assign(DesignEditor.prototype, {
         const setHiddenState = (item, hidden) => {
             if (!item) return;
             item.classList.toggle('hidden', hidden);
+            item.toggleAttribute('hidden', hidden);
+            item.setAttribute('aria-hidden', String(Boolean(hidden)));
         };
 
         if (sidebarRight) {
