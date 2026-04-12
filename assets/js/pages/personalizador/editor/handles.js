@@ -12,6 +12,18 @@ Object.assign(DesignEditor.prototype, {
         const handleElementPress = () => {
             this.selectElement(elementData);
         };
+        const beginElementInteraction = (eventLike) => {
+            handleElementPress();
+            try {
+                this.startDrag(eventLike, elementData);
+            } catch (error) {
+                console.error('Failed to start element drag interaction', {
+                    elementId: elementData?.id,
+                    elementType: elementData?.type,
+                    error
+                });
+            }
+        };
         
         elementData.element.addEventListener('mousedown', (e) => {
             e.stopPropagation();
@@ -22,8 +34,7 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
             e.preventDefault();
-            this.startDrag(e, elementData);
-            handleElementPress();
+            beginElementInteraction(e);
         });
 
         elementData.element.addEventListener('touchstart', (e) => {
@@ -44,8 +55,7 @@ Object.assign(DesignEditor.prototype, {
             const t = e.touches[0];
             this._touchGestureActive = true;
             this._activeGestureTouchId = t.identifier;
-            this.startDrag({ clientX: t.clientX, clientY: t.clientY }, elementData);
-            handleElementPress();
+            beginElementInteraction({ clientX: t.clientX, clientY: t.clientY });
         }, { passive: false });
     },
 
@@ -690,6 +700,22 @@ Object.assign(DesignEditor.prototype, {
         this.beginHistoryGesture();
         this.hideGuideLines?.();
         this.isDragging = true;
+        let geometryBox = null;
+        try {
+            geometryBox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
+        } catch (error) {
+            console.warn('Falling back to drag geometry box after getBBox failure', {
+                elementId: elementData?.id,
+                elementType: elementData?.type,
+                error
+            });
+            geometryBox = this.getElementGeometryBox(elementData, {
+                x: Number(elementData?.x) || 0,
+                y: Number(elementData?.y) || 0,
+                width: Number(elementData?.width) || 1,
+                height: Number(elementData?.height) || 1
+            });
+        }
 
         // Store the mouse position at drag start
         this.dragStart = {
@@ -697,7 +723,7 @@ Object.assign(DesignEditor.prototype, {
             startClientY: e.clientY,
             mouseX: e.clientX,
             mouseY: e.clientY,
-            bbox: this.getElementGeometryBox(elementData, elementData.element.getBBox()),
+            bbox: geometryBox,
             transformedBounds: this.getTransformedBounds(elementData),
             guides: this.calculateGuides(elementData),
             snapLock: { x: null, y: null }
@@ -715,7 +741,7 @@ Object.assign(DesignEditor.prototype, {
                 .trim()
                 .split(/\s+/)
                 .map((pair) => pair.split(',').map(Number));
-            this.dragStart.bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
+            this.dragStart.bbox = geometryBox;
         }
     },
     
