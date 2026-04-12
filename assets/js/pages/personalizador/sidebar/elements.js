@@ -878,7 +878,7 @@ Object.assign(DesignEditor.prototype, {
                 const target = event.target;
                 if (!(target instanceof Element)) return false;
                 if (target.closest('.resize-handle, .rotate-handle')) return false;
-                if (target.closest('[data-editable="true"]')) return false;
+                if (this.isEditorElementTarget?.(target)) return false;
                 if (target.closest('button, input, select, textarea, label, a')) return false;
                 return true;
             };

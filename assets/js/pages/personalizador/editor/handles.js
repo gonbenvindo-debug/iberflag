@@ -972,7 +972,7 @@ Object.assign(DesignEditor.prototype, {
     isCanvasBackgroundClickTarget(target) {
         if (!(target instanceof Element)) return false;
         if (target.closest('#resize-handles, .resize-handle, .rotate-handle')) return false;
-        if (target.closest('[data-element-id], [data-editable="true"]')) return false;
+        if (this.isEditorElementTarget?.(target)) return false;
         if (target.closest('#inline-text-editor, #inline-text-editor-shell')) return false;
         if (target.closest('button, input, select, textarea, label, a')) return false;
 
@@ -982,6 +982,17 @@ Object.assign(DesignEditor.prototype, {
             target.closest('#design-canvas') ||
             target.closest('#canvas-wrapper')
         );
+    },
+
+    isEditorElementTarget(target) {
+        if (!(target instanceof Element)) return false;
+        if (target.closest('[data-element-id], [data-editable="true"]')) {
+            return true;
+        }
+        return Array.isArray(this.elements) && this.elements.some((elementData) => {
+            const node = elementData?.element;
+            return node instanceof Element && (node === target || node.contains?.(target));
+        });
     },
 
     handleCanvasMouseDown(e) {
