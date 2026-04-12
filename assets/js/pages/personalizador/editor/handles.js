@@ -12,17 +12,14 @@ Object.assign(DesignEditor.prototype, {
         const handleElementPress = () => {
             this.selectElement(elementData);
         };
-        const beginElementInteraction = (eventLike) => {
+        const queueElementInteraction = (eventLike) => {
             handleElementPress();
-            try {
-                this.startDrag(eventLike, elementData);
-            } catch (error) {
-                console.error('Failed to start element drag interaction', {
-                    elementId: elementData?.id,
-                    elementType: elementData?.type,
-                    error
-                });
-            }
+            this.pendingElementDrag = {
+                elementData,
+                startClientX: Number(eventLike?.clientX) || 0,
+                startClientY: Number(eventLike?.clientY) || 0,
+                movementThreshold: this._touchGestureActive ? 6 : 3
+            };
         };
         
         elementData.element.addEventListener('mousedown', (e) => {
@@ -34,7 +31,11 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
             e.preventDefault();
-            beginElementInteraction(e);
+            if (e.button != null && e.button !== 0) {
+                handleElementPress();
+                return;
+            }
+            queueElementInteraction(e);
         });
 
         elementData.element.addEventListener('touchstart', (e) => {
@@ -55,7 +56,7 @@ Object.assign(DesignEditor.prototype, {
             const t = e.touches[0];
             this._touchGestureActive = true;
             this._activeGestureTouchId = t.identifier;
-            beginElementInteraction({ clientX: t.clientX, clientY: t.clientY });
+            queueElementInteraction({ clientX: t.clientX, clientY: t.clientY });
         }, { passive: false });
     },
 
@@ -750,6 +751,34 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        if (this.pendingElementDrag && !this.isDragging && !this.isResizing && !this.isRotating && !this.isPanningCamera) {
+            const deltaX = Math.abs(e.clientX - this.pendingElementDrag.startClientX);
+            const deltaY = Math.abs(e.clientY - this.pendingElementDrag.startClientY);
+            const threshold = Number.isFinite(this.pendingElementDrag.movementThreshold)
+                ? this.pendingElementDrag.movementThreshold
+                : 3;
+
+            if (deltaX >= threshold || deltaY >= threshold) {
+                const pendingDrag = this.pendingElementDrag;
+                this.pendingElementDrag = null;
+                try {
+                    this.startDrag(
+                        {
+                            clientX: pendingDrag.startClientX,
+                            clientY: pendingDrag.startClientY
+                        },
+                        pendingDrag.elementData
+                    );
+                } catch (error) {
+                    console.error('Failed to start deferred element drag interaction', {
+                        elementId: pendingDrag.elementData?.id,
+                        elementType: pendingDrag.elementData?.type,
+                        error
+                    });
+                }
+            }
+        }
+
         this.pendingMoveEvent = {
             clientX: e.clientX,
             clientY: e.clientY,
@@ -856,6 +885,8 @@ Object.assign(DesignEditor.prototype, {
         if (source === 'mouse' && (Date.now() - (this._lastTouchInteractionAt || 0)) < 700) {
             return;
         }
+
+        this.pendingElementDrag = null;
 
         const wasRotating = this.isRotating;
         const wasDragging = this.isDragging;
