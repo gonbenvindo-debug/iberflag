@@ -15,11 +15,7 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('font-family', value);
             this.selectedElement.font = value;
-            
-            // Update stored dimensions
-            const bbox = this.selectedElement.element.getBBox();
-            this.selectedElement.width = bbox.width;
-            this.selectedElement.height = bbox.height;
+            this.syncTextMetrics?.(this.selectedElement);
             
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
@@ -31,11 +27,7 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement && this.selectedElement.type === 'text') {
             this.selectedElement.element.setAttribute('font-size', value);
             this.selectedElement.size = value;
-            
-            // Update stored dimensions
-            const bbox = this.selectedElement.element.getBBox();
-            this.selectedElement.width = bbox.width;
-            this.selectedElement.height = bbox.height;
+            this.syncTextMetrics?.(this.selectedElement);
             
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
@@ -691,6 +683,8 @@ Object.assign(DesignEditor.prototype, {
         const isText = hasSelection && elementData.type === 'text';
         const isImage = hasSelection && elementData.type === 'image';
         const isShape = hasSelection && elementData.type === 'shape';
+        const forceKeepAspect = this.isAspectRatioLockedElement?.(elementData);
+        const showKeepAspectControl = this.shouldShowKeepAspectControl?.(elementData);
 
         const setDisabled = (id, disabled) => {
             const button = document.getElementById(id);
@@ -722,6 +716,8 @@ Object.assign(DesignEditor.prototype, {
             .forEach((id) => setDisabled(id, !(isImage && elementData.imageKind === 'qr')));
         ['desktop-shape-fill-color', 'desktop-shape-stroke-color', 'top-shape-fill-color', 'top-shape-fill-eyedropper']
             .forEach((id) => setDisabled(id, !isShape));
+        ['keep-aspect-ratio', 'quick-keep-aspect-btn', 'top-keep-aspect-btn']
+            .forEach((id) => setDisabled(id, !showKeepAspectControl || forceKeepAspect));
 
         setActive('prop-text-bold', isText && Boolean(elementData.bold));
         setActive('prop-text-italic', isText && Boolean(elementData.italic));
@@ -886,7 +882,8 @@ Object.assign(DesignEditor.prototype, {
     },
 
     syncKeepAspectControls() {
-        const active = Boolean(this.keepAspectRatio);
+        const forced = this.isAspectRatioLockedElement?.(this.selectedElement);
+        const active = forced ? true : Boolean(this.keepAspectRatio);
         const buttons = [
             document.getElementById('keep-aspect-ratio'),
             document.getElementById('quick-keep-aspect-btn'),
@@ -894,17 +891,21 @@ Object.assign(DesignEditor.prototype, {
         ].filter(Boolean);
 
         buttons.forEach((button) => {
-            const shouldShowActive = active && !button.disabled;
+            const shouldShowActive = active && (!button.disabled || forced);
             button.classList.toggle('active', shouldShowActive);
             button.setAttribute('aria-pressed', String(shouldShowActive));
             button.setAttribute('data-keep-aspect-state', shouldShowActive ? 'locked' : 'unlocked');
             button.setAttribute(
                 'aria-label',
-                shouldShowActive ? 'Manter proporcoes ativo' : 'Manter proporcoes desativo'
+                forced
+                    ? 'Manter proporcoes sempre ativo para este elemento'
+                    : shouldShowActive ? 'Manter proporcoes ativo' : 'Manter proporcoes desativo'
             );
             button.setAttribute(
                 'title',
-                shouldShowActive ? 'Manter proporcoes: ligado' : 'Manter proporcoes: desligado'
+                forced
+                    ? 'Este elemento mantem sempre as proporcoes'
+                    : shouldShowActive ? 'Manter proporcoes: ligado' : 'Manter proporcoes: desligado'
             );
         });
 
@@ -931,12 +932,12 @@ Object.assign(DesignEditor.prototype, {
 
         const topKeepAspectIcon = document.getElementById('top-keep-aspect-icon');
         const topKeepAspectBtn = document.getElementById('top-keep-aspect-btn');
-        const topIsLocked = Boolean(active && topKeepAspectBtn && !topKeepAspectBtn.disabled);
+        const topIsLocked = Boolean(active && topKeepAspectBtn && (!topKeepAspectBtn.disabled || forced));
         renderKeepAspectIcon(topKeepAspectIcon, topIsLocked);
 
         const quickKeepAspectIcon = document.getElementById('quick-keep-aspect-icon');
         const quickKeepAspectBtn = document.getElementById('quick-keep-aspect-btn');
-        const quickIsLocked = Boolean(active && quickKeepAspectBtn && !quickKeepAspectBtn.disabled);
+        const quickIsLocked = Boolean(active && quickKeepAspectBtn && (!quickKeepAspectBtn.disabled || forced));
         renderKeepAspectIcon(quickKeepAspectIcon, quickIsLocked);
     },
 
@@ -1022,6 +1023,7 @@ Object.assign(DesignEditor.prototype, {
         const isShape = hasSelection && elementData.type === 'shape';
         const isImage = hasSelection && elementData.type === 'image';
         const isQr = isImage && elementData.imageKind === 'qr';
+        const forceKeepAspect = this.isAspectRatioLockedElement?.(elementData);
         const opacityPercent = isImage ? Math.round((elementData.opacity ?? 1) * 100) : 100;
 
         this.syncExpandedPropertiesControls?.(elementData);
@@ -1086,8 +1088,7 @@ Object.assign(DesignEditor.prototype, {
         setHiddenState(topImageFlipHBtn, !isImage || isQr);
         setHiddenState(topImageFlipVBtn, !isImage || isQr);
         setHiddenState(topQrGroup, !isQr);
-        const selectedShapeType = isShape ? String(elementData?.shapeType || '').toLowerCase() : '';
-        const showTopKeepAspect = (isImage && !isQr) || (isShape && selectedShapeType !== 'circle');
+        const showTopKeepAspect = this.shouldShowKeepAspectControl?.(elementData);
         setHiddenState(topKeepAspectBtn, !showTopKeepAspect);
         if (floatingBar) {
             floatingBar.classList.toggle('hidden', !hasSelection);
@@ -1129,7 +1130,7 @@ Object.assign(DesignEditor.prototype, {
             setDisabledState(panelDuplicateBtn, true);
             setDisabledState(panelCenterHBtn, true);
             setDisabledState(panelCenterVBtn, true);
-            setDisabledState(panelKeepAspectBtn, false);
+            setDisabledState(panelKeepAspectBtn, true);
             this.applyQuickOpacityValue(100, false);
             this.syncKeepAspectControls();
             return;
@@ -1144,7 +1145,7 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(topDuplicateBtn, false);
         setDisabledState(topCenterHBtn, false);
         setDisabledState(topCenterVBtn, false);
-        setDisabledState(topKeepAspectBtn, !showTopKeepAspect);
+        setDisabledState(topKeepAspectBtn, !showTopKeepAspect || forceKeepAspect);
         setDisabledState(topImageCropBtn, !isImage || isQr);
         setDisabledState(topImageFlipHBtn, !isImage || isQr);
         setDisabledState(topImageFlipVBtn, !isImage || isQr);
@@ -1155,7 +1156,7 @@ Object.assign(DesignEditor.prototype, {
         setDisabledState(panelDuplicateBtn, false);
         setDisabledState(panelCenterHBtn, false);
         setDisabledState(panelCenterVBtn, false);
-        setDisabledState(panelKeepAspectBtn, false);
+        setDisabledState(panelKeepAspectBtn, !showTopKeepAspect || forceKeepAspect);
 
         if (isText) {
             this.renderQuickFontPopover();

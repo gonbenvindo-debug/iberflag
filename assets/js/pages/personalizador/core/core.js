@@ -159,6 +159,12 @@ class DesignEditor {
         const renderedText = this.getRenderedTextValue(nextRaw, Boolean(elementData.capsLock));
         const currentX = Number.parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0)) || 0;
         const currentY = Number.parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0)) || 0;
+        const previousBounds = this.syncTextMetrics?.(elementData, { syncDataset: false }) || {
+            x: Number(elementData.boundsX) || currentX,
+            y: Number(elementData.boundsY) || currentY,
+            width: Number(elementData.width) || 0,
+            height: Number(elementData.height) || 0
+        };
 
         elementData.rawContent = nextRaw;
         elementData.content = nextRaw;
@@ -167,16 +173,7 @@ class DesignEditor {
         elementData.element.dataset.rawContent = nextRaw;
         elementData.element.textContent = renderedText;
 
-        const measured = this.safeGetBBox(elementData.element, {
-            x: currentX,
-            y: currentY,
-            width: Number(elementData.width) || 0,
-            height: Number(elementData.height) || 0
-        });
-
-        elementData.width = measured.width;
-        elementData.height = measured.height;
-        return measured;
+        return this.syncTextMetrics?.(elementData, { syncDataset: true }) || previousBounds;
     }
 
     executeEditorCommand(command, payload = null) {
@@ -211,6 +208,11 @@ class DesignEditor {
                 }
                 return this.openCartStepsModal?.();
             case 'toggle-keep-aspect':
+                if (this.isAspectRatioLockedElement?.(this.selectedElement)) {
+                    this.keepAspectRatio = true;
+                    this.syncKeepAspectControls?.();
+                    return true;
+                }
                 this.keepAspectRatio = !this.keepAspectRatio;
                 this.syncKeepAspectControls?.();
                 return this.keepAspectRatio;

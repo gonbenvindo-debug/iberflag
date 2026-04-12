@@ -140,35 +140,7 @@ Object.assign(DesignEditor.prototype, {
                     const viewBoxWidth = cropData.width * fullWidth;
                     const viewBoxHeight = cropData.height * fullHeight;
 
-                    // Apply crop geometry to the element box as well.
-                    imgElement.setAttribute('x', String(nextX));
-                    imgElement.setAttribute('y', String(nextY));
-                    imgElement.setAttribute('width', String(nextWidth));
-                    imgElement.setAttribute('height', String(nextHeight));
-                    imgElement.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
-                    imgElement.dataset.cropData = JSON.stringify(cropData);
-                    imgElement.dataset.fullWidth = String(fullWidth);
-                    imgElement.dataset.fullHeight = String(fullHeight);
-                    imgElement.dataset.baseX = String(nextX);
-                    imgElement.dataset.baseY = String(nextY);
-                    imgElement.dataset.baseWidth = String(nextWidth);
-                    imgElement.dataset.baseHeight = String(nextHeight);
-                    imgElement.dataset.cropSourceData = JSON.stringify({
-                        x: viewBoxX,
-                        y: viewBoxY,
-                        width: viewBoxWidth,
-                        height: viewBoxHeight
-                    });
-
                     elementToUpdate.src = croppedImageData.dataUrl;
-                    elementToUpdate.x = nextX;
-                    elementToUpdate.y = nextY;
-                    elementToUpdate.width = nextWidth;
-                    elementToUpdate.height = nextHeight;
-                    elementToUpdate.baseX = nextX;
-                    elementToUpdate.baseY = nextY;
-                    elementToUpdate.baseWidth = nextWidth;
-                    elementToUpdate.baseHeight = nextHeight;
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;
@@ -178,6 +150,12 @@ Object.assign(DesignEditor.prototype, {
                         width: viewBoxWidth,
                         height: viewBoxHeight
                     };
+                    this.syncImageGeometryState?.(elementToUpdate, {
+                        x: nextX,
+                        y: nextY,
+                        width: nextWidth,
+                        height: nextHeight
+                    });
                     this.applyElementRotation(elementToUpdate);
                 }
 

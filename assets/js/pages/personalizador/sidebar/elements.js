@@ -13,6 +13,170 @@ Object.assign(DesignEditor.prototype, {
         return ['triangle', 'diamond', 'star', 'hexagon', 'arrow'].includes(normalized);
     },
 
+    syncTextMetrics(elementData, options = {}) {
+        if (!elementData?.element || elementData.type !== 'text') {
+            return null;
+        }
+
+        const textNode = elementData.element;
+        const rawContent = this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? '');
+        const fontSize = Math.max(8, Number(textNode.getAttribute('font-size') || elementData.size || 24));
+        const anchorX = Number.parseFloat(textNode.getAttribute('x') || String(elementData.x ?? 0)) || 0;
+        const anchorY = Number.parseFloat(textNode.getAttribute('y') || String(elementData.y ?? 0)) || 0;
+        const previousBox = {
+            x: Number.isFinite(Number(elementData.boundsX)) ? Number(elementData.boundsX) : anchorX,
+            y: Number.isFinite(Number(elementData.boundsY)) ? Number(elementData.boundsY) : (anchorY - Math.max(fontSize * 1.15, 16)),
+            width: Math.max(0, Number(elementData.width) || 0),
+            height: Math.max(0, Number(elementData.height) || 0)
+        };
+        const measured = this.safeGetBBox?.(textNode, previousBox) || previousBox;
+        const isEffectivelyEmpty = rawContent.length === 0;
+        const minimumWidth = Math.max(20, fontSize * 0.9);
+        const minimumHeight = Math.max(16, fontSize * 1.15);
+        const nextBox = {
+            x: Number.isFinite(measured.x) ? measured.x : previousBox.x,
+            y: Number.isFinite(measured.y) ? measured.y : previousBox.y,
+            width: isEffectivelyEmpty ? Math.max(minimumWidth, previousBox.width || 0) : Math.max(minimumWidth, measured.width || 0),
+            height: isEffectivelyEmpty ? Math.max(minimumHeight, previousBox.height || 0) : Math.max(minimumHeight, measured.height || 0)
+        };
+
+        elementData.rawContent = rawContent;
+        elementData.content = rawContent;
+        elementData.x = anchorX;
+        elementData.y = anchorY;
+        elementData.width = nextBox.width;
+        elementData.height = nextBox.height;
+        elementData.boundsX = nextBox.x;
+        elementData.boundsY = nextBox.y;
+        elementData.size = fontSize;
+
+        if (options.syncDataset !== false) {
+            textNode.dataset.rawContent = rawContent;
+        }
+
+        return nextBox;
+    },
+
+    normalizeImageCropState(elementData) {
+        if (!elementData || elementData.type !== 'image') {
+            return elementData;
+        }
+
+        const normalizedCrop = this.normalizeCropSelectionData?.(
+            elementData.cropData,
+            elementData.cropSourceData,
+            elementData.fullWidth,
+            elementData.fullHeight
+        ) || null;
+
+        elementData.cropData = normalizedCrop;
+        elementData.fullWidth = Number(elementData.fullWidth || 0) || null;
+        elementData.fullHeight = Number(elementData.fullHeight || 0) || null;
+
+        if (!elementData.cropSourceData && normalizedCrop && elementData.fullWidth && elementData.fullHeight) {
+            elementData.cropSourceData = {
+                x: normalizedCrop.x * elementData.fullWidth,
+                y: normalizedCrop.y * elementData.fullHeight,
+                width: normalizedCrop.width * elementData.fullWidth,
+                height: normalizedCrop.height * elementData.fullHeight
+            };
+        }
+
+        if (elementData.cropSourceData && elementData.fullWidth && elementData.fullHeight && !normalizedCrop) {
+            elementData.cropData = this.normalizeCropSelectionData?.(
+                null,
+                elementData.cropSourceData,
+                elementData.fullWidth,
+                elementData.fullHeight
+            ) || null;
+        }
+
+        return elementData;
+    },
+
+    isAspectRatioLockedElement(elementData) {
+        if (!elementData) return false;
+        if (elementData.type === 'image' && elementData.imageKind === 'qr') {
+            return true;
+        }
+        if (elementData.type === 'shape' && String(elementData.shapeType || '').toLowerCase() === 'circle') {
+            return true;
+        }
+        return false;
+    },
+
+    shouldShowKeepAspectControl(elementData) {
+        if (!elementData) return false;
+        if (this.isAspectRatioLockedElement?.(elementData)) {
+            return false;
+        }
+        if (elementData.type === 'image') {
+            return elementData.imageKind !== 'qr';
+        }
+        if (elementData.type === 'shape') {
+            return String(elementData.shapeType || '').toLowerCase() !== 'circle';
+        }
+        return false;
+    },
+
+    syncImageGeometryState(elementData, geometry = {}, options = {}) {
+        if (!elementData?.element || elementData.type !== 'image') {
+            return null;
+        }
+
+        const toFinite = (value, fallback = null) => {
+            const numeric = Number(value);
+            return Number.isFinite(numeric) ? numeric : fallback;
+        };
+
+        const node = elementData.element;
+        const x = toFinite(geometry.x, toFinite(node.getAttribute('x'), toFinite(elementData.x, 0)));
+        const y = toFinite(geometry.y, toFinite(node.getAttribute('y'), toFinite(elementData.y, 0)));
+        const width = Math.max(20, toFinite(geometry.width, toFinite(node.getAttribute('width'), toFinite(elementData.width, 20))));
+        const height = Math.max(20, toFinite(geometry.height, toFinite(node.getAttribute('height'), toFinite(elementData.height, 20))));
+        const updateBaseBox = options.updateBaseBox !== false;
+
+        node.setAttribute('x', String(x));
+        node.setAttribute('y', String(y));
+        node.setAttribute('width', String(width));
+        node.setAttribute('height', String(height));
+        node.removeAttribute('viewBox');
+
+        elementData.x = x;
+        elementData.y = y;
+        elementData.width = width;
+        elementData.height = height;
+
+        if (updateBaseBox) {
+            elementData.baseX = x;
+            elementData.baseY = y;
+            elementData.baseWidth = width;
+            elementData.baseHeight = height;
+        }
+
+        this.normalizeImageCropState?.(elementData);
+        this.syncElementMetadata?.(elementData);
+
+        return { x, y, width, height };
+    },
+
+    getElementStableAspectRatio(elementData, fallbackBox = null) {
+        if (!elementData?.element) {
+            return 1;
+        }
+
+        const box = this.getElementGeometryBox?.(elementData, fallbackBox || elementData.element.getBBox?.()) || fallbackBox;
+        if (box && box.width > 0 && box.height > 0) {
+            return box.width / box.height;
+        }
+
+        if (elementData.type === 'image' && Number(elementData.fullWidth) > 0 && Number(elementData.fullHeight) > 0) {
+            return Number(elementData.fullWidth) / Number(elementData.fullHeight);
+        }
+
+        return 1;
+    },
+
     buildElementDataFromNode(node, customId = null) {
         const tagName = node.tagName.toLowerCase();
         let type = 'shape';
@@ -68,9 +232,13 @@ Object.assign(DesignEditor.prototype, {
             data.y = Number.isFinite(yAttr) ? yAttr : bbox.y;
             data.width = bbox.width;
             data.height = bbox.height;
+            data.boundsX = bbox.x;
+            data.boundsY = bbox.y;
+            this.syncTextMetrics?.(data, { syncDataset: false });
         }
 
         if (type === 'image') {
+            node.removeAttribute('viewBox');
             data.opacity = parseFloat(node.getAttribute('opacity') || '1');
             data.src = node.getAttribute('href') || '';
             data.name = node.dataset.name || 'Imagem';
@@ -131,6 +299,7 @@ Object.assign(DesignEditor.prototype, {
                     height: data.cropData.height * data.fullHeight
                 };
             }
+            this.normalizeImageCropState?.(data);
         }
 
         if (type === 'shape') {
@@ -291,6 +460,8 @@ Object.assign(DesignEditor.prototype, {
             serializable.y = Number.isFinite(y) ? y : (bbox?.y ?? 0);
             serializable.width = (bbox?.width ?? Number(elementData.width)) || 0;
             serializable.height = (bbox?.height ?? Number(elementData.height)) || 0;
+            serializable.boundsX = Number(elementData.boundsX ?? bbox?.x ?? 0);
+            serializable.boundsY = Number(elementData.boundsY ?? bbox?.y ?? 0);
             serializable.textAnchor = elementData.element.getAttribute('text-anchor') || elementData.textAnchor || 'start';
             serializable.dominantBaseline = elementData.element.getAttribute('dominant-baseline') || elementData.dominantBaseline || '';
         } else if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
@@ -302,6 +473,9 @@ Object.assign(DesignEditor.prototype, {
             serializable.y = Number.isFinite(y) ? y : (Number(elementData.y) || 0);
             serializable.width = Number.isFinite(width) ? width : (Number(elementData.width) || 0);
             serializable.height = Number.isFinite(height) ? height : (Number(elementData.height) || 0);
+            if (elementData.type === 'image') {
+                this.normalizeImageCropState?.(serializable);
+            }
         } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
             const cx = parseFloat(elementData.element.getAttribute('cx') || String(elementData.x ?? 0));
             const cy = parseFloat(elementData.element.getAttribute('cy') || String(elementData.y ?? 0));

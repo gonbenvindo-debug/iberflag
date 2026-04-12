@@ -1036,11 +1036,6 @@ Object.assign(DesignEditor.prototype, {
         img.dataset.flipY = flipY ? 'true' : 'false';
 
         if (cropData) {
-            const viewBoxX = cropData.x * fullWidth;
-            const viewBoxY = cropData.y * fullHeight;
-            const viewBoxWidth = cropData.width * fullWidth;
-            const viewBoxHeight = cropData.height * fullHeight;
-            img.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${viewBoxWidth} ${viewBoxHeight}`);
             img.dataset.cropData = JSON.stringify(cropData);
             img.dataset.fullWidth = String(fullWidth);
             img.dataset.fullHeight = String(fullHeight);
@@ -1048,10 +1043,10 @@ Object.assign(DesignEditor.prototype, {
                 img.dataset.cropSourceData = JSON.stringify(cropSourceData);
             } else {
                 img.dataset.cropSourceData = JSON.stringify({
-                    x: viewBoxX,
-                    y: viewBoxY,
-                    width: viewBoxWidth,
-                    height: viewBoxHeight
+                    x: cropData.x * fullWidth,
+                    y: cropData.y * fullHeight,
+                    width: cropData.width * fullWidth,
+                    height: cropData.height * fullHeight
                 });
             }
         }
@@ -1101,6 +1096,12 @@ Object.assign(DesignEditor.prototype, {
         };
 
         this.elements.push(elementData);
+        this.syncImageGeometryState?.(elementData, {
+            x,
+            y,
+            width: fitted.width,
+            height: fitted.height
+        });
         this.makeElementInteractive(elementData);
         this.selectElement(elementData);
         this.updateLayers();

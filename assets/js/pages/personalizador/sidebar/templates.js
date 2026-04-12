@@ -468,6 +468,12 @@ Object.assign(DesignEditor.prototype, {
         this.bringPrintAreaOverlaysToFront();
 
         const elementData = this.buildElementDataFromNode(imageElement);
+        this.syncImageGeometryState?.(elementData, {
+            x: Number(data.x || 0),
+            y: Number(data.y || 0),
+            width: Number(data.width || 120),
+            height: Number(data.height || 120)
+        });
         this.elements.push(elementData);
         this.makeElementInteractive(elementData);
         this.selectElement(elementData);

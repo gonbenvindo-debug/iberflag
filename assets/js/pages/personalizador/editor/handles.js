@@ -292,6 +292,32 @@ Object.assign(DesignEditor.prototype, {
             return { x, y, width, height };
         }
 
+        if (elementData.type === 'text') {
+            const attrX = toFinite(elementData.element.getAttribute('x'));
+            const attrY = toFinite(elementData.element.getAttribute('y'));
+            const dataWidth = Math.max(1, toFinite(elementData.width, fallback.width) || fallback.width || 1);
+            const dataHeight = Math.max(1, toFinite(elementData.height, fallback.height) || fallback.height || 1);
+            const boundsX = toFinite(elementData.boundsX, fallback.x);
+            const boundsY = toFinite(elementData.boundsY, fallback.y);
+            const fallbackTop = boundsY ?? ((attrY ?? fallback.y) - dataHeight);
+
+            if (fallback.width > 0 && fallback.height > 0) {
+                return {
+                    x: fallback.x,
+                    y: fallback.y,
+                    width: Math.max(1, fallback.width),
+                    height: Math.max(1, fallback.height)
+                };
+            }
+
+            return {
+                x: boundsX ?? (attrX ?? fallback.x),
+                y: fallbackTop,
+                width: dataWidth,
+                height: dataHeight
+            };
+        }
+
         if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
             const cx = toFinite(elementData.element.getAttribute('cx')) ?? toFinite(elementData.x);
             const cy = toFinite(elementData.element.getAttribute('cy')) ?? toFinite(elementData.y);
@@ -477,7 +503,8 @@ Object.assign(DesignEditor.prototype, {
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        const handlePositions = elementData.type === 'text'
+        const forceCornerOnly = elementData.type === 'text' || this.isAspectRatioLockedElement?.(elementData);
+        const handlePositions = forceCornerOnly
             ? { nw: tl, ne: tr, sw: bl, se: br }
             : { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
 
@@ -544,7 +571,8 @@ Object.assign(DesignEditor.prototype, {
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
 
-        const handlePositions = elementData.type === 'text'
+        const forceCornerOnly = elementData.type === 'text' || this.isAspectRatioLockedElement?.(elementData);
+        const handlePositions = forceCornerOnly
             ? { nw: tl, ne: tr, sw: bl, se: br }
             : { nw: tl, ne: tr, sw: bl, se: br, n: tc, s: bc, e: rc, w: lc };
         Object.entries(handlePositions).forEach(([pos, point]) => {
@@ -555,7 +583,7 @@ Object.assign(DesignEditor.prototype, {
             handle.style.setProperty('cursor', this.getResizeCursor(pos, elementData.rotation || 0), 'important');
         });
 
-        if (elementData.type === 'text') {
+        if (forceCornerOnly) {
             ['n', 's', 'e', 'w'].forEach((pos) => {
                 const handle = handlesContainer.querySelector(`.resize-handle[data-position="${pos}"]`);
                 if (handle) handle.remove();
@@ -863,6 +891,14 @@ Object.assign(DesignEditor.prototype, {
             if ((wasRotating || wasDragging || wasResizing) && !this.cropMode) {
                 this.bringElementInBounds(this.selectedElement);
             }
+            if (this.selectedElement.type === 'image') {
+                this.syncImageGeometryState?.(this.selectedElement, {}, { updateBaseBox: true });
+            } else if (this.selectedElement.type === 'text') {
+                this.syncTextMetrics?.(this.selectedElement);
+                this.syncElementMetadata?.(this.selectedElement);
+            } else {
+                this.syncElementMetadata?.(this.selectedElement);
+            }
             if (!this.cropMode) {
                 this.showResizeHandles(this.selectedElement);
             }
@@ -1131,13 +1167,12 @@ Object.assign(DesignEditor.prototype, {
         
         let { x: newX, y: newY, width: newWidth, height: newHeight } = buildBoxFromPoint();
 
-        const isCircleShape = this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle';
-        const isImageElement = this.selectedElement.type === 'image';
-        const shouldKeepRatio = isCircleShape
+        const forceKeepAspect = this.isAspectRatioLockedElement?.(this.selectedElement);
+        const shouldKeepRatio = forceKeepAspect
             ? true
-            : (!isImageElement && ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text'));
+            : ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text');
         if (shouldKeepRatio && rotation === 0 && bbox.height > 0) {
-            const ratio = bbox.width / bbox.height;
+            const ratio = this.getElementStableAspectRatio?.(this.selectedElement, bbox) || (bbox.width / bbox.height);
 
             if (['e', 'w'].includes(this.resizeHandle)) {
                 newHeight = Math.max(minSize, newWidth / ratio);
@@ -1208,37 +1243,23 @@ Object.assign(DesignEditor.prototype, {
             newHeight = Math.max(minSize, snapHalf(newHeight));
         }
 
-        if (this.selectedElement.type === 'image' && this.selectedElement.imageKind !== 'qr') {
-            const currentFit = this.getImageObjectFitMode?.(this.selectedElement) || 'contain';
-            if (!shouldKeepRatio) {
-                if (!this.selectedElement._freeResizeObjectFitBackup) {
-                    this.selectedElement._freeResizeObjectFitBackup = currentFit;
-                }
-                if (currentFit !== 'fill') {
-                    this.setImageObjectFitMode?.(this.selectedElement, 'fill');
-                }
-            }
-        }
-        
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
-            // Apply new values
-            this.selectedElement.element.setAttribute('width', newWidth);
-            this.selectedElement.element.setAttribute('height', newHeight);
-            this.selectedElement.element.setAttribute('x', newX);
-            this.selectedElement.element.setAttribute('y', newY);
-            this.selectedElement.width = newWidth;
-            this.selectedElement.height = newHeight;
-            this.selectedElement.x = newX;
-            this.selectedElement.y = newY;
             if (this.selectedElement.type === 'image') {
-                this.selectedElement.baseX = newX;
-                this.selectedElement.baseY = newY;
-                this.selectedElement.baseWidth = newWidth;
-                this.selectedElement.baseHeight = newHeight;
-                this.selectedElement.element.dataset.baseX = String(newX);
-                this.selectedElement.element.dataset.baseY = String(newY);
-                this.selectedElement.element.dataset.baseWidth = String(newWidth);
-                this.selectedElement.element.dataset.baseHeight = String(newHeight);
+                this.syncImageGeometryState?.(this.selectedElement, {
+                    x: newX,
+                    y: newY,
+                    width: newWidth,
+                    height: newHeight
+                });
+            } else {
+                this.selectedElement.element.setAttribute('width', newWidth);
+                this.selectedElement.element.setAttribute('height', newHeight);
+                this.selectedElement.element.setAttribute('x', newX);
+                this.selectedElement.element.setAttribute('y', newY);
+                this.selectedElement.width = newWidth;
+                this.selectedElement.height = newHeight;
+                this.selectedElement.x = newX;
+                this.selectedElement.y = newY;
             }
         } else if (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'circle') {
             const radius = Math.max(minSize / 2, newWidth / 2);
@@ -1285,7 +1306,7 @@ Object.assign(DesignEditor.prototype, {
             if (propSizeVal) propSizeVal.textContent = String(roundedSize);
             if (topSizeLabel) topSizeLabel.textContent = String(roundedSize);
             if (desktopSizeLabel) desktopSizeLabel.textContent = String(roundedSize);
-            const measuredBox = this.selectedElement.element.getBBox();
+            const measuredBox = this.syncTextMetrics?.(this.selectedElement) || this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
             const fixedCorner = (() => {
                 switch (this.resizeHandle) {
                     case 'se': return { x: bbox.x, y: bbox.y, mx: measuredBox.x, my: measuredBox.y };
@@ -1316,9 +1337,7 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (this.selectedElement.type === 'text') {
-            const newBBox = this.selectedElement.element.getBBox();
-            this.selectedElement.width = newBBox.width;
-            this.selectedElement.height = newBBox.height;
+            this.syncTextMetrics?.(this.selectedElement);
         }
 
         this.updateResizeHandlesPosition(this.selectedElement);
