@@ -165,18 +165,23 @@ function renderProductsGrid(products) {
                 ${product.destaque ? '<div class="absolute top-4 left-4 bg-yellow-400 text-yellow-900 px-3 py-1 rounded-full text-xs font-bold">Destaque</div>' : ''}
             </div>
             <div class="product-card-body">
-                <div class="product-card-meta">${safeCategory}</div>
-                <h3 class="product-card-title">${safeName}</h3>
-                <a
-                    href="${purchasable ? buildProductDetailsPath(product) : '#'}"
-                    data-open-product="${safeProductId}"
-                    data-product-id="${safeProductId}"
-                    data-product-name="${safeProductNameParam}"
-                    ${purchasable ? '' : 'aria-disabled="true" tabindex="-1"'}
-                    class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 pointer-events-none'}">
-                    <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    ${purchasable ? 'Ver produto' : 'Indisponivel para checkout'}
-                </a>
+                <div class="product-card-content">
+                    <div class="product-card-meta">${safeCategory}</div>
+                    <h3 class="product-card-title">${safeName}</h3>
+                </div>
+                <div class="product-card-footer">
+                    <span class="text-sm font-semibold text-white sm:text-base">${purchasable ? `${safePrice}€` : 'Sob consulta'}</span>
+                    <a
+                        href="${purchasable ? buildProductDetailsPath(product) : '#'}"
+                        data-open-product="${safeProductId}"
+                        data-product-id="${safeProductId}"
+                        data-product-name="${safeProductNameParam}"
+                        ${purchasable ? '' : 'aria-disabled="true" tabindex="-1"'}
+                        class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 pointer-events-none'}">
+                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                        ${purchasable ? 'Ver produto' : 'Indisponivel para checkout'}
+                    </a>
+                </div>
             </div>
         </div>
     `;
