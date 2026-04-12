@@ -7,6 +7,10 @@ const {
     splitOrderNotesAndMeta
 } = require('../../../lib/server/checkout');
 const {
+    detectFiscalSnapshotDivergence,
+    resolveStoredFiscalSnapshot
+} = require('../../../lib/server/fiscal-engine');
+const {
     classifyFacturalusaError,
     issueFacturalusaDocumentForOrder
 } = require('../../../lib/server/facturalusa');
@@ -40,6 +44,21 @@ async function findOrderByIdOrCode(supabase, orderId, orderCode) {
     }
 
     return null;
+}
+
+async function findCustomerForOrder(supabase, order = {}) {
+    if (!order?.cliente_id) {
+        return null;
+    }
+
+    const { data, error } = await supabase
+        .from('clientes')
+        .select('*')
+        .eq('id', order.cliente_id)
+        .maybeSingle();
+
+    if (error) throw error;
+    return data || null;
 }
 
 module.exports = async function adminReemitFacturalusaHandler(req, res) {
@@ -76,12 +95,29 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
 
         const split = splitOrderNotesAndMeta(order.notas || '');
         const invoiceState = resolveFacturalusaDocumentState(order, split.meta);
+        const fiscalSnapshot = resolveStoredFiscalSnapshot(order, split.meta || {});
+        const latestCustomer = await findCustomerForOrder(supabase, order);
+        const divergence = detectFiscalSnapshotDivergence(fiscalSnapshot, {
+            ...(split.meta?.checkoutCustomer || {}),
+            ...(latestCustomer || {})
+        });
+
+        if (divergence.diverged) {
+            sendJson(res, 409, {
+                error: 'FISCAL_DIVERGENCE_DETECTED',
+                message: divergence.reason || 'Os dados fiscais atuais diferem dos dados usados no snapshot fiscal congelado.',
+                divergence
+            });
+            return;
+        }
+
         if (invoiceState.emitted) {
             sendJson(res, 200, {
                 success: true,
                 alreadyEmitted: true,
                 documentNumber: invoiceState.documentNumber,
-                documentUrl: invoiceState.documentUrl
+                documentUrl: invoiceState.documentUrl,
+                divergence
             });
             return;
         }

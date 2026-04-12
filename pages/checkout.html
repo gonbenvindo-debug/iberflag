@@ -115,9 +115,79 @@
                                         <p id="company-lookup-status" class="hidden"></p>
                                     </div>
                                 </div>
+                                <div class="mt-4">
+                                    <label class="form-label">País fiscal *</label>
+                                    <select id="country-select" name="country" class="form-input" required>
+                                        <option value="PT" selected>Portugal</option>
+                                        <option value="ES">Espanha</option>
+                                        <option value="FR">França</option>
+                                        <option value="DE">Alemanha</option>
+                                        <option value="IT">Itália</option>
+                                        <option value="NL">Países Baixos</option>
+                                        <option value="BE">Bélgica</option>
+                                        <option value="IE">Irlanda</option>
+                                        <option value="LU">Luxemburgo</option>
+                                        <option value="AT">Áustria</option>
+                                        <option value="PL">Polónia</option>
+                                        <option value="CZ">Chéquia</option>
+                                        <option value="SE">Suécia</option>
+                                        <option value="DK">Dinamarca</option>
+                                        <option value="FI">Finlândia</option>
+                                        <option value="RO">Roménia</option>
+                                        <option value="BG">Bulgária</option>
+                                        <option value="HR">Croácia</option>
+                                        <option value="GR">Grécia</option>
+                                        <option value="HU">Hungria</option>
+                                        <option value="LT">Lituânia</option>
+                                        <option value="LV">Letónia</option>
+                                        <option value="SI">Eslovénia</option>
+                                        <option value="SK">Eslováquia</option>
+                                        <option value="EE">Estónia</option>
+                                        <option value="CY">Chipre</option>
+                                        <option value="MT">Malta</option>
+                                        <option value="US">Estados Unidos</option>
+                                        <option value="GB">Reino Unido</option>
+                                        <option value="CH">Suíça</option>
+                                        <option value="BR">Brasil</option>
+                                        <option value="AO">Angola</option>
+                                        <option value="MZ">Moçambique</option>
+                                        <option value="OTHER">Outro país / revisão manual</option>
+                                    </select>
+                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
+                                </div>
                                 <div id="company-field-row" class="hidden mt-4">
                                     <label id="company-label" class="form-label">Empresa *</label>
                                     <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
+                                </div>
+                                <div id="checkout-fiscal-summary" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Resumo fiscal</p>
+                                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Nome fiscal</p>
+                                            <p id="fiscal-summary-name" class="font-semibold text-slate-900">—</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Documento</p>
+                                            <p id="fiscal-summary-document" class="font-semibold text-slate-900">Factura Recibo</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">NIF / VAT</p>
+                                            <p id="fiscal-summary-tax-id" class="font-semibold text-slate-900">—</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Regime</p>
+                                            <p id="fiscal-summary-regime" class="font-semibold text-slate-900">Artigo 53.º do CIVA</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">País fiscal</p>
+                                            <p id="fiscal-summary-country" class="font-semibold text-slate-900">Portugal</p>
+                                        </div>
+                                        <div>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Tratamento</p>
+                                            <p id="fiscal-summary-treatment" class="font-semibold text-slate-900">Sem liquidação de IVA (M10)</p>
+                                        </div>
+                                    </div>
+                                    <p id="fiscal-summary-warning" class="hidden mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800"></p>
                                 </div>
                             </div>
 

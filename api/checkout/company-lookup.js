@@ -7,6 +7,7 @@ const {
 } = require('../../lib/server/order-flow');
 const { findCustomerByVatNumber } = require('../../lib/server/facturalusa');
 const { normalizeCustomerType } = require('../../lib/server/checkout');
+const { validateVatVies } = require('../../lib/server/vies');
 
 function pickString(source, keys) {
     for (const key of Array.isArray(keys) ? keys : []) {
@@ -84,7 +85,8 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
         const customerSnapshot = buildCheckoutCustomerSnapshot({
             nif: body?.taxId || '',
             codigo_postal: body?.postalCode || '',
-            tipo_cliente: body?.customerType || 'empresa'
+            tipo_cliente: body?.customerType || 'empresa',
+            country: body?.country || ''
         });
         const customerTypeValidation = validateCheckoutCustomerType(customerSnapshot);
         if (!customerTypeValidation.valid || customerSnapshot.tipo_cliente !== 'empresa') {
@@ -104,6 +106,12 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
             return;
         }
 
+        const vatValidation = await validateVatVies({
+            countryCode: customerSnapshot.country,
+            taxId: taxIdValidation.normalized,
+            customerType: customerSnapshot.tipo_cliente
+        });
+
         const supabase = getSupabaseAdmin();
         const databaseCustomer = await findCustomerInDatabase(supabase, taxIdValidation.normalized);
         if (databaseCustomer) {
@@ -111,7 +119,8 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
                 found: true,
                 source: 'database',
                 sourceLabel: 'registos da loja',
-                customer: mapDatabaseCustomer(databaseCustomer)
+                customer: mapDatabaseCustomer(databaseCustomer),
+                vatValidation
             });
             return;
         }
@@ -123,7 +132,8 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
                     found: true,
                     source: 'facturalusa',
                     sourceLabel: 'Facturalusa',
-                    customer: mapFacturalusaCustomer(facturalusaCustomer, taxIdValidation.normalized)
+                    customer: mapFacturalusaCustomer(facturalusaCustomer, taxIdValidation.normalized),
+                    vatValidation
                 });
                 return;
             }
@@ -133,7 +143,8 @@ module.exports = async function checkoutCompanyLookupHandler(req, res) {
 
         sendJson(res, 200, {
             found: false,
-            source: 'none'
+            source: 'none',
+            vatValidation
         });
     } catch (error) {
         console.error('Checkout company lookup failed:', error);

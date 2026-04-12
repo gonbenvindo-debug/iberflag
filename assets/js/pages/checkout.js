@@ -30,6 +30,14 @@ const companyFieldRow = document.getElementById('company-field-row');
 const toggleOrderNotesBtn = document.getElementById('toggle-order-notes');
 const orderNotesField = document.getElementById('order-notes-field');
 const notesTextarea = checkoutForm?.elements?.notas || null;
+const countrySelect = document.getElementById('country-select');
+const fiscalSummaryName = document.getElementById('fiscal-summary-name');
+const fiscalSummaryDocument = document.getElementById('fiscal-summary-document');
+const fiscalSummaryTaxId = document.getElementById('fiscal-summary-tax-id');
+const fiscalSummaryRegime = document.getElementById('fiscal-summary-regime');
+const fiscalSummaryCountry = document.getElementById('fiscal-summary-country');
+const fiscalSummaryTreatment = document.getElementById('fiscal-summary-treatment');
+const fiscalSummaryWarning = document.getElementById('fiscal-summary-warning');
 
 const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
 const COMMON_EMAIL_DOMAIN_FIXES = {
@@ -44,9 +52,51 @@ const COMMON_EMAIL_DOMAIN_FIXES = {
 };
 const companyLookupCache = new Map();
 const COMPANY_LOOKUP_DEBOUNCE_MS = 500;
+const COUNTRY_LABELS = {
+    PT: 'Portugal',
+    ES: 'Espanha',
+    FR: 'França',
+    DE: 'Alemanha',
+    IT: 'Itália',
+    NL: 'Países Baixos',
+    BE: 'Bélgica',
+    IE: 'Irlanda',
+    LU: 'Luxemburgo',
+    AT: 'Áustria',
+    PL: 'Polónia',
+    CZ: 'Chéquia',
+    SE: 'Suécia',
+    DK: 'Dinamarca',
+    FI: 'Finlândia',
+    RO: 'Roménia',
+    BG: 'Bulgária',
+    HR: 'Croácia',
+    GR: 'Grécia',
+    HU: 'Hungria',
+    LT: 'Lituânia',
+    LV: 'Letónia',
+    SI: 'Eslovénia',
+    SK: 'Eslováquia',
+    EE: 'Estónia',
+    CY: 'Chipre',
+    MT: 'Malta',
+    US: 'Estados Unidos',
+    GB: 'Reino Unido',
+    CH: 'Suíça',
+    BR: 'Brasil',
+    AO: 'Angola',
+    MZ: 'Moçambique',
+    OTHER: 'Outro país'
+};
+const EU_COUNTRIES = new Set([
+    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
+    'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
+    'SI', 'ES', 'SE'
+]);
 let companyLookupInFlight = false;
 let companyLookupDebounceTimer = null;
 let beginCheckoutTracked = false;
+let latestVatValidation = null;
 
 function setElementHidden(element, hidden) {
     if (!element) {
@@ -119,11 +169,29 @@ function getSelectedCustomerType() {
     return normalizeCustomerType(customerTypeSelect?.value || 'particular');
 }
 
+function getSelectedFiscalCountry() {
+    const normalized = String(countrySelect?.value || 'PT').trim().toUpperCase();
+    return normalized || 'PT';
+}
+
+function getFiscalCountryLabel(countryCode = '') {
+    return COUNTRY_LABELS[String(countryCode || '').trim().toUpperCase()] || String(countryCode || '—').trim() || '—';
+}
+
+function isEuCountry(countryCode = '') {
+    return EU_COUNTRIES.has(String(countryCode || '').trim().toUpperCase());
+}
+
 function isBusinessCustomerSelected() {
     return getSelectedCustomerType() === 'empresa';
 }
 
 function detectTaxCountry(value, postalCode = '') {
+    const explicitCountry = getSelectedFiscalCountry();
+    if (explicitCountry) {
+        return explicitCountry;
+    }
+
     const normalized = normalizeTaxId(value);
     const normalizedPostalCode = String(postalCode || '').trim().toUpperCase();
 
@@ -209,7 +277,9 @@ function validateTaxId(value, postalCode = '') {
     const country = detectTaxCountry(normalized, postalCode);
     const valid = country === 'ES'
         ? isValidSpanishDniOrNie(normalized) || isValidSpanishCif(normalized)
-        : isValidPortugueseNif(normalized);
+        : country === 'PT'
+            ? isValidPortugueseNif(normalized)
+            : /^[A-Z0-9]{2,14}$/.test(normalized);
 
     return {
         valid,
@@ -218,7 +288,9 @@ function validateTaxId(value, postalCode = '') {
             ? ''
             : country === 'ES'
                 ? 'NIF/NIE espanhol invalido. Verifique o numero fiscal antes de continuar.'
-            : 'NIF portugues invalido. Verifique os 9 digitos antes de continuar.'
+            : country === 'PT'
+                ? 'NIF portugues invalido. Verifique os 9 digitos antes de continuar.'
+                : 'VAT/NIF intracomunitario invalido. Verifique o numero fiscal antes de continuar.'
     };
 }
 
@@ -248,6 +320,10 @@ function normalizePostalCode(value, country = 'PT') {
 
     if (String(country || '').toUpperCase() === 'ES') {
         return normalized.replace(/[^\d]/g, '').slice(0, 5);
+    }
+
+    if (String(country || '').toUpperCase() !== 'PT') {
+        return normalized.slice(0, 16);
     }
 
     const digits = normalized.replace(/[^\d]/g, '').slice(0, 7);
@@ -304,6 +380,18 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
         };
     }
 
+    if (country !== 'PT' && country !== 'ES') {
+        const validInternational = /^\d{6,15}$/.test(digits);
+        return {
+            valid: validInternational,
+            normalized: normalized.startsWith('+') ? normalized : `+${digits}`,
+            country,
+            message: validInternational
+                ? ''
+                : 'Introduza um numero internacional valido com indicativo.'
+        };
+    }
+
     return {
         valid: /^[29]\d{8}$/.test(digits),
         normalized: `+351${digits}`,
@@ -335,7 +423,7 @@ function updatePostalCodeFormatting() {
         return '';
     }
 
-    const normalizedCountry = detectTaxCountry(nifInput?.value || '', postalCodeInput.value);
+    const normalizedCountry = getSelectedFiscalCountry();
     const normalized = normalizePostalCode(postalCodeInput.value, normalizedCountry);
     postalCodeInput.value = normalized;
     return normalized;
@@ -431,6 +519,10 @@ function isTaxIdLookupReady(normalized, postalCode = '') {
         return /^\d{9}$/.test(normalized);
     }
 
+    if (country !== 'ES') {
+        return /^[A-Z0-9]{2,14}$/.test(normalized);
+    }
+
     return /^[A-Z]\d{7}[A-Z0-9]$/.test(normalized) || /^\d{8}[A-Z]$/.test(normalized);
 }
 
@@ -473,6 +565,81 @@ function applyCompanyLookupResult(customer = {}) {
     updateCompanyValidity();
 }
 
+function applyVatValidationResult(vatValidation = null) {
+    latestVatValidation = vatValidation && typeof vatValidation === 'object'
+        ? { ...vatValidation }
+        : null;
+    updateFiscalSummary();
+}
+
+function getCurrentVatValidationStatus() {
+    return String(latestVatValidation?.status || 'not_required').trim().toLowerCase() || 'not_required';
+}
+
+function buildFiscalSummaryState() {
+    const customerType = getSelectedCustomerType();
+    const countryCode = getSelectedFiscalCountry();
+    const taxId = normalizeTaxId(nifInput?.value || '');
+    const companyName = String(companyInput?.value || '').trim();
+    const personName = String(checkoutForm?.elements?.nome?.value || '').trim();
+    const fiscalName = customerType === 'empresa'
+        ? (companyName || personName || 'Por definir')
+        : (personName || 'Por definir');
+    const vatValidationStatus = getCurrentVatValidationStatus();
+
+    let treatment = 'Sem liquidação de IVA (M10)';
+    let warning = '';
+
+    if (!countryCode || countryCode === 'OTHER' || !isEuCountry(countryCode)) {
+        treatment = 'Revisão manual antes de emitir';
+        warning = 'Este país fica fora da emissão automática. O pagamento pode avançar, mas a faturação segue para revisão manual.';
+    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'valid') {
+        treatment = 'Empresa UE validada em VIES';
+    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'invalid') {
+        treatment = 'Faturação normal sem benefício intracomunitário';
+        warning = latestVatValidation?.message || 'O VAT não foi validado no VIES. A compra pode continuar, mas sem tratamento intracomunitário.';
+    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'unavailable') {
+        treatment = 'Faturação normal sem benefício intracomunitário';
+        warning = latestVatValidation?.message || 'O VIES está indisponível. A compra pode continuar, mas sem tratamento intracomunitário automático.';
+    }
+
+    return {
+        fiscalName,
+        countryCode,
+        taxId: taxId || '—',
+        treatment,
+        warning
+    };
+}
+
+function updateFiscalSummary() {
+    const summary = buildFiscalSummaryState();
+
+    if (fiscalSummaryName) {
+        fiscalSummaryName.textContent = summary.fiscalName;
+    }
+    if (fiscalSummaryDocument) {
+        fiscalSummaryDocument.textContent = 'Factura Recibo';
+    }
+    if (fiscalSummaryTaxId) {
+        fiscalSummaryTaxId.textContent = summary.taxId;
+    }
+    if (fiscalSummaryRegime) {
+        fiscalSummaryRegime.textContent = 'Artigo 53.º do CIVA';
+    }
+    if (fiscalSummaryCountry) {
+        fiscalSummaryCountry.textContent = getFiscalCountryLabel(summary.countryCode);
+    }
+    if (fiscalSummaryTreatment) {
+        fiscalSummaryTreatment.textContent = summary.treatment;
+    }
+    if (fiscalSummaryWarning) {
+        const hasWarning = Boolean(String(summary.warning || '').trim());
+        fiscalSummaryWarning.textContent = summary.warning || '';
+        fiscalSummaryWarning.classList.toggle('hidden', !hasWarning);
+    }
+}
+
 async function lookupCompanyByTaxId({ force = false } = {}) {
     if (!isBusinessCustomerSelected() || !nifInput) {
         return null;
@@ -486,9 +653,12 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
     const cacheKey = taxValidation.normalized;
     if (!force && companyLookupCache.has(cacheKey)) {
         const cached = companyLookupCache.get(cacheKey);
+        applyVatValidationResult(cached?.vatValidation || null);
         if (cached?.found && cached.customer) {
             applyCompanyLookupResult(cached.customer);
             setCompanyLookupStatus(`Dados encontrados em ${cached.sourceLabel || 'registos anteriores'}.`, 'success');
+        } else if (cached?.vatValidation?.status === 'invalid' || cached?.vatValidation?.status === 'unavailable') {
+            setCompanyLookupStatus(cached.vatValidation.message || 'Nao foi possivel validar o VAT automaticamente.', 'warning');
         }
         return cached;
     }
@@ -509,7 +679,8 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
             body: JSON.stringify({
                 taxId: taxValidation.normalized,
                 postalCode: postalCodeInput?.value || '',
-                customerType: getSelectedCustomerType()
+                customerType: getSelectedCustomerType(),
+                country: getSelectedFiscalCountry()
             })
         });
 
@@ -521,17 +692,25 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
         }
 
         companyLookupCache.set(cacheKey, payload || {});
+        applyVatValidationResult(payload?.vatValidation || null);
 
         if (payload?.found && payload?.customer) {
             applyCompanyLookupResult(payload.customer);
+            const vatWarning = payload?.vatValidation?.status === 'invalid' || payload?.vatValidation?.status === 'unavailable'
+                ? ` ${payload.vatValidation.message || ''}`.trim()
+                : '';
             setCompanyLookupStatus(
-                `Nome fiscal encontrado em ${payload.sourceLabel || 'registos existentes'} e aplicado aos campos em falta.`,
-                'success'
+                `Nome fiscal encontrado em ${payload.sourceLabel || 'registos existentes'} e aplicado aos campos em falta.${vatWarning ? ` ${vatWarning}` : ''}`,
+                vatWarning ? 'warning' : 'success'
             );
             return payload;
         }
 
-        setCompanyLookupStatus('Nao encontrámos dados automaticos para este NIF. Podes continuar e preencher manualmente.', 'info');
+        if (payload?.vatValidation?.status === 'invalid' || payload?.vatValidation?.status === 'unavailable') {
+            setCompanyLookupStatus(payload.vatValidation.message || 'Nao foi possivel validar o VAT automaticamente.', 'warning');
+        } else {
+            setCompanyLookupStatus('Nao encontrámos dados automaticos para este NIF. Podes continuar e preencher manualmente.', 'info');
+        }
         return payload;
     } catch (error) {
         console.warn('Falha ao procurar empresa por NIF:', error);
@@ -587,11 +766,13 @@ function syncCustomerTypeUI() {
 
     updateCompanyValidity();
     updateTaxIdValidity();
+    updateFiscalSummary();
     clearCheckoutFeedback();
 
     if (!business) {
         clearCompanyLookupDebounce();
         setCompanyLookupStatus('');
+        applyVatValidationResult(null);
     }
 }
 
@@ -697,6 +878,10 @@ function getCheckoutErrorMessage(error) {
         return error?.message || 'Introduza um codigo postal valido.';
     }
 
+    if (error?.code === 'COUNTRY_REQUIRED') {
+        return error?.message || 'Escolha o pais fiscal antes de continuar.';
+    }
+
     if (error?.code === 'TOTAL_INVALIDO') {
         return 'O total da encomenda nao e valido.';
     }
@@ -798,7 +983,7 @@ async function loadCart() {
         beginCheckoutTracked = true;
         void window.trackAnalyticsEvent('begin_checkout', {
             productId: cart[0]?.id || null,
-            countryCode: detectTaxCountry(nifInput?.value || '', postalCodeInput?.value || ''),
+            countryCode: getSelectedFiscalCountry(),
             metadata: {
                 itemCount: cart.length,
                 total
@@ -853,6 +1038,7 @@ if (placeOrderBtn) {
         }
 
         updatePostalCodeFormatting();
+        updateFiscalSummary();
 
         const taxIdValidation = updateTaxIdValidity();
         if (!taxIdValidation.valid) {
@@ -866,6 +1052,19 @@ if (placeOrderBtn) {
             setCheckoutFeedback(companyValidation.message, 'error');
             checkoutForm.reportValidity();
             return;
+        }
+
+        if (!getSelectedFiscalCountry()) {
+            setCheckoutFeedback('Escolha o país fiscal antes de continuar.', 'error');
+            countrySelect?.focus();
+            return;
+        }
+
+        if (isBusinessCustomerSelected() && taxIdValidation.normalized) {
+            const shouldValidateEuBusiness = getSelectedFiscalCountry() !== 'PT' && isEuCountry(getSelectedFiscalCountry());
+            if (shouldValidateEuBusiness || !latestVatValidation) {
+                await lookupCompanyByTaxId({ force: true });
+            }
         }
         
         // Validate form
@@ -893,6 +1092,7 @@ if (placeOrderBtn) {
             email: formData.get('email'),
             telefone: formData.get('telefone'),
             tipo_cliente: customerType,
+            country: getSelectedFiscalCountry(),
             nif: formData.get('nif') || null,
             empresa: formData.get('empresa') || null,
             morada: formData.get('morada'),
@@ -937,6 +1137,10 @@ if (placeOrderBtn) {
                 };
             }
 
+            if (payload?.fiscalSummary?.warning) {
+                setCheckoutFeedback(payload.fiscalSummary.warning, 'info');
+            }
+
             setCheckoutFeedback('Pagamento iniciado. Vamos abrir o checkout seguro.', 'success');
             showToast('Pagamento iniciado com sucesso!', 'success');
 
@@ -978,6 +1182,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (emailInput) {
         emailInput.addEventListener('input', () => {
             updateEmailValidity();
+            updateFiscalSummary();
         });
         emailInput.addEventListener('blur', () => {
             const validation = updateEmailValidity({ normalizeInput: true });
@@ -1001,6 +1206,8 @@ document.addEventListener('DOMContentLoaded', () => {
         nifInput.addEventListener('input', () => {
             updateTaxIdValidity();
             setCompanyLookupStatus('');
+            applyVatValidationResult(null);
+            updateFiscalSummary();
             scheduleCompanyLookup();
         });
         nifInput.addEventListener('blur', () => {
@@ -1019,20 +1226,35 @@ document.addEventListener('DOMContentLoaded', () => {
         postalCodeInput.addEventListener('input', () => {
             updatePostalCodeFormatting();
             updateTaxIdValidity();
+            updateFiscalSummary();
             scheduleCompanyLookup();
         });
         postalCodeInput.addEventListener('blur', () => {
             updatePostalCodeFormatting();
             updateTaxIdValidity();
             updatePhoneValidity();
+            updateFiscalSummary();
             scheduleCompanyLookup();
         });
     }
     if (companyInput) {
         companyInput.addEventListener('input', () => {
             updateCompanyValidity();
+            updateFiscalSummary();
         });
     }
+    checkoutForm?.elements?.nome?.addEventListener('input', () => {
+        updateFiscalSummary();
+    });
+    countrySelect?.addEventListener('change', () => {
+        updatePostalCodeFormatting();
+        updateTaxIdValidity();
+        updatePhoneValidity();
+        applyVatValidationResult(null);
+        setCompanyLookupStatus('');
+        updateFiscalSummary();
+        scheduleCompanyLookup();
+    });
     if (toggleOrderNotesBtn) {
         toggleOrderNotesBtn.addEventListener('click', () => {
             const isOpen = toggleOrderNotesBtn.getAttribute('aria-expanded') === 'true';
@@ -1054,6 +1276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncCustomerTypeUI();
     syncOrderNotesVisibility();
+    updateFiscalSummary();
 
     void loadCart();
 });

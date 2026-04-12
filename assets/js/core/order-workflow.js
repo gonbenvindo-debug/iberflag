@@ -98,6 +98,15 @@
             ? source.facturalusaStatus.trim()
             : (facturalusaDocumentNumber ? 'emitted' : facturalusaLastError ? 'blocked' : '');
         const facturalusaLastAttemptAt = typeof source.facturalusaLastAttemptAt === 'string' ? source.facturalusaLastAttemptAt.trim() : '';
+        const fiscalSnapshot = source.fiscalSnapshot && typeof source.fiscalSnapshot === 'object'
+            ? source.fiscalSnapshot
+            : {};
+        const vatValidation = source.vatValidation && typeof source.vatValidation === 'object'
+            ? source.vatValidation
+            : {};
+        const fiscalDivergence = source.fiscalDivergence && typeof source.fiscalDivergence === 'object'
+            ? source.fiscalDivergence
+            : { diverged: false, fields: [], reason: '' };
 
         const statusHistory = Array.isArray(source.statusHistory)
             ? source.statusHistory
@@ -139,6 +148,9 @@
             facturalusaLastError,
             facturalusaStatus,
             facturalusaLastAttemptAt,
+            fiscalSnapshot,
+            vatValidation,
+            fiscalDivergence,
             statusHistory,
             itemSnapshots
         };
@@ -299,7 +311,8 @@
             pending: 'Faturação pendente',
             blocked: 'Requer atenção',
             error: 'Erro de faturação',
-            not_required: 'Ainda não aplicável'
+            not_required: 'Ainda não aplicável',
+            pending_manual_review: 'Revisão fiscal'
         };
         return labels[normalized] || (normalized ? normalized.replace(/_/g, ' ') : 'Sem estado');
     };
@@ -310,7 +323,8 @@
             pending: 'warning',
             blocked: 'danger',
             error: 'danger',
-            not_required: 'info'
+            not_required: 'info',
+            pending_manual_review: 'warning'
         };
         return colors[normalized] || 'info';
     };

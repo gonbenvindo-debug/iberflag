@@ -12,7 +12,12 @@ const {
 } = require('../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../lib/server/email-notifications');
-const { buildFiscalDecision, buildOrderFiscalFields } = require('../../lib/server/fiscal-engine');
+const {
+    buildOrderFiscalFields,
+    detectFiscalSnapshotDivergence,
+    resolveFiscalSnapshotForPayment,
+    resolveStoredFiscalSnapshot
+} = require('../../lib/server/fiscal-engine');
 const { resolveFacturalusaDocumentState, attachIssuedDocumentContext } = require('../../lib/server/invoice-state');
 const {
     logAnalyticsEvent,
@@ -361,18 +366,31 @@ function buildWebhookCustomerSnapshot(order) {
 }
 
 async function applyPaidFiscalFields(supabase, order, customerSnapshot) {
+    const split = splitOrderNotesAndMeta(order?.notas || '');
+    const fiscalSnapshot = resolveFiscalSnapshotForPayment(order, split.meta, 'paid', new Date());
     const fiscalFields = buildOrderFiscalFields({
-        customer: customerSnapshot,
+        fiscalSnapshot,
         paymentStatus: 'paid',
         referenceDate: new Date()
     });
+    const nextMeta = {
+        ...split.meta,
+        fiscalSnapshot
+    };
 
     const { error } = await updateWithOptionalColumns(
         supabase,
         'encomendas',
         'id',
         order.id,
-        fiscalFields
+        {
+            ...fiscalFields,
+            notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+            checkout_payload: {
+                ...(order?.checkout_payload || {}),
+                fiscalSnapshot
+            }
+        }
     );
 
     if (error) {
@@ -381,7 +399,12 @@ async function applyPaidFiscalFields(supabase, order, customerSnapshot) {
 
     return {
         ...order,
-        ...fiscalFields
+        ...fiscalFields,
+        notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+        checkout_payload: {
+            ...(order?.checkout_payload || {}),
+            fiscalSnapshot
+        }
     };
 }
 
@@ -400,12 +423,21 @@ async function queueManualFiscalReview(supabase, order, session, reason) {
     meta.facturalusaStatus = 'blocked';
     meta.facturalusaLastError = '';
 
-    const customerSnapshot = buildWebhookCustomerSnapshot(order);
+    const fiscalSnapshot = resolveFiscalSnapshotForPayment(order, split.meta, 'paid', new Date());
     const fiscalFields = buildOrderFiscalFields({
-        customer: customerSnapshot,
+        fiscalSnapshot: {
+            ...fiscalSnapshot,
+            fiscal_decision_mode: 'manual_review',
+            invoice_state: 'pending_manual_review'
+        },
         paymentStatus: 'paid',
         referenceDate: new Date()
     });
+    meta.fiscalSnapshot = {
+        ...fiscalSnapshot,
+        fiscal_decision_mode: 'manual_review',
+        invoice_state: 'pending_manual_review'
+    };
 
     const updates = {
         notas: buildOrderNotesWithMeta(split.publicNotes, meta),
@@ -442,7 +474,7 @@ async function queueManualFiscalReview(supabase, order, session, reason) {
         payload: {
             orderCode: order.numero_encomenda || '',
             scenario: fiscalFields.fiscal_scenario || '',
-            countryCode: buildFiscalDecision({ customer: customerSnapshot, paymentStatus: 'paid' }).countryCode
+            countryCode: fiscalFields.customer_fiscal_country || ''
         }
     }));
 
@@ -501,20 +533,36 @@ module.exports = async function stripeWebhookHandler(req, res) {
                 if (order) {
                     const paidOrder = await updateOrderPaymentStatus(supabase, order, session, 'paid');
                     const customerSnapshot = buildWebhookCustomerSnapshot(paidOrder);
-                    const fiscalDecision = buildFiscalDecision({
-                        customer: customerSnapshot,
-                        paymentStatus: 'paid'
-                    });
                     const paidOrderWithFiscal = await applyPaidFiscalFields(supabase, paidOrder, customerSnapshot);
+                    const paidSplit = splitOrderNotesAndMeta(paidOrderWithFiscal?.notas || '');
+                    const fiscalSnapshot = resolveStoredFiscalSnapshot(paidOrderWithFiscal, paidSplit.meta || {});
+                    const fiscalDivergence = detectFiscalSnapshotDivergence(fiscalSnapshot, customerSnapshot);
+
+                    if (fiscalDivergence.diverged) {
+                        const nextMeta = {
+                            ...paidSplit.meta,
+                            fiscalDivergence
+                        };
+                        await updateWithOptionalColumns(
+                            supabase,
+                            'encomendas',
+                            'id',
+                            paidOrderWithFiscal.id,
+                            {
+                                notas: buildOrderNotesWithMeta(paidSplit.publicNotes, nextMeta)
+                            }
+                        );
+                        paidOrderWithFiscal.notas = buildOrderNotesWithMeta(paidSplit.publicNotes, nextMeta);
+                    }
 
                     await runNonBlockingAction('Nao foi possivel registar analytics de purchase_completed', () => logAnalyticsEvent(supabase, {
                         event_name: 'purchase_completed',
                         order_id: paidOrder.id,
-                        country_code: fiscalDecision.countryCode,
+                        country_code: fiscalSnapshot.customer_fiscal_country,
                         metadata: {
                             orderCode: paidOrder.numero_encomenda || '',
                             total: paidOrder.total || 0,
-                            fiscalScenario: fiscalDecision.scenario
+                            fiscalScenario: fiscalSnapshot.fiscal_scenario
                         }
                     }));
                     await runNonBlockingAction('Nao foi possivel registar operational log de stripe_payment_confirmed', () => logOperationalEvent(supabase, {
@@ -524,29 +572,32 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         payload: {
                             orderCode: paidOrder.numero_encomenda || '',
                             paymentIntent: session?.payment_intent || null,
-                            fiscalScenario: fiscalDecision.scenario,
-                            fiscalDecisionMode: fiscalDecision.decisionMode
+                            fiscalScenario: fiscalSnapshot.fiscal_scenario,
+                            fiscalDecisionMode: fiscalSnapshot.fiscal_decision_mode
                         }
                     }));
                     await runNonBlockingAction('Nao foi possivel registar a decisao fiscal apos pagamento', () => recordFiscalDecision(supabase, {
                         order_id: paidOrder.id,
-                        scenario: fiscalDecision.scenario,
-                        decision_mode: fiscalDecision.decisionMode,
-                        evidence_status: fiscalDecision.evidenceStatus,
-                        vat_rate: fiscalDecision.vatRate,
-                        vat_exemption: fiscalDecision.vatExemption,
-                        reason: fiscalDecision.reason,
+                        scenario: fiscalSnapshot.fiscal_scenario,
+                        decision_mode: fiscalSnapshot.fiscal_decision_mode,
+                        evidence_status: fiscalSnapshot.fiscal_evidence_status,
+                        vat_rate: fiscalSnapshot.vat_rate_applied,
+                        vat_exemption: fiscalSnapshot.vat_exemption_applied,
+                        reason: fiscalSnapshot.fiscal_decision_reason,
                         payload: {
                             phase: 'payment_confirmed',
                             paymentStatus: 'paid',
                             orderCode: paidOrder.numero_encomenda || '',
-                            countryCode: fiscalDecision.countryCode
+                            countryCode: fiscalSnapshot.customer_fiscal_country,
+                            documentType: fiscalSnapshot.document_type_resolved,
+                            vatRegimeCode: fiscalSnapshot.vat_regime_code,
+                            vatValidationStatus: fiscalSnapshot.vat_validation_status
                         }
                     }));
 
                     let confirmationEmailOrder = paidOrderWithFiscal;
 
-                    if (fiscalDecision.decisionMode === 'auto_emit') {
+                    if (!fiscalDivergence.diverged && fiscalSnapshot.fiscal_decision_mode === 'auto_emit') {
                         let invoiceResult = null;
 
                         try {
@@ -661,10 +712,14 @@ module.exports = async function stripeWebhookHandler(req, res) {
                             }
 
                             try {
+                                const emittedFiscalSnapshot = resolveStoredFiscalSnapshot(
+                                    invoiceResult.order,
+                                    splitOrderNotesAndMeta(invoiceResult.order?.notas || '').meta || {}
+                                );
                                 await logAnalyticsEvent(supabase, {
                                     event_name: 'invoice_issued',
                                     order_id: invoiceResult.order.id,
-                                    country_code: fiscalDecision.countryCode,
+                                    country_code: emittedFiscalSnapshot.customer_fiscal_country,
                                     metadata: {
                                         orderCode: invoiceResult.order.numero_encomenda || '',
                                         documentNumber: invoiceResult.order.facturalusa_document_number || ''
@@ -705,7 +760,9 @@ module.exports = async function stripeWebhookHandler(req, res) {
                             supabase,
                             paidOrderWithFiscal,
                             session,
-                            'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
+                            fiscalDivergence.diverged
+                                ? (fiscalDivergence.reason || 'Pagamento confirmado. Dados fiscais divergentes, enviada para revisao manual.')
+                                : 'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
                         );
                     }
 

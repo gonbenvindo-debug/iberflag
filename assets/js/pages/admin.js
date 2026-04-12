@@ -1666,6 +1666,74 @@ function formatInvoiceStateLabel(value) {
     }
 }
 
+function formatFiscalScenarioLabel(value) {
+    switch (String(value || '').trim()) {
+        case 'pt_particular_art53':
+            return 'PT particular · Art. 53';
+        case 'pt_business_art53':
+            return 'PT empresa · Art. 53';
+        case 'eu_consumer_art53':
+            return 'UE particular · Art. 53';
+        case 'eu_business_vies_valid':
+            return 'UE empresa validada em VIES';
+        case 'eu_business_vies_invalid_fallback':
+            return 'UE empresa sem beneficio intracomunitario';
+        case 'eu_business_vies_unavailable_fallback':
+            return 'UE empresa com VIES indisponivel';
+        case 'non_eu_manual_review':
+            return 'Fora UE · Revisao manual';
+        case 'profile_override_manual_review':
+            return 'Perfil fiscal nao suportado';
+        default:
+            return 'Por definir';
+    }
+}
+
+function formatInvoiceStateLabel(value) {
+    switch (String(value || '').trim()) {
+        case 'pending_payment':
+            return 'Pagamento pendente';
+        case 'ready_to_emit':
+            return 'Pronta a emitir';
+        case 'pending_manual_review':
+            return 'Revisao manual';
+        case 'invoice_error':
+            return 'Erro de emissao';
+        case 'blocked':
+            return 'Bloqueada';
+        case 'emitted':
+            return 'Emitida';
+        default:
+            return 'Sem estado';
+    }
+}
+
+function formatVatValidationStatusLabel(value) {
+    switch (String(value || '').trim()) {
+        case 'valid':
+            return 'Validado';
+        case 'invalid':
+            return 'Invalido';
+        case 'unavailable':
+            return 'Indisponivel';
+        case 'not_required':
+            return 'Nao aplicavel';
+        default:
+            return 'Sem validacao';
+    }
+}
+
+function resolveFiscalDisplayStatus(order) {
+    const invoiceState = String(order?.invoice_state || order?.fiscal_snapshot?.invoice_state || '').trim();
+    if (invoiceState === 'pending_manual_review') {
+        return 'pending_manual_review';
+    }
+    if (invoiceState === 'invoice_error') {
+        return 'error';
+    }
+    return resolveFacturalusaStatus(order);
+}
+
 function formatDate(value) {
     if (!value) return '-';
     return new Date(value).toLocaleDateString('pt-PT');
@@ -1892,7 +1960,7 @@ function getFilteredOperationalOrders() {
 
     return operationalOrdersList.filter((order) => {
         const workflowStatus = deriveWorkflowStatus(order);
-        const fiscalStatus = resolveFacturalusaStatus(order);
+        const fiscalStatus = resolveFiscalDisplayStatus(order);
         const searchHaystack = normalizeSearchTerm([
             order?.numero_encomenda,
             order?.clientes?.nome,
@@ -1923,8 +1991,8 @@ function renderOrdersMetrics(orders) {
     }).length;
     const deliveredCount = list.filter((order) => deriveWorkflowStatus(order) === 'entregue').length;
     const fiscalPendingCount = list.filter((order) => {
-        const status = resolveFacturalusaStatus(order);
-        return status === 'pending' || status === 'blocked' || status === 'error';
+        const status = resolveFiscalDisplayStatus(order);
+        return status === 'pending' || status === 'blocked' || status === 'error' || status === 'pending_manual_review';
     }).length;
 
     const totalEl = document.getElementById('orders-metric-total');
@@ -1962,8 +2030,8 @@ function renderOrdersTable(orders) {
                     ${buildWorkflowBadgeHtml(deriveWorkflowStatus(o))}
                 </td>
                 <td>
-                    <span class="badge badge-${resolveFacturalusaStatusColor(resolveFacturalusaStatus(o))}">
-                        ${escapeHtml(resolveFacturalusaStatusLabel(resolveFacturalusaStatus(o)))}
+                    <span class="badge badge-${resolveFacturalusaStatusColor(resolveFiscalDisplayStatus(o))}">
+                        ${escapeHtml(resolveFacturalusaStatusLabel(resolveFiscalDisplayStatus(o)))}
                     </span>
                 </td>
                 <td>
@@ -2079,6 +2147,17 @@ async function viewOrder(id) {
         const split = typeof splitOrderNotesAndMeta === 'function'
             ? splitOrderNotesAndMeta(order.notas)
             : { publicNotes: order.notas || '', meta: null };
+        const fiscalSnapshot = split.meta?.fiscalSnapshot && typeof split.meta.fiscalSnapshot === 'object'
+            ? split.meta.fiscalSnapshot
+            : order?.fiscal_snapshot && typeof order.fiscal_snapshot === 'object'
+                ? order.fiscal_snapshot
+                : {};
+        const vatValidation = split.meta?.vatValidation && typeof split.meta.vatValidation === 'object'
+            ? split.meta.vatValidation
+            : {};
+        const fiscalDivergence = split.meta?.fiscalDivergence && typeof split.meta.fiscalDivergence === 'object'
+            ? split.meta.fiscalDivergence
+            : { diverged: false, fields: [], reason: '' };
 
         const workflowStatus = typeof deriveWorkflowStatus === 'function'
             ? deriveWorkflowStatus(order)
@@ -2103,7 +2182,14 @@ async function viewOrder(id) {
         const notesInput = document.getElementById('order-public-notes');
         const statusNoteInput = document.getElementById('order-status-note');
         const emitFacturalusaBtn = document.getElementById('emit-facturalusa-btn');
-const facturalusaStatus = resolveFacturalusaStatus(order);
+const facturalusaStatus = resolveFiscalDisplayStatus(order);
+        const vatValidationStatus = order.vat_validation_status || fiscalSnapshot.vat_validation_status || vatValidation.status || 'not_required';
+        const vatValidationNumber = order.vat_validation_number || fiscalSnapshot.vat_validation_number || vatValidation.normalizedTaxId || '';
+        const vatRegimeCode = order.vat_regime_code || fiscalSnapshot.vat_regime_code || '';
+        const documentType = order.document_type_resolved || fiscalSnapshot.document_type_resolved || 'Factura Recibo';
+        const divergenceMessage = fiscalDivergence?.diverged
+            ? (fiscalDivergence.reason || `Dados fiscais alterados: ${(Array.isArray(fiscalDivergence.fields) ? fiscalDivergence.fields.join(', ') : '')}`)
+            : '';
 
         const metaEl = document.getElementById('order-modal-meta');
         if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} Â· ${formatDateTime(order.created_at)}`;
@@ -2144,6 +2230,10 @@ const facturalusaStatus = resolveFacturalusaStatus(order);
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${escapeHtml(formatFiscalScenarioLabel(order.fiscal_scenario))}</p>
                         <p style="font-size:0.6875rem;color:#9ca3af;margin:0.2rem 0 0;">${escapeHtml(formatInvoiceStateLabel(order.invoice_state))}</p>
                     </div>
+                    <div>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Perfil fiscal</p>
+                        <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${escapeHtml(String(fiscalSnapshot.tax_profile || order.tax_profile || 'sole_trader_art53'))}</p>
+                    </div>
                 </div>
             `;
         }
@@ -2172,6 +2262,14 @@ const facturalusaStatus = resolveFacturalusaStatus(order);
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
                         <span style="color:#9ca3af;flex-shrink:0;">NIF</span>
                         <span style="color:#374151;text-align:right;font-family:monospace;">${nif}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">País fiscal</span>
+                        <span style="color:#374151;text-align:right;">${escapeHtml(String(fiscalSnapshot.customer_fiscal_country || order.customer_fiscal_country || 'PT'))}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
+                        <span style="color:#9ca3af;flex-shrink:0;">VAT/VIES</span>
+                        <span style="color:#374151;text-align:right;">${escapeHtml(formatVatValidationStatusLabel(order.vat_validation_status || fiscalSnapshot.vat_validation_status || vatValidation.status || 'not_required'))}</span>
                     </div>
                     ${morada ? `<div style="padding-top:0.5rem;border-top:1px solid #f3f4f6;margin-top:0.125rem;">
                         <p style="font-size:0.6875rem;color:#9ca3af;margin:0 0 0.2rem;">Morada de envio</p>
@@ -2216,6 +2314,29 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
             `;
         }
 
+        if (facturalusaBlock) {
+            facturalusaBlock.insertAdjacentHTML('beforeend', `
+                <div style="display:grid;gap:0.45rem;font-size:0.8125rem;margin-top:0.75rem;padding-top:0.75rem;border-top:1px solid #f3f4f6;">
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;">
+                        <span style="color:#9ca3af;">Documento</span>
+                        <span style="font-weight:600;color:#374151;text-align:right;">${escapeHtml(documentType)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;">
+                        <span style="color:#9ca3af;">Regime IVA</span>
+                        <span style="font-weight:600;color:#374151;text-align:right;">${escapeHtml(vatRegimeCode || 'Artigo 53 / sem IVA')}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Validação VAT</span>
+                        <span style="font-size:0.75rem;color:#374151;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(formatVatValidationStatusLabel(vatValidationStatus))}${vatValidationNumber ? ` · ${escapeHtml(vatValidationNumber)}` : ''}</span>
+                    </div>
+                </div>
+                ${divergenceMessage ? `<div style="margin-top:0.85rem;border:1px solid #f59e0b;background:#fffbeb;border-radius:0.75rem;padding:0.75rem;">
+                    <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin:0 0 0.25rem;">Divergência fiscal</p>
+                    <p style="font-size:0.75rem;color:#92400e;margin:0;">${escapeHtml(divergenceMessage)}</p>
+                </div>` : ''}
+            `);
+        }
+
         if (statusSelect) {
             statusSelect.innerHTML = buildStatusOptionsHtml(workflowStatus);
         }
@@ -2226,7 +2347,9 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
         if (statusNoteInput) statusNoteInput.value = '';
 
         if (emitFacturalusaBtn) {
-const canEmit = resolveFacturalusaStatus(order) !== 'emitted' && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
+const canEmit = resolveFacturalusaStatus(order) !== 'emitted'
+    && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid'
+    && !fiscalDivergence?.diverged;
             emitFacturalusaBtn.disabled = !canEmit;
             emitFacturalusaBtn.classList.toggle('opacity-60', !canEmit);
             emitFacturalusaBtn.classList.toggle('cursor-not-allowed', !canEmit);

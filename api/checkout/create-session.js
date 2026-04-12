@@ -30,7 +30,12 @@ const {
     validateCheckoutPostalCode,
     validateCheckoutCustomerTaxId
 } = require('../../lib/server/order-flow');
-const { buildOrderFiscalFields, resolveCheckoutCountryCode } = require('../../lib/server/fiscal-engine');
+const {
+    buildFiscalSnapshot,
+    buildOrderFiscalFields,
+    resolveCheckoutCountryCode
+} = require('../../lib/server/fiscal-engine');
+const { validateVatVies } = require('../../lib/server/vies');
 const {
     calculateOrderMarginEstimate,
     logAnalyticsEvent,
@@ -110,6 +115,10 @@ function getCheckoutErrorMessage(error) {
 
     if (errorCode === 'CODIGO_POSTAL_INVALIDO') {
         return error?.message || 'Introduza um codigo postal valido.';
+    }
+
+    if (errorCode === 'COUNTRY_REQUIRED') {
+        return error?.message || 'Escolha o país fiscal antes de continuar.';
     }
 
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
@@ -232,6 +241,15 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
+        if (!String(customer.country || customer.countryCode || customer.country_code || customer.pais || '').trim()) {
+            sendJson(res, 400, {
+                error: 'COUNTRY_REQUIRED',
+                message: 'Escolha o país fiscal antes de continuar.',
+                field: 'country'
+            });
+            return;
+        }
+
         const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
         const customerTypeValidation = validateCheckoutCustomerType(customerSnapshot);
         if (!customerTypeValidation.valid) {
@@ -312,8 +330,19 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const baseUrl = getPublicBaseUrl(req);
         const cart = await resolveCheckoutCart(supabase, rawCart);
         const { subtotal, shipping, total } = calculateCheckoutTotals(cart);
-        const fiscalFields = buildOrderFiscalFields({
+        const vatValidation = await validateVatVies({
+            countryCode: customerSnapshot.country,
+            taxId: customerSnapshot.nif,
+            customerType: customerSnapshot.tipo_cliente
+        });
+        const fiscalSnapshot = buildFiscalSnapshot({
             customer: customerSnapshot,
+            paymentStatus: 'pending',
+            referenceDate: new Date(),
+            vatValidation
+        });
+        const fiscalFields = buildOrderFiscalFields({
+            fiscalSnapshot,
             paymentStatus: 'pending',
             referenceDate: new Date()
         });
@@ -328,6 +357,13 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
 
         const orderNumber = generateOrderNumber();
         const orderMeta = buildInitialOrderMeta(customerSnapshot, cart, selectedPaymentMethod, notes);
+        orderMeta.fiscalSnapshot = fiscalSnapshot;
+        orderMeta.vatValidation = vatValidation;
+        orderMeta.checkoutSnapshot = {
+            ...(orderMeta.checkoutSnapshot || {}),
+            fiscalSnapshot,
+            vatValidation
+        };
 
         const { data: order, error: orderError } = await insertWithOptionalColumns(
             supabase,
@@ -352,7 +388,10 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 margin_estimate: marginEstimate,
                 checkout_payload: orderMeta.checkoutSnapshot || {},
                 stripe_metadata: {},
-                facturalusa_payload: {}
+                facturalusa_payload: {},
+                vat_validation_source: vatValidation.source || 'none',
+                vat_validation_checked_at: vatValidation.checkedAt || null,
+                vat_validation_payload: vatValidation.raw || {}
             }
         );
 
@@ -382,7 +421,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 fiscalScenario: fiscalFields.fiscal_scenario,
                 fiscalDecisionMode: fiscalFields.fiscal_decision_mode,
                 shippingZoneCode: fiscalFields.shipping_zone_code,
-                marginEstimate
+                marginEstimate,
+                taxProfile: fiscalFields.tax_profile,
+                vatValidationStatus: fiscalFields.vat_validation_status
             }
         }));
         await runNonBlockingAction('Nao foi possivel registar fiscal decision do checkout', () => recordFiscalDecision(supabase, {
@@ -398,7 +439,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 phase: 'checkout_created',
                 paymentStatus: 'pending',
                 shippingZoneCode: fiscalFields.shipping_zone_code,
-                countryCode: resolveCheckoutCountryCode(customerSnapshot)
+                countryCode: resolveCheckoutCountryCode(customerSnapshot),
+                taxProfile: fiscalFields.tax_profile,
+                documentType: fiscalFields.document_type_resolved,
+                vatRegimeCode: fiscalFields.vat_regime_code,
+                vatValidationStatus: fiscalFields.vat_validation_status,
+                vatValidationSource: vatValidation.source || 'none'
             }
         }));
 
@@ -458,7 +504,17 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         sendJson(res, 200, {
             url: session.url,
             sessionId: session.id,
-            orderCode: orderNumber
+            orderCode: orderNumber,
+            fiscalSummary: {
+                scenario: fiscalSnapshot.fiscal_scenario,
+                invoiceState: fiscalSnapshot.invoice_state,
+                documentType: fiscalSnapshot.document_type_resolved,
+                vatRegimeCode: fiscalSnapshot.vat_regime_code,
+                vatValidationStatus: fiscalSnapshot.vat_validation_status,
+                warning: vatValidation.status === 'invalid' || vatValidation.status === 'unavailable'
+                    ? vatValidation.message
+                    : ''
+            }
         });
     } catch (error) {
         console.error('Falha ao criar checkout Stripe:', error);
