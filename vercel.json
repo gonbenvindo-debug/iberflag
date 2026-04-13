@@ -417,6 +417,10 @@
       "destination": "/pages/personalizar.html"
     },
     {
+      "source": "/produtos",
+      "destination": "/pages/produtos.html"
+    },
+    {
       "source": "/sobre",
       "destination": "/pages/sobre.html"
     },

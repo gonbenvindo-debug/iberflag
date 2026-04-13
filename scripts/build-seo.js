@@ -964,7 +964,6 @@ async function buildSeoArtifacts() {
         return writeFile(filePath, renderCategoryPage(category, categories, products));
     }));
 
-    await writeFile(path.join(PRODUCTS_DIR, 'index.html'), renderProductsLandingPage(categories, products));
     await writeFile(path.join(HTML_SITEMAP_DIR, 'index.html'), renderHtmlSitemap(categories, products));
     await writeFile(path.join(GENERATED_JS_DIR, 'catalog-seo-manifest.js'), renderCatalogManifest(products, categories));
 
