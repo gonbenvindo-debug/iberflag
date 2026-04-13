@@ -2,6 +2,7 @@ const fs = require('fs/promises');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const SiteRoutes = require('../assets/js/core/site-routes.js');
+const { getEnvValue } = require('../lib/server/env');
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const PRODUCT_DIR = path.join(ROOT_DIR, 'produto');
@@ -115,8 +116,8 @@ function safeImageUrl(value) {
 }
 
 function resolveSupabaseConfig() {
-    const envUrl = String(process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL || '').trim();
-    const envAnon = String(process.env.SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || '').trim();
+    const envUrl = getEnvValue(['SUPABASE_URL', 'NEXT_PUBLIC_SUPABASE_URL']);
+    const envAnon = getEnvValue(['SUPABASE_ANON_KEY', 'NEXT_PUBLIC_SUPABASE_ANON_KEY']);
     if (envUrl && envAnon) {
         return { url: envUrl, anonKey: envAnon };
     }

@@ -313,6 +313,10 @@
   ],
   "rewrites": [
     {
+      "source": "/api/pixabay-image",
+      "destination": "/api/pixabay-search?mode=image"
+    },
+    {
       "source": "/docs",
       "destination": "/404.html"
     },
