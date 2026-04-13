@@ -591,7 +591,6 @@ body {
 .homepage-hero {
     position: relative;
     background: linear-gradient(180deg, rgba(244, 239, 231, 0.96) 0%, rgba(248, 250, 252, 0.96) 48%, rgba(255, 255, 255, 1) 100%);
-    border-bottom: 1px solid rgba(226, 232, 240, 0.9);
 }
 
 .homepage-display {
