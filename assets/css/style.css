@@ -1516,6 +1516,19 @@ tbody tr:hover {
     border-color: var(--primary);
 }
 
+.page-btn[disabled],
+.page-btn[aria-disabled="true"] {
+    opacity: 0.45;
+    cursor: not-allowed;
+}
+
+.page-btn[disabled]:hover,
+.page-btn[aria-disabled="true"]:hover {
+    background: white;
+    color: inherit;
+    border-color: #e5e7eb;
+}
+
 /* ===== PRODUCT QUICK VIEW ===== */
 .quick-view-overlay {
     position: fixed;

@@ -2,7 +2,6 @@
 
 // ── Authentication ──────────────────────────────────────────────────────────
 
-const ADMIN_EMAIL = 'admin123@iberflag.com';
 let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
@@ -42,8 +41,10 @@ function setAdminOverlayStatus(message = '', tone = 'info') {
 }
 
 function setAdminLoginEnabled(enabled) {
+    const emailInput = document.getElementById('admin-email');
     const passwordInput = document.getElementById('admin-password');
     const button = document.getElementById('admin-login-btn');
+    if (emailInput) emailInput.disabled = !enabled;
     if (passwordInput) passwordInput.disabled = !enabled;
     if (button) button.disabled = !enabled;
 }
@@ -97,12 +98,37 @@ function buildAdminCustomizerUrl(productId, extraParams = {}) {
         : `/personalizar?produto=${encodeURIComponent(normalizedProductId)}&${new URLSearchParams(params).toString()}`;
 }
 
-function getSessionEmail(session) {
-    return (session?.user?.email || '').trim().toLowerCase();
+function normalizeAdminEmail(value) {
+    return String(value || '').trim().toLowerCase();
 }
 
-function isAllowedAdminSession(session) {
-    return getSessionEmail(session) === ADMIN_EMAIL;
+async function validateAdminSession(session) {
+    const accessToken = session?.access_token || '';
+    if (!accessToken) {
+        adminWriteSessionLastError = 'Sessao admin invalida.';
+        return false;
+    }
+
+    try {
+        const response = await fetch('/api/admin/session', {
+            headers: {
+                Accept: 'application/json',
+                Authorization: `Bearer ${accessToken}`
+            }
+        });
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            adminWriteSessionLastError = payload?.message || payload?.error || 'Utilizador sem permissoes admin.';
+            return false;
+        }
+
+        adminWriteSessionLastError = '';
+        return true;
+    } catch (error) {
+        adminWriteSessionLastError = error?.message || 'Falha ao validar permissao admin.';
+        return false;
+    }
 }
 
 function getRemainingLockSeconds() {
@@ -118,15 +144,15 @@ async function ensureAdminWriteSession() {
 
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && isAllowedAdminSession(session)) {
+        if (session && await validateAdminSession(session)) {
             return true;
         }
 
         adminWriteSessionLastError = session
-            ? 'Sessao autenticada nao pertence ao admin autorizado.'
+            ? (adminWriteSessionLastError || 'Sessao autenticada nao pertence ao admin autorizado.')
             : 'Sem sessao autenticada.';
 
-        if (session && !isAllowedAdminSession(session)) {
+        if (session) {
             await supabaseClient.auth.signOut();
         }
 
@@ -217,14 +243,14 @@ async function checkAdminAuth() {
 
     try {
         const { data: { session } } = await supabaseClient.auth.getSession();
-        if (session && isAllowedAdminSession(session)) {
+        if (session && await validateAdminSession(session)) {
             hideLoginOverlay();
             setAdminOverlayStatus('', 'info');
             loadDashboard();
             return;
         }
 
-        if (session && !isAllowedAdminSession(session)) {
+        if (session) {
             await supabaseClient.auth.signOut();
         }
 
@@ -243,10 +269,17 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!ensureAdminSupabaseReady()) {
                 return;
             }
+            const email = normalizeAdminEmail(document.getElementById('admin-email')?.value);
             const password = document.getElementById('admin-password').value;
             const btn = document.getElementById('admin-login-btn');
             const btnText = document.getElementById('admin-login-btn-text');
             const errorEl = document.getElementById('admin-login-error');
+
+            if (!email) {
+                errorEl.textContent = 'Introduza o email admin autorizado.';
+                errorEl.classList.remove('hidden');
+                return;
+            }
 
             const remainingLockSeconds = getRemainingLockSeconds();
             if (remainingLockSeconds > 0) {
@@ -260,7 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             errorEl.classList.add('hidden');
 
             const { error } = await supabaseClient.auth.signInWithPassword({
-                email: ADMIN_EMAIL,
+                email,
                 password
             });
 
@@ -279,9 +312,9 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             const { data: { session } } = await supabaseClient.auth.getSession();
-            if (!isAllowedAdminSession(session)) {
+            if (!await validateAdminSession(session)) {
                 await supabaseClient.auth.signOut();
-                errorEl.textContent = 'Acesso nao autorizado para este utilizador.';
+                errorEl.textContent = adminWriteSessionLastError || 'Acesso nao autorizado para este utilizador.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';

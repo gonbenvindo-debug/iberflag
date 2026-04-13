@@ -98,6 +98,15 @@ let companyLookupDebounceTimer = null;
 let beginCheckoutTracked = false;
 let latestVatValidation = null;
 
+function escapeHtml(value) {
+    return String(value ?? '')
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#39;');
+}
+
 function setElementHidden(element, hidden) {
     if (!element) {
         return;
@@ -949,15 +958,15 @@ async function loadCart() {
     // Render cart items
     orderItems.innerHTML = cart.map(item => `
         <div class="flex gap-3 pb-4 border-b">
-            <img src="${typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem}" alt="${item.nome}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
+            <img src="${escapeHtml(typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem)}" alt="${escapeHtml(item.nome)}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
             <div class="flex-1">
-                <h4 class="font-semibold text-sm">${item.nome}</h4>
+                <h4 class="font-semibold text-sm">${escapeHtml(item.nome)}</h4>
                 ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
-                ${item.baseNome ? `<p class="text-xs text-gray-500 mt-1">Base: ${item.baseNome}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
-                <p class="text-sm text-gray-600">Qtd: ${item.quantity}</p>
+                ${item.baseNome ? `<p class="text-xs text-gray-500 mt-1">Base: ${escapeHtml(item.baseNome)}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
+                <p class="text-sm text-gray-600">Qtd: ${Number(item.quantity || 0)}</p>
             </div>
             <div class="text-right">
-                <p class="font-bold text-blue-600">${(item.preco * item.quantity).toFixed(2)}€</p>
+                <p class="font-bold text-blue-600">${(Number(item.preco || 0) * Number(item.quantity || 0)).toFixed(2)}€</p>
             </div>
         </div>
     `).join('');

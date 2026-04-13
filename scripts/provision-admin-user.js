@@ -1,7 +1,7 @@
 const SUPABASE_URL = process.env.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
 const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || 'admin123@iberflag.com';
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || 'admin123';
+const ADMIN_EMAIL = String(process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+const ADMIN_PASSWORD = String(process.env.ADMIN_PASSWORD || '');
 
 function buildHeaders() {
     return {
@@ -86,13 +86,39 @@ async function updatePassword(userId) {
     return json?.user || json;
 }
 
+async function upsertAdminAllowlist() {
+    const response = await fetch(`${SUPABASE_URL}/rest/v1/admin_users?on_conflict=email`, {
+        method: 'POST',
+        headers: {
+            ...buildHeaders(),
+            Prefer: 'resolution=merge-duplicates,return=representation'
+        },
+        body: JSON.stringify([{
+            email: ADMIN_EMAIL,
+            active: true
+        }])
+    });
+
+    const { text, json } = await readJson(response);
+    if (!response.ok) {
+        const errorMsg = json?.message || json?.error || text || 'Erro desconhecido';
+        throw new Error(`Falha ao sincronizar admin_users (${response.status}): ${errorMsg}`);
+    }
+
+    return json;
+}
+
 async function main() {
     if (!SUPABASE_SERVICE_ROLE_KEY) {
         throw new Error('Falta SUPABASE_SERVICE_ROLE_KEY. Sem essa chave nao e possivel criar o utilizador admin.');
     }
 
+    if (!ADMIN_EMAIL) {
+        throw new Error('Falta ADMIN_EMAIL. Define explicitamente o email admin antes de executar este script.');
+    }
+
     if (ADMIN_PASSWORD.length < 6) {
-        throw new Error('A password de teste precisa de ter pelo menos 6 caracteres no Supabase Auth.');
+        throw new Error('Falta ADMIN_PASSWORD valida. Define uma password com pelo menos 6 caracteres.');
     }
 
     console.log(`A preparar utilizador admin: ${ADMIN_EMAIL}`);
@@ -100,11 +126,13 @@ async function main() {
     const existingUser = await listUsers();
     if (existingUser) {
         await updatePassword(existingUser.id);
+        await upsertAdminAllowlist();
         console.log(`Password atualizada para o utilizador existente: ${ADMIN_EMAIL}`);
         return;
     }
 
     await createUser();
+    await upsertAdminAllowlist();
     console.log(`Utilizador criado com sucesso: ${ADMIN_EMAIL}`);
 }
 

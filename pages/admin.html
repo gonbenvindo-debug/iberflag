@@ -52,12 +52,18 @@
             </div>
             <form id="admin-login-form" class="space-y-4" autocomplete="on">
                 <div>
+                    <label for="admin-email" class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                    <input id="admin-email" type="email" required autocomplete="username"
+                        class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        placeholder="admin@empresa.pt">
+                </div>
+                <div>
                     <label for="admin-password" class="block text-sm font-medium text-gray-700 mb-1">Password</label>
                     <input id="admin-password" type="password" required autocomplete="current-password"
                         class="w-full border border-gray-300 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
                         placeholder="••••••••••••••">
                 </div>
-                <p class="text-xs text-gray-500">A conta admin esta configurada no backend. Apenas a password e necessaria.</p>
+                <p class="text-xs text-gray-500">O acesso admin depende do allowlist configurado no backend. Usa o email autorizado e a respetiva password.</p>
                 <div id="admin-login-status"
                     class="hidden text-sm rounded-xl px-4 py-3 border"></div>
                 <div id="admin-login-error"
