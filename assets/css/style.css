@@ -625,8 +625,8 @@ body {
     width: 100%;
     background-image: url('/assets/images/homepage-hero-canvas-sweep.svg');
     background-repeat: no-repeat;
-    background-size: min(78rem, 70vw) 100%;
-    background-position: calc(100% + 8px) center;
+    background-size: min(78rem, 70vw) auto;
+    background-position: calc(100% + 8px) calc(50% - 1.5rem);
     pointer-events: none;
     z-index: 1;
     opacity: 0.96;
@@ -680,8 +680,8 @@ body {
     .homepage-hero-image-layer {
         width: 100%;
         opacity: 0.42;
-        background-size: 165% 100%;
-        background-position: calc(100% + 8px) center;
+        background-size: 165% auto;
+        background-position: calc(100% + 8px) calc(50% - 1rem);
     }
 }
 
