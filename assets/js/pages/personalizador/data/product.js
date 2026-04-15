@@ -10,6 +10,7 @@ Object.assign(DesignEditor.prototype, {
             : { productSlug: '', isProductPersonalizer: false };
         const productSlug = String(urlParams.get('slug') || locationState.productSlug || '').trim();
         let productId = urlParams.get('produto');
+        const preselectedBaseId = Number(urlParams.get('base') || 0);
         const manifestProduct = typeof SiteRoutes !== 'undefined' && productSlug
             ? SiteRoutes.findProductBySlug(productSlug)
             : null;
@@ -20,6 +21,12 @@ Object.assign(DesignEditor.prototype, {
         this.editDesignId = urlParams.get('design');
         this.productId = productId;
         this.productSlug = productSlug || String(manifestProduct?.slug || '').trim();
+        this.initialSelectedBaseId = Number.isFinite(preselectedBaseId) && preselectedBaseId > 0
+            ? preselectedBaseId
+            : null;
+        if (this.initialSelectedBaseId) {
+            this.selectedBaseId = this.initialSelectedBaseId;
+        }
         this.isAdminMode = urlParams.get('admin') === 'true';
         this.editingTemplateId = urlParams.get('editTemplate') || null;
 
@@ -98,6 +105,7 @@ Object.assign(DesignEditor.prototype, {
 
         if (typeof SiteRoutes !== 'undefined' && !this.isAdminMode) {
             const nextPath = SiteRoutes.buildProductPersonalizerPath(this.currentProduct, {
+                base: this.initialSelectedBaseId || undefined,
                 template: urlParams.get('template') || undefined,
                 edit: this.editIndex || undefined,
                 design: this.editDesignId || undefined,
@@ -268,6 +276,10 @@ Object.assign(DesignEditor.prototype, {
     },
 
     restoreSelectedBaseFromCart() {
+        if (Number.isFinite(Number(this.selectedBaseId)) && Number(this.selectedBaseId) > 0) {
+            return;
+        }
+
         const cart = this.getCartData();
         const targetIndex = this.resolveEditingCartIndex(cart);
         const item = targetIndex >= 0 ? cart[targetIndex] : null;
@@ -320,7 +332,7 @@ Object.assign(DesignEditor.prototype, {
             .map((base) => String(base?.base_nome || '').trim().toLowerCase())
             .filter(Boolean);
 
-        return category === 'flybanners'
+        return (category === 'flybanners' || category === 'fly-banner')
             && names.length > 0
             && names.every((name) => name.includes('reforco') || name.includes('reforÃ§o'));
     },

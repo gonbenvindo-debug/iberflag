@@ -347,6 +347,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
   <script src="/assets/js/core/analytics.js?v=20260410a"></script>
   <script src="/assets/js/core/logic.js?v=20260410a"></script>
+  <script src="/assets/js/core/flybanner-selection.js?v=20260415b"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
 }
@@ -517,7 +518,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         imageUrl: product.imageUrl,
         structuredData
     })}
-<body class="bg-slate-50 text-slate-900" data-analytics-event="view_product" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}">
+<body class="bg-slate-50 text-slate-900" data-analytics-event="view_product" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category-slug="${escapeHtml(product.categorySlug)}">
   ${renderHeader(product.canonicalPath)}
   <main>
     <div class="border-b border-slate-200 bg-white">
@@ -550,7 +551,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <div class="text-sm font-medium uppercase tracking-wide text-slate-500">Preco base</div>
                 <div class="mt-2 text-3xl font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</div>
               </div>
-              <a href="${product.personalizePath}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
+              <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
             </div>
             <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opcoes, envie o design e finalize a encomenda no passo seguinte.</p>
           </div>
@@ -582,7 +583,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
                 <div class="mt-4 flex items-center justify-between">
                   <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
-                  <a href="${candidate.canonicalPath}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                  <a href="${candidate.canonicalPath}" ${candidate.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
                 </div>
               </div>
             </article>
@@ -699,7 +700,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                <a href="${product.canonicalPath}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
@@ -789,7 +790,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                <a href="${product.canonicalPath}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>

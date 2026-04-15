@@ -412,32 +412,6 @@
       "seoDescription": "Os Mini Fly Banners são miniaturas das “Bandeiras de Praia” com um tamanho menor, o que os torna originais suportes publicitários, mais baratos, mais leve…"
     },
     {
-      "id": 142,
-      "slug": "fly-banner-dupla-face-gota-surf-67-x-190-cm",
-      "nome": "Fly Banner Dupla Face Gota/Surf​​ (67 x 190 cm)",
-      "categoria": "fly-banner",
-      "categorySlug": "fly-banner",
-      "canonicalPath": "/produto/fly-banner-dupla-face-gota-surf-67-x-190-cm",
-      "personalizePath": "/produto/fly-banner-dupla-face-gota-surf-67-x-190-cm/personalizar",
-      "preco": 74.9,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-dupla-face-gotasurf-41ca8bc701.webp",
-      "seoTitle": "Fly Banner Dupla Face Gota/Surf​​ (67 x 190 cm) | Fly Banners | IberFlag",
-      "seoDescription": "Pacote completo de Fly Banner Dupla Face Gota/Surf com tudo o que é necessário tudo o que é necessário para a instalação e montagem. Concebida para utiliz…"
-    },
-    {
-      "id": 143,
-      "slug": "fly-banner-dupla-face-gota-surf-50-x-215-cm",
-      "nome": "Fly Banner Dupla Face Gota/Surf​​ (50 x 215 cm)",
-      "categoria": "fly-banner",
-      "categorySlug": "fly-banner",
-      "canonicalPath": "/produto/fly-banner-dupla-face-gota-surf-50-x-215-cm",
-      "personalizePath": "/produto/fly-banner-dupla-face-gota-surf-50-x-215-cm/personalizar",
-      "preco": 77.4,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-dupla-face-gotasurf-41ca8bc701.webp",
-      "seoTitle": "Fly Banner Dupla Face Gota/Surf​​ (50 x 215 cm) | Fly Banners | IberFlag",
-      "seoDescription": "Pacote completo de Fly Banner Dupla Face Gota/Surf com tudo o que é necessário tudo o que é necessário para a instalação e montagem. Concebida para utiliz…"
-    },
-    {
       "id": 144,
       "slug": "x-banner-80-x-180-cm",
       "nome": "X-Banner (80 x 180 cm)",
@@ -527,41 +501,9 @@
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp",
       "seoTitle": "Wall Banner (150 x 230 cm) | Wall Banners | IberFlag",
       "seoDescription": "Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 150 x 230 cm"
-    },
-    {
-      "id": 151,
-      "slug": "mochilas-fly-banner-tamanho-unico",
-      "nome": "Mochilas Fly Banner (Tamanho único)",
-      "categoria": "fly-banner",
-      "categorySlug": "fly-banner",
-      "canonicalPath": "/produto/mochilas-fly-banner-tamanho-unico",
-      "personalizePath": "/produto/mochilas-fly-banner-tamanho-unico/personalizar",
-      "preco": 79.9,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/mochilas-fly-banner-96ead4700c.webp",
-      "seoTitle": "Mochilas Fly Banner (Tamanho único) | Fly Banners | IberFlag",
-      "seoDescription": "As mochilas com Fly Banner tipo Surf ou Gota são ideais para eventos ao ar livre e têm inúmeras funcionalidades publicitárias. Serão o complemento perfeit…"
-    },
-    {
-      "id": 152,
-      "slug": "balcao-dobravel-tamanho-unico",
-      "nome": "Balcão dobrável (Tamanho único)",
-      "categoria": "balcao-promocional",
-      "categorySlug": "balcao-promocional",
-      "canonicalPath": "/produto/balcao-dobravel-tamanho-unico",
-      "personalizePath": "/produto/balcao-dobravel-tamanho-unico/personalizar",
-      "preco": 142.4,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/balcao-promocional/balcao-dobravel-d7dfcafe89.webp",
-      "seoTitle": "Balcão dobrável (Tamanho único) | Balcoes | IberFlag",
-      "seoDescription": "Expositor leve e dobrável, uma solução ideal e portátil para eventos, feiras, demonstrações comerciais e pontos de venda que se destaca pela sua facilidad…"
     }
   ],
   "categories": [
-    {
-      "slug": "balcao-promocional",
-      "label": "Balcao Promocional",
-      "canonicalPath": "/produtos/balcao-promocional",
-      "description": "Balcoes promocionais para feiras, ativacoes de marca e pontos de venda com montagem rapida e imagem profissional."
-    },
     {
       "slug": "bandeiras",
       "label": "Bandeiras",

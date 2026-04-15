@@ -26,6 +26,11 @@ function isProductPurchasable(product) {
     return product?.ativo !== false && parseProductPrice(product) > 0;
 }
 
+function isFlybannerProduct(product) {
+    const category = String(product?.categoria || '').trim().toLowerCase();
+    return category === 'fly-banner' || category === 'flybanners';
+}
+
 // ===== DOM ELEMENTS =====
 const productsGrid = document.getElementById('products-grid');
 const productCount = document.getElementById('product-count');
@@ -239,9 +244,11 @@ function renderProductsGrid(products) {
             const safeImage = escapeHtml(product?.imagem || '/assets/images/template-placeholder.svg');
             const price = parseProductPrice(product);
             const purchasable = isProductPurchasable(product);
+            const flybannerProduct = isFlybannerProduct(product);
             const safePrice = price.toFixed(2);
             const safeProductId = escapeHtml(String(product?.id || ''));
             const safeProductNameParam = encodeURIComponent(String(product?.nome || 'Produto sem nome'));
+            const safeProductCategory = escapeHtml(String(product?.categoria || ''));
             return `
         <div class="product-card page-transition" data-product-id="${product.id}">
             <div class="product-card-image image-zoom">
@@ -260,9 +267,11 @@ function renderProductsGrid(products) {
                     <span class="text-sm font-semibold text-white sm:text-base">${purchasable ? `${safePrice}€` : 'Sob consulta'}</span>
                     <a
                         href="${purchasable ? buildProductDetailsPath(product) : '#'}"
-                        data-open-product="${safeProductId}"
+                        data-open-templates="${purchasable ? 'true' : 'false'}"
                         data-product-id="${safeProductId}"
                         data-product-name="${safeProductNameParam}"
+                        data-product-category="${safeProductCategory}"
+                        ${flybannerProduct ? 'data-flybanner-trigger="true"' : ''}
                         ${purchasable ? '' : 'aria-disabled="true" tabindex="-1"'}
                         class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 pointer-events-none'}">
                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
