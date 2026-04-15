@@ -334,7 +334,7 @@ Object.assign(DesignEditor.prototype, {
 
         return (category === 'flybanners' || category === 'fly-banner')
             && names.length > 0
-            && names.every((name) => name.includes('reforco') || name.includes('reforÃ§o'));
+            && names.every((name) => name.includes('reforco') || name.includes('reforço') || name.includes('reforÃ§o'));
     },
 
     updateCartBaseStepCopy() {
@@ -345,22 +345,22 @@ Object.assign(DesignEditor.prototype, {
         const reinforcementFlow = this.isReinforcementOptionFlow();
 
         if (labelEl) {
-            labelEl.textContent = reinforcementFlow ? 'Escolher reforco' : 'Escolher base';
+            labelEl.textContent = reinforcementFlow ? 'Escolher reforço' : 'Escolher base';
         }
 
         if (titleEl) {
-            titleEl.textContent = reinforcementFlow ? 'Escolher reforco' : 'Escolher base de fixacao';
+            titleEl.textContent = reinforcementFlow ? 'Escolher reforço' : 'Escolher base de fixacao';
         }
 
         if (descriptionEl) {
             descriptionEl.textContent = reinforcementFlow
-                ? 'Seleciona a opcao de reforco para este flybanner antes de continuar.'
+                ? 'Seleciona a opcao de reforço para este flybanner antes de continuar.'
                 : 'Seleciona uma base para este design.';
         }
 
         if (emptyState) {
             emptyState.textContent = reinforcementFlow
-                ? 'Este flybanner ainda nao tem opcoes de reforco configuradas.'
+                ? 'Este flybanner ainda nao tem opcoes de reforço configuradas.'
                 : 'Este produto nao tem bases configuradas. O design sera adicionado sem base.';
         }
     },

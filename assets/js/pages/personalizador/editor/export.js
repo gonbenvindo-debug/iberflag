@@ -389,7 +389,7 @@ Object.assign(DesignEditor.prototype, {
         if (Array.isArray(this.availableBases) && this.availableBases.length > 0 && !selectedBase) {
             showToast(
                 this.isReinforcementOptionFlow?.()
-                    ? 'Sem reforco esta indisponivel de momento. Escolha a opcao com reforco.'
+                    ? 'Sem reforço esta indisponivel de momento. Escolha a opcao com reforço.'
                     : 'Selecione uma opcao disponivel antes de adicionar ao carrinho.',
                 'warning'
             );

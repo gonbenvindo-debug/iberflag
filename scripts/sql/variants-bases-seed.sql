@@ -12,8 +12,8 @@ values
     ('Base Tripe Reforcado', 'base-tripe-reforcado', 'Tripe de aluminio reforcado para maior estabilidade.', 'https://picsum.photos/seed/base-tripe/900/560', 17.40, true, true, null, 7),
     ('Base Cimento 12kg', 'base-cimento-12kg', 'Base de cimento compacta com 12kg para vento moderado.', 'https://picsum.photos/seed/base-cimento/900/560', 32.00, true, true, null, 8),
     ('Base Premium 360', 'base-premium-360', 'Base premium com sistema de rotacao suave 360 graus.', 'https://picsum.photos/seed/base-premium360/900/560', 39.90, true, true, null, 9),
-    ('Com reforco', 'flybanner-com-reforco', 'Opcao de flybanner com reforco aplicado para maior resistencia.', '/assets/images/flybanner-variants/com-reforco.svg', 0, true, true, null, 10),
-    ('Sem reforco', 'flybanner-sem-reforco', 'Opcao de flybanner sem reforco.', '/assets/images/flybanner-variants/sem-reforco.svg', 0, true, false, 'Indisponivel de momento', 11)
+    ('Com reforço', 'flybanner-com-reforco', 'Opcao de flybanner com reforço aplicado para maior resistencia.', '/assets/images/flybanner-variants/com-reforco.svg', 0, true, true, null, 10),
+    ('Sem reforço', 'flybanner-sem-reforco', 'Opcao de flybanner sem reforço.', '/assets/images/flybanner-variants/sem-reforco.svg', 0, true, false, 'Indisponivel de momento', 11)
 on conflict (slug) do update set
     nome = excluded.nome,
     descricao = excluded.descricao,

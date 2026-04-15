@@ -35,9 +35,9 @@ insert into public.bases_fixacao (
 )
 values
     (
-        'Com reforco',
+        'Com reforço',
         'flybanner-com-reforco',
-        'Opcao de flybanner com reforco aplicado para maior resistencia.',
+        'Opcao de flybanner com reforço aplicado para maior resistencia.',
         '/assets/images/flybanner-variants/com-reforco.svg',
         0,
         true,
@@ -46,9 +46,9 @@ values
         10
     ),
     (
-        'Sem reforco',
+        'Sem reforço',
         'flybanner-sem-reforco',
-        'Opcao de flybanner sem reforco.',
+        'Opcao de flybanner sem reforço.',
         '/assets/images/flybanner-variants/sem-reforco.svg',
         0,
         true,

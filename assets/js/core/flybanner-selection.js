@@ -128,7 +128,7 @@
             <div role="dialog" aria-modal="true" aria-labelledby="flybanner-selection-title" style="width:min(100%, 960px); max-height:90vh; overflow:hidden; display:flex; flex-direction:column; background:#ffffff; border-radius:28px; box-shadow:0 32px 90px rgba(15,23,42,0.24);">
                 <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.5rem; border-bottom:1px solid rgba(148,163,184,0.22);">
                     <div>
-                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">Escolha o reforco</h2>
+                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">Escolha o reforço</h2>
                         <p id="flybanner-selection-subtitle" style="margin:0.5rem 0 0; font-size:0.95rem; line-height:1.5; color:#64748b;">Selecione a configuracao disponivel antes de continuar.</p>
                     </div>
                     <button type="button" data-flybanner-close="true" aria-label="Fechar seletor" style="width:2.5rem; height:2.5rem; border:0; border-radius:999px; background:#f8fafc; color:#475569; cursor:pointer; font-size:1.5rem; line-height:1;">&times;</button>
@@ -229,7 +229,7 @@
     function renderLoading(productName) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha o reforco';
+            modal.title.textContent = 'Escolha o reforço';
         }
         if (modal.subtitle) {
             modal.subtitle.textContent = `A carregar as opcoes disponiveis para ${productName || 'este flybanner'}...`;
@@ -269,7 +269,7 @@
             modal.title.textContent = 'Sem opcoes configuradas';
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `Este flybanner ainda nao tem opcoes de reforco configuradas para ${productName || 'este produto'}.`;
+            modal.subtitle.textContent = `Este flybanner ainda nao tem opcoes de reforço configuradas para ${productName || 'este produto'}.`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
@@ -294,7 +294,7 @@
     function renderOptions(productName, options, nextUrl) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha o reforco';
+            modal.title.textContent = 'Escolha o reforço';
         }
         if (modal.subtitle) {
             modal.subtitle.textContent = `Selecione a opcao pretendida para ${productName || 'este flybanner'} antes de continuar.`;
