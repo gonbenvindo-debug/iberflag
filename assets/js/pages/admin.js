@@ -5,6 +5,7 @@
 let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
+const ADMIN_LOGIN_EMAIL = 'admin123@iberflag.pt';
 
 function isAdminSupabaseReady() {
     return Boolean(
@@ -41,10 +42,8 @@ function setAdminOverlayStatus(message = '', tone = 'info') {
 }
 
 function setAdminLoginEnabled(enabled) {
-    const emailInput = document.getElementById('admin-email');
     const passwordInput = document.getElementById('admin-password');
     const button = document.getElementById('admin-login-btn');
-    if (emailInput) emailInput.disabled = !enabled;
     if (passwordInput) passwordInput.disabled = !enabled;
     if (button) button.disabled = !enabled;
 }
@@ -96,10 +95,6 @@ function buildAdminCustomizerUrl(productId, extraParams = {}) {
     return typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.withQuery === 'function'
         ? SiteRoutes.withQuery('/personalizar', { produto: normalizedProductId, ...params })
         : `/personalizar?produto=${encodeURIComponent(normalizedProductId)}&${new URLSearchParams(params).toString()}`;
-}
-
-function normalizeAdminEmail(value) {
-    return String(value || '').trim().toLowerCase();
 }
 
 async function validateAdminSession(session) {
@@ -269,14 +264,14 @@ document.addEventListener('DOMContentLoaded', () => {
             if (!ensureAdminSupabaseReady()) {
                 return;
             }
-            const email = normalizeAdminEmail(document.getElementById('admin-email')?.value);
+            const email = String(ADMIN_LOGIN_EMAIL || '').trim().toLowerCase();
             const password = document.getElementById('admin-password').value;
             const btn = document.getElementById('admin-login-btn');
             const btnText = document.getElementById('admin-login-btn-text');
             const errorEl = document.getElementById('admin-login-error');
 
             if (!email) {
-                errorEl.textContent = 'Introduza o email admin autorizado.';
+                errorEl.textContent = 'O email interno do admin nao esta configurado.';
                 errorEl.classList.remove('hidden');
                 return;
             }
