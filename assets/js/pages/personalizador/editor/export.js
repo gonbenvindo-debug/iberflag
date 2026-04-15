@@ -385,6 +385,17 @@ Object.assign(DesignEditor.prototype, {
         const existingCartItem = targetIndex >= 0 ? cart[targetIndex] : null;
         const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         const selectedBase = this.getSelectedBaseOption();
+
+        if (Array.isArray(this.availableBases) && this.availableBases.length > 0 && !selectedBase) {
+            showToast(
+                this.isReinforcementOptionFlow?.()
+                    ? 'Sem reforco esta indisponivel de momento. Escolha a opcao com reforco.'
+                    : 'Selecione uma opcao disponivel antes de adicionar ao carrinho.',
+                'warning'
+            );
+            return;
+        }
+
         const selectedBaseExtra = Number(selectedBase?.preco_extra_aplicado || 0);
         const finalPrice = Number(this.currentProduct.preco || 0) + selectedBaseExtra;
 

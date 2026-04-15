@@ -324,13 +324,14 @@
                                     <th>Nome</th>
                                     <th>Preço Extra</th>
                                     <th>Ordem</th>
+                                    <th>Disponibilidade</th>
                                     <th>Status</th>
                                     <th>Ações</th>
                                 </tr>
                             </thead>
                             <tbody id="bases-tbody">
                                 <tr>
-                                    <td colspan="7" class="text-center py-8 text-gray-400">
+                                    <td colspan="8" class="text-center py-8 text-gray-400">
                                         Nenhuma base configurada
                                     </td>
                                 </tr>
@@ -733,6 +734,18 @@
                     <label class="text-sm font-semibold">Base ativa</label>
                 </div>
 
+                <div class="flex items-center gap-2">
+                    <input type="checkbox" id="base-disponivel" checked class="custom-checkbox">
+                    <label class="text-sm font-semibold">Disponivel no popup do cliente</label>
+                </div>
+
+                <div>
+                    <label class="form-label">Nota de indisponibilidade</label>
+                    <input type="text" id="base-nota-indisponibilidade" class="form-input"
+                        placeholder="Ex: Indisponivel de momento">
+                    <p class="mt-2 text-xs text-gray-500">Mostrada ao cliente quando a opcao estiver visivel mas desativada.</p>
+                </div>
+
                 <div class="flex gap-3 pt-4 border-t">
                     <button type="submit"
                         class="flex-1 bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition min-h-[44px]">
@@ -1106,7 +1119,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260410a"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408c"></script>
-    <script src="/assets/js/pages/admin.js?v=20260415d"></script>
+    <script src="/assets/js/pages/admin.js?v=20260415e"></script>
     <script>lucide.createIcons();</script>
 </body>
 

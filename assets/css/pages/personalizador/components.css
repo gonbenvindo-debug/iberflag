@@ -722,6 +722,14 @@
             box-shadow: 0 0 0 2px rgba(17, 24, 39, 0.08);
         }
 
+        .cart-base-card.is-unavailable {
+            cursor: not-allowed;
+            opacity: 0.55;
+            background: #f8fafc;
+            border-style: dashed;
+            filter: grayscale(1);
+        }
+
         .cart-base-card img {
             width: 100%;
             aspect-ratio: 16 / 10;

@@ -1,4 +1,4 @@
-// ============================================================
+﻿// ============================================================
 // PRODUCT & CART
 // ============================================================
 Object.assign(DesignEditor.prototype, {
@@ -72,7 +72,7 @@ Object.assign(DesignEditor.prototype, {
             || initialProducts.find((product) => typeof SiteRoutes !== 'undefined' && SiteRoutes.inferProductSlug(product) === productSlug);
 
         if (!this.currentProduct) {
-            showToast('Produto não encontrado', 'error');
+            showToast('Produto nÃ£o encontrado', 'error');
             setTimeout(() => {
                 window.location.href = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.STATIC_PATHS.products
@@ -87,7 +87,7 @@ Object.assign(DesignEditor.prototype, {
             : productSlug;
 
         if (!this.isAdminMode && (this.currentProduct.ativo === false || !(Number(this.currentProduct.preco) > 0))) {
-            showToast('Este produto ainda não tem preço válido para checkout.', 'error');
+            showToast('Este produto ainda nÃ£o tem preÃ§o vÃ¡lido para checkout.', 'error');
             setTimeout(() => {
                 window.location.href = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.STATIC_PATHS.products
@@ -141,16 +141,30 @@ Object.assign(DesignEditor.prototype, {
         }
 
         try {
-            const { data, error } = await supabaseClient
+            let queryResult = await supabaseClient
                 .from('vw_produto_bases')
-                .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default')
+                .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default, base_disponivel, base_nota_indisponibilidade')
                 .eq('produto_id', Number(this.currentProduct.id))
                 .eq('ativo', true)
                 .eq('base_ativa', true)
                 .order('ordem', { ascending: true });
 
-            if (error) throw error;
-            this.availableBases = Array.isArray(data) ? data : [];
+            if (queryResult.error) {
+                queryResult = await supabaseClient
+                    .from('vw_produto_bases')
+                    .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default')
+                    .eq('produto_id', Number(this.currentProduct.id))
+                    .eq('ativo', true)
+                    .eq('base_ativa', true)
+                    .order('ordem', { ascending: true });
+            }
+
+            if (queryResult.error) throw queryResult.error;
+            this.availableBases = (Array.isArray(queryResult.data) ? queryResult.data : []).map((base) => ({
+                ...base,
+                base_disponivel: base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false',
+                base_nota_indisponibilidade: String(base?.base_nota_indisponibilidade || '').trim()
+            }));
         } catch (error) {
             this.availableBases = [];
             console.warn('Falha ao carregar bases do produto:', error?.message || error);
@@ -264,17 +278,29 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    isBaseOptionAvailable(base) {
+        return base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false';
+    },
+
+    getAvailableBaseOptions() {
+        return Array.isArray(this.availableBases)
+            ? this.availableBases.filter((base) => this.isBaseOptionAvailable(base))
+            : [];
+    },
+
     ensureSelectedBase() {
         if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
             this.selectedBaseId = null;
             return;
         }
 
-        const exists = this.availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
+        const availableBases = this.getAvailableBaseOptions();
+        const exists = availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
         if (exists) return;
 
-        const defaultBase = this.availableBases.find((base) => Boolean(base.is_default));
-        this.selectedBaseId = Number(defaultBase?.base_id || this.availableBases[0]?.base_id || null);
+        const defaultBase = availableBases.find((base) => Boolean(base.is_default));
+        const nextBaseId = defaultBase?.base_id || availableBases[0]?.base_id || null;
+        this.selectedBaseId = nextBaseId ? Number(nextBaseId) : null;
     },
 
     getSelectedBaseOption() {
@@ -282,7 +308,63 @@ Object.assign(DesignEditor.prototype, {
             return null;
         }
 
-        return this.availableBases.find((base) => Number(base.base_id) === Number(this.selectedBaseId)) || null;
+        return this.availableBases.find((base) => (
+            Number(base.base_id) === Number(this.selectedBaseId)
+            && this.isBaseOptionAvailable(base)
+        )) || null;
+    },
+
+    isReinforcementOptionFlow() {
+        const category = String(this.currentProduct?.categoria || '').trim().toLowerCase();
+        const names = (Array.isArray(this.availableBases) ? this.availableBases : [])
+            .map((base) => String(base?.base_nome || '').trim().toLowerCase())
+            .filter(Boolean);
+
+        return category === 'flybanners'
+            && names.length > 0
+            && names.every((name) => name.includes('reforco') || name.includes('reforÃ§o'));
+    },
+
+    updateCartBaseStepCopy() {
+        const titleEl = document.querySelector('#cart-step-pane-2 h3');
+        const descriptionEl = document.querySelector('#cart-step-pane-2 p:not(#cart-base-empty)');
+        const labelEl = document.getElementById('checkout-step-2-label');
+        const emptyState = document.getElementById('cart-base-empty');
+        const reinforcementFlow = this.isReinforcementOptionFlow();
+
+        if (labelEl) {
+            labelEl.textContent = reinforcementFlow ? 'Escolher reforco' : 'Escolher base';
+        }
+
+        if (titleEl) {
+            titleEl.textContent = reinforcementFlow ? 'Escolher reforco' : 'Escolher base de fixacao';
+        }
+
+        if (descriptionEl) {
+            descriptionEl.textContent = reinforcementFlow
+                ? 'Seleciona a opcao de reforco para este flybanner antes de continuar.'
+                : 'Seleciona uma base para este design.';
+        }
+
+        if (emptyState) {
+            emptyState.textContent = reinforcementFlow
+                ? 'Este flybanner ainda nao tem opcoes de reforco configuradas.'
+                : 'Este produto nao tem bases configuradas. O design sera adicionado sem base.';
+        }
+    },
+
+    updateCartStepActionState() {
+        const confirmBtn = document.getElementById('cart-steps-confirm');
+        if (!confirmBtn) return;
+
+        const hasOptions = Array.isArray(this.availableBases) && this.availableBases.length > 0;
+        const hasAvailableSelection = Boolean(this.getSelectedBaseOption());
+        const canConfirm = !hasOptions || hasAvailableSelection;
+
+        confirmBtn.disabled = !canConfirm;
+        confirmBtn.classList.toggle('opacity-50', !canConfirm);
+        confirmBtn.classList.toggle('cursor-not-allowed', !canConfirm);
+        confirmBtn.textContent = canConfirm ? 'Adicionar ao carrinho' : 'Indisponivel';
     },
 
     renderProductBaseOptions() {
@@ -300,7 +382,7 @@ Object.assign(DesignEditor.prototype, {
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
 
-        priceEl.textContent = `${total.toFixed(2)}€`;
+        priceEl.textContent = `${total.toFixed(2)}â‚¬`;
     },
 
     updateCartStepsTotalDisplay() {
@@ -311,7 +393,7 @@ Object.assign(DesignEditor.prototype, {
         const selectedBase = this.getSelectedBaseOption();
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
-        totalEl.textContent = `${total.toFixed(2)}€`;
+        totalEl.textContent = `${total.toFixed(2)}â‚¬`;
     },
 
     setupCartStepsModalListeners() {
@@ -379,6 +461,8 @@ Object.assign(DesignEditor.prototype, {
             nextBtn.classList.toggle('hidden', this.cartStepsCurrent !== 1);
             confirmBtn.classList.toggle('hidden', this.cartStepsCurrent !== 2);
         }
+
+        this.updateCartStepActionState();
     },
 
     generateCartPreviewSVG() {
@@ -390,31 +474,40 @@ Object.assign(DesignEditor.prototype, {
         const emptyState = document.getElementById('cart-base-empty');
         if (!optionsWrap || !emptyState) return;
 
+        this.updateCartBaseStepCopy();
+
         if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
             optionsWrap.innerHTML = '';
             emptyState.classList.remove('hidden');
             this.updateCartStepsTotalDisplay();
+            this.updateCartStepActionState();
             return;
         }
 
         emptyState.classList.add('hidden');
         optionsWrap.innerHTML = this.availableBases.map((base) => {
             const baseId = Number(base.base_id);
-            const selected = baseId === Number(this.selectedBaseId);
+            const isAvailable = this.isBaseOptionAvailable(base);
+            const selected = isAvailable && baseId === Number(this.selectedBaseId);
             const extra = Number(base.preco_extra_aplicado || 0);
             const baseName = escapeHtml(base.base_nome || 'Base');
             const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId}/640/400`);
+            const availabilityNote = escapeHtml(base.base_nota_indisponibilidade || 'Indisponivel de momento');
 
             return `
-                <button type="button" class="cart-base-card ${selected ? 'selected' : ''}" data-base-id="${baseId}">
+                <button type="button" class="cart-base-card ${selected ? 'selected' : ''} ${isAvailable ? '' : 'is-unavailable'}" data-base-id="${baseId}" ${isAvailable ? '' : 'disabled aria-disabled="true"'}>
                     <img src="${imageUrl}" alt="${baseName}">
                     <p class="text-sm font-semibold text-slate-900">${baseName}</p>
-                    <p class="text-xs text-slate-500 mt-1">${extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluída'}</p>
+                    <p class="text-xs text-slate-500 mt-1">${isAvailable ? (extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluida') : availabilityNote}</p>
                 </button>
             `;
         }).join('');
 
         optionsWrap.querySelectorAll('.cart-base-card').forEach((button) => {
+            if (button.disabled) {
+                return;
+            }
+
             button.addEventListener('click', () => {
                 this.selectedBaseId = Number(button.getAttribute('data-base-id')) || null;
                 this.renderProductBaseOptions();
@@ -424,6 +517,7 @@ Object.assign(DesignEditor.prototype, {
         });
 
         this.updateCartStepsTotalDisplay();
+        this.updateCartStepActionState();
     },
 
     openCartStepsModal() {
@@ -525,7 +619,7 @@ Object.assign(DesignEditor.prototype, {
 
         const serialized = JSON.stringify(compactCart);
 
-        // Libertar espaço antes de gravar a nova versão compacta.
+        // Libertar espaÃ§o antes de gravar a nova versÃ£o compacta.
         this.legacyCartStorageKeys.forEach((key) => {
             if (key && key !== this.cartStorageKey) {
                 localStorage.removeItem(key);
@@ -656,4 +750,5 @@ Object.assign(DesignEditor.prototype, {
     }
 
 });
+
 

@@ -2,6 +2,7 @@
 
 const FREE_SHIPPING_THRESHOLD = 0;
 const SHIPPING_COST = 0;
+const DESIGN_REVIEW_FEE = 5;
 
 // ===== DOM ELEMENTS =====
 const checkoutForm = document.getElementById('checkout-form');
@@ -12,6 +13,9 @@ const totalEl = document.getElementById('total');
 const remainingEl = document.getElementById('remaining');
 const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
+const designReviewCheckbox = document.getElementById('design-review-checkbox');
+const designReviewRow = document.getElementById('design-review-row');
+const designReviewAmountEl = document.getElementById('design-review-amount');
 const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
 const customerTypeSelect = document.getElementById('customer-type-select');
@@ -944,6 +948,52 @@ function getCatalogPath() {
         : '/produtos';
 }
 
+function isDesignReviewSelected() {
+    return Boolean(designReviewCheckbox?.checked);
+}
+
+function calculateCheckoutSummary(items = []) {
+    const subtotal = (Array.isArray(items) ? items : []).reduce((sum, item) => {
+        return sum + (Number(item.preco || 0) * Number(item.quantity || 0));
+    }, 0);
+    const designReview = isDesignReviewSelected() ? DESIGN_REVIEW_FEE : 0;
+    const shipping = SHIPPING_COST;
+    const total = subtotal + designReview + shipping;
+
+    return {
+        subtotal,
+        designReview,
+        shipping,
+        total
+    };
+}
+
+function renderCheckoutSummary(items = []) {
+    const summary = calculateCheckoutSummary(items);
+
+    if (subtotalEl) {
+        subtotalEl.textContent = `${summary.subtotal.toFixed(2)}€`;
+    }
+
+    if (designReviewAmountEl) {
+        designReviewAmountEl.textContent = `${summary.designReview.toFixed(2)}€`;
+    }
+
+    setElementHidden(designReviewRow, summary.designReview <= 0);
+
+    if (shippingEl) {
+        shippingEl.textContent = summary.shipping > 0
+            ? `${summary.shipping.toFixed(2)}€`
+            : 'Gratis';
+    }
+
+    if (totalEl) {
+        totalEl.textContent = `${summary.total.toFixed(2)}€`;
+    }
+
+    return summary;
+}
+
 // ===== LOAD CART =====
 async function loadCart() {
     if (window.cartHydrationPromise) {
@@ -971,14 +1021,7 @@ async function loadCart() {
         </div>
     `).join('');
 
-    // Calculate totals
-    const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-    const shipping = SHIPPING_COST;
-    const total = subtotal + shipping;
-
-    subtotalEl.textContent = `${subtotal.toFixed(2)}€`;
-    shippingEl.textContent = 'Gratis';
-    totalEl.textContent = `${total.toFixed(2)}€`;
+    const summary = renderCheckoutSummary(cart);
 
     // Free shipping message
     if (freeShippingMsg) {
@@ -995,7 +1038,8 @@ async function loadCart() {
             countryCode: getSelectedFiscalCountry(),
             metadata: {
                 itemCount: cart.length,
-                total
+                total: summary.total,
+                designReviewSelected: isDesignReviewSelected()
             }
         });
     }
@@ -1111,11 +1155,6 @@ if (placeOrderBtn) {
 
         const orderNotes = formData.get('notas') || null;
 
-        // Calculate totals
-        const subtotal = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
-        const shipping = SHIPPING_COST;
-        const total = subtotal + shipping;
-
         // Disable button
         setPlaceOrderLoading(true);
 
@@ -1128,6 +1167,7 @@ if (placeOrderBtn) {
                 body: JSON.stringify({
                     customer: customerData,
                     cart: buildCheckoutRequestCart(cart),
+                    designReviewSelected: isDesignReviewSelected(),
                     paymentMethod: selectedPaymentMethod,
                     notes: orderNotes
                 })
@@ -1280,6 +1320,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (customerTypeSelect) {
         customerTypeSelect.addEventListener('change', () => {
             syncCustomerTypeUI();
+        });
+    }
+    if (designReviewCheckbox) {
+        designReviewCheckbox.addEventListener('change', () => {
+            clearCheckoutFeedback();
+            renderCheckoutSummary(cart);
         });
     }
 

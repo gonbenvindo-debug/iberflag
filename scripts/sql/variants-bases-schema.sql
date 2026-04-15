@@ -11,10 +11,16 @@ create table if not exists public.bases_fixacao (
     imagem text not null,
     preco_extra numeric(10,2) not null default 0,
     ativo boolean not null default true,
+    disponivel boolean not null default true,
+    nota_indisponibilidade text,
     ordem integer not null default 0,
     created_at timestamptz not null default now(),
     updated_at timestamptz not null default now()
 );
+
+alter table if exists public.bases_fixacao
+    add column if not exists disponivel boolean not null default true,
+    add column if not exists nota_indisponibilidade text;
 
 create table if not exists public.produto_bases_fixacao (
     id bigserial primary key,
@@ -138,6 +144,8 @@ select
     b.descricao as base_descricao,
     b.imagem as base_imagem,
     b.preco_extra as base_preco_extra,
-    b.ativo as base_ativa
+    b.ativo as base_ativa,
+    b.disponivel as base_disponivel,
+    b.nota_indisponibilidade as base_nota_indisponibilidade
 from public.produto_bases_fixacao pb
 join public.bases_fixacao b on b.id = pb.base_id;

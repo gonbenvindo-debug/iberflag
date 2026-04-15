@@ -1,7 +1,9 @@
 const {
+    buildServiceOptionItems,
     buildOrderNotesWithMeta,
     buildStripeLineItem,
     generateOrderNumber,
+    normalizeCheckoutServiceOptions,
     normalizePaymentMethodType,
     resolveStripePaymentMethodTypes
 } = require('../../lib/server/checkout');
@@ -202,6 +204,15 @@ async function deleteOrderWithItems(supabase, orderId) {
     await supabase.from('encomendas').delete().eq('id', orderId);
 }
 
+function normalizeBooleanFlag(value) {
+    if (typeof value === 'boolean') {
+        return value;
+    }
+
+    const normalized = String(value ?? '').trim().toLowerCase();
+    return ['1', 'true', 'yes', 'on', 'sim'].includes(normalized);
+}
+
 module.exports = async function createCheckoutSessionHandler(req, res) {
     if (req.method !== 'POST') {
         sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'POST' });
@@ -225,6 +236,15 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const rawCart = Array.isArray(body?.cart) ? body.cart : [];
         const selectedPaymentMethod = normalizePaymentMethodType(body?.paymentMethod);
         const notes = String(body?.notes || '').trim();
+        const serviceOptions = normalizeCheckoutServiceOptions({
+            ...(body?.serviceOptions || {}),
+            designReview: normalizeBooleanFlag(
+                body?.designReviewSelected
+                ?? body?.design_review_selected
+                ?? body?.serviceOptions?.designReview
+                ?? body?.serviceOptions?.design_review
+            )
+        });
 
         if (!Array.isArray(rawCart) || rawCart.length === 0) {
             sendJson(res, 400, { error: 'CARRINHO_VAZIO' });
@@ -329,7 +349,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const stripe = getStripeClient();
         const baseUrl = getPublicBaseUrl(req);
         const cart = await resolveCheckoutCart(supabase, rawCart);
-        const { subtotal, shipping, total } = calculateCheckoutTotals(cart);
+        const chargeableItems = [...cart, ...buildServiceOptionItems(serviceOptions)];
+        const { subtotal, shipping, total } = calculateCheckoutTotals(chargeableItems);
         const vatValidation = await validateVatVies({
             countryCode: customerSnapshot.country,
             taxId: customerSnapshot.nif,
@@ -356,7 +377,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const customerId = await findOrCreateCheckoutCustomer(supabase, customerSnapshot);
 
         const orderNumber = generateOrderNumber();
-        const orderMeta = buildInitialOrderMeta(customerSnapshot, cart, selectedPaymentMethod, notes);
+        const orderMeta = buildInitialOrderMeta(customerSnapshot, cart, selectedPaymentMethod, notes, serviceOptions);
         orderMeta.fiscalSnapshot = fiscalSnapshot;
         orderMeta.vatValidation = vatValidation;
         orderMeta.checkoutSnapshot = {
@@ -409,7 +430,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             metadata: {
                 orderCode: orderNumber,
                 itemCount: cart.length,
-                total
+                total,
+                designReviewSelected: serviceOptions.designReview
             }
         }));
         await runNonBlockingAction('Nao foi possivel registar operational log de checkout_session_created', () => logOperationalEvent(supabase, {
@@ -423,7 +445,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 shippingZoneCode: fiscalFields.shipping_zone_code,
                 marginEstimate,
                 taxProfile: fiscalFields.tax_profile,
-                vatValidationStatus: fiscalFields.vat_validation_status
+                vatValidationStatus: fiscalFields.vat_validation_status,
+                designReviewSelected: serviceOptions.designReview
             }
         }));
         await runNonBlockingAction('Nao foi possivel registar fiscal decision do checkout', () => recordFiscalDecision(supabase, {
@@ -444,7 +467,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 documentType: fiscalFields.document_type_resolved,
                 vatRegimeCode: fiscalFields.vat_regime_code,
                 vatValidationStatus: fiscalFields.vat_validation_status,
-                vatValidationSource: vatValidation.source || 'none'
+                vatValidationSource: vatValidation.source || 'none',
+                designReviewSelected: serviceOptions.designReview
             }
         }));
 
@@ -466,9 +490,10 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 order_code: orderNumber,
                 order_id: String(order.id),
                 customer_id: String(customerId),
-                payment_method: selectedPaymentMethod
+                payment_method: selectedPaymentMethod,
+                design_review: serviceOptions.designReview ? 'true' : 'false'
             },
-            line_items: cart.map(buildStripeLineItem),
+            line_items: chargeableItems.map(buildStripeLineItem),
             billing_address_collection: 'required'
         });
 
@@ -492,7 +517,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                     status: session.status || '',
                     payment_status: session.payment_status || '',
                     client_reference_id: session.client_reference_id || '',
-                    payment_method_types: paymentMethodTypes
+                    payment_method_types: paymentMethodTypes,
+                    design_review: serviceOptions.designReview
                 }
             }
         );
