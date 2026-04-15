@@ -304,7 +304,6 @@
                 <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
                     ${options.map((base) => buildBaseOptionMarkup(base, nextUrl)).join('')}
                 </div>
-                <p style="margin:1rem 0 0; font-size:0.9rem; color:#64748b;">A opcao indisponivel aparece bloqueada para refletir o estado atual definido no admin.</p>
             `;
         }
 
