@@ -190,9 +190,9 @@ body {
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    background: rgba(255, 255, 255, 0.95);
+    background: transparent;
     border-radius: 0.65rem;
-    padding: 0.45rem 0.6rem;
+    padding: 0;
 }
 
 .brand-logo-footer {
@@ -983,6 +983,24 @@ body {
 
 .social-icon:hover {
     background: #f9fafb;
+    transform: translateY(-2px);
+}
+
+.app-page footer.bg-gray-900 .brand-logo-badge {
+    background: transparent !important;
+    border: 0 !important;
+    padding: 0 !important;
+}
+
+.app-page footer.bg-gray-900 .social-icon {
+    background: transparent !important;
+    color: #ffffff !important;
+    border: 0 !important;
+}
+
+.app-page footer.bg-gray-900 .social-icon:hover {
+    background: transparent !important;
+    color: #ffffff !important;
     transform: translateY(-2px);
 }
 
