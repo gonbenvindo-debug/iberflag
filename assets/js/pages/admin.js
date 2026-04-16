@@ -929,6 +929,56 @@ async function saveProductBaseAssignments(productId) {
     }
 }
 
+function isFlybannerReinforcementBase(base) {
+    const slug = String(base?.slug || '').trim().toLowerCase();
+    return slug === 'flybanner-com-reforco' || slug === 'flybanner-sem-reforco';
+}
+
+function renderBasesTable(tbodyId, items = [], emptyMessage = 'Sem registos.', options = {}) {
+    const tbody = document.getElementById(tbodyId);
+    if (!tbody) return;
+
+    if (!Array.isArray(items) || items.length === 0) {
+        tbody.innerHTML = `<tr><td colspan="8" class="text-center py-8 text-gray-400">${escapeHtml(emptyMessage)}</td></tr>`;
+        return;
+    }
+
+    const markReinforcement = Boolean(options.markReinforcement);
+
+    tbody.innerHTML = items.map((base) => {
+        const isReinforcement = isFlybannerReinforcementBase(base);
+        const nameBadge = markReinforcement && isReinforcement
+            ? '<span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Reforço</span>'
+            : '';
+
+        return `
+            <tr>
+                <td>${base.id}</td>
+                <td><img src="${escapeHtml(base.imagem)}" alt="${escapeHtml(base.nome)}" class="w-12 h-12 object-cover rounded"></td>
+                <td class="font-semibold">${escapeHtml(base.nome)}${nameBadge}</td>
+                <td class="font-bold text-blue-600">+${formatCurrency(base.preco_extra || 0)}</td>
+                <td>${base.ordem || 0}</td>
+                <td>${base.disponivel === false ? '<span class="badge badge-warning">Indisponivel</span>' : '<span class="badge badge-success">Disponivel</span>'}</td>
+                <td>${base.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-danger">Inativa</span>'}</td>
+                <td>
+                    <div class="flex gap-2">
+                        <button onclick="editBase(${base.id})" class="text-blue-600 hover:text-blue-800" title="Editar">
+                            <i data-lucide="edit" class="w-4 h-4"></i>
+                        </button>
+                        <button onclick="deleteBase(${base.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
+                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `;
+    }).join('');
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
 // ===== DASHBOARD =====
 async function loadDashboard() {
     if (!await ensureAdminWriteSession()) {
@@ -1464,39 +1514,11 @@ async function editProduct(id) {
 async function loadBases() {
     try {
         const bases = await loadBaseCatalog(true);
-        const tbody = document.getElementById('bases-tbody');
-        if (!tbody) return;
+        const generalBases = bases.filter((base) => !isFlybannerReinforcementBase(base));
+        const flybannerBases = bases.filter((base) => isFlybannerReinforcementBase(base));
 
-        if (!bases.length) {
-            tbody.innerHTML = '<tr><td colspan="8" class="text-center py-8 text-gray-400">Nenhuma base encontrada</td></tr>';
-            return;
-        }
-
-        tbody.innerHTML = bases.map((base) => `
-            <tr>
-                <td>${base.id}</td>
-                <td><img src="${escapeHtml(base.imagem)}" alt="${escapeHtml(base.nome)}" class="w-12 h-12 object-cover rounded"></td>
-                <td class="font-semibold">${escapeHtml(base.nome)}</td>
-                <td class="font-bold text-blue-600">+${formatCurrency(base.preco_extra || 0)}</td>
-                <td>${base.ordem || 0}</td>
-                <td>${base.disponivel === false ? '<span class="badge badge-warning">Indisponivel</span>' : '<span class="badge badge-success">Disponivel</span>'}</td>
-                <td>${base.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-danger">Inativa</span>'}</td>
-                <td>
-                    <div class="flex gap-2">
-                        <button onclick="editBase(${base.id})" class="text-blue-600 hover:text-blue-800" title="Editar">
-                            <i data-lucide="edit" class="w-4 h-4"></i>
-                        </button>
-                        <button onclick="deleteBase(${base.id})" class="text-red-600 hover:text-red-800" title="Eliminar">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
-                        </button>
-                    </div>
-                </td>
-            </tr>
-        `).join('');
-
-        if (typeof lucide !== 'undefined') {
-            lucide.createIcons();
-        }
+        renderBasesTable('bases-tbody', generalBases, 'Nenhuma base configurada');
+        renderBasesTable('flybanner-reinforcements-tbody', flybannerBases, 'Nenhum reforço encontrado', { markReinforcement: true });
     } catch (error) {
         console.error('Erro ao carregar bases:', error);
         if (isMissingBasesSchema(error)) {
@@ -1504,6 +1526,8 @@ async function loadBases() {
         } else {
             showToast('Erro ao carregar bases', 'error');
         }
+        renderBasesTable('bases-tbody', [], 'Nenhuma base configurada');
+        renderBasesTable('flybanner-reinforcements-tbody', [], 'Nenhum reforço encontrado', { markReinforcement: true });
     }
 }
 
