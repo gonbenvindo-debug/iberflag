@@ -497,6 +497,9 @@ async function loadTabData(tabName) {
         case 'bases':
             await loadBases();
             break;
+        case 'reforcos':
+            await loadReinforcements();
+            break;
         case 'encomendas':
             await loadOrders();
             break;
@@ -1515,10 +1518,7 @@ async function loadBases() {
     try {
         const bases = await loadBaseCatalog(true);
         const generalBases = bases.filter((base) => !isFlybannerReinforcementBase(base));
-        const flybannerBases = bases.filter((base) => isFlybannerReinforcementBase(base));
-
         renderBasesTable('bases-tbody', generalBases, 'Nenhuma base configurada');
-        renderBasesTable('flybanner-reinforcements-tbody', flybannerBases, 'Nenhum reforço encontrado', { markReinforcement: true });
     } catch (error) {
         console.error('Erro ao carregar bases:', error);
         if (isMissingBasesSchema(error)) {
@@ -1527,6 +1527,21 @@ async function loadBases() {
             showToast('Erro ao carregar bases', 'error');
         }
         renderBasesTable('bases-tbody', [], 'Nenhuma base configurada');
+    }
+}
+
+async function loadReinforcements() {
+    try {
+        const bases = await loadBaseCatalog(true);
+        const flybannerBases = bases.filter((base) => isFlybannerReinforcementBase(base));
+        renderBasesTable('flybanner-reinforcements-tbody', flybannerBases, 'Nenhum reforço encontrado', { markReinforcement: true });
+    } catch (error) {
+        console.error('Erro ao carregar reforços:', error);
+        if (isMissingBasesSchema(error)) {
+            showToast('Aplique os SQL de variantes para ativar os reforços.', 'warning');
+        } else {
+            showToast('Erro ao carregar reforços', 'error');
+        }
         renderBasesTable('flybanner-reinforcements-tbody', [], 'Nenhum reforço encontrado', { markReinforcement: true });
     }
 }
