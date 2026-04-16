@@ -472,11 +472,6 @@ function isCatalogProductPurchasable(product) {
     return product?.ativo !== false && parseCatalogPrice(product) > 0;
 }
 
-function isFlybannerCatalogProduct(product) {
-    const category = String(product?.categoria || '').trim().toLowerCase();
-    return category === 'fly-banner' || category === 'flybanners';
-}
-
 function pickRandomItem(items) {
     if (!Array.isArray(items) || items.length === 0) {
         return null;
@@ -795,7 +790,6 @@ function renderProducts(products) {
                     data-product-id="${product.id}"
                     data-product-name="${encodeURIComponent(String(product.nome || 'Produto sem nome'))}"
                     data-product-category="${escapeHtml(String(product.categoria || ''))}"
-                    ${isFlybannerCatalogProduct(product) ? 'data-flybanner-trigger="true"' : ''}
                     class="product-card-cta">
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
                     Ver produto

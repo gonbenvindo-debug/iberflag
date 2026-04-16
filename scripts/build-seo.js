@@ -583,7 +583,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
                 <div class="mt-4 flex items-center justify-between">
                   <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
-                  <a href="${candidate.canonicalPath}" ${candidate.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                  <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="text-xs font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
                 </div>
               </div>
             </article>
@@ -700,7 +700,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                <a href="${product.canonicalPath}" data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>
@@ -790,7 +790,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
-                <a href="${product.canonicalPath}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
+                <a href="${product.canonicalPath}" data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" class="text-[0.7rem] font-medium text-slate-700 hover:text-slate-900 sm:text-sm">Ver produto</a>
               </div>
             </div>
           </article>

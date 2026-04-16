@@ -341,7 +341,7 @@
             return null;
         }
 
-        return eventTarget.closest('[data-flybanner-trigger="true"], [data-flybanner-personalize-trigger="true"]');
+        return eventTarget.closest('[data-flybanner-personalize-trigger="true"]');
     }
 
     document.addEventListener('click', (event) => {
