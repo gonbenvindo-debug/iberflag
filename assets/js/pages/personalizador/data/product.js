@@ -79,7 +79,7 @@ Object.assign(DesignEditor.prototype, {
             || initialProducts.find((product) => typeof SiteRoutes !== 'undefined' && SiteRoutes.inferProductSlug(product) === productSlug);
 
         if (!this.currentProduct) {
-            showToast('Produto nÃ£o encontrado', 'error');
+            showToast('Produto não encontrado', 'error');
             setTimeout(() => {
                 window.location.href = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.STATIC_PATHS.products
@@ -94,7 +94,7 @@ Object.assign(DesignEditor.prototype, {
             : productSlug;
 
         if (!this.isAdminMode && (this.currentProduct.ativo === false || !(Number(this.currentProduct.preco) > 0))) {
-            showToast('Este produto ainda nÃ£o tem preÃ§o vÃ¡lido para checkout.', 'error');
+            showToast('Este produto ainda não tem preço válido para checkout.', 'error');
             setTimeout(() => {
                 window.location.href = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.STATIC_PATHS.products
@@ -334,7 +334,7 @@ Object.assign(DesignEditor.prototype, {
 
         return (category === 'flybanners' || category === 'fly-banner')
             && names.length > 0
-            && names.every((name) => name.includes('reforco') || name.includes('reforço') || name.includes('reforÃ§o'));
+            && names.every((name) => name.includes('reforco') || name.includes('reforço') || name.includes('reforço'));
     },
 
     updateCartBaseStepCopy() {
@@ -394,7 +394,7 @@ Object.assign(DesignEditor.prototype, {
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
 
-        priceEl.textContent = `${total.toFixed(2)}â‚¬`;
+        priceEl.textContent = `${total.toFixed(2)}€`;
     },
 
     updateCartStepsTotalDisplay() {
@@ -405,7 +405,7 @@ Object.assign(DesignEditor.prototype, {
         const selectedBase = this.getSelectedBaseOption();
         const extra = Number(selectedBase?.preco_extra_aplicado || 0);
         const total = basePrice + extra;
-        totalEl.textContent = `${total.toFixed(2)}â‚¬`;
+        totalEl.textContent = `${total.toFixed(2)}€`;
     },
 
     setupCartStepsModalListeners() {
@@ -631,7 +631,7 @@ Object.assign(DesignEditor.prototype, {
 
         const serialized = JSON.stringify(compactCart);
 
-        // Libertar espaÃ§o antes de gravar a nova versÃ£o compacta.
+        // Libertar espaço antes de gravar a nova versão compacta.
         this.legacyCartStorageKeys.forEach((key) => {
             if (key && key !== this.cartStorageKey) {
                 localStorage.removeItem(key);
