@@ -764,8 +764,8 @@ window.cartHydrationPromise = hydrateCartDesignAssets();
 const productCardPreviewTouchQuery = window.matchMedia('(hover: none), (pointer: coarse)');
 
 function clearProductCardPreviewState() {
-    document.querySelectorAll('.product-card-image.is-preview-active').forEach((image) => {
-        image.classList.remove('is-preview-active');
+    document.querySelectorAll('.product-card.is-preview-active, .product-card-image.is-preview-active').forEach((element) => {
+        element.classList.remove('is-preview-active');
     });
 }
 
@@ -777,15 +777,25 @@ if (!window.__productCardPreviewTouchInteractionBound) {
             return;
         }
 
-        const image = event.target.closest?.('.product-card-image');
+        const card = event.target.closest?.('.product-card');
+        if (!card) {
+            return;
+        }
+
+        if (event.target.closest?.('a, button, input, select, textarea, label')) {
+            return;
+        }
+
+        const image = card.querySelector('.product-card-image');
         if (!image) {
             return;
         }
 
-        const nextActive = !image.classList.contains('is-preview-active');
+        const nextActive = !card.classList.contains('is-preview-active');
         clearProductCardPreviewState();
 
         if (nextActive) {
+            card.classList.add('is-preview-active');
             image.classList.add('is-preview-active');
         }
     });

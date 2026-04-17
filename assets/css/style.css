@@ -1481,17 +1481,21 @@ tbody tr:hover {
 }
 
 @media (hover: none), (pointer: coarse) {
+    .product-card.is-preview-active .product-card-image > .product-badge,
+    .product-card.is-preview-active .product-card-image > .absolute,
     .product-card-image.is-preview-active > .product-badge,
     .product-card-image.is-preview-active > .absolute {
         opacity: 0.14;
         transform: scale(0.98);
     }
 
+    .product-card.is-preview-active .product-card-body,
     .product-card-image.is-preview-active ~ .product-card-body {
         opacity: 0.18;
         transform: translateY(0.08rem);
     }
 
+    .product-card.is-preview-active .image-zoom img,
     .image-zoom.is-preview-active img {
         transform: scale(1.1);
     }
