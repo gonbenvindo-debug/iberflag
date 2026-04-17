@@ -2843,7 +2843,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         width: 100%;
         max-width: none;
         margin-inline: auto;
-        margin-bottom: 0.28rem;
+        margin-bottom: 0.45rem;
         display: block;
         padding-inline: 0.35rem;
         text-align: center;
