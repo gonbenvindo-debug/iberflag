@@ -761,6 +761,36 @@ async function hydrateCartDesignAssets() {
 cart = normalizeCartItems(getStoredCart());
 window.cartHydrationPromise = hydrateCartDesignAssets();
 
+const productCardPreviewTouchQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+
+function clearProductCardPreviewState() {
+    document.querySelectorAll('.product-card-image.is-preview-active').forEach((image) => {
+        image.classList.remove('is-preview-active');
+    });
+}
+
+if (!window.__productCardPreviewTouchInteractionBound) {
+    window.__productCardPreviewTouchInteractionBound = true;
+
+    document.addEventListener('click', (event) => {
+        if (!productCardPreviewTouchQuery.matches) {
+            return;
+        }
+
+        const image = event.target.closest?.('.product-card-image');
+        if (!image) {
+            return;
+        }
+
+        const nextActive = !image.classList.contains('is-preview-active');
+        clearProductCardPreviewState();
+
+        if (nextActive) {
+            image.classList.add('is-preview-active');
+        }
+    });
+}
+
 // ===== RENDER PRODUCTS =====
 function renderProducts(products) {
     if (!productsContainer) return; // Safety check for pages without products container

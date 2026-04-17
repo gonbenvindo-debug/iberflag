@@ -859,20 +859,6 @@ body {
     transition: opacity 0.25s ease, transform 0.25s ease;
 }
 
-.product-card-image:hover > .product-badge,
-.product-card-image:focus-visible > .product-badge,
-.product-card-image:hover > .absolute,
-.product-card-image:focus-visible > .absolute {
-    opacity: 0.14;
-    transform: scale(0.98);
-}
-
-.product-card-image:hover ~ .product-card-body,
-.product-card-image:focus-visible ~ .product-card-body {
-    opacity: 0.18;
-    transform: translateY(0.08rem);
-}
-
 .product-card-body {
     position: absolute;
     left: 0;
@@ -1477,12 +1463,38 @@ tbody tr:hover {
     transition: transform 0.5s ease;
 }
 
-.image-zoom:hover img {
-    transform: scale(1.1);
+@media (hover: hover) and (pointer: fine) {
+    .product-card-image:hover > .product-badge,
+    .product-card-image:hover > .absolute {
+        opacity: 0.14;
+        transform: scale(0.98);
+    }
+
+    .product-card-image:hover ~ .product-card-body {
+        opacity: 0.18;
+        transform: translateY(0.08rem);
+    }
+
+    .image-zoom:hover img {
+        transform: scale(1.1);
+    }
 }
 
-.image-zoom:focus-visible img {
-    transform: scale(1.1);
+@media (hover: none), (pointer: coarse) {
+    .product-card-image.is-preview-active > .product-badge,
+    .product-card-image.is-preview-active > .absolute {
+        opacity: 0.14;
+        transform: scale(0.98);
+    }
+
+    .product-card-image.is-preview-active ~ .product-card-body {
+        opacity: 0.18;
+        transform: translateY(0.08rem);
+    }
+
+    .image-zoom.is-preview-active img {
+        transform: scale(1.1);
+    }
 }
 
 .image-zoom:focus-visible {
