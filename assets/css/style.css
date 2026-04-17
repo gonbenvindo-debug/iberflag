@@ -2840,10 +2840,10 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .product-landing-title {
-        max-width: 11ch;
-        font-size: 1.5rem !important;
-        line-height: 1.05 !important;
-        letter-spacing: -0.03em;
+        max-width: 14ch;
+        font-size: 1.42rem !important;
+        line-height: 1.02 !important;
+        letter-spacing: -0.035em;
     }
 
     .product-landing-description {
@@ -2851,8 +2851,8 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .catalog-compact-summary {
-        margin-top: 0.9rem !important;
-        padding: 0.85rem 0 0.5rem;
+        margin-top: 0.55rem !important;
+        padding: 0.55rem 0 0.35rem;
         border-top: 1px solid rgba(148, 163, 184, 0.18);
     }
 
@@ -2862,19 +2862,22 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .catalog-toolbar-grid {
-        gap: 0.4rem !important;
+        gap: 0.3rem !important;
     }
 
     .catalog-toolbar-grid label {
-        font-size: 0.62rem !important;
-        letter-spacing: 0.22em !important;
+        font-size: 0.58rem !important;
+        letter-spacing: 0.2em !important;
     }
 
     .catalog-toolbar-grid select {
-        min-height: 40px !important;
-        padding-top: 0.55rem !important;
-        padding-bottom: 0.55rem !important;
-        font-size: 0.88rem !important;
+        min-height: 38px !important;
+        padding-top: 0.42rem !important;
+        padding-bottom: 0.42rem !important;
+        padding-left: 0.65rem !important;
+        padding-right: 0.65rem !important;
+        font-size: 0.78rem !important;
+        line-height: 1 !important;
     }
 
     .products-page main > section:first-child {
@@ -2882,7 +2885,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .products-page main > section:first-child .max-w-3xl {
-        margin-bottom: 0.25rem !important;
+        margin-bottom: 0.1rem !important;
     }
 
     .products-page #products-grid {
