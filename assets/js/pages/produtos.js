@@ -266,9 +266,10 @@ function renderProductsGrid(products) {
                         data-product-name="${safeProductNameParam}"
                         data-product-category="${safeProductCategory}"
                         ${purchasable ? '' : 'aria-disabled="true" tabindex="-1"'}
+                        aria-label="${purchasable ? `Ver produto ${safeName}` : `${safeName} indisponível para checkout`}"
                         class="product-card-cta cursor-pointer min-h-[44px] ${purchasable ? '' : 'opacity-60 pointer-events-none'}">
-                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                        ${purchasable ? 'Ver produto' : 'Indisponivel para checkout'}
+                        <i data-lucide="arrow-right" class="w-4 h-4 product-card-cta-icon" aria-hidden="true"></i>
+                        <span class="product-card-cta-label">${purchasable ? 'Ver produto' : 'Indisponível para checkout'}</span>
                     </a>
                 </div>
             </div>

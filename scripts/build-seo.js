@@ -13,16 +13,16 @@ const GENERATED_JS_DIR = path.join(ROOT_DIR, 'assets', 'js', 'generated');
 const CANONICAL_ORIGIN = SiteRoutes.getCanonicalOrigin();
 
 const STATIC_INDEXABLE_PAGES = [
-    { path: SiteRoutes.STATIC_PATHS.home, title: 'IberFlag - Fly Banners, Roll Ups e Publicidade Fisica Personalizada', description: 'Especialistas em fly banners, roll ups, bandeiras, photocalls e publicidade fisica personalizada com operacao principal em Portugal.' },
-    { path: SiteRoutes.STATIC_PATHS.products, title: 'Catalogo de Produtos Publicitarios | IberFlag', description: 'Explore o catalogo IberFlag com fly banners, roll ups, bandeiras, tendas, photocalls e suportes promocionais personalizados.' },
-    { path: SiteRoutes.STATIC_PATHS.about, title: 'Sobre a IberFlag | Producao Publicitaria para Marcas', description: 'Conheca a IberFlag, a operacao, a abordagem de producao e o foco em materiais promocionais personalizados para marcas e eventos.' },
-    { path: SiteRoutes.STATIC_PATHS.contact, title: 'Contacto IberFlag | Orcamentos e Apoio Comercial', description: 'Fale com a equipa IberFlag para pedir orcamento, confirmar prazos de producao ou esclarecer duvidas sobre produtos publicitarios.' },
-    { path: SiteRoutes.STATIC_PATHS.faq, title: 'FAQ IberFlag | Perguntas Frequentes', description: 'Respostas a perguntas frequentes sobre prazos, personalizacao, pagamento, envio e funcionamento das encomendas na IberFlag.' },
-    { path: SiteRoutes.STATIC_PATHS.shipping, title: 'Envios e Entregas | IberFlag', description: 'Informacoes sobre producao, expedicao, prazos e entregas dos produtos personalizados IberFlag com foco operacional em Portugal.' },
-    { path: SiteRoutes.STATIC_PATHS.returns, title: 'Devolucoes e Reclamacoes | IberFlag', description: 'Politica de devolucoes, nao conformidades e processo de reclamacao para encomendas IberFlag.' },
-    { path: SiteRoutes.STATIC_PATHS.privacy, title: 'Politica de Privacidade | IberFlag', description: 'Saiba como a IberFlag trata dados pessoais, pedidos de contacto, encomendas e comunicacoes comerciais.' },
-    { path: SiteRoutes.STATIC_PATHS.terms, title: 'Termos e Condicoes | IberFlag', description: 'Consulte os termos e condicoes de venda, producao, faturacao, pagamentos e responsabilidade da IberFlag.' },
-    { path: SiteRoutes.STATIC_PATHS.sitemap, title: 'Mapa do Site | IberFlag', description: 'Mapa do site IberFlag com ligacoes rapidas para categorias, produtos e paginas institucionais.' }
+    { path: SiteRoutes.STATIC_PATHS.home, title: 'IberFlag - Fly Banners, Roll Ups e Publicidade Física Personalizada', description: 'Especialistas em fly banners, roll ups, bandeiras, photocalls e publicidade física personalizada com operação principal em Portugal.' },
+    { path: SiteRoutes.STATIC_PATHS.products, title: 'Catálogo de Produtos Publicitários | IberFlag', description: 'Explore o catálogo IberFlag com fly banners, roll ups, bandeiras, tendas, photocalls e suportes promocionais personalizados.' },
+    { path: SiteRoutes.STATIC_PATHS.about, title: 'Sobre a IberFlag | Produção Publicitária para Marcas', description: 'Conheça a IberFlag, a operação, a abordagem de produção e o foco em materiais promocionais personalizados para marcas e eventos.' },
+    { path: SiteRoutes.STATIC_PATHS.contact, title: 'Contacto IberFlag | Orçamentos e Apoio Comercial', description: 'Fale com a equipa IberFlag para pedir orçamento, confirmar prazos de produção ou esclarecer dúvidas sobre produtos publicitários.' },
+    { path: SiteRoutes.STATIC_PATHS.faq, title: 'FAQ IberFlag | Perguntas Frequentes', description: 'Respostas a perguntas frequentes sobre prazos, personalização, pagamento, envio e funcionamento das encomendas na IberFlag.' },
+    { path: SiteRoutes.STATIC_PATHS.shipping, title: 'Envios e Entregas | IberFlag', description: 'Informações sobre produção, expedição, prazos e entregas dos produtos personalizados IberFlag com foco operacional em Portugal.' },
+    { path: SiteRoutes.STATIC_PATHS.returns, title: 'Devoluções e Reclamações | IberFlag', description: 'Política de devoluções, não conformidades e processo de reclamação para encomendas IberFlag.' },
+    { path: SiteRoutes.STATIC_PATHS.privacy, title: 'Política de Privacidade | IberFlag', description: 'Saiba como a IberFlag trata dados pessoais, pedidos de contacto, encomendas e comunicações comerciais.' },
+    { path: SiteRoutes.STATIC_PATHS.terms, title: 'Termos e Condições | IberFlag', description: 'Consulte os termos e condições de venda, produção, faturação, pagamentos e responsabilidade da IberFlag.' },
+    { path: SiteRoutes.STATIC_PATHS.sitemap, title: 'Mapa do Site | IberFlag', description: 'Mapa do site IberFlag com ligações rápidas para categorias, produtos e páginas institucionais.' }
 ];
 
 function escapeHtml(value) {
@@ -354,9 +354,9 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
 
 function renderHeader(currentPath = '') {
     const links = [
-        { path: SiteRoutes.STATIC_PATHS.home, label: 'Inicio' },
+        { path: SiteRoutes.STATIC_PATHS.home, label: 'Início' },
         { path: SiteRoutes.STATIC_PATHS.products, label: 'Produtos' },
-        { path: SiteRoutes.STATIC_PATHS.about, label: 'Sobre Nos' },
+        { path: SiteRoutes.STATIC_PATHS.about, label: 'Sobre Nós' },
         { path: SiteRoutes.STATIC_PATHS.faq, label: 'FAQ' },
         { path: SiteRoutes.STATIC_PATHS.contact, label: 'Contacto' }
     ];
@@ -420,7 +420,7 @@ function renderFooter() {
             <img src="/assets/logos/logo-minimalista-white.svg" alt="IberFlag" class="brand-logo-footer">
           </a>
         </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitarios com operacao principal em Portugal, producao rapida e apoio dedicado.</p>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.</p>
         <div class="flex gap-4">
           <a href="#" class="social-icon" aria-label="Facebook">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -444,23 +444,23 @@ function renderFooter() {
         </div>
       </div>
       <div>
-        <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+        <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
         <ul class="space-y-3">
-          <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+          <li><a href="/" class="hover:text-white transition">Início</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-white transition">Produtos</a></li>
-          <li><a href="${SiteRoutes.STATIC_PATHS.about}" class="hover:text-white transition">Sobre Nos</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.about}" class="hover:text-white transition">Sobre Nós</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.faq}" class="hover:text-white transition">FAQ</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.contact}" class="hover:text-white transition">Falar com a equipa</a></li>
           <li><a href="${SiteRoutes.STATIC_PATHS.sitemap}" class="hover:text-white transition">Mapa do Site</a></li>
         </ul>
       </div>
       <div>
-        <h4 class="text-white font-bold mb-4">Informacoes</h4>
+        <h4 class="text-white font-bold mb-4">Informações</h4>
         <ul class="space-y-3">
           <li><a href="${SiteRoutes.STATIC_PATHS.shipping}" class="hover:text-white transition">Envios e prazos</a></li>
-          <li><a href="${SiteRoutes.STATIC_PATHS.terms}" class="hover:text-white transition">Termos e Condicoes</a></li>
-          <li><a href="${SiteRoutes.STATIC_PATHS.privacy}" class="hover:text-white transition">Politica de Privacidade</a></li>
-          <li><a href="${SiteRoutes.STATIC_PATHS.returns}" class="hover:text-white transition">Devolucoes</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.terms}" class="hover:text-white transition">Termos e Condições</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.privacy}" class="hover:text-white transition">Política de Privacidade</a></li>
+          <li><a href="${SiteRoutes.STATIC_PATHS.returns}" class="hover:text-white transition">Devoluções</a></li>
         </ul>
       </div>
     </div>
@@ -503,7 +503,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Inicio', item: SiteRoutes.buildPublicUrl('/') },
+                { '@type': 'ListItem', position: 1, name: 'Início', item: SiteRoutes.buildPublicUrl('/') },
                 { '@type': 'ListItem', position: 2, name: 'Produtos', item: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products) },
                 { '@type': 'ListItem', position: 3, name: product.categoryLabel, item: SiteRoutes.buildPublicUrl(SiteRoutes.buildCategoryPath(product.categorySlug)) },
                 { '@type': 'ListItem', position: 4, name: product.nome, item: SiteRoutes.buildPublicUrl(product.canonicalPath) }
@@ -524,7 +524,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
     <div class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 py-4 text-sm text-slate-500 sm:px-6 lg:px-8">
         <nav class="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
-          <a href="/" class="hover:text-slate-900">Inicio</a>
+          <a href="/" class="hover:text-slate-900">Início</a>
           <span>/</span>
           <a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-slate-900">Produtos</a>
           <span>/</span>
@@ -548,16 +548,16 @@ function renderProductPage(product, categoryEntries, productEntries) {
           <div class="rounded-2xl border border-slate-200 bg-slate-50 p-6">
             <div class="flex items-end justify-between gap-4">
               <div>
-                <div class="text-sm font-medium uppercase tracking-wide text-slate-500">Preco base</div>
+                <div class="text-sm font-medium uppercase tracking-wide text-slate-500">Preço base</div>
                 <div class="mt-2 text-3xl font-semibold text-slate-900">${escapeHtml(formatCurrency(product.preco))}</div>
               </div>
               <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex items-center justify-center rounded-xl bg-slate-900 px-5 py-3 text-sm font-semibold text-white transition hover:bg-slate-800">Personalizar produto</a>
             </div>
-            <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opcoes, envie o design e finalize a encomenda no passo seguinte.</p>
+            <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opções, envie o design e finalize a encomenda no passo seguinte.</p>
           </div>
           <div class="grid gap-4 sm:grid-cols-3">
-            <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">Envios</strong>Prazos, expedicao e entrega.</a>
-            <a href="${SiteRoutes.STATIC_PATHS.faq}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">FAQ</strong>Duvidas sobre producao e compra.</a>
+            <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">Envios</strong>Prazos, expedição e entrega.</a>
+            <a href="${SiteRoutes.STATIC_PATHS.faq}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">FAQ</strong>Dúvidas sobre produção e compra.</a>
             <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="rounded-2xl border border-slate-200 bg-white p-4 text-sm text-slate-600 hover:border-slate-300 hover:text-slate-900"><strong class="block text-slate-900">Pedir apoio</strong>Falar com a equipa comercial.</a>
           </div>
         </div>
@@ -568,7 +568,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
             <h2 class="text-2xl font-semibold text-slate-900">Produtos relacionados</h2>
-            <p class="mt-2 text-sm text-slate-600">Veja mais modelos da categoria ${escapeHtml(product.categoryLabel)} e compare formatos, tamanhos e precos.</p>
+            <p class="mt-2 text-sm text-slate-600">Veja mais modelos da categoria ${escapeHtml(product.categoryLabel)} e compare formatos, tamanhos e preços.</p>
           </div>
           <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="text-sm font-medium text-slate-700 hover:text-slate-900">Ver categoria completa</a>
         </div>
@@ -619,8 +619,8 @@ function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', produ
           </select>
           <select id="catalog-sort-select" data-catalog-sort-select class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
             <option value="default">Destaques</option>
-            <option value="price-asc">Preco: menor primeiro</option>
-            <option value="price-desc">Preco: maior primeiro</option>
+            <option value="price-asc">Preço: menor primeiro</option>
+            <option value="price-desc">Preço: maior primeiro</option>
             <option value="name-asc">Nome: A-Z</option>
             <option value="name-desc">Nome: Z-A</option>
           </select>
@@ -642,7 +642,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Inicio', item: SiteRoutes.buildPublicUrl('/') },
+                { '@type': 'ListItem', position: 1, name: 'Início', item: SiteRoutes.buildPublicUrl('/') },
                 { '@type': 'ListItem', position: 2, name: 'Produtos', item: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products) },
                 { '@type': 'ListItem', position: 3, name: category.label, item: SiteRoutes.buildPublicUrl(category.canonicalPath) }
             ]
@@ -672,7 +672,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
     <section class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 pb-5 pt-0 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-4 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
-          <a href="/" class="hover:text-slate-900">Inicio</a>
+          <a href="/" class="hover:text-slate-900">Início</a>
           <span>/</span>
           <a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-slate-900">Produtos</a>
           <span>/</span>
@@ -727,15 +727,15 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         {
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
-            name: 'Catalogo de Produtos IberFlag',
-            description: 'Catalogo IberFlag com categorias e produtos publicitarios personalizados para eventos, retail e comunicacao fisica.',
+            name: 'Catálogo de Produtos IberFlag',
+            description: 'Catálogo IberFlag com categorias e produtos publicitários personalizados para eventos, retail e comunicacao fisica.',
             url: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products)
         },
         {
             '@context': 'https://schema.org',
             '@type': 'BreadcrumbList',
             itemListElement: [
-                { '@type': 'ListItem', position: 1, name: 'Inicio', item: SiteRoutes.buildPublicUrl('/') },
+                { '@type': 'ListItem', position: 1, name: 'Início', item: SiteRoutes.buildPublicUrl('/') },
                 { '@type': 'ListItem', position: 2, name: 'Produtos', item: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products) }
             ]
         },
@@ -752,7 +752,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
     ];
 
     return `${renderHead({
-        title: 'Catalogo de Produtos Publicitarios | IberFlag',
+        title: 'Catálogo de Produtos Publicitarios | IberFlag',
         description: 'Explore o catalogo IberFlag com fly banners, roll ups, bandeiras, photocalls, tendas e suportes promocionais personalizados.',
         canonicalPath: SiteRoutes.STATIC_PATHS.products,
         imageUrl: primaryImage,
@@ -764,12 +764,12 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
     <section class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 pb-5 pt-0 sm:px-6 sm:py-10 lg:px-8">
         <nav class="mb-3 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
-          <a href="/" class="hover:text-slate-900">Inicio</a>
+          <a href="/" class="hover:text-slate-900">Início</a>
           <span>/</span>
           <span class="text-slate-900">Produtos</span>
         </nav>
         <div class="max-w-3xl">
-          <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
+          <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
         ${renderCatalogToolbar(categoryEntries, { selectedCategory: 'all', productCount: highlightedProducts.length })}

@@ -21,7 +21,7 @@
             "@type": "CollectionPage",
             "name": "Catalogo de Produtos IberFlag",
             "url": "https://iberflag.com/produtos",
-            "description": "Catalogo de fly banners, roll ups, bandeiras, tendas, photocalls e publicidade fisica personalizada.",
+            "description": "Catálogo de fly banners, roll ups, bandeiras, tendas, photocalls e publicidade física personalizada.",
             "isPartOf": {
                 "@type": "WebSite",
                 "name": "IberFlag",
@@ -89,21 +89,22 @@
                     <a href="/faq" class="nav-link">FAQ</a>
                     <a href="/contacto" class="nav-link">Contacto</a>
                     <button id="cart-btn"
-                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
-                        <i data-lucide="shopping-cart" class="w-4 h-4"></i>
+                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2"
+                        aria-label="Abrir carrinho">
+                        <i data-lucide="shopping-cart" class="w-4 h-4" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Carrinho</span>
                         <span id="cart-count"
                             class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
                 </div>
                 <div class="md:hidden flex items-center gap-2">
-                    <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100 rounded-lg">
-                        <i data-lucide="shopping-cart" class="w-5 h-5"></i>
+                    <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
+                        <i data-lucide="shopping-cart" class="w-5 h-5" aria-hidden="true"></i>
                         <span id="cart-count-mobile"
                             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
                     </button>
                     <button id="mobile-menu-btn" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
-                        <i data-lucide="menu" class="w-6 h-6"></i>
+                        <i data-lucide="menu" class="w-6 h-6" aria-hidden="true"></i>
                     </button>
                 </div>
             </div>
@@ -130,10 +131,10 @@
                     <span class="text-slate-900">Produtos</span>
                 </nav>
                 <div class="max-w-3xl">
-                    <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catalogo de produtos publicitarios</h1>
-                    <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
+                    <h1 class="product-landing-title text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
+                    <p class="product-landing-description mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
                 </div>
-                <div class="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
+                <div class="catalog-compact-summary mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
                     <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500"><span id="product-count">0</span> produto(s)</p>
                     <div class="catalog-toolbar-grid grid grid-cols-2 gap-x-2 gap-y-1 sm:min-w-[30rem] sm:gap-x-3 sm:gap-y-2">
                         <label for="category-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
@@ -142,13 +143,13 @@
                         <label for="sort-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                             Ordenar
                         </label>
-                        <select id="category-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+                        <select id="category-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 transition focus:border-slate-400">
                             <option value="all">Todas as categorias</option>
                         </select>
-                        <select id="sort-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200">
+                        <select id="sort-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 transition focus:border-slate-400">
                             <option value="default">Destaques</option>
-                            <option value="price-asc">Preco: menor primeiro</option>
-                            <option value="price-desc">Preco: maior primeiro</option>
+                            <option value="price-asc">Preço: menor primeiro</option>
+                            <option value="price-desc">Preço: maior primeiro</option>
                             <option value="name-asc">Nome: A-Z</option>
                             <option value="name-desc">Nome: Z-A</option>
                         </select>
@@ -189,7 +190,7 @@
     <section class="hidden bg-gradient-to-r from-blue-600 to-indigo-600 text-white py-10 md:py-16" aria-hidden="true">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
             <h1 class="text-4xl md:text-5xl font-bold mb-4">Catálogo de Produtos</h1>
-            <p class="text-xl text-blue-100">Descubra a nossa gama de flybanners e solucoes publicitarias para o mercado
+            <p class="text-xl text-blue-100">Descubra a nossa gama de flybanners e soluções publicitárias para o mercado
                 iberico</p>
         </div>
     </section>
