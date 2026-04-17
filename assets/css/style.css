@@ -2843,6 +2843,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         width: 100%;
         max-width: none;
         margin-inline: auto;
+        margin-bottom: 0.28rem;
         display: block;
         padding-inline: 0.35rem;
         text-align: center;
@@ -2859,7 +2860,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .catalog-compact-summary {
-        margin-top: 0.08rem !important;
+        margin-top: 0 !important;
         padding: 0.12rem 0 0 !important;
         border-top: 1px solid rgba(148, 163, 184, 0.18);
     }
@@ -2890,6 +2891,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 
     .products-page main > section:first-child {
         padding-bottom: 0 !important;
+        margin-bottom: 0 !important;
     }
 
     .products-page main > section:first-child .max-w-3xl {
@@ -2898,8 +2900,8 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
 
     .products-page main > section:nth-of-type(2) {
         padding-top: 0 !important;
-        margin-top: -0.7rem;
-        padding-bottom: 0.55rem !important;
+        margin-top: -0.9rem;
+        padding-bottom: 0.3rem !important;
     }
 
     .products-page #products-grid {
