@@ -2844,10 +2844,11 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         max-width: none;
         margin-inline: auto;
         display: block;
+        padding-inline: 0.35rem;
         text-align: center;
-        font-size: clamp(1.02rem, 4.9vw, 1.18rem) !important;
-        line-height: 0.98 !important;
-        letter-spacing: -0.045em;
+        font-size: clamp(1.08rem, 5.8vw, 1.45rem) !important;
+        line-height: 1.05 !important;
+        letter-spacing: -0.04em;
         white-space: nowrap;
         overflow: hidden;
         text-overflow: clip;
