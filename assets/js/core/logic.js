@@ -778,7 +778,7 @@ function renderProducts(products) {
 
     productsContainer.innerHTML = displayProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}">
-            <div class="product-card-image image-zoom">
+            <div class="product-card-image image-zoom" tabindex="0" aria-label="Imagem do produto ${escapeHtml(String(product.nome || 'Produto sem nome'))}">
                 <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
                 <div class="product-badge">
                     ${isCatalogProductPurchasable(product) ? `${parseCatalogPrice(product).toFixed(2)}€` : 'Sob consulta'}

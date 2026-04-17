@@ -245,7 +245,7 @@ function renderProductsGrid(products) {
             const safeProductCategory = escapeHtml(String(product?.categoria || ''));
             return `
         <div class="product-card page-transition" data-product-id="${product.id}">
-            <div class="product-card-image image-zoom">
+            <div class="product-card-image image-zoom" tabindex="0" aria-label="Imagem do produto ${safeName}">
                 <img src="${safeImage}" alt="${safeName}" class="w-full h-full object-contain" loading="lazy">
                 <div class="product-badge">
                     ${purchasable ? `${safePrice}€` : 'Sob consulta'}
