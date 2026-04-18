@@ -572,9 +572,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </a>
             </div>
           </div>
-          <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
-            <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(normalizeText(product.descricao || product.seo_description))}</p>
-          </div>
+          <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(normalizeText(product.descricao || product.seo_description))}</p>
         </div>
       </div>
     </section>
