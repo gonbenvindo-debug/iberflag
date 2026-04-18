@@ -1557,6 +1557,22 @@ tbody tr:hover {
     color: #6b7280;
 }
 
+.product-breadcrumb {
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    white-space: nowrap;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+}
+
+.product-breadcrumb::-webkit-scrollbar {
+    display: none;
+}
+
+.product-breadcrumb > * {
+    flex: 0 0 auto;
+}
+
 .breadcrumb a:hover {
     color: var(--primary);
 }
@@ -3251,6 +3267,13 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     .checkout-place-order-btn,
     .homepage-cart-btn {
         min-height: 44px;
+    }
+
+    .product-breadcrumb a,
+    .product-breadcrumb span {
+        display: inline-flex !important;
+        align-items: center;
+        min-height: 0 !important;
     }
 
     /* Remove hover effects */

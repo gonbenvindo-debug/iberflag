@@ -523,7 +523,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
   <main>
     <div class="border-b border-slate-200 bg-white">
       <div class="mx-auto max-w-7xl px-4 py-4 text-sm text-slate-500 sm:px-6 lg:px-8">
-        <nav class="flex flex-wrap items-center gap-2" aria-label="Breadcrumb">
+        <nav class="breadcrumb product-breadcrumb flex flex-nowrap items-center gap-2 overflow-x-auto whitespace-nowrap" aria-label="Breadcrumb">
           <a href="/" class="hover:text-slate-900">Início</a>
           <span>/</span>
           <a href="${SiteRoutes.STATIC_PATHS.products}" class="hover:text-slate-900">Produtos</a>
