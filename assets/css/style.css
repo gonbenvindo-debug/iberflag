@@ -1573,6 +1573,26 @@ tbody tr:hover {
     flex: 0 0 auto;
 }
 
+@media (max-width: 768px) {
+    .product-breadcrumb {
+        display: flex !important;
+        flex-direction: row !important;
+        flex-wrap: nowrap !important;
+        align-items: center !important;
+        gap: 0.35rem !important;
+        width: 100% !important;
+        overflow-x: auto !important;
+        overflow-y: hidden !important;
+        -webkit-overflow-scrolling: touch;
+        padding-bottom: 0.1rem;
+    }
+
+    .product-breadcrumb > * {
+        flex: 0 0 auto !important;
+        white-space: nowrap !important;
+    }
+}
+
 .breadcrumb a:hover {
     color: var(--primary);
 }
