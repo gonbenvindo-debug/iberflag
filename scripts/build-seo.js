@@ -540,9 +540,8 @@ function renderProductPage(product, categoryEntries, productEntries) {
           <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" width="1200" height="900" decoding="async">
         </div>
         <div class="flex flex-col gap-5 sm:gap-6">
-          <div class="space-y-3">
+          <div>
             <h1 class="max-w-[14ch] text-[clamp(1.9rem,7vw,3.4rem)] font-semibold leading-[0.95] tracking-tight text-slate-900 sm:max-w-none sm:text-4xl">${escapeHtml(product.nome)}</h1>
-            <p class="max-w-2xl text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(normalizeText(product.descricao || product.seo_description))}</p>
           </div>
           <div class="rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_22px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:p-6">
             <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
@@ -572,6 +571,9 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <span class="mt-1 block leading-6">Falar com a equipa comercial.</span>
               </a>
             </div>
+          </div>
+          <div class="rounded-[1.5rem] border border-slate-200 bg-slate-50/80 p-4 sm:p-5">
+            <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(normalizeText(product.descricao || product.seo_description))}</p>
           </div>
         </div>
       </div>
