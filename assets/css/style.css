@@ -2861,6 +2861,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         display: flex !important;
     }
 
+    .mobile-header-actions,
     .md\:hidden.flex.items-center.gap-2 {
         display: inline-flex !important;
         flex-direction: row !important;
@@ -3203,16 +3204,16 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     /* Buttons full width */
-    .flex.gap-2:not(.breadcrumb):not(.product-breadcrumb) {
+    .flex.gap-2:not(.breadcrumb):not(.product-breadcrumb):not(.mobile-header-actions) {
         flex-direction: column !important;
     }
 
-    .flex.gap-3:not(.breadcrumb):not(.product-breadcrumb) {
+    .flex.gap-3:not(.breadcrumb):not(.product-breadcrumb):not(.mobile-header-actions) {
         flex-direction: column !important;
     }
 
-    .flex.gap-2:not(.breadcrumb):not(.product-breadcrumb)>*,
-    .flex.gap-3:not(.breadcrumb):not(.product-breadcrumb)>* {
+    .flex.gap-2:not(.breadcrumb):not(.product-breadcrumb):not(.mobile-header-actions)>*,
+    .flex.gap-3:not(.breadcrumb):not(.product-breadcrumb):not(.mobile-header-actions)>* {
         width: 100% !important;
     }
 

@@ -155,12 +155,12 @@
           <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
         </button>
       </div>
-      <div class="md:hidden flex items-center gap-2">
-        <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100 rounded-lg">
+      <div class="mobile-header-actions md:hidden flex items-center gap-2">
+        <a id="cart-btn-mobile" href="/checkout" onclick="openCart(event)" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
           <i data-lucide="shopping-cart" class="w-5 h-5"></i>
           <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
-        </button>
-        <button id="mobile-menu-btn" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
+        </a>
+        <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu(event)" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
           <i data-lucide="menu" class="w-6 h-6"></i>
         </button>
       </div>
