@@ -385,14 +385,14 @@ function renderHeader(currentPath = '') {
       </a>
       <div class="hidden md:flex space-x-6 items-center">
         ${links.map(renderDesktopLink).join('')}
-        <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+        <button id="cart-btn" type="button" aria-expanded="false" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
           <i data-lucide="shopping-cart" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Carrinho</span>
           <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
         </button>
       </div>
       <div class="mobile-header-actions md:hidden flex items-center gap-2">
-        <a id="cart-btn-mobile" href="${SiteRoutes.STATIC_PATHS.checkout}" onclick="openCart(event)" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
+        <a id="cart-btn-mobile" href="${SiteRoutes.STATIC_PATHS.checkout}" onclick="openCart(event)" aria-expanded="false" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
           <i data-lucide="shopping-cart" class="w-5 h-5"></i>
           <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
         </a>
@@ -482,6 +482,10 @@ function renderProductPage(product, categoryEntries, productEntries) {
         .filter((candidate) => candidate.slug !== product.slug && candidate.categorySlug === product.categorySlug)
         .slice(0, 4);
     const fallbackProducts = related.length > 0 ? related : productEntries.filter((candidate) => candidate.slug !== product.slug).slice(0, 4);
+    const shuffledSuggestions = productEntries
+        .filter((candidate) => candidate.slug !== product.slug && !fallbackProducts.some((item) => item.slug === candidate.slug))
+        .sort(() => Math.random() - 0.5)
+        .slice(0, 4);
     const structuredData = [
         {
             '@context': 'https://schema.org',
@@ -557,16 +561,16 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </a>
             </div>
             <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opções, envie o design e finalize a encomenda no passo seguinte.</p>
-            <div class="mt-5 grid gap-2 sm:grid-cols-3">
-              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+            <div class="mt-5 grid grid-cols-3 gap-2">
+              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
                 <span>Envios</span>
                 <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
-              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
                 <span>FAQ</span>
                 <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
-              <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+              <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
                 <span>Pedir apoio</span>
                 <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
@@ -608,6 +612,39 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </div>
             </article>
           `).join('')}
+        </div>
+        <div class="mt-12 border-t border-slate-200 pt-10">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Ver mais</p>
+              <h2 class="mt-2 text-2xl font-semibold text-slate-900">Outras opções que podem interessar</h2>
+              <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Uma seleção rápida de produtos para explorar formatos diferentes sem voltar ao catálogo inteiro.</p>
+            </div>
+            <a href="${SiteRoutes.STATIC_PATHS.products}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900">
+              <span>Ver tudo</span>
+              <span aria-hidden="true">&rarr;</span>
+            </a>
+          </div>
+          <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+            ${shuffledSuggestions.map((candidate) => `
+              <article class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_10px_28px_rgba(15,23,42,0.04)] transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+                <a href="${candidate.canonicalPath}" class="block">
+                  <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
+                </a>
+                <div class="p-4 sm:p-5">
+                  <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
+                  <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
+                  <div class="mt-4 flex items-center justify-between gap-3">
+                    <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
+                    <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 sm:text-sm">
+                      <span>Ver produto</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
+              </article>
+            `).join('')}
+          </div>
         </div>
       </div>
     </section>
