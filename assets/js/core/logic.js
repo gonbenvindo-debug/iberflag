@@ -95,6 +95,9 @@ function buildLegacyCartSidebarMarkup() {
         const sidebar = document.createElement('div');
         sidebar.id = 'cart-sidebar';
         sidebar.className = 'fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50';
+        sidebar.style.width = 'min(100vw, 26rem)';
+        sidebar.style.maxWidth = '100vw';
+        sidebar.style.minWidth = '20rem';
         sidebar.setAttribute('aria-hidden', 'true');
         sidebar.innerHTML = `
             <div class="flex flex-col h-full">
@@ -129,6 +132,9 @@ function buildLegacyCartSidebarMarkup() {
     cartSidebar.dataset.cartEnhanced = '1';
     cartSidebar.setAttribute('aria-hidden', 'true');
     cartSidebar.className = 'fixed inset-y-0 right-0 z-50 flex h-full translate-x-full transform border-l border-slate-200 bg-white/95 shadow-2xl backdrop-blur-xl transition-transform duration-300';
+    cartSidebar.style.width = 'min(100vw, 26rem)';
+    cartSidebar.style.maxWidth = '100vw';
+    cartSidebar.style.minWidth = '20rem';
     cartSidebar.style.zIndex = '9999';
     cartSidebar.style.right = '0';
     cartSidebar.style.left = 'auto';
@@ -288,11 +294,21 @@ function renderCartItemsList() {
 function syncCartItemPreviewHeights() {
     if (!cartItemsContainer) return;
 
+    const isSmallScreen = window.matchMedia('(max-width: 767px)').matches;
+
     const cards = cartItemsContainer.querySelectorAll('[data-cart-item-index]');
     cards.forEach((card) => {
         const details = card.querySelector('[data-cart-details]');
         const previewLink = card.querySelector('[data-cart-preview-link]');
         if (!(details instanceof Element) || !(previewLink instanceof HTMLElement)) {
+            return;
+        }
+
+        if (isSmallScreen) {
+            previewLink.style.height = '4.5rem';
+            previewLink.style.minHeight = '4.5rem';
+            previewLink.style.maxWidth = '4.5rem';
+            previewLink.style.width = '4.5rem';
             return;
         }
 
