@@ -547,6 +547,9 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        this.cartStepsFocusReturnEl = document.activeElement instanceof HTMLElement
+            ? document.activeElement
+            : null;
         this.ensureSelectedBase();
         this.cartStepsDesignSnapshot = this.getDesignSVG();
         const previewSvg = this.cartStepsDesignSnapshot || this.generateCartPreviewSVG();
@@ -575,14 +578,28 @@ Object.assign(DesignEditor.prototype, {
         const modal = document.getElementById('cart-steps-modal');
         if (!modal) return;
 
+        const returnFocusEl = this.cartStepsFocusReturnEl;
+        const activeElement = document.activeElement;
+        if (activeElement instanceof HTMLElement && modal.contains(activeElement)) {
+            activeElement.blur();
+        }
+
         modal.classList.remove('is-open');
-        modal.setAttribute('aria-hidden', 'true');
         if (typeof modal.inert !== 'undefined') {
             modal.inert = true;
         } else {
             modal.setAttribute('inert', '');
         }
+        modal.setAttribute('aria-hidden', 'true');
         document.body.style.overflow = '';
+
+        if (returnFocusEl instanceof HTMLElement && typeof returnFocusEl.focus === 'function') {
+            setTimeout(() => {
+                returnFocusEl.focus({ preventScroll: true });
+            }, 0);
+        }
+
+        this.cartStepsFocusReturnEl = null;
     },
 
     getAutosaveKey() {
@@ -612,21 +629,19 @@ Object.assign(DesignEditor.prototype, {
 
     saveCartData(cart) {
         const compactCart = Array.isArray(cart)
-            ? cart.map((item) => {
-                const {
-                    design,
-                    designPreview,
-                    design_svg,
-                    preview_url,
-                    previewUrl,
-                    thumbnail,
-                    ...rest
-                } = item || {};
-
-                return {
-                    ...rest
-                };
-            })
+            ? cart.map((item) => ({
+                id: Number(item?.id ?? 0) || 0,
+                nome: String(item?.nome || '').trim(),
+                preco: Number(item?.preco || 0),
+                imagem: String(item?.imagem || '').trim(),
+                quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
+                customized: Boolean(item?.customized),
+                designId: item?.designId ? String(item.designId).trim() : null,
+                baseId: item?.baseId ?? item?.base_id ?? null,
+                baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
+                baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
+                basePrecoExtra: Number(item?.basePrecoExtra || 0)
+            }))
             : [];
 
         const serialized = JSON.stringify(compactCart);
@@ -638,7 +653,32 @@ Object.assign(DesignEditor.prototype, {
             }
         });
 
-        localStorage.setItem(this.cartStorageKey, serialized);
+        try {
+            localStorage.setItem(this.cartStorageKey, serialized);
+        } catch (error) {
+            const name = String(error?.name || '').toLowerCase();
+            const message = String(error?.message || '').toLowerCase();
+            const isQuotaExceeded = name.includes('quota') || message.includes('quota');
+
+            if (!isQuotaExceeded) {
+                throw error;
+            }
+
+            const minimalCart = JSON.stringify(compactCart.map((item) => ({
+                id: item.id,
+                nome: item.nome,
+                preco: item.preco,
+                quantity: item.quantity,
+                customized: item.customized,
+                designId: item.designId,
+                baseId: item.baseId,
+                baseNome: item.baseNome,
+                basePrecoExtra: item.basePrecoExtra
+            })));
+
+            localStorage.removeItem(this.cartStorageKey);
+            localStorage.setItem(this.cartStorageKey, minimalCart);
+        }
 
         if (window.CartAssetStore?.cleanupUnusedDesigns) {
             const activeDesignIds = compactCart

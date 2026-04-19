@@ -733,18 +733,26 @@ function compactCartItems(items) {
     }
 
     return items.map((item) => {
-        const {
-            design,
-            design_svg,
-            designPreview,
-            preview_url,
-            previewUrl,
-            thumbnail,
-            ...rest
-        } = item || {};
-
-        return { ...rest };
+        return {
+            id: Number(item?.id ?? 0) || 0,
+            nome: String(item?.nome || '').trim(),
+            preco: Number(item?.preco || 0),
+            imagem: String(item?.imagem || '').trim(),
+            quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
+            customized: Boolean(item?.customized),
+            designId: item?.designId ? String(item.designId).trim() : null,
+            baseId: item?.baseId ?? item?.base_id ?? null,
+            baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
+            baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
+            basePrecoExtra: Number(item?.basePrecoExtra || 0)
+        };
     });
+}
+
+function isQuotaExceededError(error) {
+    const name = String(error?.name || '').toLowerCase();
+    const message = String(error?.message || '').toLowerCase();
+    return name.includes('quota') || message.includes('quota');
 }
 
 async function hydrateCartDesignAssets() {
@@ -897,10 +905,37 @@ function updateCart() {
     refreshCartDomReferences();
     cart = normalizeCartItems(cart);
     const persistedCart = compactCartItems(cart);
-    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(persistedCart));
-    LEGACY_CART_STORAGE_KEYS.forEach((key) => {
-        localStorage.setItem(key, JSON.stringify(persistedCart));
-    });
+    const serializedCart = JSON.stringify(persistedCart);
+
+    try {
+        localStorage.setItem(CART_STORAGE_KEY, serializedCart);
+        LEGACY_CART_STORAGE_KEYS.forEach((key) => {
+            localStorage.setItem(key, serializedCart);
+        });
+    } catch (error) {
+        if (!isQuotaExceededError(error)) {
+            throw error;
+        }
+
+        const minimalCart = JSON.stringify(persistedCart.map((item) => ({
+            id: item.id,
+            nome: item.nome,
+            preco: item.preco,
+            quantity: item.quantity,
+            customized: item.customized,
+            designId: item.designId,
+            baseId: item.baseId,
+            baseNome: item.baseNome,
+            basePrecoExtra: item.basePrecoExtra
+        })));
+
+        localStorage.removeItem(CART_STORAGE_KEY);
+        LEGACY_CART_STORAGE_KEYS.forEach((key) => localStorage.removeItem(key));
+        localStorage.setItem(CART_STORAGE_KEY, minimalCart);
+        LEGACY_CART_STORAGE_KEYS.forEach((key) => {
+            localStorage.setItem(key, minimalCart);
+        });
+    }
 
     if (window.CartAssetStore?.cleanupUnusedDesigns) {
         const activeDesignIds = cart
