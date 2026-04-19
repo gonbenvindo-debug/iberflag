@@ -46,12 +46,20 @@ function restoreContactButton(button, previousHtml) {
 
 function buildContactPayload(form) {
     const formData = new FormData(form);
+    const nome = String(formData.get('nome') || formData.get('nome_completo') || formData.get('name') || '').trim();
+    const email = String(formData.get('email') || formData.get('contact_email') || '').trim();
+    const telefone = String(formData.get('telefone') || formData.get('phone') || formData.get('telemovel') || '').trim();
+    const assunto = String(formData.get('assunto') || formData.get('subject') || formData.get('produto') || formData.get('product') || '').trim();
+    const mensagem = String(formData.get('mensagem') || formData.get('message') || formData.get('descricao') || '').trim();
+
     return {
-        nome: String(formData.get('nome') || '').trim(),
-        email: String(formData.get('email') || '').trim(),
-        telefone: String(formData.get('telefone') || '').trim(),
-        assunto: String(formData.get('assunto') || '').trim(),
-        mensagem: String(formData.get('mensagem') || '').trim(),
+        nome,
+        email,
+        telefone,
+        assunto,
+        mensagem,
+        subject: assunto,
+        message: mensagem,
         source: normalizeContactSource(form),
         pageUrl: window.location.href,
         pagePath: window.location.pathname
@@ -73,6 +81,9 @@ async function submitContactForm(form) {
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
+            if (Array.isArray(payload.missingFields) && payload.missingFields.length > 0) {
+                throw new Error(`Campos em falta: ${payload.missingFields.join(', ')}.`);
+            }
             throw new Error(payload.message || 'Nao foi possivel enviar a mensagem.');
         }
 

@@ -21,6 +21,14 @@ function normalizeMessage(value) {
     return String(value ?? '').trim().replace(/\r\n/g, '\n');
 }
 
+function pickFirstNonEmpty(...values) {
+    for (const value of values) {
+        const normalized = normalizeText(value);
+        if (normalized) return normalized;
+    }
+    return '';
+}
+
 async function readContactPayload(req) {
     const contentType = String(req?.headers?.['content-type'] || '').toLowerCase();
     if (contentType.includes('application/json')) {
@@ -130,18 +138,27 @@ module.exports = async function contactHandler(req, res) {
         return;
     }
 
-    const nome = normalizeText(payload.nome);
-    const email = normalizeText(payload.email);
-    const telefone = normalizeText(payload.telefone);
-    const assunto = normalizeText(payload.assunto);
-    const mensagem = normalizeMessage(payload.mensagem);
+    const nome = pickFirstNonEmpty(payload.nome, payload.nome_completo, payload.name);
+    const email = pickFirstNonEmpty(payload.email, payload.contact_email, payload.replyTo);
+    const telefone = pickFirstNonEmpty(payload.telefone, payload.phone, payload.telemovel, payload.telemóvel);
+    const assunto = pickFirstNonEmpty(payload.assunto, payload.subject, payload.produto, payload.product, payload.tema);
+    const mensagem = normalizeMessage(payload.mensagem || payload.message || payload.descricao || payload.texto);
     const source = normalizeText(payload.source || payload.origem || payload.pagePath || 'contact-form');
     const pageUrl = normalizeText(payload.pageUrl || payload.page || '');
 
-    if (nome.length < 2 || email.length < 5 || !isValidEmail(email) || assunto.length < 2 || mensagem.length < 10) {
+    const missingFields = [];
+    if (nome.length < 2) missingFields.push('nome');
+    if (email.length < 5 || !isValidEmail(email)) missingFields.push('email');
+    if (assunto.length < 2) missingFields.push('assunto');
+    if (mensagem.length < 10) missingFields.push('mensagem');
+
+    if (missingFields.length > 0) {
         sendJson(res, 400, {
             error: 'INVALID_CONTACT_PAYLOAD',
-            message: 'Preencha o nome, email, assunto e mensagem antes de enviar.'
+            message: missingFields.length === 1
+                ? `Preencha o campo ${missingFields[0]} antes de enviar.`
+                : `Preencha os campos ${missingFields.join(', ')} antes de enviar.`,
+            missingFields
         });
         return;
     }
