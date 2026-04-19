@@ -338,17 +338,12 @@ Object.assign(DesignEditor.prototype, {
     },
 
     updateCartBaseStepCopy() {
-        const titleEl = document.querySelector('#cart-step-pane-2 h3');
         const descriptionEl = document.querySelector('#cart-step-pane-2 p:not(#cart-base-empty)');
         const labelEl = document.getElementById('checkout-step-2-label');
         const emptyState = document.getElementById('cart-base-empty');
 
         if (labelEl) {
             labelEl.textContent = 'Escolher base';
-        }
-
-        if (titleEl) {
-            titleEl.textContent = 'Escolher base';
         }
 
         if (descriptionEl) {
