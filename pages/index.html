@@ -81,13 +81,13 @@
                     </button>
                 </div>
                 <!-- Mobile Menu Button -->
-                <div class="md:hidden flex items-center gap-2">
-                    <button id="cart-btn-mobile" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
+                <div class="mobile-header-actions md:hidden flex items-center gap-2">
+                    <a id="cart-btn-mobile" href="/checkout" onclick="openCart(event)" aria-expanded="false" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
                         <i data-lucide="shopping-cart" class="w-5 h-5" aria-hidden="true"></i>
                         <span id="cart-count-mobile"
                             class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
-                    </button>
-                    <button id="mobile-menu-btn" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
+                    </a>
+                    <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu(event)" aria-expanded="false" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
                         <i data-lucide="menu" class="w-6 h-6" aria-hidden="true"></i>
                     </button>
                 </div>
@@ -334,7 +334,7 @@
                             <span>Resposta comercial rápida</span>
                         </div>
                     </div>
-                    <form class="homepage-inline-form" action="/contacto" method="get">
+                    <form class="homepage-inline-form" action="/api/contact" method="post" data-contact-form data-contact-source="homepage">
                         <div class="homepage-form-grid">
                             <label class="homepage-field">
                                 <span>Nome</span>
@@ -447,6 +447,7 @@
                     <p>O seu carrinho está vazio</p>
                     <span id="cart-total">0.00€</span>
     -->
+    <script src="/assets/js/pages/contacto.js?v=20260419a"></script>
     <script>
         lucide.createIcons();
     </script>

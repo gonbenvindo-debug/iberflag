@@ -3447,6 +3447,21 @@ footer.bg-gray-900 .brand-logo-footer,
     background: transparent !important;
 }
 
+footer.bg-gray-900 .brand-logo-footer[src*="logo-completo.svg"],
+.checkout-footer .brand-logo-footer[src*="logo-completo.svg"] {
+    filter: brightness(0) invert(1);
+}
+
+footer.bg-gray-900 .brand-logo-badge img[src*="logo-completo.svg"],
+.checkout-footer .brand-logo-badge img[src*="logo-completo.svg"] {
+    filter: brightness(0) invert(1);
+}
+
+footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
+.checkout-footer .brand-logo-footer[src*="logo-minimalista-white.svg"] {
+    filter: none;
+}
+
 .text-blue-100,
 .text-blue-600,
 .text-blue-700,
