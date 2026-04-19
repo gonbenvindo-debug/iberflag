@@ -13,6 +13,36 @@ Object.assign(DesignEditor.prototype, {
         return ['triangle', 'diamond', 'star', 'hexagon', 'arrow'].includes(normalized);
     },
 
+    getUniqueElementId(baseId = null) {
+        const existingIds = new Set(
+            (this.elements || [])
+                .map((elementData) => String(elementData?.id || '').trim())
+                .filter(Boolean)
+        );
+
+        const sanitize = (value) => String(value || '')
+            .trim()
+            .replace(/[^a-zA-Z0-9_-]+/g, '-')
+            .replace(/-+/g, '-')
+            .replace(/^-|-$/g, '');
+
+        const rawBase = sanitize(baseId);
+        const prefix = rawBase || `element-${Date.now()}`;
+
+        if (!existingIds.has(prefix)) {
+            return prefix;
+        }
+
+        let suffix = 2;
+        let candidate = `${prefix}-${suffix}`;
+        while (existingIds.has(candidate)) {
+            suffix += 1;
+            candidate = `${prefix}-${suffix}`;
+        }
+
+        return candidate;
+    },
+
     syncTextMetrics(elementData, options = {}) {
         if (!elementData?.element || elementData.type !== 'text') {
             return null;
@@ -190,8 +220,9 @@ Object.assign(DesignEditor.prototype, {
         if (tagName === 'line') shapeType = node.dataset.shapeType || 'line';
         if (tagName === 'path') shapeType = node.dataset.shapeType || 'path';
 
+        const rawId = customId ?? node.dataset.elementId ?? node.getAttribute?.('id') ?? null;
         const data = {
-            id: String(customId ?? node.dataset.elementId ?? (Date.now() + Math.random())),
+            id: this.getUniqueElementId(rawId),
             element: node,
             type,
             shapeType,

@@ -262,6 +262,7 @@ Object.assign(DesignEditor.prototype, {
         
         // Update properties panel
         this.updatePropertiesPanel(elementData);
+        this.updateLayers?.();
 
         // Bring attention to properties automatically.
         this.focusPropertiesPanel();

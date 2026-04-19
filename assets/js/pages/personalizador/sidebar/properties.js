@@ -745,6 +745,10 @@ Object.assign(DesignEditor.prototype, {
         if (!this.selectedElement) return;
 
         const clone = this.selectedElement.element.cloneNode(true);
+        clone.removeAttribute('id');
+        if (clone.dataset) {
+            delete clone.dataset.elementId;
+        }
         const clonedData = this.buildElementDataFromNode(clone);
         const offset = 20;
 
@@ -1260,7 +1264,7 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const selectedId = this.selectedElement ? String(this.selectedElement.id) : null;
+        const selectedIndex = this.selectedElement ? this.elements.indexOf(this.selectedElement) : -1;
         const labelCounters = new Map();
 
         const getLayerLabel = (elementData) => {
@@ -1276,7 +1280,7 @@ Object.assign(DesignEditor.prototype, {
             .reverse();
 
         layersList.innerHTML = orderedLayers.map(({ el, index }, visualIndex) => `
-            <div class="layer-item ${selectedId === String(el.id) ? 'is-selected' : ''}"
+            <div class="layer-item ${selectedIndex === index ? 'is-selected' : ''}"
                  data-layer-index="${index}"
                  data-layer-visual-index="${visualIndex}"
                  data-layer-id="${String(el.id)}"
@@ -1301,8 +1305,9 @@ Object.assign(DesignEditor.prototype, {
         layersList.querySelectorAll('.layer-item').forEach((item) => {
             item.addEventListener('click', (event) => {
                 if (event.target.closest('button')) return;
-                const id = item.dataset.layerId;
-                this.selectElementById(id);
+                const index = Number(item.dataset.layerIndex);
+                if (!Number.isInteger(index)) return;
+                this.selectElementByIndex(index);
             });
 
             item.addEventListener('dragstart', (event) => {
