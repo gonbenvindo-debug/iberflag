@@ -12,6 +12,21 @@ function normalizeContactSource(form) {
     ).trim();
 }
 
+function readFormField(form, ...names) {
+    for (const name of names) {
+        const safeName = String(name).replace(/"/g, '\\"');
+        const element = form?.elements?.namedItem?.(name) || form?.querySelector?.(`[name="${safeName}"]`);
+        if (!element) continue;
+
+        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
+            const value = String(element.value || '').trim();
+            if (value) return value;
+        }
+    }
+
+    return '';
+}
+
 function getContactSubmitButton(form) {
     return form?.querySelector('button[type="submit"]');
 }
@@ -45,12 +60,11 @@ function restoreContactButton(button, previousHtml) {
 }
 
 function buildContactPayload(form) {
-    const formData = new FormData(form);
-    const nome = String(formData.get('nome') || formData.get('nome_completo') || formData.get('name') || '').trim();
-    const email = String(formData.get('email') || formData.get('contact_email') || '').trim();
-    const telefone = String(formData.get('telefone') || formData.get('phone') || formData.get('telemovel') || '').trim();
-    const assunto = String(formData.get('assunto') || formData.get('subject') || formData.get('produto') || formData.get('product') || '').trim();
-    const mensagem = String(formData.get('mensagem') || formData.get('message') || formData.get('descricao') || '').trim();
+    const nome = readFormField(form, 'nome', 'nome_completo', 'name');
+    const email = readFormField(form, 'email', 'contact_email');
+    const telefone = readFormField(form, 'telefone', 'phone', 'telemovel', 'telemóvel');
+    const assunto = readFormField(form, 'assunto', 'subject', 'produto', 'product', 'tema');
+    const mensagem = readFormField(form, 'mensagem', 'message', 'descricao', 'texto');
 
     return {
         nome,
