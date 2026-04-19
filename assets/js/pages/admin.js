@@ -341,6 +341,7 @@ document.addEventListener('DOMContentLoaded', () => {
 // -------- End Authentication --------
 let currentTab = 'dashboard';
 let currentProductId = null;
+let currentProductCategoria = null;
 let currentBaseId = null;
 let currentContactId = null;
 let currentOrderId = null;
@@ -394,6 +395,21 @@ const adminModals = [productModal, baseModal, contactModal, clientModal, orderMo
 
 const productBasesAssignments = document.getElementById('product-bases-assignments');
 let baseCatalogCache = [];
+
+const productCategoriaSelect = document.getElementById('product-categoria');
+if (productCategoriaSelect) {
+    productCategoriaSelect.addEventListener('change', () => {
+        currentProductCategoria = productCategoriaSelect.value || null;
+        if (!productBasesAssignments) return;
+
+        const selectedIds = Array.from(productBasesAssignments.querySelectorAll('.product-base-checkbox:checked'))
+            .map((checkbox) => Number(checkbox.value))
+            .filter(Number.isFinite);
+        const defaultSelected = productBasesAssignments.querySelector('.product-base-default-radio:checked');
+        const defaultId = defaultSelected ? Number(defaultSelected.value) : null;
+        renderProductBaseAssignments(selectedIds, defaultId, currentProductCategoria);
+    });
+}
 
 function updateModalBodyLock() {
     const hasOpenModal = adminModals.some((modal) => !modal.classList.contains('hidden'));
@@ -497,8 +513,8 @@ async function loadTabData(tabName) {
         case 'bases':
             await loadBases();
             break;
-        case 'reforcos':
-            await loadReinforcements();
+        case 'bases-flybanner':
+            await loadFlybannerBases();
             break;
         case 'encomendas':
             await loadOrders();
@@ -800,14 +816,20 @@ async function loadBaseCatalog(force = false) {
     return baseCatalogCache;
 }
 
-function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null) {
+function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null, productCategoria = currentProductCategoria) {
     if (!productBasesAssignments) return;
 
     const assignedSet = new Set((assignedBaseIds || []).map((id) => Number(id)));
-    const allBases = Array.isArray(baseCatalogCache) ? baseCatalogCache : [];
+    const allBases = (Array.isArray(baseCatalogCache) ? baseCatalogCache : []).filter((base) => (
+        isFlybannerProductCategory(productCategoria)
+            ? isFlybannerBase(base)
+            : !isFlybannerBase(base)
+    ));
 
     if (allBases.length === 0) {
-        productBasesAssignments.innerHTML = '<p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>';
+        productBasesAssignments.innerHTML = isFlybannerProductCategory(productCategoria)
+            ? '<p class="text-sm text-gray-500">Sem bases flybanner disponíveis. Crie bases no separador "Bases Flybanner".</p>'
+            : '<p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>';
         return;
     }
 
@@ -932,9 +954,27 @@ async function saveProductBaseAssignments(productId) {
     }
 }
 
-function isFlybannerReinforcementBase(base) {
+const FLYBANNER_BASE_SLUGS = new Set([
+    'flybanner-cruzeta-com-flutuador',
+    'flybanner-base-parede',
+    'flybanner-base-parafuso-roscado',
+    'flybanner-base-pica',
+    'flybanner-base-hercules-12kg',
+    'flybanner-base-agua',
+    'flybanner-base-deluxe-4kg',
+    'flybanner-base-universal-com-abracadeiras',
+    'flybanner-base-distancia-entre-eixos-do-carro',
+    'flybanner-base-para-tenda'
+]);
+
+function isFlybannerBase(base) {
     const slug = String(base?.slug || '').trim().toLowerCase();
-    return slug === 'flybanner-com-reforco' || slug === 'flybanner-sem-reforco';
+    return FLYBANNER_BASE_SLUGS.has(slug);
+}
+
+function isFlybannerProductCategory(category) {
+    const normalized = String(category || '').trim().toLowerCase();
+    return normalized === 'fly-banner' || normalized === 'flybanners';
 }
 
 function renderBasesTable(tbodyId, items = [], emptyMessage = 'Sem registos.', options = {}) {
@@ -946,12 +986,12 @@ function renderBasesTable(tbodyId, items = [], emptyMessage = 'Sem registos.', o
         return;
     }
 
-    const markReinforcement = Boolean(options.markReinforcement);
+    const markFlybanner = Boolean(options.markFlybanner);
 
     tbody.innerHTML = items.map((base) => {
-        const isReinforcement = isFlybannerReinforcementBase(base);
-        const nameBadge = markReinforcement && isReinforcement
-            ? '<span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Reforço</span>'
+        const isFlybanner = isFlybannerBase(base);
+        const nameBadge = markFlybanner && isFlybanner
+            ? '<span class="ml-2 inline-flex items-center rounded-full bg-blue-100 px-2 py-0.5 text-[11px] font-semibold text-blue-700">Flybanner</span>'
             : '';
 
         return `
@@ -1109,6 +1149,7 @@ async function loadProducts() {
 if (addProductBtn) {
     addProductBtn.addEventListener('click', async () => {
         currentProductId = null;
+        currentProductCategoria = document.getElementById('product-categoria')?.value || null;
         document.getElementById('modal-title').textContent = 'Adicionar Produto';
         productForm.reset();
         document.getElementById('product-ativo').checked = true;
@@ -1121,10 +1162,10 @@ if (addProductBtn) {
         }
         try {
             await loadBaseCatalog(true);
-            renderProductBaseAssignments([], null);
+            renderProductBaseAssignments([], null, currentProductCategoria);
         } catch (error) {
             console.error('Erro ao carregar bases para produto:', error);
-            renderProductBaseAssignments([], null);
+            renderProductBaseAssignments([], null, currentProductCategoria);
         }
         openModal(productModal);
     });
@@ -1437,6 +1478,7 @@ async function editProduct(id) {
         if (error) throw error;
 
         currentProductId = id;
+        currentProductCategoria = data.categoria || null;
 
         const el = (elId) => document.getElementById(elId);
 
@@ -1477,17 +1519,17 @@ async function editProduct(id) {
             console.error('Modal product-modal nao encontrado no DOM');
         }
 
-        renderProductBaseAssignments([], null);
+        renderProductBaseAssignments([], null, currentProductCategoria);
         currentProductTemplates = [];
         renderProductTemplatesAssignments();
         renderAvailableTemplatesSelect();
 
         await loadBaseCatalog(true).then(async () => {
             const baseAssignments = await loadProductBaseAssignments(id);
-            renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId);
+            renderProductBaseAssignments(baseAssignments.ids, baseAssignments.defaultId, currentProductCategoria);
         }).catch((error) => {
             console.error('Erro ao carregar bases do produto:', error);
-            renderProductBaseAssignments([], null);
+            renderProductBaseAssignments([], null, currentProductCategoria);
         });
 
         await loadTemplatesCatalog().then(async () => {
@@ -1517,7 +1559,7 @@ async function editProduct(id) {
 async function loadBases() {
     try {
         const bases = await loadBaseCatalog(true);
-        const generalBases = bases.filter((base) => !isFlybannerReinforcementBase(base));
+        const generalBases = bases.filter((base) => !isFlybannerBase(base));
         renderBasesTable('bases-tbody', generalBases, 'Nenhuma base configurada');
     } catch (error) {
         console.error('Erro ao carregar bases:', error);
@@ -1530,19 +1572,19 @@ async function loadBases() {
     }
 }
 
-async function loadReinforcements() {
+async function loadFlybannerBases() {
     try {
         const bases = await loadBaseCatalog(true);
-        const flybannerBases = bases.filter((base) => isFlybannerReinforcementBase(base));
-        renderBasesTable('flybanner-reinforcements-tbody', flybannerBases, 'Nenhum reforço encontrado', { markReinforcement: true });
+        const flybannerBases = bases.filter((base) => isFlybannerBase(base));
+        renderBasesTable('flybanner-bases-tbody', flybannerBases, 'Nenhuma base flybanner encontrada', { markFlybanner: true });
     } catch (error) {
-        console.error('Erro ao carregar reforços:', error);
+        console.error('Erro ao carregar bases flybanner:', error);
         if (isMissingBasesSchema(error)) {
-            showToast('Aplique os SQL de variantes para ativar os reforços.', 'warning');
+            showToast('Aplique os SQL de variantes para ativar as bases flybanner.', 'warning');
         } else {
-            showToast('Erro ao carregar reforços', 'error');
+            showToast('Erro ao carregar bases flybanner', 'error');
         }
-        renderBasesTable('flybanner-reinforcements-tbody', [], 'Nenhum reforço encontrado', { markReinforcement: true });
+        renderBasesTable('flybanner-bases-tbody', [], 'Nenhuma base flybanner encontrada', { markFlybanner: true });
     }
 }
 
