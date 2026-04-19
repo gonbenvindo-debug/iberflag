@@ -342,26 +342,21 @@ Object.assign(DesignEditor.prototype, {
         const descriptionEl = document.querySelector('#cart-step-pane-2 p:not(#cart-base-empty)');
         const labelEl = document.getElementById('checkout-step-2-label');
         const emptyState = document.getElementById('cart-base-empty');
-        const reinforcementFlow = this.isReinforcementOptionFlow();
 
         if (labelEl) {
-            labelEl.textContent = reinforcementFlow ? 'Escolher reforço' : 'Escolher base';
+            labelEl.textContent = 'Escolher base';
         }
 
         if (titleEl) {
-            titleEl.textContent = reinforcementFlow ? 'Escolher reforço' : 'Escolher base de fixacao';
+            titleEl.textContent = 'Escolher base';
         }
 
         if (descriptionEl) {
-            descriptionEl.textContent = reinforcementFlow
-                ? 'Seleciona a opcao de reforço para este flybanner antes de continuar.'
-                : 'Seleciona uma base para este design.';
+            descriptionEl.textContent = 'Seleciona uma base para este design.';
         }
 
         if (emptyState) {
-            emptyState.textContent = reinforcementFlow
-                ? 'Este flybanner ainda nao tem opcoes de reforço configuradas.'
-                : 'Este produto nao tem bases configuradas. O design sera adicionado sem base.';
+            emptyState.textContent = 'Este produto nao tem bases configuradas. O design sera adicionado sem base.';
         }
     },
 
