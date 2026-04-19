@@ -208,14 +208,14 @@
       </a>
       <div class="hidden md:flex space-x-6 items-center">
         <a href="/" class="nav-link">Início</a><a href="/produtos" class="nav-link text-blue-600">Produtos</a><a href="/sobre" class="nav-link">Sobre Nós</a><a href="/faq" class="nav-link">FAQ</a><a href="/contacto" class="nav-link">Contacto</a>
-        <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+        <button id="cart-btn" type="button" aria-expanded="false" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
           <i data-lucide="shopping-cart" class="w-4 h-4"></i>
           <span class="hidden sm:inline">Carrinho</span>
           <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
         </button>
       </div>
       <div class="mobile-header-actions md:hidden flex items-center gap-2">
-        <a id="cart-btn-mobile" href="/checkout" onclick="openCart(event)" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
+        <a id="cart-btn-mobile" href="/checkout" onclick="openCart(event)" aria-expanded="false" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
           <i data-lucide="shopping-cart" class="w-5 h-5"></i>
           <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
         </a>
