@@ -251,14 +251,14 @@ function renderCartItemsList() {
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
-            <div class="flex items-start gap-3">
+            <div class="cart-item-row flex items-start gap-3">
                 <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
                     </div>
                 </a>
                 <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex-1">
-                    <div class="flex items-start justify-between gap-2">
+                    <div class="cart-item-top-row flex items-start justify-between gap-2">
                         <div class="min-w-0">
                             <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
                             <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
@@ -270,7 +270,7 @@ function renderCartItemsList() {
                     <div class="mt-2 flex items-center gap-2">
                         ${item.quantity > 1 ? `<span class="text-xs text-gray-500">Qtd. ${item.quantity}</span>` : ''}
                     </div>
-                    <div class="mt-3 flex flex-wrap items-center gap-2">
+                    <div class="cart-item-actions mt-3 flex flex-wrap items-center gap-2">
                         <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                             <i data-lucide="${item.customized ? 'edit-3' : 'palette'}" class="w-3.5 h-3.5"></i>
                             ${item.customized ? 'Editar' : 'Personalizar'}
@@ -294,21 +294,11 @@ function renderCartItemsList() {
 function syncCartItemPreviewHeights() {
     if (!cartItemsContainer) return;
 
-    const isSmallScreen = window.matchMedia('(max-width: 767px)').matches;
-
     const cards = cartItemsContainer.querySelectorAll('[data-cart-item-index]');
     cards.forEach((card) => {
         const details = card.querySelector('[data-cart-details]');
         const previewLink = card.querySelector('[data-cart-preview-link]');
         if (!(details instanceof Element) || !(previewLink instanceof HTMLElement)) {
-            return;
-        }
-
-        if (isSmallScreen) {
-            previewLink.style.height = '4.5rem';
-            previewLink.style.minHeight = '4.5rem';
-            previewLink.style.maxWidth = '4.5rem';
-            previewLink.style.width = '4.5rem';
             return;
         }
 
@@ -1041,17 +1031,21 @@ function openCart(event) {
 
     if (!cartSidebar) return;
 
-    cartSidebar.classList.remove('translate-x-full');
-    cartSidebar.setAttribute('aria-hidden', 'false');
-
     if (cartOverlay) {
         cartOverlay.classList.remove('hidden');
     }
 
+    cartSidebar.setAttribute('aria-hidden', 'false');
     if (cartBtn) cartBtn.setAttribute('aria-expanded', 'true');
     if (cartBtnMobile) cartBtnMobile.setAttribute('aria-expanded', 'true');
 
     document.body.style.overflow = 'hidden';
+
+    // Force the browser to paint the closed state before animating open.
+    void cartSidebar.getBoundingClientRect();
+    requestAnimationFrame(() => {
+        cartSidebar.classList.remove('translate-x-full');
+    });
 }
 
 function closeCart() {
