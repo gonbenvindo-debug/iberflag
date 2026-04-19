@@ -1016,6 +1016,10 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
+        if (target.closest('#layers-list, .layer-item, [data-layer-index]')) {
+            return;
+        }
+
         // Keep current selection when the user clicks actionable controls.
         if (target.closest('button, input, select, textarea, label, a')) {
             return;
