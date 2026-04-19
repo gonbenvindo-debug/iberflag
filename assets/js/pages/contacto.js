@@ -12,16 +12,31 @@ function normalizeContactSource(form) {
     ).trim();
 }
 
-function readFormField(form, ...names) {
-    for (const name of names) {
-        const safeName = String(name).replace(/"/g, '\\"');
-        const element = form?.elements?.namedItem?.(name) || form?.querySelector?.(`[name="${safeName}"]`);
-        if (!element) continue;
+function normalizeFieldValue(value) {
+    return String(value ?? '').trim();
+}
 
-        if (element instanceof HTMLInputElement || element instanceof HTMLTextAreaElement || element instanceof HTMLSelectElement) {
-            const value = String(element.value || '').trim();
-            if (value) return value;
-        }
+function readFormField(form, ...names) {
+    if (!(form instanceof HTMLFormElement)) return '';
+
+    const formData = new FormData(form);
+
+    for (const name of names) {
+        const candidate = normalizeFieldValue(name);
+        if (!candidate) continue;
+
+        const element = form.querySelector(
+            `input[name="${candidate}"], textarea[name="${candidate}"], select[name="${candidate}"]`
+        );
+        const directValue = normalizeFieldValue(element?.value);
+        if (directValue) return directValue;
+
+        const namedItem = form.elements?.namedItem?.(candidate);
+        const namedValue = normalizeFieldValue(namedItem?.value);
+        if (namedValue) return namedValue;
+
+        const formDataValue = normalizeFieldValue(formData.get(candidate));
+        if (formDataValue) return formDataValue;
     }
 
     return '';
