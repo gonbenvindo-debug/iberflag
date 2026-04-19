@@ -61,10 +61,27 @@ function buildRecipient() {
     const identity = getMailIdentity();
     return normalizeText(
         getEnvValue(['SUPPORT_EMAIL', 'CONTACT_EMAIL', 'MAIL_TO_EMAIL'])
+        || getEnvValue(['ADMIN_EMAIL'])
         || getEnvValue(['RESEND_REPLY_TO', 'MAIL_REPLY_TO', 'SMTP_REPLY_TO'])
         || identity.fromEmail
         || 'geral@iberflag.com'
     );
+}
+
+function buildRecipientList() {
+    const identity = getMailIdentity();
+    const rawRecipients = [
+        getEnvValue(['SUPPORT_EMAIL', 'CONTACT_EMAIL', 'MAIL_TO_EMAIL']),
+        getEnvValue(['ADMIN_EMAIL']),
+        getEnvValue(['RESEND_REPLY_TO', 'MAIL_REPLY_TO', 'SMTP_REPLY_TO']),
+        identity.fromEmail
+    ];
+
+    const recipients = rawRecipients
+        .map((value) => normalizeText(value))
+        .filter((value) => value && /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value));
+
+    return [...new Set(recipients)];
 }
 
 function buildSubject(subject) {
@@ -163,7 +180,8 @@ module.exports = async function contactHandler(req, res) {
         return;
     }
 
-    const recipient = buildRecipient();
+    const recipients = buildRecipientList();
+    const recipient = recipients[0] || buildRecipient();
     const subject = buildSubject(assunto);
     const html = buildHtmlBody({ nome, email, telefone, assunto, mensagem, source, pageUrl });
     const text = buildTextBody({ nome, email, telefone, assunto, mensagem, source, pageUrl });
@@ -198,7 +216,7 @@ module.exports = async function contactHandler(req, res) {
 
     try {
         await sendTemplateEmail({
-            to: recipient,
+            to: recipients.length > 0 ? recipients : recipient,
             subject,
             html,
             text,
