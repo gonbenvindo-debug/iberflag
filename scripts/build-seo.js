@@ -557,18 +557,18 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </a>
             </div>
             <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opções, envie o design e finalize a encomenda no passo seguinte.</p>
-            <div class="mt-5 grid gap-3 sm:grid-cols-3">
-              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="rounded-[1.25rem] border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900">
-                <strong class="block text-sm font-semibold text-slate-900">Envios</strong>
-                <span class="mt-1 block leading-6">Prazos, expedição e entrega.</span>
+            <div class="mt-5 grid gap-2 sm:grid-cols-3">
+              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+                <span>Envios</span>
+                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
-              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="rounded-[1.25rem] border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900">
-                <strong class="block text-sm font-semibold text-slate-900">FAQ</strong>
-                <span class="mt-1 block leading-6">Dúvidas sobre produção e compra.</span>
+              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+                <span>FAQ</span>
+                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
-              <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="rounded-[1.25rem] border border-slate-200 bg-white p-4 text-sm text-slate-600 shadow-sm transition hover:-translate-y-0.5 hover:border-slate-300 hover:text-slate-900">
-                <strong class="block text-sm font-semibold text-slate-900">Pedir apoio</strong>
-                <span class="mt-1 block leading-6">Falar com a equipa comercial.</span>
+              <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-4 py-3 text-sm font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950">
+                <span>Pedir apoio</span>
+                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
               </a>
             </div>
           </div>
