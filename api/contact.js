@@ -150,7 +150,7 @@ module.exports = async function contactHandler(req, res) {
     if (nome.length < 2) missingFields.push('nome');
     if (email.length < 5 || !isValidEmail(email)) missingFields.push('email');
     if (assunto.length < 2) missingFields.push('assunto');
-    if (mensagem.length < 10) missingFields.push('mensagem');
+    if (mensagem.length < 1) missingFields.push('mensagem');
 
     if (missingFields.length > 0) {
         sendJson(res, 400, {
