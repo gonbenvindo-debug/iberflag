@@ -236,7 +236,7 @@
         }
         if (modal.body) {
             modal.body.innerHTML = `
-                <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+                <div class="flybanner-selection-grid" style="display:grid; gap:1rem;">
                     ${Array.from({ length: 2 }).map(() => `
                         <div aria-hidden="true" style="border-radius:22px; border:1px solid rgba(148,163,184,0.18); padding:1rem; background:#ffffff;">
                             <div style="height:220px; border-radius:18px; background:linear-gradient(90deg, #e2e8f0 25%, #f8fafc 37%, #e2e8f0 63%); background-size:400% 100%; animation: flybanner-skeleton 1.4s ease infinite;"></div>
@@ -301,7 +301,7 @@
         }
         if (modal.body) {
             modal.body.innerHTML = `
-                <div style="display:grid; gap:1rem; grid-template-columns:repeat(auto-fit,minmax(240px,1fr));">
+                <div class="flybanner-selection-grid" style="display:grid; gap:1rem;">
                     ${options.map((base) => buildBaseOptionMarkup(base, nextUrl)).join('')}
                 </div>
             `;
