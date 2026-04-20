@@ -561,7 +561,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </a>
             </div>
             <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opções, envie o design e finalize a encomenda no passo seguinte.</p>
-            <div class="mt-5 grid grid-cols-3 gap-2">
+            <div class="product-quick-links mt-5 grid grid-cols-3 gap-2">
               <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
                 <span>Envios</span>
                 <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
