@@ -489,7 +489,7 @@ Object.assign(DesignEditor.prototype, {
             const extra = Number(base.preco_extra_aplicado || 0);
             const baseName = escapeHtml(base.base_nome || 'Base');
             const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId}/640/400`);
-            const availabilityNote = escapeHtml(base.base_nota_indisponibilidade || 'Indisponivel de momento');
+            const availabilityNote = escapeHtml(base.base_nota_indisponibilidade || 'Indisponível');
 
             return `
                 <button type="button" class="cart-base-card ${selected ? 'selected' : ''} ${isAvailable ? '' : 'is-unavailable'}" data-base-id="${baseId}" ${isAvailable ? '' : 'disabled aria-disabled="true"'}>

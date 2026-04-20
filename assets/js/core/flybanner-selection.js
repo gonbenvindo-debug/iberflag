@@ -83,7 +83,7 @@
                 preco_extra_aplicado: 0,
                 is_default: false,
                 base_disponivel: false,
-                base_nota_indisponibilidade: 'Indisponível de momento'
+                base_nota_indisponibilidade: 'Indisponível'
             }
         ];
     }
@@ -169,7 +169,7 @@
         const isAvailable = base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false';
         const extra = Number(base?.preco_extra_aplicado || 0);
         const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluído';
-        const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponível de momento');
+        const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponível');
         const badgeLabel = isAvailable ? priceLabel : note;
         const buttonStyles = isAvailable
             ? 'cursor:pointer; border:1px solid rgba(148,163,184,0.28); background:#ffffff;'
