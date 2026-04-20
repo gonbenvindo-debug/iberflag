@@ -198,13 +198,15 @@
                 data-flybanner-base-id="${baseId}"
                 data-next-url="${escapeHtmlLocal(nextUrl)}"
                 ${isAvailable ? '' : 'disabled aria-disabled="true"'}
-                style="display:flex; flex-direction:column; align-items:stretch; gap:0.9rem; width:100%; padding:1rem; border-radius:22px; text-align:left; transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; ${buttonStyles}">
-                <span style="display:flex; align-items:center; justify-content:center; min-height:220px; border-radius:18px; background:#ffffff; padding:1rem;">
-                    <img src="${imageUrl}" alt="${baseName}" style="display:block; max-width:100%; max-height:200px; object-fit:contain;">
-                </span>
-                <span style="display:flex; flex-direction:column; gap:0.4rem;">
-                    <span style="font-size:1.05rem; font-weight:700; line-height:1.3; color:#0f172a;">${baseName}</span>
-                    <span style="font-size:0.92rem; line-height:1.45; color:${isAvailable ? '#475569' : '#64748b'};">${isAvailable ? priceLabel : note}</span>
+                style="position:relative; display:block; width:100%; padding:0; border-radius:22px; overflow:hidden; text-align:left; transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; ${buttonStyles}">
+                <img
+                    src="${imageUrl}"
+                    alt="${baseName}"
+                    class="cart-base-card__image"
+                    style="display:block; width:100%; height:auto; object-fit:contain; background:#ffffff;">
+                <span class="cart-base-card__overlay" style="position:absolute; left:0; right:0; bottom:0; padding:0.8rem 0.9rem 0.85rem; background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 28%, rgba(255,255,255,0.98) 100%);">
+                    <span style="display:block; font-size:1.02rem; font-weight:700; line-height:1.25; color:#0f172a;">${baseName}</span>
+                    <span style="display:block; margin-top:0.2rem; font-size:0.9rem; line-height:1.35; color:${isAvailable ? '#475569' : '#64748b'};">${isAvailable ? priceLabel : note}</span>
                 </span>
             </button>
         `;
