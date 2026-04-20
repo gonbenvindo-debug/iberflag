@@ -188,6 +188,7 @@
         const extra = Number(base?.preco_extra_aplicado || 0);
         const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluido';
         const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponivel de momento');
+        const badgeLabel = isAvailable ? priceLabel : note;
         const buttonStyles = isAvailable
             ? 'cursor:pointer; border:1px solid rgba(148,163,184,0.28); background:#ffffff;'
             : 'cursor:not-allowed; border:1px solid rgba(148,163,184,0.2); background:#f8fafc; opacity:0.72;';
@@ -199,6 +200,7 @@
                 data-next-url="${escapeHtmlLocal(nextUrl)}"
                 ${isAvailable ? '' : 'disabled aria-disabled="true"'}
                 style="position:relative; display:block; width:100%; padding:0; border-radius:22px; overflow:hidden; text-align:left; transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; ${buttonStyles}">
+                <span class="cart-base-card__price-badge" style="position:absolute; top:0.75rem; right:0.75rem; z-index:2; display:inline-flex; align-items:center; justify-content:center; min-height:1.9rem; padding:0.35rem 0.7rem; border-radius:999px; background:${isAvailable ? '#ffffff' : '#e2e8f0'}; border:1px solid rgba(148,163,184,0.28); color:#0f172a; font-size:0.8rem; font-weight:700; letter-spacing:0.01em; box-shadow:0 10px 18px rgba(15,23,42,0.08);">${badgeLabel}</span>
                 <img
                     src="${imageUrl}"
                     alt="${baseName}"
@@ -206,7 +208,6 @@
                     style="display:block; width:100%; height:auto; object-fit:contain; background:#ffffff;">
                 <span class="cart-base-card__overlay" style="position:absolute; left:0; right:0; bottom:0; padding:0.8rem 0.9rem 0.85rem; background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 28%, rgba(255,255,255,0.98) 100%);">
                     <span style="display:block; font-size:1.02rem; font-weight:700; line-height:1.25; color:#0f172a;">${baseName}</span>
-                    <span style="display:block; margin-top:0.2rem; font-size:0.9rem; line-height:1.35; color:${isAvailable ? '#475569' : '#64748b'};">${isAvailable ? priceLabel : note}</span>
                 </span>
             </button>
         `;

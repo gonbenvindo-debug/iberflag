@@ -345,6 +345,13 @@ body {
     pointer-events: none;
 }
 
+.cart-base-card__price-badge {
+    max-width: calc(100% - 1.5rem);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
 .cart-base-card:hover:not(:disabled),
 .cart-base-card.selected {
     transform: translateY(-1px);
@@ -375,7 +382,7 @@ body {
     }
 
     .cart-base-card__overlay {
-        padding: 0.7rem 0.75rem 0.75rem;
+        padding: 0.65rem 0.7rem 0.7rem;
     }
 
     .cart-base-card__overlay > span:first-child {
@@ -383,8 +390,12 @@ body {
         line-height: 1.2 !important;
     }
 
-    .cart-base-card__overlay > span:last-child {
-        font-size: 0.84rem !important;
+    .cart-base-card__price-badge {
+        top: 0.55rem !important;
+        right: 0.55rem !important;
+        min-height: 1.65rem !important;
+        padding: 0.28rem 0.55rem !important;
+        font-size: 0.72rem !important;
     }
 
     .flybanner-selection-grid {
