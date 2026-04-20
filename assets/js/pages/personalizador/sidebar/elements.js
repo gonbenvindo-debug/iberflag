@@ -43,6 +43,30 @@ Object.assign(DesignEditor.prototype, {
         return candidate;
     },
 
+    getNextImageLayerLabel(baseLabel = 'Imagem') {
+        const normalizedBase = String(baseLabel || 'Imagem').trim() || 'Imagem';
+        this.imageLayerLabelCounters = this.imageLayerLabelCounters || new Map();
+        const nextCount = (Number(this.imageLayerLabelCounters.get(normalizedBase)) || 0) + 1;
+        this.imageLayerLabelCounters.set(normalizedBase, nextCount);
+        return `${normalizedBase} ${nextCount}`;
+    },
+
+    registerImageLayerLabel(label) {
+        const normalizedLabel = String(label || '').trim();
+        if (!normalizedLabel) return;
+
+        const match = normalizedLabel.match(/^(.*\D)\s+(\d+)$/);
+        if (!match) return;
+
+        const baseLabel = String(match[1] || '').trim();
+        const nextCount = Number.parseInt(match[2], 10);
+        if (!baseLabel || !Number.isFinite(nextCount)) return;
+
+        this.imageLayerLabelCounters = this.imageLayerLabelCounters || new Map();
+        const currentCount = Number(this.imageLayerLabelCounters.get(baseLabel)) || 0;
+        this.imageLayerLabelCounters.set(baseLabel, Math.max(currentCount, nextCount));
+    },
+
     syncTextMetrics(elementData, options = {}) {
         if (!elementData?.element || elementData.type !== 'text') {
             return null;
@@ -186,6 +210,7 @@ Object.assign(DesignEditor.prototype, {
 
         this.normalizeImageCropState?.(elementData);
         this.syncElementMetadata?.(elementData);
+        this.applyElementRotation?.(elementData, elementData.rotation || 0);
 
         return { x, y, width, height };
     },
@@ -274,6 +299,13 @@ Object.assign(DesignEditor.prototype, {
             data.src = node.getAttribute('href') || '';
             data.name = node.dataset.name || 'Imagem';
             data.imageKind = node.dataset.imageKind || 'image';
+            data.layerLabel = node.dataset.layerLabel || '';
+            if (!data.layerLabel) {
+                data.layerLabel = this.getNextImageLayerLabel(data.imageKind === 'qr' ? 'QR Code' : 'Imagem');
+                node.dataset.layerLabel = data.layerLabel;
+            } else {
+                this.registerImageLayerLabel(data.layerLabel);
+            }
             data.originalSrc = node.dataset.originalSrc || '';
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
@@ -386,6 +418,11 @@ Object.assign(DesignEditor.prototype, {
         if (elementData.type === 'image') {
             elementData.element.dataset.name = elementData.name || 'Imagem';
             elementData.element.dataset.imageKind = elementData.imageKind || 'image';
+            if (elementData.layerLabel) {
+                elementData.element.dataset.layerLabel = elementData.layerLabel;
+            } else {
+                delete elementData.element.dataset.layerLabel;
+            }
             if (elementData.objectFit) {
                 elementData.element.dataset.objectFit = String(elementData.objectFit).trim().toLowerCase();
             } else {

@@ -752,6 +752,7 @@ Object.assign(DesignEditor.prototype, {
         clone.removeAttribute('id');
         if (clone.dataset) {
             delete clone.dataset.elementId;
+            delete clone.dataset.layerLabel;
         }
         const clonedData = this.buildElementDataFromNode(clone);
         const offset = 20;
@@ -1272,6 +1273,10 @@ Object.assign(DesignEditor.prototype, {
         const labelCounters = new Map();
 
         const getLayerLabel = (elementData) => {
+            if (elementData?.type === 'image') {
+                return elementData.layerLabel || elementData.name || (elementData.imageKind === 'qr' ? 'QR Code' : 'Imagem');
+            }
+
             const baseLabel = this.getLayerBaseLabel(elementData);
             const key = baseLabel.toLowerCase();
             const nextCount = (labelCounters.get(key) || 0) + 1;

@@ -200,13 +200,13 @@
                                     </div>
                                     <div>
                                         <label class="form-label">Email *</label>
-                                        <input type="email" name="email" required class="form-input" autocomplete="email" placeholder="nome@empresa.com">
+                                        <input type="text" name="email" required class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label class="form-label">Telemovel / telefone *</label>
-                                        <input type="tel" name="telefone" required class="form-input" autocomplete="tel" placeholder="+351 912 345 678">
+                                        <input type="text" name="telefone" required class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
                                     </div>
                                 </div>
                             </div>
@@ -219,11 +219,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label class="form-label">Codigo postal *</label>
-                                        <input type="text" name="codigo_postal" required class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code">
+                                        <input type="text" name="codigo_postal" required class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
                                     </div>
                                     <div>
-                                        <label class="form-label">Cidade *</label>
-                                        <input type="text" name="cidade" required class="form-input" autocomplete="address-level2">
+                                        <label class="form-label">Cidade / distrito *</label>
+                                        <input type="text" name="cidade" required class="form-input" autocomplete="address-level2" list="portugal-cities" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Braga...">
                                     </div>
                                 </div>
                             </div>
@@ -239,6 +239,34 @@
                                 </div>
                             </div>
                         </form>
+                        <datalist id="portugal-cities">
+                            <option value="Lisboa"></option>
+                            <option value="Porto"></option>
+                            <option value="Braga"></option>
+                            <option value="Coimbra"></option>
+                            <option value="Setúbal"></option>
+                            <option value="Faro"></option>
+                            <option value="Aveiro"></option>
+                            <option value="Leiria"></option>
+                            <option value="Viseu"></option>
+                            <option value="Évora"></option>
+                            <option value="Beja"></option>
+                            <option value="Bragança"></option>
+                            <option value="Castelo Branco"></option>
+                            <option value="Guarda"></option>
+                            <option value="Santarém"></option>
+                            <option value="Portalegre"></option>
+                            <option value="Viana do Castelo"></option>
+                            <option value="Vila Real"></option>
+                            <option value="Cascais"></option>
+                            <option value="Sintra"></option>
+                            <option value="Matosinhos"></option>
+                            <option value="Vila Nova de Gaia"></option>
+                            <option value="Barcelos"></option>
+                            <option value="Funchal"></option>
+                            <option value="Ponta Delgada"></option>
+                            <option value="Angra do Heroísmo"></option>
+                        </datalist>
                     </div>
 
                     <div class="app-surface checkout-surface-card p-6 md:p-7">

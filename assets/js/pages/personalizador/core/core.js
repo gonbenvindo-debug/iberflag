@@ -19,6 +19,7 @@ class DesignEditor {
             this.canvas.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         }
         this.elements = [];
+        this.imageLayerLabelCounters = new Map();
         this.selectedElement = null;
         this.history = [];
         this.historyIndex = -1;

@@ -399,6 +399,34 @@ Object.assign(DesignEditor.prototype, {
         let cropLastTouchAt = 0;
         const cropIsRecentTouch = () => (Date.now() - cropLastTouchAt) < 700;
 
+        const updateSelectionState = (nextRect) => {
+            const state = this.uploadCropState;
+            if (!state?.imageRect) return;
+
+            const imageRect = state.imageRect;
+            const minSize = 36;
+            const boundedWidth = Math.max(minSize, Math.min(nextRect.width, imageRect.width));
+            const boundedHeight = Math.max(minSize, Math.min(nextRect.height, imageRect.height));
+            const boundedX = Math.max(imageRect.x, Math.min(nextRect.x, imageRect.x + imageRect.width - boundedWidth));
+            const boundedY = Math.max(imageRect.y, Math.min(nextRect.y, imageRect.y + imageRect.height - boundedHeight));
+
+            state.selectionRect = {
+                x: boundedX,
+                y: boundedY,
+                width: boundedWidth,
+                height: boundedHeight
+            };
+
+            state.selectionNormalized = {
+                x: (boundedX - imageRect.x) / imageRect.width,
+                y: (boundedY - imageRect.y) / imageRect.height,
+                width: boundedWidth / imageRect.width,
+                height: boundedHeight / imageRect.height
+            };
+
+            this.renderUploadCropSelection();
+        };
+
         const startPointer = (event) => {
             if (!this.uploadCropState) return;
             if (cropIsRecentTouch() && event.pointerSource === 'mouse') return;
@@ -412,10 +440,12 @@ Object.assign(DesignEditor.prototype, {
             }
 
             // Iniciar pan em qualquer outro lugar do stage
+            const isSelection = event.target?.closest?.('.upload-crop-selection') !== null;
             this.uploadCropState.dragging = {
-                mode: 'pan',
+                mode: isSelection ? 'move-selection' : 'pan',
                 startX: event.clientX,
                 startY: event.clientY,
+                rect: isSelection && this.uploadCropState.selectionRect ? { ...this.uploadCropState.selectionRect } : null,
                 offsetX: this.uploadCropState.viewport.offsetX,
                 offsetY: this.uploadCropState.viewport.offsetY
             };
@@ -463,6 +493,17 @@ Object.assign(DesignEditor.prototype, {
                 }
 
                 this.layoutUploadCropModal(false);
+                return;
+            }
+
+            if (drag.mode === 'move-selection') {
+                const rect = drag.rect || state.selectionRect;
+                if (!rect) return;
+                updateSelectionState({
+                    ...rect,
+                    x: rect.x + dx,
+                    y: rect.y + dy
+                });
                 return;
             }
 
@@ -520,21 +561,12 @@ Object.assign(DesignEditor.prototype, {
                 next.height = imageRect.y + imageRect.height - next.y;
             }
 
-            state.selectionRect = {
+            updateSelectionState({
                 x: next.x,
                 y: next.y,
                 width: Math.max(minSize, next.width),
                 height: Math.max(minSize, next.height)
-            };
-
-            state.selectionNormalized = {
-                x: (state.selectionRect.x - imageRect.x) / imageRect.width,
-                y: (state.selectionRect.y - imageRect.y) / imageRect.height,
-                width: state.selectionRect.width / imageRect.width,
-                height: state.selectionRect.height / imageRect.height
-            };
-
-            this.renderUploadCropSelection();
+            });
         };
 
         const endPointer = (event) => {
@@ -1010,6 +1042,7 @@ Object.assign(DesignEditor.prototype, {
         const objectFit = String(options.objectFit || 'contain').toLowerCase();
         const flipX = Boolean(options.flipX);
         const flipY = Boolean(options.flipY);
+        const layerLabel = options.layerLabel || this.getNextImageLayerLabel(imageKind === 'qr' ? 'QR Code' : 'Imagem');
         const x = center.x - (fitted.width / 2);
         const y = center.y - (fitted.height / 2);
 
@@ -1028,6 +1061,7 @@ Object.assign(DesignEditor.prototype, {
         img.dataset.imageKind = imageKind;
         img.dataset.originalSrc = originalSrc;
         img.dataset.objectFit = objectFit;
+        img.dataset.layerLabel = layerLabel;
         img.dataset.baseX = String(x);
         img.dataset.baseY = String(y);
         img.dataset.baseWidth = String(fitted.width);
@@ -1080,6 +1114,7 @@ Object.assign(DesignEditor.prototype, {
             qrContent,
             qrColor,
             originalSrc,
+            layerLabel,
             cropData,
             fullWidth,
             fullHeight,

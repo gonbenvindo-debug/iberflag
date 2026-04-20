@@ -410,6 +410,7 @@ Object.assign(DesignEditor.prototype, {
             width: cropData.width * fullWidth,
             height: cropData.height * fullHeight
         } : null);
+        const layerLabel = data.layerLabel || this.getNextImageLayerLabel(data.imageKind === 'qr' ? 'QR Code' : 'Imagem');
 
         imageElement.setAttribute('id', id);
         imageElement.setAttribute('x', String(data.x || 0));
@@ -422,6 +423,7 @@ Object.assign(DesignEditor.prototype, {
         imageElement.setAttribute('opacity', String(data.opacity ?? 1));
         imageElement.dataset.name = data.name || 'Imagem';
         imageElement.dataset.imageKind = data.imageKind || 'image';
+        imageElement.dataset.layerLabel = layerLabel;
         imageElement.dataset.originalSrc = data.originalSrc || src;
         imageElement.dataset.baseX = String(data.baseX ?? data.x ?? 0);
         imageElement.dataset.baseY = String(data.baseY ?? data.y ?? 0);
@@ -498,6 +500,7 @@ Object.assign(DesignEditor.prototype, {
         });
         this.canvas.querySelectorAll('defs').forEach((defsNode) => defsNode.remove());
         this.elements = [];
+        this.imageLayerLabelCounters = new Map();
         this.selectedElement = null;
         this.hideResizeHandles();
         this.updateLayers();

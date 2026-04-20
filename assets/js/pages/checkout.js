@@ -1273,7 +1273,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (postalCodeInput) {
         postalCodeInput.addEventListener('input', () => {
-            updatePostalCodeFormatting();
             updateTaxIdValidity();
             updateFiscalSummary();
             scheduleCompanyLookup();
