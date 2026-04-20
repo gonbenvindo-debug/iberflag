@@ -261,7 +261,6 @@ function renderProductsGrid(products) {
                     <span class="text-sm font-semibold text-white sm:text-base">${purchasable ? `${safePrice}€` : 'Sob consulta'}</span>
                     <a
                         href="${purchasable ? buildProductDetailsPath(product) : '#'}"
-                        data-open-templates="${purchasable ? 'true' : 'false'}"
                         data-product-id="${safeProductId}"
                         data-product-name="${safeProductNameParam}"
                         data-product-category="${safeProductCategory}"
@@ -667,21 +666,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-document.addEventListener('click', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    const trigger = target.closest('[data-open-templates="true"]');
-    if (!trigger) return;
-
-    const productId = Number(trigger.getAttribute('data-product-id'));
-    const productNameParam = trigger.getAttribute('data-product-name') || '';
-    const productName = decodeURIComponent(productNameParam || '');
-    if (!Number.isFinite(productId)) return;
-
-    openTemplatesModal(productId, productName);
-});
-
 // Make functions globally available
 window.viewProductDetails = viewProductDetails;
 
@@ -923,17 +907,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     void getTemplatesCatalog().catch(() => {});
 });
-
-document.addEventListener('pointerover', (event) => {
-    const target = event.target;
-    if (!(target instanceof Element)) return;
-
-    const trigger = target.closest('[data-open-templates="true"]');
-    if (!trigger) return;
-
-    const productId = Number(trigger.getAttribute('data-product-id'));
-    preloadTemplatesData(productId);
-}, { passive: true });
 
 // Make modal functions globally available
 window.openTemplatesModal = openTemplatesModal;

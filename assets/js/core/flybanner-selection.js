@@ -199,7 +199,7 @@
                 data-next-url="${escapeHtmlLocal(nextUrl)}"
                 ${isAvailable ? '' : 'disabled aria-disabled="true"'}
                 style="display:flex; flex-direction:column; align-items:stretch; gap:0.9rem; width:100%; padding:1rem; border-radius:22px; text-align:left; transition:transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease; ${buttonStyles}">
-                <span style="display:flex; align-items:center; justify-content:center; min-height:220px; border-radius:18px; background:${isAvailable ? 'linear-gradient(180deg, #fff7ed 0%, #ffffff 100%)' : '#eef2f7'}; padding:1rem;">
+                <span style="display:flex; align-items:center; justify-content:center; min-height:220px; border-radius:18px; background:#ffffff; padding:1rem;">
                     <img src="${imageUrl}" alt="${baseName}" style="display:block; max-width:100%; max-height:200px; object-fit:contain;">
                 </span>
                 <span style="display:flex; flex-direction:column; gap:0.4rem;">
