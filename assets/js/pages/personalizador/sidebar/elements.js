@@ -1025,7 +1025,7 @@ Object.assign(DesignEditor.prototype, {
             if (this.isPinchZooming || e.touches.length >= 2) {
                 return;
             }
-            if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
+            if (this.pendingElementDrag || this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
                 const trackedTouch = Array.from(e.touches).find((touch) => touch.identifier === this._activeGestureTouchId)
                     || (e.touches.length > 0 ? e.touches[0] : null);
                 if (!trackedTouch) return;
@@ -1040,6 +1040,7 @@ Object.assign(DesignEditor.prototype, {
             if (this.isPinchZooming && e.touches.length >= 1) {
                 this._touchGestureActive = false;
                 this._activeGestureTouchId = null;
+                this.pendingElementDrag = null;
                 return;
             }
             if (this.isDragging || this.isResizing || this.isRotating || this.isPanningCamera) {
@@ -1051,6 +1052,8 @@ Object.assign(DesignEditor.prototype, {
                 } else {
                     return;
                 }
+            } else if (this.pendingElementDrag) {
+                this.pendingElementDrag = null;
             }
             if (e.touches.length === 0) {
                 this.isPinchZooming = false;
@@ -1065,6 +1068,7 @@ Object.assign(DesignEditor.prototype, {
                 this.handleMouseUp('touch');
             }
             this.isPinchZooming = false;
+            this.pendingElementDrag = null;
             this._touchGestureActive = false;
             this._activeGestureTouchId = null;
         }, { passive: false });
