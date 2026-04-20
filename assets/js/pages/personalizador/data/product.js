@@ -11,6 +11,7 @@ Object.assign(DesignEditor.prototype, {
         const productSlug = String(urlParams.get('slug') || locationState.productSlug || '').trim();
         let productId = urlParams.get('produto');
         const preselectedBaseId = Number(urlParams.get('base') || 0);
+        const selectedReinforcement = String(urlParams.get('reinforcement') || '').trim().toLowerCase();
         const manifestProduct = typeof SiteRoutes !== 'undefined' && productSlug
             ? SiteRoutes.findProductBySlug(productSlug)
             : null;
@@ -24,6 +25,7 @@ Object.assign(DesignEditor.prototype, {
         this.initialSelectedBaseId = Number.isFinite(preselectedBaseId) && preselectedBaseId > 0
             ? preselectedBaseId
             : null;
+        this.selectedReinforcement = selectedReinforcement || null;
         if (this.initialSelectedBaseId) {
             this.selectedBaseId = this.initialSelectedBaseId;
         }
@@ -327,14 +329,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     isReinforcementOptionFlow() {
-        const category = String(this.currentProduct?.categoria || '').trim().toLowerCase();
-        const names = (Array.isArray(this.availableBases) ? this.availableBases : [])
-            .map((base) => String(base?.base_nome || '').trim().toLowerCase())
-            .filter(Boolean);
-
-        return (category === 'flybanners' || category === 'fly-banner')
-            && names.length > 0
-            && names.every((name) => name.includes('reforco') || name.includes('reforço') || name.includes('reforço'));
+        return String(this.selectedReinforcement || '').trim().toLowerCase() === 'sem-reforco';
     },
 
     updateCartBaseStepCopy() {

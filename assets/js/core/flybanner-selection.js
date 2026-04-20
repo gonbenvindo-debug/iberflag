@@ -55,56 +55,37 @@
         return null;
     }
 
-    function appendBaseQuery(targetUrl, baseId) {
+    function appendFlybannerSelectionQuery(targetUrl, selectionId) {
         const url = new URL(String(targetUrl || '/'), window.location.origin);
-        if (baseId) {
-            url.searchParams.set('base', String(baseId));
+        if (selectionId) {
+            url.searchParams.set('reinforcement', String(selectionId));
         } else {
-            url.searchParams.delete('base');
+            url.searchParams.delete('reinforcement');
         }
         return `${url.pathname}${url.search}${url.hash}`;
     }
 
-    async function fetchFlybannerBaseOptions(productId) {
-        const numericProductId = Number(productId);
-        if (!Number.isFinite(numericProductId) || numericProductId <= 0) {
-            return [];
-        }
-
-        if (baseOptionsCache.has(numericProductId)) {
-            return baseOptionsCache.get(numericProductId);
-        }
-
-        const client = getSupabaseClient();
-        if (!client) {
-            return [];
-        }
-
-        const request = client
-            .from('vw_produto_bases')
-            .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default, base_disponivel, base_nota_indisponibilidade')
-            .eq('produto_id', numericProductId)
-            .eq('ativo', true)
-            .eq('base_ativa', true)
-            .order('ordem', { ascending: true })
-            .then(({ data, error }) => {
-                if (error) {
-                    throw error;
-                }
-
-                return (Array.isArray(data) ? data : []).map((base) => ({
-                    ...base,
-                    base_disponivel: base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false',
-                    base_nota_indisponibilidade: String(base?.base_nota_indisponibilidade || '').trim()
-                }));
-            })
-            .catch((error) => {
-                console.warn('Falha ao carregar opcoes de flybanner:', error?.message || error);
-                return [];
-            });
-
-        baseOptionsCache.set(numericProductId, request);
-        return request;
+    function getFlybannerReinforcementOptions() {
+        return [
+            {
+                base_id: 'com-reforco',
+                base_nome: 'Com reforço',
+                base_imagem: '/assets/images/flybanner-variants/com-reforco.svg',
+                preco_extra_aplicado: 0,
+                is_default: true,
+                base_disponivel: true,
+                base_nota_indisponibilidade: 'Incluído'
+            },
+            {
+                base_id: 'sem-reforco',
+                base_nome: 'Sem reforço',
+                base_imagem: '/assets/images/flybanner-variants/sem-reforco.svg',
+                preco_extra_aplicado: 0,
+                is_default: false,
+                base_disponivel: false,
+                base_nota_indisponibilidade: 'Indisponível de momento'
+            }
+        ];
     }
 
     function ensureModal() {
@@ -129,8 +110,8 @@
             <div role="dialog" aria-modal="true" aria-labelledby="flybanner-selection-title" style="width:min(100%, 960px); max-height:90vh; overflow:hidden; display:flex; flex-direction:column; background:#ffffff; border-radius:28px; box-shadow:0 32px 90px rgba(15,23,42,0.24);">
                 <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.5rem; border-bottom:1px solid rgba(148,163,184,0.22);">
                     <div>
-                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">Escolha a base</h2>
-                        <p id="flybanner-selection-subtitle" style="margin:0.5rem 0 0; font-size:0.95rem; line-height:1.5; color:#64748b;">Selecione a base disponivel antes de continuar.</p>
+                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">Escolha o reforço</h2>
+                        <p id="flybanner-selection-subtitle" style="margin:0.5rem 0 0; font-size:0.95rem; line-height:1.5; color:#64748b;">Selecione a opção pretendida antes de continuar.</p>
                     </div>
                     <button type="button" data-flybanner-close="true" aria-label="Fechar seletor" style="width:2.5rem; height:2.5rem; border:0; border-radius:999px; background:#f8fafc; color:#475569; cursor:pointer; font-size:1.5rem; line-height:1;">&times;</button>
                 </div>
@@ -182,13 +163,13 @@
     }
 
     function buildBaseOptionMarkup(base, nextUrl) {
-        const baseId = Number(base?.base_id || 0);
+        const baseId = String(base?.base_id || '').trim();
         const baseName = escapeHtmlLocal(base?.base_nome || 'Base');
         const imageUrl = escapeHtmlLocal(base?.base_imagem || '/assets/images/template-placeholder.svg');
         const isAvailable = base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false';
         const extra = Number(base?.preco_extra_aplicado || 0);
-        const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluido';
-        const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponivel de momento');
+        const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluído';
+        const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponível de momento');
         const badgeLabel = isAvailable ? priceLabel : note;
         const buttonStyles = isAvailable
             ? 'cursor:pointer; border:1px solid rgba(148,163,184,0.28); background:#ffffff;'
@@ -277,10 +258,10 @@
             }
 
             button.addEventListener('click', () => {
-                const baseId = Number(button.getAttribute('data-flybanner-base-id'));
+                const baseId = String(button.getAttribute('data-flybanner-base-id') || '').trim();
                 const nextUrl = button.getAttribute('data-next-url') || '/';
                 closeModal();
-                window.location.assign(appendBaseQuery(nextUrl, baseId));
+                window.location.assign(appendFlybannerSelectionQuery(nextUrl, baseId));
             });
         });
     }
@@ -288,10 +269,10 @@
     function renderLoading(productName) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha a base';
+            modal.title.textContent = 'Escolha o reforço';
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `A carregar as bases disponiveis para ${productName || 'este flybanner'}...`;
+            modal.subtitle.textContent = `A carregar as opções disponiveis para ${productName || 'este flybanner'}...`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
@@ -325,10 +306,10 @@
     function renderEmptyState(productName, nextUrl) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Sem bases configuradas';
+            modal.title.textContent = 'Sem opções configuradas';
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `Este flybanner ainda nao tem bases configuradas para ${productName || 'este produto'}.`;
+            modal.subtitle.textContent = `Este flybanner ainda nao tem opções configuradas para ${productName || 'este produto'}.`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
@@ -353,10 +334,10 @@
     function renderOptions(productName, options, nextUrl) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha a base';
+            modal.title.textContent = 'Escolha o reforço';
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `Selecione a base pretendida para ${productName || 'este flybanner'} antes de continuar.`;
+            modal.subtitle.textContent = `Selecione a opção pretendida para ${productName || 'este flybanner'} antes de continuar.`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
@@ -373,8 +354,8 @@
     }
 
     async function openSelectionFlow({ productId, productName, nextUrl }) {
-        renderLoading(productName);
-        const options = await fetchFlybannerBaseOptions(productId);
+        void productId;
+        const options = getFlybannerReinforcementOptions();
         if (!Array.isArray(options) || options.length === 0) {
             renderEmptyState(productName, nextUrl);
             return;
@@ -383,9 +364,9 @@
         renderOptions(productName, options, nextUrl);
     }
 
-    function syncPersonalizeLinksWithBaseQuery() {
-        const currentBase = new URLSearchParams(window.location.search).get('base');
-        if (!currentBase) {
+    function syncPersonalizeLinksWithSelectionQuery() {
+        const currentReinforcement = new URLSearchParams(window.location.search).get('reinforcement');
+        if (!currentReinforcement) {
             return;
         }
 
@@ -393,7 +374,7 @@
             if (!(link instanceof HTMLAnchorElement)) {
                 return;
             }
-            link.href = appendBaseQuery(link.href, currentBase);
+            link.href = appendFlybannerSelectionQuery(link.href, currentReinforcement);
         });
     }
 
@@ -419,11 +400,11 @@
             return;
         }
 
-        const currentBase = new URLSearchParams(window.location.search).get('base');
+        const currentReinforcement = new URLSearchParams(window.location.search).get('reinforcement');
         const isPersonalizeTrigger = trigger.hasAttribute('data-flybanner-personalize-trigger');
 
-        if (isPersonalizeTrigger && currentBase && trigger instanceof HTMLAnchorElement) {
-            trigger.href = appendBaseQuery(trigger.href, currentBase);
+        if (isPersonalizeTrigger && currentReinforcement && trigger instanceof HTMLAnchorElement) {
+            trigger.href = appendFlybannerSelectionQuery(trigger.href, currentReinforcement);
             return;
         }
 
@@ -450,11 +431,11 @@
     }, true);
 
     document.addEventListener('DOMContentLoaded', () => {
-        syncPersonalizeLinksWithBaseQuery();
+        syncPersonalizeLinksWithSelectionQuery();
     });
 
     window.FlybannerSelection = {
-        appendBaseQuery,
+        appendFlybannerSelectionQuery,
         closeModal,
         openSelectionFlow
     };
