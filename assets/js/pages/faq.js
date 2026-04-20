@@ -20,15 +20,19 @@ accordionHeaders.forEach(header => {
                 const otherItem = otherHeader.parentElement;
                 const otherContent = otherItem.querySelector('.accordion-content');
                 const otherIcon = otherHeader.querySelector('i');
-                
-                otherContent.classList.remove('open');
-                otherIcon.style.transform = 'rotate(0deg)';
+
+                otherContent?.classList.remove('open');
+                if (otherIcon) {
+                    otherIcon.style.transform = 'rotate(0deg)';
+                }
             }
         });
         
         // Toggle current item
-        content.classList.toggle('open');
-        icon.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        content?.classList.toggle('open');
+        if (icon && content) {
+            icon.style.transform = content.classList.contains('open') ? 'rotate(180deg)' : 'rotate(0deg)';
+        }
     });
 });
 
