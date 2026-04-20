@@ -60,6 +60,7 @@ Object.assign(DesignEditor.prototype, {
             this.saveHistory();
             this.renderQuickFontPopover?.();
             this.syncExpandedPropertiesControls?.(this.selectedElement);
+            this.updateContextualToolbar?.(this.selectedElement);
         }
     },
     
@@ -72,6 +73,7 @@ Object.assign(DesignEditor.prototype, {
             this.saveHistory();
             this.renderQuickFontPopover?.();
             this.syncExpandedPropertiesControls?.(this.selectedElement);
+            this.updateContextualToolbar?.(this.selectedElement);
         }
     },
 
@@ -86,6 +88,7 @@ Object.assign(DesignEditor.prototype, {
             this.saveHistory();
             this.renderQuickFontPopover?.();
             this.syncExpandedPropertiesControls?.(this.selectedElement);
+            this.updateContextualToolbar?.(this.selectedElement);
         }
     },
     
@@ -98,6 +101,7 @@ Object.assign(DesignEditor.prototype, {
             this.saveHistory();
             this.renderQuickFontPopover?.();
             this.syncExpandedPropertiesControls?.(this.selectedElement);
+            this.updateContextualToolbar?.(this.selectedElement);
         }
     },
     

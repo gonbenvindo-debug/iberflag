@@ -452,7 +452,11 @@ body.app-page {
 }
 
 .desktop-inline-font-btn:hover,
-.desktop-image-fit-btn:hover,
+.desktop-image-fit-btn:hover {
+    background: #f0f2f5;
+    color: var(--iber-text);
+}
+
 .desktop-inline-font-btn.active,
 .desktop-inline-font-btn[aria-pressed="true"],
 .desktop-image-fit-btn.active,
@@ -628,7 +632,12 @@ body.is-camera-panning #canvas-stage {
     color: var(--iber-text) !important;
 }
 
-.quick-font-action:hover,
+.quick-font-action:hover {
+    border-color: rgba(148, 163, 184, 0.45) !important;
+    color: var(--iber-text) !important;
+    background: #f8fafc !important;
+}
+
 .quick-font-action.active {
     border-color: var(--iber-accent) !important;
     color: var(--iber-accent) !important;
@@ -947,7 +956,12 @@ body.is-camera-panning #canvas-stage {
     justify-content: center;
 }
 
-.editor-floating-font-btn:hover,
+.editor-floating-font-btn:hover {
+    border-color: rgba(148, 163, 184, 0.45);
+    background: #f8fafc;
+    color: var(--iber-text);
+}
+
 .editor-floating-font-btn.active,
 .editor-floating-font-btn[aria-pressed="true"] {
     border-color: rgba(239, 72, 37, 0.32);
