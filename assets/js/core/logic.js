@@ -1129,6 +1129,12 @@ function toggleMobileMenu(event) {
     if (event && typeof event.preventDefault === 'function') {
         event.preventDefault();
     }
+    if (event && event.__iberflagMobileMenuHandled) {
+        return;
+    }
+    if (event) {
+        event.__iberflagMobileMenuHandled = true;
+    }
 
     if (mobileMenu) {
         const willOpen = !mobileMenu.classList.contains('mobile-menu-open');
@@ -1170,3 +1176,4 @@ window.updateQuantity = updateQuantity;
 window.getCartItemImage = getCartItemImage;
 window.quickView = quickView;
 window.openProductCustomizationChoice = openProductCustomizationChoice;
+window.toggleMobileMenu = toggleMobileMenu;
