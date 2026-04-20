@@ -3410,12 +3410,12 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         grid-template-columns: 1fr !important;
     }
 
-    .product-quick-links {
+    .product-quick-links.grid.grid-cols-3 {
         grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
         gap: 0.35rem !important;
     }
 
-    .product-quick-links > a {
+    .product-quick-links.grid.grid-cols-3 > a {
         min-width: 0;
         padding-left: 0.5rem !important;
         padding-right: 0.5rem !important;
