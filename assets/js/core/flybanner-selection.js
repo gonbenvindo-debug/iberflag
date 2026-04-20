@@ -2,6 +2,7 @@
     const FLYBANNER_CATEGORIES = new Set(['fly-banner', 'flybanners']);
     const baseOptionsCache = new Map();
     let modalElements = null;
+    let titleFitResizeBound = false;
 
     function normalizeCategory(value) {
         return String(value || '').trim().toLowerCase();
@@ -207,10 +208,65 @@
                     class="cart-base-card__image"
                     style="display:block; width:100%; height:auto; object-fit:contain; background:#ffffff;">
                 <span class="cart-base-card__overlay" style="position:absolute; left:0; right:0; bottom:0; padding:0.8rem 0.9rem 0.85rem; background:linear-gradient(180deg, rgba(255,255,255,0) 0%, rgba(255,255,255,0.92) 28%, rgba(255,255,255,0.98) 100%);">
-                    <span style="display:block; font-size:1.02rem; font-weight:700; line-height:1.25; color:#0f172a;">${baseName}</span>
+                    <span class="cart-base-card__title" style="display:block; font-size:1.02rem; font-weight:700; line-height:1.25; color:#0f172a; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${baseName}</span>
                 </span>
             </button>
         `;
+    }
+
+    function fitBaseCardTitles(scope = document) {
+        const titles = scope.querySelectorAll?.('.cart-base-card__title');
+        if (!titles || titles.length === 0) {
+            return;
+        }
+
+        titles.forEach((title) => {
+            if (!(title instanceof HTMLElement)) {
+                return;
+            }
+
+            const text = title.textContent || '';
+            if (!text.trim()) {
+                return;
+            }
+
+            const parent = title.parentElement;
+            if (!(parent instanceof HTMLElement)) {
+                return;
+            }
+
+            const availableWidth = Math.max(0, parent.clientWidth - 1);
+            if (availableWidth <= 0) {
+                return;
+            }
+
+            let fontSize = 1.02;
+            title.style.fontSize = `${fontSize}rem`;
+            title.style.whiteSpace = 'nowrap';
+            title.style.overflow = 'hidden';
+            title.style.textOverflow = 'ellipsis';
+
+            while (fontSize > 0.76 && title.scrollWidth > availableWidth) {
+                fontSize -= 0.02;
+                title.style.fontSize = `${fontSize.toFixed(2)}rem`;
+            }
+        });
+    }
+
+    function ensureTitleFitResizeBinding() {
+        if (titleFitResizeBound) {
+            return;
+        }
+
+        window.addEventListener('resize', () => {
+            if (!modalElements || modalElements.overlay.style.display === 'none') {
+                return;
+            }
+
+            requestAnimationFrame(() => fitBaseCardTitles(modalElements.body || document));
+        });
+
+        titleFitResizeBound = true;
     }
 
     function bindBaseOptionEvents() {
@@ -312,6 +368,8 @@
 
         bindBaseOptionEvents();
         showModal();
+        ensureTitleFitResizeBinding();
+        requestAnimationFrame(() => fitBaseCardTitles(modal.body || document));
     }
 
     async function openSelectionFlow({ productId, productName, nextUrl }) {
