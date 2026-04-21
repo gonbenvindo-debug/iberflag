@@ -114,7 +114,7 @@ async function validateAdminSession(session) {
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            adminWriteSessionLastError = payload?.message || payload?.error || 'Utilizador sem permissoes admin.';
+            adminWriteSessionLastError = payload?.message || payload?.error || 'Utilizador sem permiss?es admin.';
             return false;
         }
 
@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!await validateAdminSession(session)) {
                 await supabaseClient.auth.signOut();
-                errorEl.textContent = adminWriteSessionLastError || 'Acesso nao autorizado para este utilizador.';
+                errorEl.textContent = adminWriteSessionLastError || 'Acess? nao autorizado para este utilizador.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
@@ -534,7 +534,7 @@ async function loadTabData(tabName) {
 function setDashboardMetricValue(id, value) {
     const element = document.getElementById(id);
     if (element) {
-        element.textContent = String(value ?? 0);
+        element.textContent = String(value || 0);
     }
 }
 
@@ -684,7 +684,7 @@ async function convertImageFileToWebPDataUrl(file, options = {}) {
 
     const context = canvas.getContext('2d');
     if (!context) {
-        throw new Error('Não foi possível preparar o conversor de imagem.');
+        throw new Error('Não foi possível preparar o convers?r de imagem.');
     }
 
     context.clearRect(0, 0, width, height);
@@ -957,7 +957,7 @@ async function saveProductBaseAssignments(productId) {
 const FLYBANNER_BASE_SLUGS = new Set([
     'flybanner-cruzeta-com-flutuador',
     'flybanner-base-parede',
-    'flybanner-base-parafuso-roscado',
+    'flybanner-base-parafus?-roscado',
     'flybanner-base-pica',
     'flybanner-base-hercules-12kg',
     'flybanner-base-agua',
@@ -1374,7 +1374,7 @@ if (svgUpload) {
             parseSvgTemplate(text);
             setSvgTemplateContent(text, file.name);
 
-            showToast('SVG carregado com sucesso', 'success');
+            showToast('SVG carregado com sucess?', 'success');
         } catch (error) {
             console.error('Erro ao ler ficheiro SVG:', error);
             showToast('Erro ao ler ficheiro SVG', 'error');
@@ -1450,7 +1450,7 @@ if (productForm) {
                 }
             }
 
-            showToast(currentProductId ? 'Produto atualizado com sucesso!' : 'Produto adicionado com sucesso!', 'success');
+            showToast(currentProductId ? 'Produto atualizado com sucess?!' : 'Produto adicionado com sucess?!', 'success');
             closeModal(productModal);
             resetSvgTemplateState();
             loadProducts();
@@ -1649,7 +1649,7 @@ if (baseForm) {
 
             if (result.error) throw result.error;
 
-            showToast(currentBaseId ? 'Base atualizada com sucesso!' : 'Base adicionada com sucesso!', 'success');
+            showToast(currentBaseId ? 'Base atualizada com sucess?!' : 'Base adicionada com sucess?!', 'success');
             closeModal(baseModal);
             await loadBases();
             await loadBaseCatalog(true);
@@ -1703,7 +1703,7 @@ async function deleteBase(id) {
 
         if (error) throw error;
 
-        showToast('Base eliminada com sucesso!', 'success');
+        showToast('Base eliminada com sucess?!', 'success');
         await loadBases();
         await loadBaseCatalog(true);
     } catch (error) {
@@ -1724,7 +1724,7 @@ async function deleteProduct(id) {
 
         if (error) throw error;
 
-        showToast('Produto eliminado com sucesso!', 'success');
+        showToast('Produto eliminado com sucess?!', 'success');
         loadProducts();
 
     } catch (error) {
@@ -1734,7 +1734,7 @@ async function deleteProduct(id) {
 }
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -1840,7 +1840,7 @@ function formatVatValidationStatusLabel(value) {
         case 'not_required':
             return 'Nao aplicavel';
         default:
-            return 'Sem validacao';
+            return 'Sem valida??o';
     }
 }
 
@@ -2002,7 +2002,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     const designPreviewUrl = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find(isDataUri) || '';
 
-    // Also accept any https preview that isn't the same as the product image (e.g. server-rendered raster)
+    // Als? accept any https preview that isn't the same as the product image (e.g. server-rendered raster)
     const productImageUrls = new Set(
         [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
             .filter((v) => typeof v === 'string' && v.trim())
@@ -2910,7 +2910,7 @@ if (saveOrderBtn) {
 
             if (error) throw error;
 
-            showToast('Encomenda atualizada com sucesso!', 'success');
+            showToast('Encomenda atualizada com sucess?!', 'success');
 
             if (nextWorkflowStatus !== previousWorkflowStatus) {
                 try {
@@ -2961,7 +2961,7 @@ document.getElementById('emit-facturalusa-btn')?.addEventListener('click', async
         }
 
         const result = await reemitFacturalusaDocument(currentOrderId);
-        showToast(result?.message || 'Documento fiscal reenviado com sucesso!', 'success');
+        showToast(result?.message || 'Documento fiscal reenviado com sucess?!', 'success');
         await loadOrders();
         await viewOrder(currentOrderId);
     } catch (error) {
@@ -3102,7 +3102,7 @@ async function viewClient(id) {
                     <td class="py-2 text-gray-500">${escapeHtml(formatDateTime(order.created_at))}</td>
                 </tr>
             `).join('')
-            : '<tr><td colspan="4" class="py-3 text-gray-500">Sem encomendas associadas.</td></tr>';
+            : '<tr><td colspan="4" class="py-3 text-gray-500">Sem encomendas ass?ciadas.</td></tr>';
 
         if (bodyEl) {
             bodyEl.innerHTML = `
@@ -3728,7 +3728,7 @@ async function deleteTemplateFromCard(templateId) {
 
         if (deleteTemplateError) throw deleteTemplateError;
 
-        showToast('Template apagado com sucesso', 'success');
+        showToast('Template apagado com sucess?', 'success');
         await loadTemplatesCatalog(true);
         renderProductTemplatesGrid();
     } catch (error) {

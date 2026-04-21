@@ -9,59 +9,59 @@
     const CANONICAL_ORIGIN = 'https://iberflag.com';
     const CATEGORY_META = {
         'balcao-promocional': {
-            label: 'Balcao Promocional',
-            shortLabel: 'Balcoes',
-            description: 'Balcoes promocionais para feiras, ativacoes de marca e pontos de venda com montagem rapida e imagem profissional.'
+            label: 'Balcão Promocional',
+            shortLabel: 'Balcões',
+            description: 'Balcões promocionais para feiras, ativações de marca e pontos de venda com montagem rápida e imagem profissional.'
         },
         'bandeiras': {
             label: 'Bandeiras',
             shortLabel: 'Bandeiras',
-            description: 'Bandeiras promocionais, institucionais e de mesa para exterior, interior e eventos com impressao personalizada.'
+            description: 'Bandeiras promocionais, institucionais e de mesa para exterior, interior e eventos com impressão personalizada.'
         },
         'bandeirolas-esportivas': {
-            label: 'Bandeirolas Esportivas',
+            label: 'Bandeirolas Desportivas',
             shortLabel: 'Bandeirolas',
-            description: 'Bandeirolas desportivas personalizadas para clubes, eventos, premiacoes e merchandising institucional.'
+            description: 'Bandeirolas desportivas personalizadas para clubes, eventos, premiações e merchandising institucional.'
         },
         'cubo-publicitario': {
-            label: 'Cubo Publicitario',
+            label: 'Cubo Publicitário',
             shortLabel: 'Cubos',
-            description: 'Cubos publicitarios personalizados para campanhas promocionais, pontos de venda e eventos de marca.'
+            description: 'Cubos publicitários personalizados para campanhas promocionais, pontos de venda e eventos de marca.'
         },
         'fly-banner': {
             label: 'Fly Banner',
             shortLabel: 'Fly Banners',
-            description: 'Fly banners personalizados para exterior e eventos com forte impacto visual, varias bases e formatos profissionais.'
+            description: 'Fly banners personalizados para exterior e eventos com forte impacto visual, várias bases e formatos profissionais.'
         },
         'mastros': {
             label: 'Mastros',
             shortLabel: 'Mastros',
-            description: 'Mastros publicitarios e institucionais para bandeiras de exterior com resistencia e boa visibilidade.'
+            description: 'Mastros publicitários e institucionais para bandeiras de exterior com resistência e boa visibilidade.'
         },
         'photocall': {
             label: 'Photocall',
             shortLabel: 'Photocalls',
-            description: 'Photocalls e backdrops personalizados para eventos, stands, conferencias e zonas de fotografia.'
+            description: 'Photocalls e backdrops personalizados para eventos, stands, conferências e zonas de fotografia.'
         },
         'roll-up': {
             label: 'Roll Up',
             shortLabel: 'Roll Ups',
-            description: 'Roll ups personalizados para feiras, lojas e apresentacoes com estrutura compacta e instalacao simples.'
+            description: 'Roll ups personalizados para feiras, lojas e apresentações com estrutura compacta e instalação simples.'
         },
         'tenda-publicitaria': {
-            label: 'Tenda Publicitaria',
+            label: 'Tenda Publicitária',
             shortLabel: 'Tendas',
-            description: 'Tendas publicitarias personalizadas para eventos, ativacoes de marca e presenca exterior de grande formato.'
+            description: 'Tendas publicitárias personalizadas para eventos, ativações de marca e presença exterior de grande formato.'
         },
         'wall-banner': {
             label: 'Wall Banner',
             shortLabel: 'Wall Banners',
-            description: 'Wall banners, lonas e estruturas de fundo para cenografia, stands, eventos e comunicacao de grande formato.'
+            description: 'Wall banners, lonas e estruturas de fundo para cenografia, stands, eventos e comunicação de grande formato.'
         },
         'x-banner': {
             label: 'X-Banner',
             shortLabel: 'X-Banners',
-            description: 'X-banners promocionais leves e portateis para campanhas, montras e comunicacao de interior.'
+            description: 'X-banners promocionais leves e portáteis para campanhas, montras e comunicação de interior.'
         }
     };
 
@@ -147,7 +147,7 @@
             slug,
             label: fallbackLabel,
             shortLabel: fallbackLabel,
-            description: 'Produtos publicitarios personalizados para comunicacao fisica, eventos e presenca de marca.'
+            description: 'Produtos publicitários personalizados para comunicação física, eventos e presença de marca.'
         };
     }
 

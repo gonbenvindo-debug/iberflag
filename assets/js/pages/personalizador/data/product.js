@@ -366,7 +366,7 @@ Object.assign(DesignEditor.prototype, {
 
     renderProductBaseOptions() {
         // Mantido para compatibilidade com chamadas existentes.
-        // A escolha da base acontece no modal de passos do carrinho.
+        // A escolha da base acontece no modal de pass?s do carrinho.
         this.updateProductPriceDisplay();
     },
 
@@ -615,14 +615,14 @@ Object.assign(DesignEditor.prototype, {
     saveCartData(cart) {
         const compactCart = Array.isArray(cart)
             ? cart.map((item) => ({
-                id: Number(item?.id ?? 0) || 0,
+                id: Number(item?.id || 0) || 0,
                 nome: String(item?.nome || '').trim(),
                 preco: Number(item?.preco || 0),
                 imagem: String(item?.imagem || '').trim(),
                 quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
                 customized: Boolean(item?.customized),
                 designId: item?.designId ? String(item.designId).trim() : null,
-                baseId: item?.baseId ?? item?.base_id ?? null,
+                baseId: item?.baseId || item?.base_id || null,
                 baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
                 baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
                 basePrecoExtra: Number(item?.basePrecoExtra || 0)
@@ -750,7 +750,7 @@ Object.assign(DesignEditor.prototype, {
                     .update(templateData)
                     .eq('id', this.editingTemplateId);
                 if (error) throw error;
-                showToast('Design atualizado com sucesso!', 'success');
+                showToast('Design atualizado com sucess?!', 'success');
             } else {
                 const { data, error } = await supabaseClient
                     .from('templates')

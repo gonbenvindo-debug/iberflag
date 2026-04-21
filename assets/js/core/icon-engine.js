@@ -1,5 +1,5 @@
 (() => {
-    // Provide an immediate safe lucide API so inline calls never throw.
+    // Provide an immediate safe lucide API s? inline calls never throw.
     if (window.lucide && typeof window.lucide.createIcons === 'function') {
         return;
     }

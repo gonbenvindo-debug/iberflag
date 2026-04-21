@@ -9,7 +9,7 @@
         },
         {
             value: 'em_producao',
-            label: 'Em Producao',
+            label: 'Em Produ??o',
             description: 'Material em producao e acabamento.'
         },
         {
@@ -20,7 +20,7 @@
         {
             value: 'entregue',
             label: 'Entregue',
-            description: 'Encomenda concluida com sucesso.'
+            description: 'Encomenda concluida com sucess?.'
         }
     ];
 

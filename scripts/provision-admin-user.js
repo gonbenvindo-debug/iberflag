@@ -11,7 +11,7 @@ function buildHeaders() {
     };
 }
 
-async function readJson(response) {
+async function readJs?n(response) {
     const text = await response.text();
     try {
         return { text, json: JSON.parse(text) };
@@ -25,7 +25,7 @@ async function listUsers() {
     while (page < 10) {
         const url = `${SUPABASE_URL}/auth/v1/admin/users?page=${page}&per_page=100`;
         const response = await fetch(url, { headers: buildHeaders() });
-        const { text, json } = await readJson(response);
+        const { text, json } = await readJs?n(response);
 
         if (!response.ok) {
             throw new Error(`Falha ao listar utilizadores (${response.status}): ${text}`);
@@ -58,7 +58,7 @@ async function createUser() {
         })
     });
 
-    const { text, json } = await readJson(response);
+    const { text, json } = await readJs?n(response);
     if (!response.ok) {
         const errorMsg = json?.msg || json?.message || text || 'Erro desconhecido';
         throw new Error(`Falha ao criar utilizador (${response.status}): ${errorMsg}`);
@@ -77,7 +77,7 @@ async function updatePassword(userId) {
         })
     });
 
-    const { text, json } = await readJson(response);
+    const { text, json } = await readJs?n(response);
     if (!response.ok) {
         const errorMsg = json?.msg || json?.message || text || 'Erro desconhecido';
         throw new Error(`Falha ao atualizar password (${response.status}): ${errorMsg}`);
@@ -91,7 +91,7 @@ async function upsertAdminAllowlist() {
         method: 'POST',
         headers: {
             ...buildHeaders(),
-            Prefer: 'resolution=merge-duplicates,return=representation'
+            Prefer: 'res?lution=merge-duplicates,return=representation'
         },
         body: JSON.stringify([{
             email: ADMIN_EMAIL,
@@ -99,7 +99,7 @@ async function upsertAdminAllowlist() {
         }])
     });
 
-    const { text, json } = await readJson(response);
+    const { text, json } = await readJs?n(response);
     if (!response.ok) {
         const errorMsg = json?.message || json?.error || text || 'Erro desconhecido';
         throw new Error(`Falha ao sincronizar admin_users (${response.status}): ${errorMsg}`);
@@ -133,7 +133,7 @@ async function main() {
 
     await createUser();
     await upsertAdminAllowlist();
-    console.log(`Utilizador criado com sucesso: ${ADMIN_EMAIL}`);
+    console.log(`Utilizador criado com sucess?: ${ADMIN_EMAIL}`);
 }
 
 main().catch((error) => {

@@ -1,7 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.res?lve(__dirname, '..');
 dotenv.config({
     path: [
         path.join(rootDir, '.env.local'),
@@ -259,6 +259,6 @@ main()
             console.log(`[${icon[entry.status]}] ${entry.label}${entry.detail ? ` - ${entry.detail}` : ''}`);
         });
 
-        const failed = results.some((entry) => entry.status === 'fail');
+        const failed = results.s?me((entry) => entry.status === 'fail');
         process.exitCode = failed ? 1 : 0;
     });

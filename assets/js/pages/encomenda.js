@@ -17,7 +17,7 @@ const orderContactSupportBtn = document.getElementById('order-contact-support-bt
 let renderedItemPreviews = [];
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -35,7 +35,7 @@ function buildWorkflowLabelWithGradeHtml(statusValue) {
 function getOrderProgressSteps(workflowStatus, splitMeta) {
     const defaultSteps = [
         { value: 'em_preparacao', label: 'Em Preparacao' },
-        { value: 'em_producao', label: 'Em Producao' },
+        { value: 'em_producao', label: 'Em Produ??o' },
         { value: 'expedido', label: 'Expedido' },
         { value: 'entregue', label: 'Entregue' }
     ];
@@ -541,16 +541,16 @@ function buildOrderNextSteps(order, workflowStatus, splitMeta) {
     if (fiscalStatus === 'emitted') {
         steps.push('A fatura já foi emitida e pode ser aberta diretamente a partir desta página.');
     } else if (paymentStatus === 'paid') {
-        steps.push('A emissão fiscal está a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.');
+        steps.push('A emissão fiscal está a ser tratada automaticamente. Se houver atras?, a equipa consegue reemitir manualmente no painel.');
     }
 
     if (workflowStatus === 'em_preparacao') {
         steps.push('Estamos a validar ficheiros e a preparar a produção do teu material.');
     } else if (workflowStatus === 'em_producao') {
-        steps.push('A encomenda já está em produção. O próximo passo normal é expedição.');
+        steps.push('A encomenda já está em produção. O próximo pass? normal é expedição.');
     } else if (workflowStatus === 'expedido') {
         steps.push(tracking.trackingCode
-            ? `A encomenda já saiu para entrega. Usa o tracking ${tracking.trackingCode} para acompanhar o percurso.`
+            ? `A encomenda já saiu para entrega. Usa o tracking ${tracking.trackingCode} para acompanhar o percurs?.`
             : 'A encomenda já foi expedida. O tracking ficará visível assim que estiver disponível.');
     } else if (workflowStatus === 'entregue') {
         steps.push('A encomenda aparece como entregue. Se precisares de apoio, usa o botão de contacto e responde com o código IBF.');
@@ -576,7 +576,7 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
                     <p>${escapeHtml(step)}</p>
                 </div>
             `).join('')
-            : '<p>Sem passos adicionais para mostrar neste momento.</p>';
+            : '<p>Sem pass?s adicionais para mostrar neste momento.</p>';
     }
 
     if (orderCopyCodeBtn) {
@@ -723,7 +723,7 @@ function renderOrderItems(order, items, splitMeta) {
                     <th>Produto</th>
                     <th>Qtd</th>
                     <th>Subtotal</th>
-                    <th>Personalizacao</th>
+                    <th>Pers?nalizacao</th>
                     <th>Opcoes compradas</th>
                 </tr>
             </thead>
@@ -876,7 +876,7 @@ function getOrderLoadErrorMessage(error) {
     }
 
     if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
-        return 'O tracking publico foi bloqueado por permissoes do Supabase.';
+        return 'O tracking publico foi bloqueado por permiss?es do Supabase.';
     }
 
     return 'Ocorreu um problema tecnico ao consultar esta encomenda. Tente novamente dentro de momentos.';

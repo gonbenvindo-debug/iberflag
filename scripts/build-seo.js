@@ -26,7 +26,7 @@ const STATIC_INDEXABLE_PAGES = [
 ];
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -98,14 +98,14 @@ function formatCurrency(value) {
     return `${amount.toFixed(2)}€`;
 }
 
-function isoDate(value) {
+function isDate(value) {
     const date = value ? new Date(value) : new Date();
     if (Number.isNaN(date.getTime())) return new Date().toISOString();
     return date.toISOString();
 }
 
 function dateOnly(value) {
-    return isoDate(value).slice(0, 10);
+    return isDate(value).slice(0, 10);
 }
 
 function safeImageUrl(value) {
@@ -197,9 +197,9 @@ function buildCategoryEntries(products) {
                 return String(left.nome || '').localeCompare(String(right.nome || ''), 'pt-PT');
             }),
             updatedAt: categoryProducts.reduce((latest, product) => {
-                const value = isoDate(product.updated_at || product.created_at);
+                const value = isDate(product.updated_at || product.created_at);
                 return value > latest ? value : latest;
-            }, isoDate())
+            }, isDate())
         };
     }).sort((left, right) => left.label.localeCompare(right.label, 'pt-PT'));
 }
@@ -785,7 +785,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
             '@context': 'https://schema.org',
             '@type': 'CollectionPage',
             name: 'Catálogo de Produtos IberFlag',
-            description: 'Catálogo IberFlag com categorias e produtos publicitários personalizados para eventos, retail e comunicacao fisica.',
+            description: 'Catálogo IberFlag com categorias e produtos publicitários personalizados para eventos, retalho e comunica??o f?sica.',
             url: SiteRoutes.buildPublicUrl(SiteRoutes.STATIC_PATHS.products)
         },
         {
@@ -863,7 +863,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
 function renderHtmlSitemap(categoryEntries, productEntries) {
     return `${renderHead({
         title: 'Mapa do Site | IberFlag',
-        description: 'Encontre rapidamente categorias, produtos e paginas principais da IberFlag.',
+        description: 'Encontre rapidamente categorias, produtos e p?ginas principais da IberFlag.',
         canonicalPath: SiteRoutes.STATIC_PATHS.sitemap,
         imageUrl: `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`,
         structuredData: {
@@ -878,7 +878,7 @@ function renderHtmlSitemap(categoryEntries, productEntries) {
   <main class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
     <div class="max-w-3xl">
       <h1 class="text-3xl font-semibold tracking-tight text-slate-900">Mapa do site</h1>
-      <p class="mt-4 text-base leading-7 text-slate-600">Encontre num so lugar as categorias, os produtos e as paginas mais uteis do site.</p>
+      <p class="mt-4 text-base leading-7 text-slate-600">Encontre num s? lugar as categorias, os produtos e as p?ginas mais ?teis do site.</p>
     </div>
     <div class="mt-10 grid gap-8 lg:grid-cols-3">
       <section class="rounded-2xl border border-slate-200 bg-white p-6">

@@ -30,7 +30,7 @@
     }
 
     function escapeXml(value) {
-        return String(value ?? '')
+        return String(value || '')
             .replace(/&/g, '&amp;')
             .replace(/</g, '&lt;')
             .replace(/>/g, '&gt;')
@@ -58,7 +58,7 @@
         const heightFallback = type === 'text' ? 60 : type === 'qrcode' ? 120 : 150;
 
         const normalized = {
-            id: String(data.id ?? properties.id ?? `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
+            id: String(data.id || properties.id || `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`),
             type,
             x: toNumber(data.x ?? properties.x ?? 0),
             y: toNumber(data.y ?? properties.y ?? 0),
@@ -68,39 +68,39 @@
         };
 
         if (type === 'text') {
-            normalized.content = data.content ?? properties.text ?? 'Texto';
-            normalized.font = data.font ?? properties.fontFamily ?? 'Arial';
+            normalized.content = data.content || properties.text || 'Texto';
+            normalized.font = data.font || properties.fontFamily || 'Arial';
             normalized.size = toNumber(data.size ?? properties.fontSize ?? 24);
-            normalized.color = data.color ?? properties.color ?? '#000000';
-            normalized.bold = Boolean(data.bold ?? String(properties.fontWeight || '').toLowerCase() === 'bold');
-            normalized.italic = Boolean(data.italic ?? String(properties.fontStyle || '').toLowerCase() === 'italic');
+            normalized.color = data.color || properties.color || '#000000';
+            normalized.bold = Boolean(data.bold ?? (String(properties.fontWeight || '').toLowerCase() === 'bold'));
+            normalized.italic = Boolean(data.italic ?? (String(properties.fontStyle || '').toLowerCase() === 'italic'));
             normalized.textAlign = String(
                 data.textAlign
-                    ?? properties.textAlign
-                    ?? properties.align
-                    ?? 'center'
+                    || properties.textAlign
+                    || properties.align
+                    || 'center'
             ).toLowerCase();
             normalized.lineHeight = toNumber(data.lineHeight ?? properties.lineHeight ?? Math.round(normalized.size * 1.2));
         } else if (type === 'shape') {
-            normalized.shapeType = String(data.shapeType ?? properties.shape ?? 'rectangle').toLowerCase();
-            normalized.fill = data.fill ?? properties.fill ?? '#3b82f6';
-            normalized.stroke = data.stroke ?? properties.stroke ?? 'none';
+            normalized.shapeType = String(data.shapeType || properties.shape || 'rectangle').toLowerCase();
+            normalized.fill = data.fill || properties.fill || '#3b82f6';
+            normalized.stroke = data.stroke || properties.stroke || 'none';
             normalized.strokeWidth = toNumber(data.strokeWidth ?? properties.strokeWidth ?? 0);
         } else if (type === 'image') {
-            normalized.src = data.src ?? properties.src ?? '';
-            normalized.name = data.name ?? properties.name ?? 'Imagem';
-            normalized.imageKind = data.imageKind ?? properties.imageKind ?? 'image';
+            normalized.src = data.src || properties.src || '';
+            normalized.name = data.name || properties.name || 'Imagem';
+            normalized.imageKind = data.imageKind || properties.imageKind || 'image';
             normalized.opacity = toNumber(data.opacity ?? properties.opacity ?? 1);
-            normalized.objectFit = String(data.objectFit ?? properties.objectFit ?? 'cover').toLowerCase();
+            normalized.objectFit = String(data.objectFit || properties.objectFit || 'cover').toLowerCase();
             normalized.borderRadius = toNumber(data.borderRadius ?? properties.borderRadius ?? 0);
-            normalized.qrContent = data.qrContent ?? properties.qrContent ?? '';
-            normalized.qrColor = data.qrColor ?? properties.qrColor ?? '#111827';
+            normalized.qrContent = data.qrContent || properties.qrContent || '';
+            normalized.qrColor = data.qrColor || properties.qrColor || '#111827';
         } else if (type === 'qrcode') {
-            normalized.name = data.name ?? properties.name ?? 'QR Code';
+            normalized.name = data.name || properties.name || 'QR Code';
             normalized.imageKind = 'qr';
-            normalized.qrContent = data.qrContent ?? properties.content ?? '';
-            normalized.qrColor = data.qrColor ?? properties.color ?? '#111827';
-            normalized.bgColor = data.bgColor ?? properties.bgColor ?? '#ffffff';
+            normalized.qrContent = data.qrContent || properties.content || '';
+            normalized.qrColor = data.qrColor || properties.color || '#111827';
+            normalized.bgColor = data.bgColor || properties.bgColor || '#ffffff';
         }
 
         return normalized;
@@ -161,7 +161,7 @@
         const align = data.textAlign === 'left' ? 'start' : data.textAlign === 'right' ? 'end' : 'middle';
         const x = data.x + (align === 'middle' ? data.width / 2 : align === 'end' ? data.width : 0);
         const y = data.y + (data.height > 0 ? data.height / 2 : data.size);
-        const lines = String(data.content ?? 'Texto').split(/\r?\n/);
+        const lines = String(data.content || 'Texto').split(/\r?\n/);
 
         textNode.setAttribute('id', data.id);
         textNode.setAttribute('data-editable', 'true');
@@ -245,11 +245,11 @@
         node.setAttribute('data-element-id', data.id);
         node.setAttribute('fill', data.fill || '#3b82f6');
         node.setAttribute('stroke', data.stroke || 'none');
-        node.setAttribute('stroke-width', String(data.strokeWidth ?? 0));
+        node.setAttribute('stroke-width', String(data.strokeWidth || 0));
         node.setAttribute('style', buildStyleString({
             fill: data.fill || '#3b82f6',
             stroke: data.stroke || 'none',
-            'stroke-width': String(data.strokeWidth ?? 0),
+            'stroke-width': String(data.strokeWidth || 0),
             'user-select': 'none'
         }));
         node.style.cursor = 'move';
@@ -304,14 +304,14 @@
         node.setAttribute('width', String(data.width));
         node.setAttribute('height', String(data.height));
         node.setAttribute('href', href);
-        node.setAttribute('opacity', String(data.opacity ?? 1));
+        node.setAttribute('opacity', String(data.opacity || 1));
         node.setAttribute('preserveAspectRatio',
             objectFit === 'contain' ? 'xMidYMid meet'
                 : objectFit === 'fill' ? 'none'
                     : 'xMidYMid slice'
         );
         node.setAttribute('style', buildStyleString({
-            opacity: String(data.opacity ?? 1),
+            opacity: String(data.opacity || 1),
             'user-select': 'none'
         }));
         node.style.cursor = 'move';
@@ -953,7 +953,7 @@
                     return String(value);
                 }
             }
-            return String(value ?? '');
+            return String(value || '');
         };
 
         return [

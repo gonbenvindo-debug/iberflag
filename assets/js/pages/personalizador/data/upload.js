@@ -132,8 +132,8 @@ Object.assign(DesignEditor.prototype, {
         const stroke = data.stroke || 'none';
         const strokeWidth = Number(data.strokeWidth || 0);
         const center = {
-            x: Number(data.x ?? 0) + (Number(data.width ?? 0) / 2),
-            y: Number(data.y ?? 0) + (Number(data.height ?? 0) / 2)
+            x: Number(data.x || 0) + (Number(data.width || 0) / 2),
+            y: Number(data.y || 0) + (Number(data.height || 0) / 2)
         };
         const baseSize = Math.max(48, Math.min(180, Number(data.size || Math.max(Number(data.width || 0), Number(data.height || 0)) || 120)));
         let shape;
@@ -268,7 +268,7 @@ Object.assign(DesignEditor.prototype, {
         text.setAttribute('xml:space', 'preserve');
         text.setAttribute('data-editable', 'true');
         text.dataset.rawContent = defaultLabel;
-        text.textContent = this.getRenderedTextValue?.(defaultLabel, false) ?? defaultLabel;
+        text.textContent = this.getRenderedTextValue?.(defaultLabel, false) || defaultLabel;
         text.style.cursor = 'move';
 
         this.canvas.appendChild(text);

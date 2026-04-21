@@ -1,18 +1,18 @@
--- Seed de bases de fixacao e associacao de exemplo a produtos
+-- Seed de bases de fixacao e ass?ciacao de exemplo a produtos
 -- Requer: variants-bases-schema.sql ja executado
 
 insert into public.bases_fixacao (nome, slug, descricao, imagem, preco_extra, ativo, disponivel, nota_indisponibilidade, ordem)
 values
-    ('Base Cruzeta', 'base-cruzeta', 'Base em cruz para uso interior e exterior em superficies planas.', 'https://picsum.photos/seed/base-cruzeta/900/560', 14.90, true, true, null, 1),
+    ('Base Cruzeta', 'base-cruzeta', 'Base em cruz para us? interior e exterior em superficies planas.', 'https://picsum.photos/seed/base-cruzeta/900/560', 14.90, true, true, null, 1),
     ('Base Espeto', 'base-espeto', 'Fixacao para relva, terra e areia compacta.', 'https://picsum.photos/seed/base-espeto/900/560', 9.90, true, true, null, 2),
     ('Base Placa 8kg', 'base-placa-8kg', 'Base metalica de 8kg para alta estabilidade.', 'https://picsum.photos/seed/base-placa8/900/560', 24.90, true, true, null, 3),
-    ('Base Rodas', 'base-rodas', 'Base com rodas para deslocacao rapida em eventos.', 'https://picsum.photos/seed/base-rodas/900/560', 29.90, true, true, null, 4),
-    ('Base Enchivel Agua', 'base-enchivel-agua', 'Base enchivel para maior peso e estabilidade no exterior.', 'https://picsum.photos/seed/base-agua/900/560', 19.90, true, true, null, 5),
-    ('Base Slim Indoor', 'base-slim-indoor', 'Base leve para uso interior em superficies lisas.', 'https://picsum.photos/seed/base-slim/900/560', 11.50, true, true, null, 6),
+    ('Base Rodas', 'base-rodas', 'Base com rodas para desloca??o r?pida em eventos.', 'https://picsum.photos/seed/base-rodas/900/560', 29.90, true, true, null, 4),
+    ('Base Enchivel Agua', 'base-enchivel-agua', 'Base enchivel para maior pes? e estabilidade no exterior.', 'https://picsum.photos/seed/base-agua/900/560', 19.90, true, true, null, 5),
+    ('Base Slim Indoor', 'base-slim-indoor', 'Base leve para us? interior em superficies lisas.', 'https://picsum.photos/seed/base-slim/900/560', 11.50, true, true, null, 6),
     ('Base Tripe Reforcado', 'base-tripe-reforcado', 'Tripe de aluminio reforcado para maior estabilidade.', 'https://picsum.photos/seed/base-tripe/900/560', 17.40, true, true, null, 7),
     ('Base Cimento 12kg', 'base-cimento-12kg', 'Base de cimento compacta com 12kg para vento moderado.', 'https://picsum.photos/seed/base-cimento/900/560', 32.00, true, true, null, 8),
     ('Base Premium 360', 'base-premium-360', 'Base premium com sistema de rotacao suave 360 graus.', 'https://picsum.photos/seed/base-premium360/900/560', 39.90, true, true, null, 9),
-    ('Com reforço', 'flybanner-com-reforco', 'Opcao de flybanner com reforço aplicado para maior resistencia.', '/assets/images/flybanner-variants/com-reforco.svg', 0, true, true, null, 10),
+    ('Com reforço', 'flybanner-com-reforco', 'Opcao de flybanner com reforço aplicado para maior resist?ncia.', '/assets/images/flybanner-variants/com-reforco.svg', 0, true, true, null, 10),
     ('Sem reforço', 'flybanner-sem-reforco', 'Opcao de flybanner sem reforço.', '/assets/images/flybanner-variants/sem-reforco.svg', 0, true, false, 'Indisponivel de momento', 11)
 on conflict (slug) do update set
     nome = excluded.nome,

@@ -10,7 +10,7 @@ update public.produtos p
                when 'mastros' then 39.90
                when 'fly-banner' then 69.90
                when 'photocall' then 149.90
-               when 'cubo-publicitario' then 89.90
+               when 'cubo-publicit?rio' then 89.90
                when 'tenda-publicitaria' then 249.90
                when 'x-banner' then 44.90
                when 'roll-up' then 54.90
@@ -27,7 +27,7 @@ update public.produtos p
    and (p.preco is null or p.preco <= 0);
 
 update public.produtos p
-   set svg_template = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#ffffff"/><rect x="40" y="40" width="720" height="520" fill="none" stroke="#111827" stroke-width="4" stroke-dasharray="16 10"/><text x="400" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#111827">Area de impressao</text><text x="400" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6b7280">Template simulado para checkout teste</text></svg>',
+   set svg_template = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 600"><rect width="800" height="600" fill="#ffffff"/><rect x="40" y="40" width="720" height="520" fill="none" stroke="#111827" stroke-width="4" stroke-dasharray="16 10"/><text x="400" y="292" text-anchor="middle" font-family="Arial, sans-serif" font-size="32" font-weight="700" fill="#111827">Area de impress?o</text><text x="400" y="336" text-anchor="middle" font-family="Arial, sans-serif" font-size="20" fill="#6b7280">Template simulado para checkout teste</text></svg>',
        updated_at = now()
  where nullif(trim(coalesce(p.svg_template, '')), '') is null;
 

@@ -22,7 +22,7 @@ var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -432,7 +432,7 @@ var initialProducts = [
     {
         id: 4,
         nome: "Lona PVC 440g/m²",
-        descricao: "Lona PVC de alta resistência com ilhós para fixação. Impressão digital de alta resolução.",
+        descricao: "Lona PVC de alta resistência com ilhós para fixação. Impressão digital de alta res?lução.",
         preco: 25.00,
         categoria: "lonas",
         imagem: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80",
@@ -564,7 +564,7 @@ function normalizeCartItem(item) {
     }
 
     const fallbackProduct = initialProducts.find((product) => product.id === Number(item.id));
-    const preco = Number(item.preco ?? fallbackProduct?.preco);
+    const preco = Number(item.preco ?? fallbackProduct?.preco ?? 0);
     const quantity = Math.max(1, Number.parseInt(item.quantity ?? 1, 10) || 1);
 
     if (!Number.isFinite(preco)) {
@@ -755,14 +755,14 @@ function compactCartItems(items) {
 
     return items.map((item) => {
         return {
-            id: Number(item?.id ?? 0) || 0,
+            id: Number(item?.id || 0) || 0,
             nome: String(item?.nome || '').trim(),
             preco: Number(item?.preco || 0),
             imagem: String(item?.imagem || '').trim(),
             quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
             customized: Boolean(item?.customized),
             designId: item?.designId ? String(item.designId).trim() : null,
-            baseId: item?.baseId ?? item?.base_id ?? null,
+            baseId: item?.baseId || item?.base_id || null,
             baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
             baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
             basePrecoExtra: Number(item?.basePrecoExtra || 0)

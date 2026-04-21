@@ -75,7 +75,7 @@ Object.assign(DesignEditor.prototype, {
         const editor = document.createElement('input');
         editor.type = 'text';
         editor.id = 'inline-text-editor';
-        editor.value = this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? '');
+        editor.value = this.extractRawTextValueFromNode?.(textNode) || String(elementData.rawContent || elementData.content || textNode.textContent || '');
         editor.setAttribute('aria-label', 'Editar texto');
         editor.autocomplete = 'off';
         editor.spellcheck = false;
@@ -137,7 +137,7 @@ Object.assign(DesignEditor.prototype, {
         stage.appendChild(editorShell);
         this._inlineTextEditorState = {
             elementId: elementData.id,
-            originalValue: this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? elementData.content ?? textNode.textContent ?? ''),
+            originalValue: this.extractRawTextValueFromNode?.(textNode) || String(elementData.rawContent || elementData.content || textNode.textContent || ''),
             textNode,
             shell: editorShell,
             editor
@@ -212,7 +212,7 @@ Object.assign(DesignEditor.prototype, {
         };
 
         if (commit) {
-            applyValue(state.editor?.value ?? state.originalValue);
+            applyValue(state.editor?.value || state.originalValue);
             this.queueHistorySave?.(120);
         } else {
             applyValue(state.originalValue);
@@ -483,7 +483,7 @@ Object.assign(DesignEditor.prototype, {
 
         const mid = (a, b) => ({ x: (a.x + b.x) / 2, y: (a.y + b.y) / 2 });
 
-        // Offset to viewport coords so handles work inside position:fixed container.
+        // Offset to viewport coords s? handles work inside position:fixed container.
         const ox = metrics.rect.left;
         const oy = metrics.rect.top;
         const toVP = (p) => ({ x: p.x + ox, y: p.y + oy });
@@ -813,10 +813,10 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (this.isDragging && this.selectedElement) {
-            // Convert screen-space delta to SVG coordinates so drag speed matches cursor.
+            // Convert screen-space delta to SVG coordinates s? drag speed matches cursor.
             const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - (this.dragStart.startClientX ?? this.dragStart.mouseX),
-                e.clientY - (this.dragStart.startClientY ?? this.dragStart.mouseY)
+                e.clientX - this.dragStart.mouseX,
+                e.clientY - this.dragStart.mouseY
             );
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
@@ -868,8 +868,8 @@ Object.assign(DesignEditor.prototype, {
                     this.hideGuideLines();
                 }
 
-                if (snapPoints.x) deltaX += snapPoints.x.offsetX ?? 0;
-                if (snapPoints.y) deltaY += snapPoints.y.offsetY ?? 0;
+                if (snapPoints.x) deltaX += snapPoints.x.offsetX || 0;
+                if (snapPoints.y) deltaY += snapPoints.y.offsetY || 0;
             }
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);
@@ -926,7 +926,7 @@ Object.assign(DesignEditor.prototype, {
         document.body.classList.remove('is-camera-panning');
         this.canvasStage?.classList.remove('is-camera-panning');
 
-        // Reset handles container CSS transform so showResizeHandles can reposition cleanly.
+        // Reset handles container CSS transform s? showResizeHandles can reposition cleanly.
         const handlesContainer = document.getElementById('resize-handles');
         if (handlesContainer) {
             handlesContainer.style.transform = '';
@@ -1083,8 +1083,8 @@ Object.assign(DesignEditor.prototype, {
         // ===== CROP MODE =====
         if (this.cropMode && this.cropBounds) {
             const svgDelta = this.clientDeltaToSvgDelta(
-                e.clientX - (this.dragStart.startClientX ?? this.dragStart.x),
-                e.clientY - (this.dragStart.startClientY ?? this.dragStart.y)
+                e.clientX - this.dragStart.x,
+                e.clientY - this.dragStart.y
             );
             let dx = svgDelta.dx;
             let dy = svgDelta.dy;
@@ -1434,11 +1434,11 @@ Object.assign(DesignEditor.prototype, {
         const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
         this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
 
-        // Record the rotation at the start of this gesture so we can compute the CSS delta.
+        // Record the rotation at the start of this gesture s? we can compute the CSS delta.
         this._rotateStartRotation = elementData.rotation || 0;
 
-        // Apply CSS transform-origin on the handles container so all handles rotate together.
-        // Container is position:fixed inset:0, so origin coords are raw viewport (clientX/Y).
+        // Apply CSS transform-origin on the handles container s? all handles rotate together.
+        // Container is position:fixed inset:0, s? origin coords are raw viewport (clientX/Y).
         const handlesContainer = document.getElementById('resize-handles');
         if (handlesContainer) {
             handlesContainer.style.transformOrigin = `${centerClient.x}px ${centerClient.y}px`;

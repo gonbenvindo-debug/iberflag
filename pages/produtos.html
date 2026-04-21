@@ -62,7 +62,7 @@
         @media (max-width: 767px) {
             .catalog-grid-two {
                 display: grid !important;
-                grid-templaté-columns: repeat(2, minmax(0, 1fr)) !important;
+                grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
                 gap: 0.85rem !important;
             }
 
@@ -123,30 +123,30 @@
     </div>
 
     <main>
-        <section class="border-b border-slaté-200 bg-white">
+        <section class="border-b border-slate-200 bg-white">
             <div class="max-w-7xl mx-auto px-4 pb-0 pt-0 sm:px-6 sm:py-10 lg:px-8">
-                <nav class="mb-4 hidden flex-wrap items-center gap-2 text-sm text-slaté-500 sm:flex" aria-label="Breadcrumb">
-                    <a href="/" class="hover:text-slaté-900">Início</a>
+                <nav class="mb-4 hidden flex-wrap items-center gap-2 text-sm text-slate-500 sm:flex" aria-label="Breadcrumb">
+                    <a href="/" class="hover:text-slate-900">Início</a>
                     <span>/</span>
-                    <span class="text-slaté-900">Produtos</span>
+                    <span class="text-slate-900">Produtos</span>
                 </nav>
                 <div class="max-w-3xl">
-                    <h1 class="product-landing-title text-2xl font-semibold leading-tight tracking-tight text-slaté-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
-                    <p class="product-landing-description mt-3 max-w-2xl text-sm leading-6 text-slaté-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a catégoria certa, compare os modelos e avance para a personalização quando já souber o formato ideal.</p>
+                    <h1 class="product-landing-title text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
+                    <p class="product-landing-description mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalização quando já souber o formato ideal.</p>
                 </div>
                 <div class="catalog-compact-summary mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
-                    <p class="text-xs font-medium uppercase tracking-[0.18em] text-slaté-500"><span id="product-count">0</span> produto(s)</p>
+                    <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500"><span id="product-count">0</span> produto(s)</p>
                     <div class="catalog-toolbar-grid grid grid-cols-2 gap-x-2 gap-y-1 sm:min-w-[30rem] sm:gap-x-3 sm:gap-y-2">
-                        <label for="catégory-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slaté-500">
-                            Catégoria
+                        <label for="category-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
+                            Categoria
                         </label>
-                        <label for="sort-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slaté-500">
+                        <label for="sort-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
                             Ordenar
                         </label>
-                        <select id="catégory-select" class="min-h-[42px] rounded-xl border border-slaté-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slaté-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slaté-300 transition focus:border-slaté-400">
-                            <option value="all">Todas as catégorias</option>
+                        <select id="category-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 transition focus:border-slate-400">
+                            <option value="all">Todas as categorias</option>
                         </select>
-                        <select id="sort-select" class="min-h-[42px] rounded-xl border border-slaté-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slaté-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slaté-300 transition focus:border-slaté-400">
+                        <select id="sort-select" class="min-h-[42px] rounded-xl border border-slate-200 bg-white px-3 py-2 text-sm font-medium normal-case tracking-normal text-slate-900 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-slate-300 transition focus:border-slate-400">
                             <option value="default">Destaques</option>
                             <option value="price-asc">Preço: menor primeiro</option>
                             <option value="price-desc">Preço: maior primeiro</option>
@@ -164,13 +164,13 @@
                     <!-- Products will be loaded here -->
                 </div>
 
-                <div id="empty-staté" class="hidden empty-staté mt-8">
-                    <i data-lucide="package-x" class="empty-staté-icon"></i>
+                <div id="empty-state" class="hidden empty-state mt-8">
+                    <i data-lucide="package-x" class="empty-state-icon"></i>
                     <h3 class="text-xl font-bold mb-2">Nenhum produto encontrado</h3>
-                    <p>Tente ajustar os filtros ou mudar a catégoria.</p>
+                    <p>Tente ajustar os filtros ou mudar a categoria.</p>
                 </div>
 
-                <div id="products-pagination" class="pagination hidden" aria-label="Paginacao de produtos"></div>
+                <div id="products-pagination" class="pagination hidden" aria-label="Pagina??o de produtos"></div>
             </div>
         </section>
     </main>
@@ -205,12 +205,12 @@
                     <div class="bg-white rounded-xl p-6 border border-gray-200 sticky top-24">
                         <h3 class="font-bold text-lg mb-4">Filtros</h3>
 
-                        <!-- Catégory Filter -->
+                        <!-- Category Filter -->
                         <div class="mb-6">
-                            <h4 class="font-semibold mb-3 text-sm text-gray-700">Catégoria</h4>
-                            <div id="catégory-filters-legacy" class="space-y-2">
+                            <h4 class="font-semibold mb-3 text-sm text-gray-700">Categoria</h4>
+                            <div id="category-filters-legacy" class="space-y-2">
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="radio" name="catégory" value="all" class="custom-radio" checked>
+                                    <input type="radio" name="category" value="all" class="custom-radio" checked>
                                     <span class="ml-2 text-sm">Todos os Produtos</span>
                                 </label>
                             </div>
@@ -270,8 +270,8 @@
                     </div>
 
                     <!-- Empty Staté -->
-                    <div id="empty-staté-legacy" class="hidden empty-staté">
-                        <i data-lucide="package-x" class="empty-staté-icon"></i>
+                    <div id="empty-state-legacy" class="hidden empty-state">
+                        <i data-lucide="package-x" class="empty-state-icon"></i>
                         <h3 class="text-xl font-bold mb-2">Nenhum produto encontrado</h3>
                         <p>Tente ajustar os seus filtros</p>
                     </div>
@@ -290,7 +290,7 @@
                             <img src="/assets/logos/logo-minimalista-white.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rapida e apoio dedicado.</p>
+                    <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.</p>
                     <div class="flex gap-4">
                         <a href="#" class="social-icon">
                             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
@@ -383,10 +383,10 @@
     </div>
     -->
 
-    <!-- Modal de Templatés / Galeria de Designs -->
-    <div id="templatés-modal"
+    <!-- Modal de Templates / Galeria de Designs -->
+    <div id="templates-modal"
         class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4"
-        onclick="if(event.target===this)closeTemplatésModal()">
+        onclick="if(event.target===this)closeTemplatesModal()">
         <div
             class="bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animaté-in">
             <!-- Header -->
@@ -399,20 +399,20 @@
                     <p class="text-sm text-gray-500 mt-0.5" id="modal-product-name">Escolha um design pronto ou comece
                         do zero</p>
                 </div>
-                <button onclick="closeTemplatésModal()"
+                <button onclick="closeTemplatesModal()"
                     class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
                     <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                 </button>
             </div>
 
-            <!-- Grid de Templatés -->
+            <!-- Grid de Templates -->
             <div class="flex-1 overflow-y-auto p-6">
-                <div id="templatés-modal-grid" class="grid gap-4 sm:gap-5">
-                    <!-- Templatés serao carregados aqui -->
+                <div id="templates-modal-grid" class="grid gap-4 sm:gap-5">
+                    <!-- Templates serao carregados aqui -->
                 </div>
 
                 <!-- Estado vazio -->
-                <div id="templatés-empty" class="hidden text-center py-16">
+                <div id="templates-empty" class="hidden text-center py-16">
                     <div class="w-20 h-20 mx-auto mb-4 rounded-2xl bg-gray-100 flex items-center justify-center">
                         <i data-lucide="image-off" class="w-10 h-10 text-gray-300"></i>
                     </div>
@@ -428,7 +428,7 @@
 
             <!-- Footer -->
             <div class="flex items-center justify-end p-4 border-t border-gray-100 bg-gray-50/50">
-                <button onclick="closeTemplatésModal()"
+                <button onclick="closeTemplatesModal()"
                     class="px-5 py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors">
                     Cancelar
                 </button>

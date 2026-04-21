@@ -13,7 +13,7 @@ function normalizeContactSource(form) {
 }
 
 function normalizeFieldValue(value) {
-    return String(value ?? '').trim();
+    return String(value || '').trim();
 }
 
 function readFormField(form, ...names) {
@@ -118,7 +118,7 @@ async function submitContactForm(form) {
 
         form.reset();
         notifyContact(
-            payload.message || 'Mensagem enviada com sucesso! Entraremos em contacto brevemente.',
+            payload.message || 'Mensagem enviada com sucess?! Entraremos em contacto brevemente.',
             'success'
         );
     } catch (error) {

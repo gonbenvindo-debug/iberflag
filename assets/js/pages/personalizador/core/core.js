@@ -1,7 +1,7 @@
 // ===== MODERN PRODUCT CUSTOMIZER - CANVA STYLE =====
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -100,7 +100,7 @@ class DesignEditor {
     }
 
     getRenderedTextValue(rawValue, capsLock = false) {
-        const normalizedRaw = String(rawValue ?? '');
+        const normalizedRaw = String(rawValue || '');
         const display = capsLock ? normalizedRaw.toUpperCase() : normalizedRaw;
         return display.length > 0 ? display : '\u00A0';
     }
@@ -109,10 +109,10 @@ class DesignEditor {
         if (!node) return '';
 
         if (node.dataset && Object.prototype.hasOwnProperty.call(node.dataset, 'rawContent')) {
-            return String(node.dataset.rawContent ?? '');
+            return String(node.dataset.rawContent || '');
         }
 
-        const text = String(node.textContent ?? '');
+        const text = String(node.textContent || '');
         return text === '\u00A0' ? '' : text;
     }
 
@@ -156,10 +156,10 @@ class DesignEditor {
             return null;
         }
 
-        const nextRaw = String(rawValue ?? '');
+        const nextRaw = String(rawValue || '');
         const renderedText = this.getRenderedTextValue(nextRaw, Boolean(elementData.capsLock));
-        const currentX = Number.parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0)) || 0;
-        const currentY = Number.parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0)) || 0;
+        const currentX = Number.parseFloat(elementData.element.getAttribute('x') || String(elementData.x || 0)) || 0;
+        const currentY = Number.parseFloat(elementData.element.getAttribute('y') || String(elementData.y || 0)) || 0;
         const previousBounds = this.syncTextMetrics?.(elementData, { syncDataset: false }) || {
             x: Number(elementData.boundsX) || currentX,
             y: Number(elementData.boundsY) || currentY,

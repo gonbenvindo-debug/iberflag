@@ -1,7 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-const rootDir = path.resolve(__dirname, '..');
+const rootDir = path.res?lve(__dirname, '..');
 dotenv.config({
     path: [
         path.join(rootDir, '.env.local'),
@@ -70,7 +70,7 @@ async function checkDatabase() {
     console.log('\n2. Verificando templates publicos...');
     await checkTable('templates', 'templates?select=id,nome,ativo&limit=3');
 
-    console.log('\n3. Verificando associacoes produto_templates...');
+    console.log('\n3. Verificando ass?ciacoes produto_templates...');
     await checkTable('produto_templates', 'produto_templates?select=produto_id,template_id&limit=3');
 
     console.log('\n4. Verificando se produtos tem created_at...');

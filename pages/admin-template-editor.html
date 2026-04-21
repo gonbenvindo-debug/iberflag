@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Editor de Templatés - Admin - IberFlag</title>
+    <title>Editor de Templates - Admin - IberFlag</title>
   <link rel="icon" type="image/svg+xml" href="/favicon-white.svg?v=20260415a">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
@@ -52,14 +52,14 @@
             gap: 12px;
         }
 
-        .templaté-info-input {
+        .template-info-input {
             display: flex;
             gap: 12px;
             align-items: center;
         }
 
-        .templaté-info-input input,
-        .templaté-info-input select {
+        .template-info-input input,
+        .template-info-input select {
             padding: 8px 12px;
             border: 1px solid var(--panel-border);
             border-radius: 8px;
@@ -67,14 +67,14 @@
             background: white;
         }
 
-        .templaté-info-input input {
+        .template-info-input input {
             width: 250px;
         }
 
         /* Main Layout */
         .editor-container {
             display: grid;
-            grid-templaté-columns: 320px 1fr 320px;
+            grid-template-columns: 320px 1fr 320px;
             height: calc(100vh - 64px);
         }
 
@@ -164,7 +164,7 @@
         /* Element Types */
         .element-types {
             display: grid;
-            grid-templaté-columns: repeat(2, 1fr);
+            grid-template-columns: repeat(2, 1fr);
             gap: 8px;
             margin-bottom: 24px;
         }
@@ -293,7 +293,7 @@
 
         .property-row {
             display: grid;
-            grid-templaté-columns: 1fr 1fr;
+            grid-template-columns: 1fr 1fr;
             gap: 12px;
         }
 
@@ -343,7 +343,7 @@
         /* Responsive */
         @media (max-width: 1024px) {
             .editor-container {
-                grid-templaté-columns: 280px 1fr 280px;
+                grid-template-columns: 280px 1fr 280px;
             }
         }
 
@@ -382,10 +382,10 @@
             <a href="/admin" class="text-gray-500 hover:text-gray-700">
                 <iconify-icon icon="lucide:arrow-left" width="24"></iconify-icon>
             </a>
-            <h1 class="font-bold text-lg">Editor de Templatés</h1>
-            <div class="templaté-info-input">
-                <input type="text" id="templaté-name" placeholder="Nome do templaté..." value="Novo Templaté">
-                <select id="templaté-catégory">
+            <h1 class="font-bold text-lg">Editor de Templates</h1>
+            <div class="template-info-input">
+                <input type="text" id="template-name" placeholder="Nome do template..." value="Novo Template">
+                <select id="template-category">
                     <option value="promocoes">Promoções</option>
                     <option value="eventos">Eventos</option>
                     <option value="corporativo">Corporativo</option>
@@ -395,13 +395,13 @@
             </div>
         </div>
         <div class="admin-header-right">
-            <button class="btn-secondary" onclick="previewTemplaté()">
+            <button class="btn-secondary" onclick="previewTemplate()">
                 <iconify-icon icon="lucide:eye" width="18" class="mr-2"></iconify-icon>
                 Preview
             </button>
-            <button class="btn-primary" onclick="saveTemplaté()">
+            <button class="btn-primary" onclick="saveTemplate()">
                 <iconify-icon icon="lucide:save" width="18" class="mr-2"></iconify-icon>
-                Guardar Templaté
+                Guardar Template
             </button>
         </div>
     </header>
@@ -464,7 +464,7 @@
                     <div class="print-area" id="print-area"
                         style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
                     <div class="empty-canvas" id="empty-staté">
-                        <iconify-icon icon="lucide:layout-templaté"></iconify-icon>
+                        <iconify-icon icon="lucide:layout-template"></iconify-icon>
                         <span>Clique nos elementos à esquerda para começar</span>
                     </div>
                 </div>
@@ -496,11 +496,11 @@
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
         const ADMIN_EMAIL = 'admin123@iberflag.com';
-        const adminTemplatéSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const adminTemplateSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Verificar autenticacao
         async function checkAuth() {
-            const { data: { session } } = await adminTemplatéSupabase.auth.getSession();
+            const { data: { session } } = await adminTemplateSupabase.auth.getSession();
             if (!session || String(session.user?.email || '').toLowerCase() !== ADMIN_EMAIL) {
                 window.location.href = '/admin';
             }
@@ -509,26 +509,26 @@
 
         function hydratéEditorFromPayload() {
             const params = new URLSearchParams(window.location.search);
-            const templatéIdParam = params.get('templatéId');
-            const payloadRaw = window.localStorage.getItem('iberflag_editor_templaté_payload');
+            const templateIdParam = params.get('templateId');
+            const payloadRaw = window.localStorage.getItem('iberflag_editor_template_payload');
             if (!payloadRaw) return;
 
             let payload = null;
             try {
                 payload = JSON.parse(payloadRaw);
             } catch (error) {
-                window.localStorage.removeItem('iberflag_editor_templaté_payload');
+                window.localStorage.removeItem('iberflag_editor_template_payload');
                 return;
             }
 
-            if (!payload || (templatéIdParam && String(payload.id) !== String(templatéIdParam))) {
+            if (!payload || (templateIdParam && String(payload.id) !== String(templateIdParam))) {
                 return;
             }
 
-            const nameInput = document.getElementById('templaté-name');
-            const catégorySelect = document.getElementById('templaté-catégory');
-            if (nameInput) nameInput.value = payload.nome || 'Templaté sem nome';
-            if (catégorySelect) catégorySelect.value = payload.catégoria || 'promocoes';
+            const nameInput = document.getElementById('template-name');
+            const categorySelect = document.getElementById('template-category');
+            if (nameInput) nameInput.value = payload.nome || 'Template sem nome';
+            if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
 
             const payloadElements = Array.isArray(payload.elementos)
                 ? payload.elementos
@@ -546,7 +546,7 @@
                 updatéEmptyStaté();
             }
 
-            window.localStorage.removeItem('iberflag_editor_templaté_payload');
+            window.localStorage.removeItem('iberflag_editor_template_payload');
         }
 
         // Adicionar elemento
@@ -967,22 +967,22 @@
             }
         }
 
-        // Guardar templaté
-        async function saveTemplaté() {
-            const nome = document.getElementById('templaté-name').value;
-            const catégoria = document.getElementById('templaté-catégory').value;
+        // Guardar template
+        async function saveTemplate() {
+            const nome = document.getElementById('template-name').value;
+            const categoria = document.getElementById('template-category').value;
 
             if (!nome) {
-                alert('Por favor, insira um nome para o templaté');
+                alert('Por favor, insira um nome para o template');
                 return;
             }
 
             if (elements.length === 0) {
-                alert('Adicione pelo menos um elemento ao templaté');
+                alert('Adicione pelo menos um elemento ao template');
                 return;
             }
 
-            const designSvg = window.DesignSvgStore?.buildTemplatéSvgFromElements(elements, {
+            const designSvg = window.DesignSvgStore?.buildTemplateSvgFromElements(elements, {
                 width: 800,
                 height: 600
             }) || '';
@@ -992,7 +992,7 @@
 
             const previewData = {
                 nome,
-                catégoria,
+                categoria,
                 elementos: {
                     format: 'svg-inline-v1',
                     svg: designSvg,
@@ -1006,20 +1006,20 @@
             };
 
             try {
-                const { data, error } = await adminTemplatéSupabase
-                    .from('templatés')
+                const { data, error } = await adminTemplateSupabase
+                    .from('templates')
                     .upsert([previewData])
                     .select();
 
                 if (error) throw error;
 
-                alert('Templaté guardado com sucesso!');
+                alert('Template guardado com sucesso!');
 
                 // Redirecionar para admin ou limpar
-                if (confirm('Desejá criar outro templaté?')) {
+                if (confirm('Desejá criar outro template?')) {
                     elements = [];
                     selectedElement = null;
-                    document.getElementById('templaté-name').value = 'Novo Templaté';
+                    document.getElementById('template-name').value = 'Novo Template';
                     renderElements();
                     updatéEmptyStaté();
                 } else {
@@ -1027,12 +1027,12 @@
                 }
             } catch (err) {
                 console.error('Erro ao guardar:', err);
-                alert('Erro ao guardar templaté. Tente novamente.');
+                alert('Erro ao guardar template. Tente novamente.');
             }
         }
 
         // Preview
-        function previewTemplaté() {
+        function previewTemplate() {
             // Abrir modal ou nova aba com preview
             alert('Preview sera implementado em breve!');
         }

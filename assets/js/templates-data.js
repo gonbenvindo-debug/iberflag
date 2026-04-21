@@ -761,10 +761,10 @@ const DesignTemplates = {
 
         // ========== VAREJO ==========
         {
-            id: 'retail-grand-opening',
+            id: 'retalho-grand-opening',
             name: 'Grande Abertura',
             category: 'varejo',
-            thumbnail: '/assets/templates/retail-opening-thumb.jpg',
+            thumbnail: '/assets/templates/retalho-opening-thumb.jpg',
             description: 'Banner para inauguração de loja',
             tags: ['loja', 'abertura', 'varejo'],
             elements: [
@@ -847,10 +847,10 @@ const DesignTemplates = {
             ]
         },
         {
-            id: 'retail-clearance',
+            id: 'retalho-clearance',
             name: 'Liquidação Total',
             category: 'varejo',
-            thumbnail: '/assets/templates/retail-clearance-thumb.jpg',
+            thumbnail: '/assets/templates/retalho-clearance-thumb.jpg',
             description: 'Design impactante para liquidação de estoque',
             tags: ['liquidação', 'total', 'estoque'],
             elements: [
@@ -952,5 +952,5 @@ const DesignTemplates = {
     }
 };
 
-// Exportar para uso global
+// Exportar para us? global
 window.DesignTemplates = DesignTemplates;

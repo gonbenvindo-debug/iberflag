@@ -168,7 +168,7 @@ function renderPagination(totalItems) {
                     type="button"
                     class="page-btn ${item === currentPage ? 'active' : ''}"
                     data-page="${item}"
-                    aria-label="Ir para a p?gina ${item}"
+                    aria-label="Ir para a pagina ${item}"
                     ${item === currentPage ? 'aria-current="page"' : ''}>
                     ${item}
                 </button>
@@ -208,11 +208,17 @@ async function loadAllProducts() {
 
 // ===== RENDER PRODUCTS =====
 function renderProductsGrid(products) {
-    if (!productsGrid || !emptyState || !productCount) return;
+    if (!productsGrid || !productCount) return;
+
+    if (!Array.isArray(products)) {
+        products = [];
+    }
 
     if (!products || products.length === 0) {
         productsGrid.classList.add('hidden');
-        emptyState.classList.remove('hidden');
+        if (emptyState) {
+            emptyState.classList.remove('hidden');
+        }
         productCount.textContent = '0';
         if (paginationContainer) {
             paginationContainer.classList.add('hidden');
@@ -229,7 +235,9 @@ function renderProductsGrid(products) {
     const paginatedProducts = products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
 
     productsGrid.classList.remove('hidden');
-    emptyState.classList.add('hidden');
+    if (emptyState) {
+        emptyState.classList.add('hidden');
+    }
     productCount.textContent = products.length;
 
     productsGrid.innerHTML = paginatedProducts.map(product => `

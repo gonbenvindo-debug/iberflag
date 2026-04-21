@@ -82,7 +82,7 @@ Object.assign(DesignEditor.prototype, {
             const nextState = !this.selectedElement.capsLock;
             this.selectedElement.capsLock = nextState;
             this.selectedElement.element.dataset.capsLock = nextState ? 'true' : 'false';
-            const rawContent = this.selectedElement.rawContent ?? this.extractRawTextValueFromNode?.(this.selectedElement.element) ?? '';
+            const rawContent = this.extractRawTextValueFromNode?.(this.selectedElement.element) || String(this.selectedElement.rawContent || '');
             this.applyTextRawValue?.(this.selectedElement, rawContent);
             this.showResizeHandles(this.selectedElement);
             this.saveHistory();
@@ -237,7 +237,7 @@ Object.assign(DesignEditor.prototype, {
         const isCapsLock = Boolean(hasText && this.selectedElement.capsLock);
         const sizeValue = Math.round(Number(this.selectedElement?.size || textSize?.value || 24));
         const rawContent = hasText
-            ? String(this.selectedElement.rawContent ?? this.selectedElement.content ?? this.selectedElement.element.textContent ?? '')
+            ? String(this.selectedElement.rawContent || this.selectedElement.content || this.selectedElement.element.textContent || '')
             : '';
 
         if (textContentInput) {
@@ -1439,7 +1439,7 @@ Object.assign(DesignEditor.prototype, {
         const viewBox = this.getCanvasViewBoxSize?.() || { width: 800, height: 600 };
         const viewBoxWidth = Math.max(1, Number(viewBox.width) || 800);
         const viewBoxHeight = Math.max(1, Number(viewBox.height) || 600);
-        // Wrapper deve ocupar todo o stage; por isso usamos o aspeto do próprio stage.
+        // Wrapper deve ocupar todo o stage; por iss? usamos o aspeto do próprio stage.
         const stageAspectRatio = availableWidth / Math.max(1, availableHeight);
         const canvasAspectRatio = stageAspectRatio;
 

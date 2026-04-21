@@ -159,7 +159,7 @@ Object.assign(DesignEditor.prototype, {
                     this.applyElementRotation(elementToUpdate);
                 }
 
-                showToast('Imagem cortada com sucesso', 'success');
+                showToast('Imagem cortada com sucess?', 'success');
                 this.hideResizeHandles();
                 this.showResizeHandles(elementToUpdate);
                 this.saveHistory();
@@ -297,7 +297,7 @@ Object.assign(DesignEditor.prototype, {
         this.hideResizeHandles();
         this.selectElement(this.selectedElement);
 
-        showToast('Imagem cortada com sucesso', 'success');
+        showToast('Imagem cortada com sucess?', 'success');
         this.saveHistory();
     },
 

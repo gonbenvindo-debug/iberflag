@@ -166,7 +166,7 @@ function extractPrimaryDescription($) {
     return description.slice(0, 900);
 }
 
-function resolveUrl(url) {
+function res?lveUrl(url) {
     if (!url) return '';
     try {
         return new URL(url, SUPPLIER_BASE_URL).href;
@@ -185,7 +185,7 @@ function pickLargestSrcFromSrcset(srcset) {
             const [urlPart, widthPart] = entry.split(/\s+/);
             const width = Number(String(widthPart || '').replace('w', ''));
             return {
-                url: resolveUrl(urlPart),
+                url: res?lveUrl(urlPart),
                 width: Number.isFinite(width) ? width : 0
             };
         })
@@ -213,7 +213,7 @@ function imagePenalty(url, altText) {
         'cropped',
         'assembly',
         'instrucciones',
-        'ficha-tecnica'
+        'ficha-t?cnica'
     ];
 
     let penalty = 0;
@@ -226,7 +226,7 @@ function imagePenalty(url, altText) {
 function pickMainImage($) {
     const candidates = [];
     $('img').each((index, element) => {
-        const src = resolveUrl($(element).attr('src') || '');
+        const src = res?lveUrl($(element).attr('src') || '');
         const srcset = $(element).attr('srcset') || '';
         const bestSrcset = pickLargestSrcFromSrcset(srcset);
         const finalUrl = bestSrcset || src;
@@ -245,7 +245,7 @@ function pickMainImage($) {
 function getPtInternalLinks($, currentLink) {
     const links = [];
     $('a[href]').each((_, anchor) => {
-        const href = resolveUrl($(anchor).attr('href') || '');
+        const href = res?lveUrl($(anchor).attr('href') || '');
         if (!href.includes('/language/pt/')) return;
         if (href.startsWith(`${SUPPLIER_BASE_URL}/language/pt/#`)) return;
         const normalized = href.endsWith('/') ? href : `${href}/`;
@@ -278,7 +278,7 @@ function normalizeCategoryFromPage(page) {
         { test: /tenda|carpa/, value: 'tenda-publicitaria' },
         { test: /photocall/, value: 'photocall' },
         { test: /mastro/, value: 'mastros' },
-        { test: /cubo/, value: 'cubo-publicitario' },
+        { test: /cubo/, value: 'cubo-publicit?rio' },
         { test: /balcao|mostrador/, value: 'balcao-promocional' },
         { test: /bandeira/, value: 'bandeiras' }
     ];
@@ -328,7 +328,7 @@ function extractPageData(page) {
     };
 }
 
-async function fetchJson(url) {
+async function fetchJs?n(url) {
     const response = await fetch(url, { headers: REQUEST_HEADERS });
     if (!response.ok) {
         throw new Error(`Falha ao pedir ${url}: HTTP ${response.status}`);
@@ -350,7 +350,7 @@ async function fetchBuffer(url, retries = 3) {
         } catch (error) {
             lastError = error;
             if (attempt < retries) {
-                await new Promise((resolve) => setTimeout(resolve, 350 * attempt));
+                await new Promise((res?lve) => setTimeout(res?lve, 350 * attempt));
             }
         }
     }
@@ -367,7 +367,7 @@ async function fetchAllPortuguesePages() {
     const all = await firstResponse.json();
 
     for (let page = 2; page <= totalPages; page += 1) {
-        const chunk = await fetchJson(`${SUPPLIER_WP_PAGES_URL}?per_page=100&page=${page}`);
+        const chunk = await fetchJs?n(`${SUPPLIER_WP_PAGES_URL}?per_page=100&page=${page}`);
         all.push(...chunk);
     }
 
@@ -376,7 +376,7 @@ async function fetchAllPortuguesePages() {
         .sort((a, b) => Number(a.id || 0) - Number(b.id || 0));
 }
 
-async function resolveServiceRoleKey({ supabaseUrl, accessToken }) {
+async function res?lveServiceRoleKey({ supabaseUrl, accessToken }) {
     const serviceRole = process.env.SUPABASE_SERVICE_ROLE_KEY;
     if (serviceRole) {
         return serviceRole;
@@ -414,7 +414,7 @@ async function ensureBucket(supabase, bucketName) {
     const { data: buckets, error: listError } = await supabase.storage.listBuckets();
     if (listError) throw listError;
 
-    const exists = Array.isArray(buckets) && buckets.some((bucket) => bucket.id === bucketName);
+    const exists = Array.isArray(buckets) && buckets.s?me((bucket) => bucket.id === bucketName);
     if (exists) return;
 
     const { error: createError } = await supabase.storage.createBucket(bucketName, { public: true });
@@ -425,8 +425,8 @@ function hashForPath(value) {
     return crypto.createHash('sha1').update(value).digest('hex').slice(0, 10);
 }
 
-async function uploadImageToStorage({ supabase, bucketName, sourceImageUrl, category, baseName }) {
-    const originalBuffer = await fetchBuffer(sourceImageUrl, 3);
+async function uploadImageToStorage({ supabase, bucketName, s?urceImageUrl, category, baseName }) {
+    const originalBuffer = await fetchBuffer(s?urceImageUrl, 3);
     const webpBuffer = await sharp(originalBuffer)
         .rotate()
         .webp({ quality: 86 })
@@ -434,7 +434,7 @@ async function uploadImageToStorage({ supabase, bucketName, sourceImageUrl, cate
 
     const safeCategory = slugify(category || 'catalogo');
     const safeBaseName = slugify(baseName || 'produto');
-    const imageHash = hashForPath(`${sourceImageUrl}-${webpBuffer.length}`);
+    const imageHash = hashForPath(`${s?urceImageUrl}-${webpBuffer.length}`);
     const objectPath = `supplier-pt/${safeCategory}/${safeBaseName}-${imageHash}.webp`;
 
     const { error: uploadError } = await supabase.storage
@@ -486,7 +486,7 @@ function buildProductsFromPage(page, parsedPage) {
             __sizeLabel: sizeLabel,
             __pageId: page.id,
             __baseName: baseName,
-            __sourceImageUrl: parsedPage.mainImageUrl
+            __s?urceImageUrl: parsedPage.mainImageUrl
         };
     });
 }
@@ -531,10 +531,10 @@ async function run() {
         throw new Error('SUPABASE_URL nao definido no ambiente.');
     }
 
-    const serviceRoleKey = await resolveServiceRoleKey({ supabaseUrl, accessToken });
+    const serviceRoleKey = await res?lveServiceRoleKey({ supabaseUrl, accessToken });
     const authKey = serviceRoleKey || String(process.env.SUPABASE_ANON_KEY || '').trim();
     if (!authKey) {
-        throw new Error('Nao foi encontrada chave de acesso Supabase (service role ou anon).');
+        throw new Error('Nao foi encontrada chave de acess? Supabase (service role ou anon).');
     }
 
     const supabase = createClient(supabaseUrl, authKey, {
@@ -543,7 +543,7 @@ async function run() {
 
     const report = {
         startedAt: new Date().toISOString(),
-        source: SUPPLIER_BASE_URL,
+        s?urce: SUPPLIER_BASE_URL,
         language: 'pt',
         bucket: bucketName,
         resetApplied: shouldReset,
@@ -574,7 +574,7 @@ async function run() {
                 report.pagesSkipped.push({
                     pageId: page.id,
                     slug: page.slug,
-                    reason: 'listing-or-placeholder'
+                    reas?n: 'listing-or-placeholder'
                 });
                 continue;
             }
@@ -583,7 +583,7 @@ async function run() {
                 report.pagesSkipped.push({
                     pageId: page.id,
                     slug: page.slug,
-                    reason: 'missing-main-image'
+                    reas?n: 'missing-main-image'
                 });
                 continue;
             }
@@ -593,19 +593,19 @@ async function run() {
                 report.pagesSkipped.push({
                     pageId: page.id,
                     slug: page.slug,
-                    reason: 'no-products-generated'
+                    reas?n: 'no-products-generated'
                 });
                 continue;
             }
 
             for (const product of pageProducts) {
-                const cacheKey = `${product.__sourceImageUrl}`;
+                const cacheKey = `${product.__s?urceImageUrl}`;
                 let publicImageUrl = imageCache.get(cacheKey);
                 if (!publicImageUrl) {
                     publicImageUrl = await uploadImageToStorage({
                         supabase,
                         bucketName,
-                        sourceImageUrl: product.__sourceImageUrl,
+                        s?urceImageUrl: product.__s?urceImageUrl,
                         category: product.categoria,
                         baseName: product.__baseName
                     });
@@ -675,7 +675,7 @@ async function run() {
     };
     const reportPath = writeReport(reportDir, finalReport);
 
-    console.log('6/6 Importação concluída com sucesso.');
+    console.log('6/6 Importação concluída com sucess?.');
     console.log(`Produtos inseridos: ${finalReport.productsInserted}`);
     console.log(`Páginas importadas: ${finalReport.pagesImported}`);
     console.log(`Páginas ignoradas: ${finalReport.pagesSkipped.length}`);

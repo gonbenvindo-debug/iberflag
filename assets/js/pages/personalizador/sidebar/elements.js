@@ -73,10 +73,10 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const textNode = elementData.element;
-        const rawContent = this.extractRawTextValueFromNode?.(textNode) ?? String(elementData.rawContent ?? '');
+        const rawContent = this.extractRawTextValueFromNode?.(textNode) || String(elementData.rawContent || '');
         const fontSize = Math.max(8, Number(textNode.getAttribute('font-size') || elementData.size || 24));
-        const anchorX = Number.parseFloat(textNode.getAttribute('x') || String(elementData.x ?? 0)) || 0;
-        const anchorY = Number.parseFloat(textNode.getAttribute('y') || String(elementData.y ?? 0)) || 0;
+        const anchorX = Number.parseFloat(textNode.getAttribute('x') || String(elementData.x || 0)) || 0;
+        const anchorY = Number.parseFloat(textNode.getAttribute('y') || String(elementData.y || 0)) || 0;
         const previousBox = {
             x: Number.isFinite(Number(elementData.boundsX)) ? Number(elementData.boundsX) : anchorX,
             y: Number.isFinite(Number(elementData.boundsY)) ? Number(elementData.boundsY) : (anchorY - Math.max(fontSize * 1.15, 16)),
@@ -245,7 +245,7 @@ Object.assign(DesignEditor.prototype, {
         if (tagName === 'line') shapeType = node.dataset.shapeType || 'line';
         if (tagName === 'path') shapeType = node.dataset.shapeType || 'path';
 
-        const rawId = customId ?? node.dataset.elementId ?? node.getAttribute?.('id') ?? null;
+        const rawId = customId || node.dataset.elementId || node.getAttribute?.('id') || null;
         const data = {
             id: this.getUniqueElementId(rawId),
             element: node,
@@ -258,10 +258,10 @@ Object.assign(DesignEditor.prototype, {
 
         if (type === 'text') {
             const rawFromDataset = Object.prototype.hasOwnProperty.call(node.dataset || {}, 'rawContent')
-                ? String(node.dataset.rawContent ?? '')
-                : this.extractRawTextValueFromNode?.(node) ?? '';
+                ? String(node.dataset.rawContent || '')
+                : this.extractRawTextValueFromNode?.(node) || '';
             const capsLockEnabled = String(node.dataset.capsLock || 'false') === 'true';
-            const renderedText = this.getRenderedTextValue?.(rawFromDataset, capsLockEnabled) ?? rawFromDataset;
+            const renderedText = this.getRenderedTextValue?.(rawFromDataset, capsLockEnabled) || rawFromDataset;
             if (node.textContent !== renderedText) {
                 node.textContent = renderedText;
             }
@@ -512,9 +512,9 @@ Object.assign(DesignEditor.prototype, {
         delete serializable.element;
 
         if (elementData.type === 'text') {
-            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0));
-            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0));
-            const rawText = this.extractRawTextValueFromNode?.(elementData.element) ?? String(elementData.rawContent ?? '');
+            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x || 0));
+            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y || 0));
+            const rawText = this.extractRawTextValueFromNode?.(elementData.element) || String(elementData.rawContent || '');
             const bbox = this.safeGetBBox?.(elementData.element, {
                 x: Number.isFinite(x) ? x : Number(elementData.x) || 0,
                 y: Number.isFinite(y) ? y : Number(elementData.y) || 0,
@@ -533,10 +533,10 @@ Object.assign(DesignEditor.prototype, {
             serializable.textAnchor = elementData.element.getAttribute('text-anchor') || elementData.textAnchor || 'start';
             serializable.dominantBaseline = elementData.element.getAttribute('dominant-baseline') || elementData.dominantBaseline || '';
         } else if (elementData.type === 'image' || (elementData.type === 'shape' && this.isRectLikeShapeType?.(elementData.shapeType))) {
-            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x ?? 0));
-            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y ?? 0));
-            const width = parseFloat(elementData.element.getAttribute('width') || String(elementData.width ?? 0));
-            const height = parseFloat(elementData.element.getAttribute('height') || String(elementData.height ?? 0));
+            const x = parseFloat(elementData.element.getAttribute('x') || String(elementData.x || 0));
+            const y = parseFloat(elementData.element.getAttribute('y') || String(elementData.y || 0));
+            const width = parseFloat(elementData.element.getAttribute('width') || String(elementData.width || 0));
+            const height = parseFloat(elementData.element.getAttribute('height') || String(elementData.height || 0));
             serializable.x = Number.isFinite(x) ? x : (Number(elementData.x) || 0);
             serializable.y = Number.isFinite(y) ? y : (Number(elementData.y) || 0);
             serializable.width = Number.isFinite(width) ? width : (Number(elementData.width) || 0);
@@ -545,9 +545,9 @@ Object.assign(DesignEditor.prototype, {
                 this.normalizeImageCropState?.(serializable);
             }
         } else if (elementData.type === 'shape' && elementData.shapeType === 'circle') {
-            const cx = parseFloat(elementData.element.getAttribute('cx') || String(elementData.x ?? 0));
-            const cy = parseFloat(elementData.element.getAttribute('cy') || String(elementData.y ?? 0));
-            const radius = parseFloat(elementData.element.getAttribute('r') || String(elementData.radius ?? 0));
+            const cx = parseFloat(elementData.element.getAttribute('cx') || String(elementData.x || 0));
+            const cy = parseFloat(elementData.element.getAttribute('cy') || String(elementData.y || 0));
+            const radius = parseFloat(elementData.element.getAttribute('r') || String(elementData.radius || 0));
             serializable.x = Number.isFinite(cx) ? cx : (Number(elementData.x) || 0);
             serializable.y = Number.isFinite(cy) ? cy : (Number(elementData.y) || 0);
             serializable.radius = Number.isFinite(radius) ? radius : (Number(elementData.radius) || 0);

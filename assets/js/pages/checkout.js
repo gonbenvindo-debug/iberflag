@@ -116,7 +116,7 @@ let addressCountryTouched = false;
 let lastAutoCityValue = '';
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -1549,7 +1549,7 @@ if (placeOrderBtn) {
             }
 
             setCheckoutFeedback('Pagamento iniciado. Vamos abrir o checkout seguro.', 'success');
-            showToast('Pagamento iniciado com sucesso!', 'success');
+            showToast('Pagamento iniciado com sucess?!', 'success');
 
             cart = [];
             localStorage.removeItem('iberflag_cart');
@@ -1568,7 +1568,7 @@ if (placeOrderBtn) {
 
                 const fallbackSuccessPath = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.buildCheckoutSuccessPath({ codigo: payload?.orderCode || '' })
-                    : `/checkout/sucesso?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
+                    : `/checkout/sucess??codigo=${encodeURIComponent(payload?.orderCode || '')}`;
                 window.location.href = fallbackSuccessPath;
             }, 1000);
 

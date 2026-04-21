@@ -508,61 +508,61 @@
       "slug": "bandeiras",
       "label": "Bandeiras",
       "canonicalPath": "/produtos/bandeiras",
-      "description": "Bandeiras promocionais, institucionais e de mesa para exterior, interior e eventos com impressao personalizada."
+      "description": "Bandeiras promocionais, institucionais e de mesa para exterior, interior e eventos com impressão personalizada."
     },
     {
       "slug": "bandeirolas-esportivas",
-      "label": "Bandeirolas Esportivas",
+      "label": "Bandeirolas Desportivas",
       "canonicalPath": "/produtos/bandeirolas-esportivas",
-      "description": "Bandeirolas desportivas personalizadas para clubes, eventos, premiacoes e merchandising institucional."
+      "description": "Bandeirolas desportivas personalizadas para clubes, eventos, premiações e merchandising institucional."
     },
     {
       "slug": "cubo-publicitario",
-      "label": "Cubo Publicitario",
+      "label": "Cubo Publicitário",
       "canonicalPath": "/produtos/cubo-publicitario",
-      "description": "Cubos publicitarios personalizados para campanhas promocionais, pontos de venda e eventos de marca."
+      "description": "Cubos publicitários personalizados para campanhas promocionais, pontos de venda e eventos de marca."
     },
     {
       "slug": "fly-banner",
       "label": "Fly Banner",
       "canonicalPath": "/produtos/fly-banner",
-      "description": "Fly banners personalizados para exterior e eventos com forte impacto visual, varias bases e formatos profissionais."
+      "description": "Fly banners personalizados para exterior e eventos com forte impacto visual, várias bases e formatos profissionais."
     },
     {
       "slug": "mastros",
       "label": "Mastros",
       "canonicalPath": "/produtos/mastros",
-      "description": "Mastros publicitarios e institucionais para bandeiras de exterior com resistencia e boa visibilidade."
+      "description": "Mastros publicitários e institucionais para bandeiras de exterior com resistência e boa visibilidade."
     },
     {
       "slug": "photocall",
       "label": "Photocall",
       "canonicalPath": "/produtos/photocall",
-      "description": "Photocalls e backdrops personalizados para eventos, stands, conferencias e zonas de fotografia."
+      "description": "Photocalls e backdrops personalizados para eventos, stands, conferências e zonas de fotografia."
     },
     {
       "slug": "roll-up",
       "label": "Roll Up",
       "canonicalPath": "/produtos/roll-up",
-      "description": "Roll ups personalizados para feiras, lojas e apresentacoes com estrutura compacta e instalacao simples."
+      "description": "Roll ups personalizados para feiras, lojas e apresentações com estrutura compacta e instalação simples."
     },
     {
       "slug": "tenda-publicitaria",
-      "label": "Tenda Publicitaria",
+      "label": "Tenda Publicitária",
       "canonicalPath": "/produtos/tenda-publicitaria",
-      "description": "Tendas publicitarias personalizadas para eventos, ativacoes de marca e presenca exterior de grande formato."
+      "description": "Tendas publicitárias personalizadas para eventos, ativações de marca e presença exterior de grande formato."
     },
     {
       "slug": "wall-banner",
       "label": "Wall Banner",
       "canonicalPath": "/produtos/wall-banner",
-      "description": "Wall banners, lonas e estruturas de fundo para cenografia, stands, eventos e comunicacao de grande formato."
+      "description": "Wall banners, lonas e estruturas de fundo para cenografia, stands, eventos e comunicação de grande formato."
     },
     {
       "slug": "x-banner",
       "label": "X-Banner",
       "canonicalPath": "/produtos/x-banner",
-      "description": "X-banners promocionais leves e portateis para campanhas, montras e comunicacao de interior."
+      "description": "X-banners promocionais leves e portáteis para campanhas, montras e comunicação de interior."
     }
   ]
 };
