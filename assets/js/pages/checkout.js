@@ -832,6 +832,46 @@ function clearCheckoutFeedback() {
     checkoutFeedback.textContent = '';
 }
 
+function getCheckoutScrollOffset() {
+    const stickyNav = document.querySelector('.checkout-page nav.sticky, nav.sticky');
+    const navHeight = stickyNav?.getBoundingClientRect?.().height || 0;
+    return Math.max(88, navHeight + 28);
+}
+
+function getFirstInvalidCheckoutField() {
+    if (!checkoutForm) {
+        return null;
+    }
+
+    return checkoutForm.querySelector(':invalid');
+}
+
+function revealCheckoutField(field = null) {
+    const target = field || getFirstInvalidCheckoutField();
+    if (!target || typeof target.getBoundingClientRect !== 'function') {
+        checkoutForm?.reportValidity?.();
+        return;
+    }
+
+    const rect = target.getBoundingClientRect();
+    const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
+    window.scrollTo({ top: nextTop, behavior: 'smooth' });
+
+    try {
+        target.focus({ preventScroll: true });
+    } catch {
+        target.focus?.();
+    }
+
+    window.setTimeout(() => {
+        if (typeof target.reportValidity === 'function') {
+            target.reportValidity();
+            return;
+        }
+        checkoutForm?.reportValidity?.();
+    }, 260);
+}
+
 function setPlaceOrderLoading(isLoading) {
     if (!placeOrderBtn) return;
     placeOrderBtn.disabled = isLoading;
@@ -1079,14 +1119,14 @@ if (placeOrderBtn) {
         const emailValidation = updateEmailValidity({ normalizeInput: true });
         if (!emailValidation.valid) {
             setCheckoutFeedback(emailValidation.message, 'error');
-            checkoutForm.reportValidity();
+            revealCheckoutField(emailInput);
             return;
         }
 
         const phoneValidation = updatePhoneValidity({ normalizeInput: true });
         if (!phoneValidation.valid) {
             setCheckoutFeedback(phoneValidation.message, 'error');
-            checkoutForm.reportValidity();
+            revealCheckoutField(phoneInput);
             return;
         }
 
@@ -1096,20 +1136,20 @@ if (placeOrderBtn) {
         const taxIdValidation = updateTaxIdValidity();
         if (!taxIdValidation.valid) {
             setCheckoutFeedback(taxIdValidation.message, 'error');
-            checkoutForm.reportValidity();
+            revealCheckoutField(nifInput);
             return;
         }
 
         const companyValidation = updateCompanyValidity();
         if (!companyValidation.valid) {
             setCheckoutFeedback(companyValidation.message, 'error');
-            checkoutForm.reportValidity();
+            revealCheckoutField(companyInput);
             return;
         }
 
         if (!getSelectedFiscalCountry()) {
             setCheckoutFeedback('Escolha o país fiscal antes de continuar.', 'error');
-            countrySelect?.focus();
+            revealCheckoutField(countrySelect);
             return;
         }
 
@@ -1122,7 +1162,7 @@ if (placeOrderBtn) {
         
         // Validate form
         if (!checkoutForm.checkValidity()) {
-            checkoutForm.reportValidity();
+            revealCheckoutField();
             return;
         }
 
