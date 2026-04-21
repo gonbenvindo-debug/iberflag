@@ -24,6 +24,7 @@ const nifInput = document.getElementById('nif-input');
 const phoneInput = checkoutForm?.elements?.telefone || null;
 const emailInput = checkoutForm?.elements?.email || null;
 const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
+const cityInput = checkoutForm?.elements?.cidade || null;
 const companyInput = checkoutForm?.elements?.empresa || null;
 const contactNameLabel = document.getElementById('contact-name-label');
 const companyLabel = document.getElementById('company-label');
@@ -35,6 +36,11 @@ const toggleOrderNotesBtn = document.getElementById('toggle-order-notes');
 const orderNotesField = document.getElementById('order-notes-field');
 const notesTextarea = checkoutForm?.elements?.notas || null;
 const countrySelect = document.getElementById('country-select');
+const addressCountrySelect = document.getElementById('address-country-select');
+const addressRegionSelect = document.getElementById('address-region-select');
+const addressMunicipalitySelect = document.getElementById('address-municipality-select');
+const addressRegionLabel = document.getElementById('address-region-label');
+const addressMunicipalityLabel = document.getElementById('address-municipality-label');
 const fiscalSummaryName = document.getElementById('fiscal-summary-name');
 const fiscalSummaryDocument = document.getElementById('fiscal-summary-document');
 const fiscalSummaryTaxId = document.getElementById('fiscal-summary-tax-id');
@@ -56,6 +62,8 @@ const COMMON_EMAIL_DOMAIN_FIXES = {
 };
 const companyLookupCache = new Map();
 const COMPANY_LOOKUP_DEBOUNCE_MS = 500;
+const POSTAL_LOOKUP_DEBOUNCE_MS = 650;
+const LOCATION_HELPERS = window.IBERFLAG_LOCATION_HELPERS || {};
 const COUNTRY_LABELS = {
     PT: 'Portugal',
     ES: 'Espanha',
@@ -101,6 +109,11 @@ let companyLookupInFlight = false;
 let companyLookupDebounceTimer = null;
 let beginCheckoutTracked = false;
 let latestVatValidation = null;
+let postalLookupDebounceTimer = null;
+let postalLookupController = null;
+let latestPostalLookupKey = '';
+let addressCountryTouched = false;
+let lastAutoCityValue = '';
 
 function escapeHtml(value) {
     return String(value ?? '')
@@ -185,6 +198,15 @@ function getSelectedCustomerType() {
 function getSelectedFiscalCountry() {
     const normalized = String(countrySelect?.value || 'PT').trim().toUpperCase();
     return normalized || 'PT';
+}
+
+function getSelectedAddressCountry() {
+    const normalized = String(addressCountrySelect?.value || getSelectedFiscalCountry() || 'PT').trim().toUpperCase();
+    return ['PT', 'ES'].includes(normalized) ? normalized : 'PT';
+}
+
+function getLocationConfig(countryCode = getSelectedAddressCountry()) {
+    return LOCATION_HELPERS[String(countryCode || '').trim().toUpperCase()] || LOCATION_HELPERS.PT || null;
 }
 
 function getFiscalCountryLabel(countryCode = '') {
@@ -347,6 +369,296 @@ function normalizePostalCode(value, country = 'PT') {
     return normalized;
 }
 
+function normalizeLocationKey(value) {
+    return String(value || '')
+        .trim()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .toLowerCase();
+}
+
+function setSelectOptions(select, options, placeholder = '') {
+    if (!select) {
+        return;
+    }
+
+    select.innerHTML = '';
+    if (placeholder) {
+        const option = document.createElement('option');
+        option.value = '';
+        option.textContent = placeholder;
+        select.appendChild(option);
+    }
+
+    options.forEach((item) => {
+        const option = document.createElement('option');
+        option.value = item.value;
+        option.textContent = item.label;
+        select.appendChild(option);
+    });
+}
+
+function getAddressRegions() {
+    const config = getLocationConfig();
+    return Array.isArray(config?.regions) ? config.regions : [];
+}
+
+function findAddressRegion(regionName = '') {
+    const wanted = normalizeLocationKey(regionName);
+    if (!wanted) {
+        return null;
+    }
+
+    return getAddressRegions().find((region) => (
+        normalizeLocationKey(region.name) === wanted
+        || normalizeLocationKey(region.code) === wanted
+    )) || null;
+}
+
+function findAddressMunicipality(region, municipalityName = '') {
+    const wanted = normalizeLocationKey(municipalityName);
+    if (!region || !wanted) {
+        return '';
+    }
+
+    return (region.municipalities || []).find((municipality) => normalizeLocationKey(municipality) === wanted) || '';
+}
+
+function syncFiscalCountryFromAddress() {
+    const addressCountry = getSelectedAddressCountry();
+    if (!countrySelect || countrySelect.value === addressCountry) {
+        return;
+    }
+
+    countrySelect.value = addressCountry;
+    applyVatValidationResult(null);
+    updateTaxIdValidity();
+    updatePhoneValidity();
+    updateFiscalSummary();
+    scheduleCompanyLookup();
+}
+
+function syncAddressCountryFromFiscal({ force = false } = {}) {
+    if (!addressCountrySelect) {
+        return;
+    }
+
+    const fiscalCountry = getSelectedFiscalCountry();
+    if (!['PT', 'ES'].includes(fiscalCountry)) {
+        return;
+    }
+
+    if (!force && addressCountryTouched && addressCountrySelect.value !== fiscalCountry) {
+        return;
+    }
+
+    addressCountrySelect.value = fiscalCountry;
+}
+
+function updateAddressLabels() {
+    const config = getLocationConfig();
+    if (addressRegionLabel) {
+        addressRegionLabel.textContent = `${config?.regionLabel || 'Distrito / província'} *`;
+    }
+    if (addressMunicipalityLabel) {
+        addressMunicipalityLabel.textContent = `${config?.municipalityLabel || 'Concelho / município'} *`;
+    }
+    if (postalCodeInput && config?.postalPlaceholder) {
+        postalCodeInput.placeholder = config.postalPlaceholder;
+    }
+}
+
+function populateAddressMunicipalities({ preserveValue = true } = {}) {
+    if (!addressMunicipalitySelect) {
+        return;
+    }
+
+    const previousValue = preserveValue ? addressMunicipalitySelect.value : '';
+    const region = findAddressRegion(addressRegionSelect?.value || '');
+    const municipalityLabel = getLocationConfig()?.municipalityLabel || 'concelho';
+    if (!region) {
+        setSelectOptions(addressMunicipalitySelect, [], `Escolha primeiro o ${getLocationConfig()?.regionLabel?.toLowerCase() || 'distrito'}`);
+        addressMunicipalitySelect.value = '';
+        addressMunicipalitySelect.disabled = true;
+        return;
+    }
+
+    addressMunicipalitySelect.disabled = false;
+    setSelectOptions(
+        addressMunicipalitySelect,
+        (region.municipalities || []).map((municipality) => ({ value: municipality, label: municipality })),
+        `Escolha o ${municipalityLabel.toLowerCase()}`
+    );
+
+    const matchingValue = findAddressMunicipality(region, previousValue);
+    if (matchingValue) {
+        addressMunicipalitySelect.value = matchingValue;
+    }
+}
+
+function populateAddressRegions({ preserveValue = true } = {}) {
+    if (!addressRegionSelect) {
+        return;
+    }
+
+    updateAddressLabels();
+
+    const previousValue = preserveValue ? addressRegionSelect.value : '';
+    const regions = getAddressRegions();
+    setSelectOptions(
+        addressRegionSelect,
+        regions.map((region) => ({ value: region.name, label: region.name })),
+        `Escolha o ${(getLocationConfig()?.regionLabel || 'distrito').toLowerCase()}`
+    );
+
+    const matchingRegion = findAddressRegion(previousValue);
+    addressRegionSelect.value = matchingRegion?.name || '';
+    populateAddressMunicipalities({ preserveValue });
+}
+
+function setAddressSelection({ country, region, municipality, city, forceCity = false } = {}) {
+    if (country && addressCountrySelect && ['PT', 'ES'].includes(String(country).toUpperCase())) {
+        addressCountrySelect.value = String(country).toUpperCase();
+        populateAddressRegions({ preserveValue: false });
+    }
+
+    if (region && addressRegionSelect) {
+        const matchingRegion = findAddressRegion(region);
+        if (matchingRegion) {
+            addressRegionSelect.value = matchingRegion.name;
+            populateAddressMunicipalities({ preserveValue: false });
+        }
+    }
+
+    if (municipality && addressMunicipalitySelect) {
+        const selectedRegion = findAddressRegion(addressRegionSelect?.value || '');
+        const matchingMunicipality = findAddressMunicipality(selectedRegion, municipality);
+        if (matchingMunicipality) {
+            addressMunicipalitySelect.value = matchingMunicipality;
+        }
+    }
+
+    const resolvedCity = String(city || municipality || addressMunicipalitySelect?.value || '').trim();
+    if (cityInput && resolvedCity && (forceCity || !cityInput.value.trim() || cityInput.value === lastAutoCityValue)) {
+        cityInput.value = resolvedCity;
+        lastAutoCityValue = resolvedCity;
+    }
+}
+
+function syncCityFromMunicipality({ force = false } = {}) {
+    const municipality = String(addressMunicipalitySelect?.value || '').trim();
+    if (!municipality || !cityInput) {
+        return;
+    }
+
+    if (force || !cityInput.value.trim() || cityInput.value === lastAutoCityValue) {
+        cityInput.value = municipality;
+        lastAutoCityValue = municipality;
+    }
+}
+
+function inferAddressCountryFromPostalCode(value = '') {
+    const raw = String(value || '').trim().toUpperCase().replace(/\s+/g, '');
+    if (/^\d{4}-?\d{3}$/.test(raw)) {
+        return 'PT';
+    }
+    if (/^\d{5}$/.test(raw)) {
+        return 'ES';
+    }
+    return '';
+}
+
+function isPostalCodeReadyForLookup(value = '', country = getSelectedAddressCountry()) {
+    const normalized = normalizePostalCode(value, country);
+    return country === 'PT'
+        ? /^\d{4}-\d{3}$/.test(normalized)
+        : country === 'ES'
+            ? /^\d{5}$/.test(normalized)
+            : false;
+}
+
+function clearPostalLookupDebounce() {
+    if (postalLookupDebounceTimer) {
+        window.clearTimeout(postalLookupDebounceTimer);
+        postalLookupDebounceTimer = null;
+    }
+}
+
+async function lookupPostalCode({ force = false } = {}) {
+    if (!postalCodeInput || typeof fetch !== 'function') {
+        return;
+    }
+
+    const inferredCountry = inferAddressCountryFromPostalCode(postalCodeInput.value);
+    if (inferredCountry && addressCountrySelect?.value !== inferredCountry) {
+        addressCountrySelect.value = inferredCountry;
+        populateAddressRegions({ preserveValue: false });
+        syncFiscalCountryFromAddress();
+    }
+
+    const country = getSelectedAddressCountry();
+    const normalized = normalizePostalCode(postalCodeInput.value, country);
+    if (!isPostalCodeReadyForLookup(normalized, country)) {
+        return;
+    }
+
+    const lookupKey = `${country}:${normalized}`;
+    if (!force && lookupKey === latestPostalLookupKey) {
+        return;
+    }
+    latestPostalLookupKey = lookupKey;
+
+    try {
+        if (postalLookupController) {
+            postalLookupController.abort();
+        }
+        postalLookupController = new AbortController();
+
+        const response = await fetch(`https://api.zippopotam.us/${country.toLowerCase()}/${encodeURIComponent(normalized)}`, {
+            signal: postalLookupController.signal
+        });
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        const place = Array.isArray(data?.places) ? data.places[0] : null;
+        if (!place) {
+            return;
+        }
+
+        setAddressSelection({
+            country,
+            region: place.state,
+            municipality: place['place name'],
+            city: place['place name'],
+            forceCity: false
+        });
+    } catch (error) {
+        if (error?.name !== 'AbortError') {
+            console.warn('Não foi possível preencher a morada pelo código postal:', error);
+        }
+    }
+}
+
+function schedulePostalLookup() {
+    clearPostalLookupDebounce();
+    if (!postalCodeInput) {
+        return;
+    }
+
+    const inferredCountry = inferAddressCountryFromPostalCode(postalCodeInput.value);
+    const lookupCountry = inferredCountry || getSelectedAddressCountry();
+    if (!isPostalCodeReadyForLookup(postalCodeInput.value, lookupCountry)) {
+        return;
+    }
+
+    postalLookupDebounceTimer = window.setTimeout(() => {
+        postalLookupDebounceTimer = null;
+        void lookupPostalCode();
+    }, POSTAL_LOOKUP_DEBOUNCE_MS);
+}
+
 function validateCheckoutPhone(value, postalCode = '', taxId = '') {
     const normalized = normalizeCheckoutPhone(value);
     const country = detectTaxCountry(taxId, postalCode);
@@ -436,7 +748,7 @@ function updatePostalCodeFormatting() {
         return '';
     }
 
-    const normalizedCountry = getSelectedFiscalCountry();
+    const normalizedCountry = getSelectedAddressCountry();
     const normalized = normalizePostalCode(postalCodeInput.value, normalizedCountry);
     postalCodeInput.value = normalized;
     return normalized;
@@ -571,8 +883,8 @@ function applyCompanyLookupResult(customer = {}) {
         companyInput.value = String(customer.empresa || '').trim();
     }
 
-    if (checkoutForm?.elements?.cidade && !String(checkoutForm.elements.cidade.value || '').trim() && String(customer.cidade || '').trim()) {
-        checkoutForm.elements.cidade.value = String(customer.cidade || '').trim();
+    if (cityInput && !String(cityInput.value || '').trim() && String(customer.cidade || '').trim()) {
+        cityInput.value = String(customer.cidade || '').trim();
     }
 
     updateCompanyValidity();
@@ -1153,6 +1465,9 @@ if (placeOrderBtn) {
             return;
         }
 
+        syncFiscalCountryFromAddress();
+        syncCityFromMunicipality({ force: false });
+
         if (isBusinessCustomerSelected() && taxIdValidation.normalized) {
             const shouldValidateEuBusiness = getSelectedFiscalCountry() !== 'PT' && isEuCountry(getSelectedFiscalCountry());
             if (shouldValidateEuBusiness || !latestVatValidation) {
@@ -1190,7 +1505,10 @@ if (placeOrderBtn) {
             empresa: formData.get('empresa') || null,
             morada: formData.get('morada'),
             codigo_postal: formData.get('codigo_postal'),
-            cidade: formData.get('cidade')
+            cidade: formData.get('cidade'),
+            pais_entrega: getSelectedAddressCountry(),
+            distrito: formData.get('distrito') || null,
+            concelho: formData.get('concelho') || null
         };
 
         const orderNotes = formData.get('notas') || null;
@@ -1316,6 +1634,7 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTaxIdValidity();
             updateFiscalSummary();
             scheduleCompanyLookup();
+            schedulePostalLookup();
         });
         postalCodeInput.addEventListener('blur', () => {
             updatePostalCodeFormatting();
@@ -1323,8 +1642,28 @@ document.addEventListener('DOMContentLoaded', () => {
             updatePhoneValidity();
             updateFiscalSummary();
             scheduleCompanyLookup();
+            void lookupPostalCode({ force: true });
         });
     }
+    addressCountrySelect?.addEventListener('change', () => {
+        addressCountryTouched = true;
+        populateAddressRegions({ preserveValue: false });
+        updatePostalCodeFormatting();
+        syncFiscalCountryFromAddress();
+        schedulePostalLookup();
+    });
+    addressRegionSelect?.addEventListener('change', () => {
+        populateAddressMunicipalities({ preserveValue: false });
+        syncCityFromMunicipality({ force: false });
+    });
+    addressMunicipalitySelect?.addEventListener('change', () => {
+        syncCityFromMunicipality({ force: true });
+    });
+    cityInput?.addEventListener('input', () => {
+        if (cityInput.value !== lastAutoCityValue) {
+            lastAutoCityValue = '';
+        }
+    });
     if (companyInput) {
         companyInput.addEventListener('input', () => {
             updateCompanyValidity();
@@ -1335,6 +1674,8 @@ document.addEventListener('DOMContentLoaded', () => {
         updateFiscalSummary();
     });
     countrySelect?.addEventListener('change', () => {
+        syncAddressCountryFromFiscal({ force: true });
+        populateAddressRegions({ preserveValue: true });
         updatePostalCodeFormatting();
         updateTaxIdValidity();
         updatePhoneValidity();
@@ -1342,6 +1683,7 @@ document.addEventListener('DOMContentLoaded', () => {
         setCompanyLookupStatus('');
         updateFiscalSummary();
         scheduleCompanyLookup();
+        schedulePostalLookup();
     });
     if (toggleOrderNotesBtn) {
         toggleOrderNotesBtn.addEventListener('click', () => {
@@ -1368,6 +1710,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    syncAddressCountryFromFiscal({ force: true });
+    populateAddressRegions({ preserveValue: true });
     syncCustomerTypeUI();
     syncOrderNotesVisibility();
     updateFiscalSummary();
