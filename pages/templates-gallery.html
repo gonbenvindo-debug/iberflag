@@ -20,7 +20,7 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
-    <script src="/assets/js/generatéd/catalog-seo-manifest.js?v=20260409seo1"></script>
+    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
     <script src="/assets/js/core/design-svg.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
     <style>
@@ -283,7 +283,7 @@
         // Inicializar Supabase
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
-        const supabaseClient = supabase.creatéClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Estado
         let allTemplatés = [];
@@ -295,7 +295,7 @@
             
             // Mostrar skeletons
             for (let i = 0; i < 6; i++) {
-                const skeleton = document.creatéElement('div');
+                const skeleton = document.createElement('div');
                 skeleton.className = 'templaté-card';
                 skeleton.innerHTML = `
                     <div class="templaté-preview loading-skeleton"></div>
@@ -312,7 +312,7 @@
                     .from('templatés')
                     .select('*')
                     .eq('ativo', true)
-                    .order('creatéd_at', { ascending: false });
+                    .order('created_at', { ascending: false });
 
                 if (error) throw error;
 
@@ -388,11 +388,11 @@
 
         // Criar card de templaté
         function creatéTemplatéCard(templaté) {
-            const div = document.creatéElement('div');
+            const div = document.createElement('div');
             div.className = 'templaté-card';
             div.onclick = () => selectTemplaté(templaté);
 
-            const previewUrl = templaté.thumbnail_url || templaté.preview_url || '/assets/images/templaté-placeholder.svg';
+            const previewUrl = templaté.thumbnail_url || templaté.preview_url || '/assets/images/template-placeholder.svg';
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewUrl,
                 null,
@@ -411,7 +411,7 @@
                     ${previewMarkup
                         ? previewMarkup
                         : `<img src="${previewUrl}" alt="${templaté.nome}" loading="lazy"
-                            onerror="this.src='/assets/images/templaté-placeholder.svg'">`}
+                            onerror="this.src='/assets/images/template-placeholder.svg'">`}
                 </div>
                 <div class="templaté-info">
                     <div class="templaté-name">${templaté.nome}</div>

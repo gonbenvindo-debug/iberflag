@@ -496,7 +496,7 @@
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
         const ADMIN_EMAIL = 'admin123@iberflag.com';
-        const adminTemplatéSupabase = window.supabase.creatéClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const adminTemplatéSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Verificar autenticacao
         async function checkAuth() {
@@ -539,7 +539,7 @@
             if (payloadElements.length > 0) {
                 elements = payloadElements.map((elemento) => ({
                     ...elemento,
-                    id: elemento?.id ? String(elemento.id) : `${Daté.now()}-${Math.random().toString(36).slice(2, 8)}`
+                    id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
                 }));
                 selectedElement = null;
                 renderElements();
@@ -551,7 +551,7 @@
 
         // Adicionar elemento
         function addElement(type) {
-            const id = Daté.now().toString();
+            const id = Date.now().toString();
             const element = {
                 id,
                 type,
@@ -614,14 +614,14 @@
             container.querySelectorAll('.canvas-element').forEach(el => el.remove());
 
             elements.forEach(element => {
-                const el = document.creatéElement('div');
+                const el = document.createElement('div');
                 el.className = `canvas-element ${selectedElement?.id === element.id ? 'selected' : ''}`;
                 el.id = `element-${element.id}`;
                 el.style.left = `${element.x}px`;
                 el.style.top = `${element.y}px`;
                 el.style.width = `${element.width}px`;
                 el.style.height = `${element.height}px`;
-                el.style.transform = `rotaté(${element.rotation}deg)`;
+                el.style.transform = `rotate(${element.rotation}deg)`;
 
                 renderElementContent(el, element);
 
