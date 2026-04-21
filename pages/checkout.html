@@ -29,7 +29,7 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260409c">
 </head>
 
-<body class="app-page checkout-page bg-slate-50">
+<body class="app-page checkout-page bg-slaté-50">
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -37,9 +37,9 @@
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
                 <div class="hidden md:flex space-x-6 items-center">
-                    <a href="/" class="nav-link">Inicio</a>
+                    <a href="/" class="nav-link">Início</a>
                     <a href="/produtos" class="nav-link">Produtos</a>
-                    <a href="/sobre" class="nav-link">Sobre Nos</a>
+                    <a href="/sobre" class="nav-link">Sobre Nós</a>
                     <a href="/faq" class="nav-link">FAQ</a>
                     <a href="/contacto" class="nav-link">Contacto</a>
                     <button id="cart-btn"
@@ -58,9 +58,9 @@
         </div>
         <div id="mobile-menu" class="hidden md:hidden bg-white border-t">
             <div class="px-4 py-4 space-y-3">
-                <a href="/" class="block py-2 hover:text-blue-600 transition">Inicio</a>
+                <a href="/" class="block py-2 hover:text-blue-600 transition">Início</a>
                 <a href="/produtos" class="block py-2 hover:text-blue-600 transition">Produtos</a>
-                <a href="/sobre" class="block py-2 hover:text-blue-600 transition">Sobre Nos</a>
+                <a href="/sobre" class="block py-2 hover:text-blue-600 transition">Sobre Nós</a>
                 <a href="/faq" class="block py-2 hover:text-blue-600 transition">FAQ</a>
                 <a href="/contacto" class="block py-2 hover:text-blue-600 transition">Contacto</a>
             </div>
@@ -106,13 +106,13 @@
                                             <option value="particular" selected>Particular</option>
                                             <option value="empresa">Empresa</option>
                                         </select>
-                                        <p id="customer-type-description" class="mt-2 text-xs text-slate-500">Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.</p>
+                                        <p id="customer-type-description" class="mt-2 text-xs text-slaté-500">Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.</p>
                                     </div>
                                     <div id="tax-field-row">
                                         <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
                                         <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12"
                                             placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
-                                        <p id="nif-help" class="mt-2 text-xs text-slate-500">Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.</p>
+                                        <p id="nif-help" class="mt-2 text-xs text-slaté-500">Se preencher, o número fiscal tem de ser valido para emitirmos a fatura.</p>
                                         <p id="company-lookup-status" class="hidden"></p>
                                     </div>
                                 </div>
@@ -154,38 +154,38 @@
                                         <option value="MZ">Moçambique</option>
                                         <option value="OTHER">Outro país / revisão manual</option>
                                     </select>
-                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
+                                    <p class="mt-2 text-xs text-slaté-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
                                 </div>
                                 <div id="company-field-row" class="hidden mt-4">
                                     <label id="company-label" class="form-label">Empresa *</label>
                                     <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
                                 </div>
-                                <div id="checkout-fiscal-summary" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Resumo fiscal</p>
-                                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
+                                <div id="checkout-fiscal-summary" class="mt-4 rounded-2xl border border-slaté-200 bg-slaté-50 px-4 py-4">
+                                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-slaté-500">Resumo fiscal</p>
+                                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slaté-700">
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Nome fiscal</p>
-                                            <p id="fiscal-summary-name" class="font-semibold text-slate-900">—</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Nome fiscal</p>
+                                            <p id="fiscal-summary-name" class="font-semibold text-slaté-900">—</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Documento</p>
-                                            <p id="fiscal-summary-document" class="font-semibold text-slate-900">Factura Recibo</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Documento</p>
+                                            <p id="fiscal-summary-document" class="font-semibold text-slaté-900">Factura Recibo</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">NIF / VAT</p>
-                                            <p id="fiscal-summary-tax-id" class="font-semibold text-slate-900">—</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">NIF / VAT</p>
+                                            <p id="fiscal-summary-tax-id" class="font-semibold text-slaté-900">—</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Regime</p>
-                                            <p id="fiscal-summary-regime" class="font-semibold text-slate-900">Artigo 53.º do CIVA</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Regime</p>
+                                            <p id="fiscal-summary-regime" class="font-semibold text-slaté-900">Artigo 53.º do CIVA</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">País fiscal</p>
-                                            <p id="fiscal-summary-country" class="font-semibold text-slate-900">Portugal</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">País fiscal</p>
+                                            <p id="fiscal-summary-country" class="font-semibold text-slaté-900">Portugal</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Tratamento</p>
-                                            <p id="fiscal-summary-treatment" class="font-semibold text-slate-900">Sem liquidação de IVA (M10)</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Tratamento</p>
+                                            <p id="fiscal-summary-treatment" class="font-semibold text-slaté-900">Sem liquidação de IVA (M10)</p>
                                         </div>
                                     </div>
                                     <p id="fiscal-summary-warning" class="hidden mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800"></p>
@@ -275,7 +275,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">Cartoes (Visa, Mastercard, etc.)</span>
-                                        <i data-lucide="credit-card" class="w-5 h-5 text-slate-900"></i>
+                                        <i data-lucide="credit-card" class="w-5 h-5 text-slaté-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -284,7 +284,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">MB Way</span>
-                                        <i data-lucide="smartphone" class="w-5 h-5 text-slate-900"></i>
+                                        <i data-lucide="smartphone" class="w-5 h-5 text-slaté-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -293,7 +293,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">Multibanco</span>
-                                        <i data-lucide="receipt" class="w-5 h-5 text-slate-900"></i>
+                                        <i data-lucide="receipt" class="w-5 h-5 text-slaté-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -302,7 +302,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">Bizum</span>
-                                        <i data-lucide="wallet" class="w-5 h-5 text-slate-900"></i>
+                                        <i data-lucide="wallet" class="w-5 h-5 text-slaté-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -310,10 +310,10 @@
                     </div>
 
                     <div class="app-surface checkout-surface-card checkout-support-card p-5 md:p-6">
-                        <label class="flex items-start gap-3 cursor-pointer mb-4 pb-4 border-b border-slate-200">
+                        <label class="flex items-start gap-3 cursor-pointer mb-4 pb-4 border-b border-slaté-200">
                             <input type="checkbox" id="design-review-checkbox" class="custom-checkbox mt-0.5">
                             <span class="text-sm text-gray-700">
-                                Adicionar revisao de design por <strong>5&#8364;</strong> antes da producao.
+                                Adicionar revisao de design por <strong>5&#8364;</strong> antes da produção.
                                 <a href="/termos#responsabilidade-design" class="text-blue-600 hover:underline">Consulta os termos de responsabilidade do design</a>.
                             </span>
                         </label>
@@ -321,7 +321,7 @@
                             <input type="checkbox" id="terms-checkbox" required class="custom-checkbox mt-0.5">
                             <span class="text-sm text-gray-700">
                                 Li e aceito os <a href="/termos" class="text-blue-600 hover:underline">Termos e Condicoes</a> e a
-                                <a href="/privacidade" class="text-blue-600 hover:underline">Politica de Privacidade</a>.
+                                <a href="/privacidade" class="text-blue-600 hover:underline">Política de Privacidade</a>.
                             </span>
                         </label>
                         <div class="checkout-support-list">
@@ -335,7 +335,7 @@
                             </div>
                             <div class="checkout-support-item">
                                 <i data-lucide="package" class="w-4 h-4"></i>
-                                <span>Tracking disponivel na pagina da encomenda e no email</span>
+                                <span>Tracking disponivel na p?gina da encomenda e no email</span>
                             </div>
                         </div>
                     </div>
@@ -352,7 +352,7 @@
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Prazo comunicado apos pagamento confirmado e validacao da encomenda.</p>
+                        <p class="app-section-subtitle mb-6">Prazo comunicado apos pagamento confirmado e validação da encomenda.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -388,16 +388,16 @@
                                 <span>Pagamento seguro com Stripe</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-slate-700"></i>
+                                <i data-lucide="clock" class="w-4 h-4 text-slaté-700"></i>
                                 <span>Prazo total 24-48h apos pagamento</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="package" class="w-4 h-4 text-slate-700"></i>
+                                <i data-lucide="package" class="w-4 h-4 text-slaté-700"></i>
                                 <span>Tracking enviado por email assim que a expedicao for criada</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="pen-tool" class="w-4 h-4 text-slate-700"></i>
-                                <span>Revisao de design opcional: 5&#8364; antes da producao, sujeita aos termos de responsabilidade</span>
+                                <i data-lucide="pen-tool" class="w-4 h-4 text-slaté-700"></i>
+                                <span>Revisao de design opcional: 5&#8364; antes da produção, sujeita aos termos de responsabilidade</span>
                             </div>
                         </div>
                     </div>
@@ -415,14 +415,14 @@
                             <img src="/assets/logos/logo-minimalista-white.svg" alt="IberFlag" class="brand-logo-footer">
                         </a>
                     </div>
-                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho com operacao principal em Portugal.</p>
+                    <p class="max-w-sm mb-6">Especialistas B2B em flybanners e publicidade para eventos e retalho com operação principal em Portugal.</p>
                 </div>
                 <div>
-                    <h4 class="text-white font-bold mb-4">Links Rapidos</h4>
+                    <h4 class="text-white font-bold mb-4">Links Rápidos</h4>
                     <ul class="space-y-3">
-                        <li><a href="/" class="hover:text-white transition">Inicio</a></li>
+                        <li><a href="/" class="hover:text-white transition">Início</a></li>
                         <li><a href="/produtos" class="hover:text-white transition">Produtos</a></li>
-                        <li><a href="/sobre" class="hover:text-white transition">Sobre Nos</a></li>
+                        <li><a href="/sobre" class="hover:text-white transition">Sobre Nós</a></li>
                         <li><a href="/faq" class="hover:text-white transition">FAQ</a></li>
                         <li><a href="/contacto" class="hover:text-white transition">Contacto</a></li>
                     </ul>
@@ -432,8 +432,8 @@
                     <ul class="space-y-3">
                         <li><a href="/envios" class="hover:text-white transition">Envios e Entregas</a></li>
                         <li><a href="/termos" class="hover:text-white transition">Termos e Condicoes</a></li>
-                        <li><a href="/privacidade" class="hover:text-white transition">Politica de Privacidade</a></li>
-                        <li><a href="/devolucoes" class="hover:text-white transition">Devolucoes</a></li>
+                        <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a></li>
+                        <li><a href="/devoluções" class="hover:text-white transition">Devolucoes</a></li>
                     </ul>
                 </div>
             </div>
@@ -453,7 +453,7 @@
     <script src="/assets/js/pages/checkout-location-data.js?v=20260421a"></script>
     <script src="/assets/js/pages/checkout.js?v=20260421a"></script>
     <script>
-        lucide.createIcons();
+        lucide.creatéIcons();
     </script>
 </body>
 

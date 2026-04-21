@@ -1,7 +1,7 @@
 // ===== PRODUCTS PAGE LOGIC =====
 
 function escapeHtml(value) {
-    return String(value ?? '')
+    return String(value || '')
         .replace(/&/g, '&amp;')
         .replace(/</g, '&lt;')
         .replace(/>/g, '&gt;')
@@ -168,7 +168,7 @@ function renderPagination(totalItems) {
                     type="button"
                     class="page-btn ${item === currentPage ? 'active' : ''}"
                     data-page="${item}"
-                    aria-label="Ir para a pagina ${item}"
+                    aria-label="Ir para a p?gina ${item}"
                     ${item === currentPage ? 'aria-current="page"' : ''}>
                     ${item}
                 </button>
@@ -353,10 +353,10 @@ function getCategoryName(categoria) {
         'x-banner': 'X-Banner',
         'roll-up': 'Roll Up',
         'wall-banner': 'Wall Banner',
-        'tenda-publicitaria': 'Tenda Publicitária',
+        'tenda-publicit?ria': 'Tenda Publicitária',
         'photocall': 'Photocall',
         'mastros': 'Mastros',
-        'cubo-publicitario': 'Cubo Publicitário',
+        'cubo-publicit?rio': 'Cubo Publicitário',
         'balcao-promocional': 'Balcão Promocional',
         'bandeiras': 'Bandeiras'
     };

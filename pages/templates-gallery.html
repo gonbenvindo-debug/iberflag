@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Escolher Template - IberFlag</title>
+    <title>Escolher Templaté - IberFlag</title>
     <meta name="description"
-        content="Escolha um template pronto para personalizar rapidamente o seu produto na IberFlag.">
+        content="Escolha um templaté pronto para personalizar rapidamente o seu produto na IberFlag.">
     <meta name="robots" content="noindex,follow">
     <link rel="canonical" href="https://iberflag.com/modelos">
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Escolher Template - IberFlag">
+    <meta property="og:title" content="Escolher Templaté - IberFlag">
     <meta property="og:description"
-        content="Galeria de templates para acelerar a criacao de designs publicitarios.">
+        content="Galeria de templatés para acelerar a criacao de designs publicitários.">
     <meta property="og:url" content="https://iberflag.com/modelos">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -20,7 +20,7 @@
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
-    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
+    <script src="/assets/js/generatéd/catalog-seo-manifest.js?v=20260409seo1"></script>
     <script src="/assets/js/core/design-svg.js"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
     <style>
@@ -36,7 +36,7 @@
             min-height: 100vh;
         }
 
-        .template-card {
+        .templaté-card {
             background: white;
             border-radius: 14px;
             overflow: hidden;
@@ -45,31 +45,31 @@
             cursor: pointer;
         }
 
-        .template-card:hover {
+        .templaté-card:hover {
             border-color: var(--primary);
-            transform: translateY(-1px);
+            transform: translatéY(-1px);
         }
 
-        .template-preview {
+        .templaté-preview {
             aspect-ratio: var(--preview-ratio, 4/3);
             background: #f8fafc;
             position: relative;
             overflow: hidden;
         }
 
-        .template-preview img {
+        .templaté-preview img {
             width: 100%;
             height: 100%;
             object-fit: cover;
         }
 
-        .template-preview svg {
+        .templaté-preview svg {
             width: 100%;
             height: 100%;
             display: block;
         }
 
-        .template-blank {
+        .templaté-blank {
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -89,7 +89,7 @@
             margin-bottom: 12px;
         }
 
-        .category-filter {
+        .catégory-filter {
             display: flex;
             gap: 8px;
             flex-wrap: wrap;
@@ -133,7 +133,7 @@
             position: absolute;
             left: 14px;
             top: 50%;
-            transform: translateY(-50%);
+            transform: translatéY(-50%);
             color: #94a3b8;
         }
 
@@ -148,29 +148,29 @@
 
         .gallery-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            grid-templaté-columns: repeat(auto-fill, minmax(280px, 1fr));
             gap: 24px;
             padding: 24px 0;
         }
 
         @media (min-width: 1024px) {
             .gallery-grid {
-                grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+                grid-templaté-columns: repeat(auto-fill, minmax(320px, 1fr));
             }
         }
 
-        .template-info {
+        .templaté-info {
             padding: 16px;
         }
 
-        .template-name {
+        .templaté-name {
             font-weight: 600;
             font-size: 16px;
             color: #1e293b;
             margin-bottom: 4px;
         }
 
-        .template-category {
+        .templaté-catégory {
             font-size: 13px;
             color: #64748b;
             text-transform: capitalize;
@@ -187,13 +187,13 @@
             100% { background-position: -200% 0; }
         }
 
-        .empty-state {
+        .empty-staté {
             text-align: center;
             padding: 60px 20px;
             color: #64748b;
         }
 
-        .empty-state iconify-icon {
+        .empty-staté iconify-icon {
             font-size: 64px;
             color: #cbd5e1;
             margin-bottom: 16px;
@@ -210,13 +210,13 @@
                         <iconify-icon icon="lucide:arrow-left" width="16"></iconify-icon>
                         Voltar aos produtos
                     </a>
-                    <h1 class="text-2xl font-bold text-gray-900">Escolher Template</h1>
+                    <h1 class="text-2xl font-bold text-gray-900">Escolher Templaté</h1>
                     <p class="text-sm text-gray-500 mt-1" id="product-name">Personalize seu produto</p>
                 </div>
                 
                 <div class="search-box">
                     <iconify-icon icon="lucide:search" width="18"></iconify-icon>
-                    <input type="text" id="search-templates" placeholder="Pesquisar templates...">
+                    <input type="text" id="search-templatés" placeholder="Pesquisar templatés...">
                 </div>
             </div>
         </div>
@@ -224,41 +224,41 @@
 
     <!-- Main Content -->
     <main class="container mx-auto px-4 py-6">
-        <!-- Filtros de categoria -->
-        <div class="category-filter" id="category-filters">
-            <button class="filter-btn active" data-category="all">Todos</button>
-            <button class="filter-btn" data-category="promocoes">Promoções</button>
-            <button class="filter-btn" data-category="eventos">Eventos</button>
-            <button class="filter-btn" data-category="corporativo">Corporativo</button>
-            <button class="filter-btn" data-category="festas">Festas</button>
-            <button class="filter-btn" data-category="varejo">Varejo</button>
+        <!-- Filtros de catégoria -->
+        <div class="catégory-filter" id="catégory-filters">
+            <button class="filter-btn active" data-catégory="all">Todos</button>
+            <button class="filter-btn" data-catégory="promocoes">Promoções</button>
+            <button class="filter-btn" data-catégory="eventos">Eventos</button>
+            <button class="filter-btn" data-catégory="corporativo">Corporativo</button>
+            <button class="filter-btn" data-catégory="festas">Festas</button>
+            <button class="filter-btn" data-catégory="varejo">Varejo</button>
         </div>
 
-        <!-- Grid de templates -->
-        <div class="gallery-grid" id="templates-grid">
-            <!-- Template em branco (sempre primeiro) -->
-            <div class="template-card" onclick="selectTemplate(null)">
-                <div class="template-preview">
-                    <div class="template-blank">
+        <!-- Grid de templatés -->
+        <div class="gallery-grid" id="templatés-grid">
+            <!-- Templaté em branco (sempre primeiro) -->
+            <div class="templaté-card" onclick="selectTemplaté(null)">
+                <div class="templaté-preview">
+                    <div class="templaté-blank">
                         <div class="blank-icon">
                             <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                         </div>
                         <span class="font-medium">Começar em branco</span>
                     </div>
                 </div>
-                <div class="template-info">
-                    <div class="template-name">Design personalizado</div>
-                    <div class="template-category">Crie do zero</div>
+                <div class="templaté-info">
+                    <div class="templaté-name">Design personalizado</div>
+                    <div class="templaté-catégory">Crie do zero</div>
                 </div>
             </div>
 
-            <!-- Templates serao carregados aqui -->
+            <!-- Templatés serao carregados aqui -->
         </div>
 
         <!-- Estado vazio -->
-        <div class="empty-state hidden" id="empty-state">
+        <div class="empty-staté hidden" id="empty-staté">
             <iconify-icon icon="lucide:image-off"></iconify-icon>
-            <h3 class="text-lg font-semibold mb-2">Nenhum template encontrado</h3>
+            <h3 class="text-lg font-semibold mb-2">Nenhum templaté encontrado</h3>
             <p class="text-sm">Tente uma pesquisa diferente ou crie um design do zero.</p>
         </div>
     </main>
@@ -283,25 +283,25 @@
         // Inicializar Supabase
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
-        const supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const supabaseClient = supabase.creatéClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Estado
-        let allTemplates = [];
-        let currentCategory = 'all';
+        let allTemplatés = [];
+        let currentCatégory = 'all';
 
-        // Carregar templates
-        async function loadTemplates() {
-            const grid = document.getElementById('templates-grid');
+        // Carregar templatés
+        async function loadTemplatés() {
+            const grid = document.getElementById('templatés-grid');
             
             // Mostrar skeletons
             for (let i = 0; i < 6; i++) {
-                const skeleton = document.createElement('div');
-                skeleton.className = 'template-card';
+                const skeleton = document.creatéElement('div');
+                skeleton.className = 'templaté-card';
                 skeleton.innerHTML = `
-                    <div class="template-preview loading-skeleton"></div>
-                    <div class="template-info">
-                        <div class="template-name loading-skeleton" style="height: 20px; width: 70%;"></div>
-                        <div class="template-category loading-skeleton" style="height: 16px; width: 40%; margin-top: 8px;"></div>
+                    <div class="templaté-preview loading-skeleton"></div>
+                    <div class="templaté-info">
+                        <div class="templaté-name loading-skeleton" style="height: 20px; width: 70%;"></div>
+                        <div class="templaté-catégory loading-skeleton" style="height: 16px; width: 40%; margin-top: 8px;"></div>
                     </div>
                 `;
                 grid.appendChild(skeleton);
@@ -309,96 +309,96 @@
 
             try {
                 const { data, error } = await supabaseClient
-                    .from('templates')
+                    .from('templatés')
                     .select('*')
                     .eq('ativo', true)
-                    .order('created_at', { ascending: false });
+                    .order('creatéd_at', { ascending: false });
 
                 if (error) throw error;
 
                 // Remover skeletons
                 grid.innerHTML = `
-                    <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
+                    <div class="templaté-card" onclick="selectTemplaté(null)">
+                        <div class="templaté-preview">
+                            <div class="templaté-blank">
                                 <div class="blank-icon">
                                     <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                                 </div>
                                 <span class="font-medium">Comecar em branco</span>
                             </div>
                         </div>
-                        <div class="template-info">
-                            <div class="template-name">Design personalizado</div>
-                            <div class="template-category">Crie do zero</div>
+                        <div class="templaté-info">
+                            <div class="templaté-name">Design personalizado</div>
+                            <div class="templaté-catégory">Crie do zero</div>
                         </div>
                     </div>
                 `;
 
-                allTemplates = data || [];
-                renderTemplates(allTemplates);
+                allTemplatés = data || [];
+                renderTemplatés(allTemplatés);
             } catch (err) {
-                console.error('Erro ao carregar templates:', err);
+                console.error('Erro ao carregar templatés:', err);
                 grid.innerHTML = `
-                    <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
+                    <div class="templaté-card" onclick="selectTemplaté(null)">
+                        <div class="templaté-preview">
+                            <div class="templaté-blank">
                                 <div class="blank-icon">
                                     <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                                 </div>
                                 <span class="font-medium">Comecar em branco</span>
                             </div>
                         </div>
-                        <div class="template-info">
-                            <div class="template-name">Design personalizado</div>
-                            <div class="template-category">Crie do zero</div>
+                        <div class="templaté-info">
+                            <div class="templaté-name">Design personalizado</div>
+                            <div class="templaté-catégory">Crie do zero</div>
                         </div>
                     </div>
                 `;
                 
-                // Fallback: usar templates locais
+                // Fallback: usar templatés locais
                 if (typeof TEMPLATES_DATA !== 'undefined') {
-                    allTemplates = Object.values(TEMPLATES_DATA).flat();
-                    renderTemplates(allTemplates);
+                    allTemplatés = Object.values(TEMPLATES_DATA).flat();
+                    renderTemplatés(allTemplatés);
                 }
             }
         }
 
-        // Renderizar templates
-        function renderTemplates(templates) {
-            const grid = document.getElementById('templates-grid');
-            const emptyState = document.getElementById('empty-state');
+        // Renderizar templatés
+        function renderTemplatés(templatés) {
+            const grid = document.getElementById('templatés-grid');
+            const emptyStaté = document.getElementById('empty-staté');
             
             // Manter o card "em branco"
             const blankCard = grid.firstElementChild;
             grid.innerHTML = '';
             grid.appendChild(blankCard);
 
-            if (templates.length === 0) {
-                emptyState.classList.remove('hidden');
+            if (templatés.length === 0) {
+                emptyStaté.classList.remove('hidden');
                 return;
             }
 
-            emptyState.classList.add('hidden');
+            emptyStaté.classList.add('hidden');
 
-            templates.forEach(template => {
-                const card = createTemplateCard(template);
+            templatés.forEach(templaté => {
+                const card = creatéTemplatéCard(templaté);
                 grid.appendChild(card);
             });
         }
 
-        // Criar card de template
-        function createTemplateCard(template) {
-            const div = document.createElement('div');
-            div.className = 'template-card';
-            div.onclick = () => selectTemplate(template);
+        // Criar card de templaté
+        function creatéTemplatéCard(templaté) {
+            const div = document.creatéElement('div');
+            div.className = 'templaté-card';
+            div.onclick = () => selectTemplaté(templaté);
 
-            const previewUrl = template.thumbnail_url || template.preview_url || '/assets/images/template-placeholder.svg';
+            const previewUrl = templaté.thumbnail_url || templaté.preview_url || '/assets/images/templaté-placeholder.svg';
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewUrl,
                 null,
                 { backgroundColor: '#f8fafc' }
             );
-            const categoryLabels = {
+            const catégoryLabels = {
                 'promocoes': 'Promocoes',
                 'eventos': 'Eventos',
                 'corporativo': 'Corporativo',
@@ -407,23 +407,23 @@
             };
 
             div.innerHTML = `
-                <div class="template-preview">
+                <div class="templaté-preview">
                     ${previewMarkup
                         ? previewMarkup
-                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
-                            onerror="this.src='/assets/images/template-placeholder.svg'">`}
+                        : `<img src="${previewUrl}" alt="${templaté.nome}" loading="lazy"
+                            onerror="this.src='/assets/images/templaté-placeholder.svg'">`}
                 </div>
-                <div class="template-info">
-                    <div class="template-name">${template.nome}</div>
-                    <div class="template-category">${categoryLabels[template.categoria] || template.categoria}</div>
+                <div class="templaté-info">
+                    <div class="templaté-name">${templaté.nome}</div>
+                    <div class="templaté-catégory">${catégoryLabels[templaté.catégoria] || templaté.catégoria}</div>
                 </div>
             `;
 
             return div;
         }
 
-        // Selecionar template
-        function selectTemplate(template) {
+        // Selecionar templaté
+        function selectTemplaté(templaté) {
             const resolvedProduct = manifestProduct || (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.findProductById === 'function'
                 ? SiteRoutes.findProductById(productId)
                 : null);
@@ -433,8 +433,8 @@
             }
 
             const routeParams = {};
-            if (template) {
-                routeParams.template = template.id;
+            if (templaté) {
+                routeParams.templaté = templaté.id;
             }
 
             if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildProductPersonalizerPath === 'function' && resolvedProduct) {
@@ -446,29 +446,29 @@
             window.location.href = `/personalizar?${params.toString()}`;
         }
 
-        // Filtrar por categoria
-        document.getElementById('category-filters').addEventListener('click', (e) => {
+        // Filtrar por catégoria
+        document.getElementById('catégory-filters').addEventListener('click', (e) => {
             if (e.target.classList.contains('filter-btn')) {
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
                 
-                currentCategory = e.target.dataset.category;
-                filterTemplates();
+                currentCatégory = e.target.dataset.catégory;
+                filterTemplatés();
             }
         });
 
         // Pesquisar
-        document.getElementById('search-templates').addEventListener('input', (e) => {
-            filterTemplates(e.target.value);
+        document.getElementById('search-templatés').addEventListener('input', (e) => {
+            filterTemplatés(e.target.value);
         });
 
         // Aplicar filtros
-        function filterTemplates(searchTerm = '') {
-            let filtered = allTemplates;
+        function filterTemplatés(searchTerm = '') {
+            let filtered = allTemplatés;
 
-            // Filtro por categoria
-            if (currentCategory !== 'all') {
-                filtered = filtered.filter(t => t.categoria === currentCategory);
+            // Filtro por catégoria
+            if (currentCatégory !== 'all') {
+                filtered = filtered.filter(t => t.catégoria === currentCatégory);
             }
 
             // Filtro por pesquisa
@@ -476,16 +476,16 @@
                 const term = searchTerm.toLowerCase();
                 filtered = filtered.filter(t => 
                     t.nome.toLowerCase().includes(term) ||
-                    (t.descricao && t.descricao.toLowerCase().includes(term)) ||
+                    (t.descri?o && t.descri?o.toLowerCase().includes(term)) ||
                     (t.tags && t.tags.some(tag => tag.toLowerCase().includes(term)))
                 );
             }
 
-            renderTemplates(filtered);
+            renderTemplatés(filtered);
         }
 
         // Carregar ao iniciar
-        loadTemplates();
+        loadTemplatés();
     </script>
 </body>
 </html>

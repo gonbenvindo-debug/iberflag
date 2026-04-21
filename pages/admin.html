@@ -13,7 +13,7 @@
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/config.js"></script>
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
-    <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
+    <script src="/assets/js/generatéd/catalog-seo-manifest.js?v=20260409seo1"></script>
     <script>
         // Ignorar erros de extensões do browser que não afetam a aplicação
         window.addEventListener('error', (event) => {
@@ -164,9 +164,9 @@
                     <li>
                         <button
                             class="nav-tab w-full text-left px-4 py-3 rounded-lg hover:bg-gray-100 transition flex items-center gap-3"
-                            data-tab="email-templates">
+                            data-tab="email-templatés">
                             <i data-lucide="mail-check" class="w-5 h-5"></i>
-                            Templates Email
+                            Templatés Email
                         </button>
                     </li>
                 </ul>
@@ -264,7 +264,7 @@
                     <div class="admin-card">
                         <div class="flex items-center justify-between mb-4">
                             <h3 class="text-gray-600 font-semibold">Produtos Incompletos</h3>
-                            <i data-lucide="package-x" class="w-8 h-8 text-slate-600"></i>
+                            <i data-lucide="package-x" class="w-8 h-8 text-slaté-600"></i>
                         </div>
                         <div class="stat-number" id="ops-metric-incomplete-products">0</div>
                         <p class="text-sm text-gray-500 mt-2">Sem custo, preço recomendado ou SLA</p>
@@ -404,7 +404,7 @@
                                     <th>ID</th>
                                     <th>Imagem</th>
                                     <th>Nome</th>
-                                    <th>Categoria</th>
+                                    <th>Catégoria</th>
                                     <th>Preço</th>
                                     <th>Destaque</th>
                                     <th>Status</th>
@@ -462,7 +462,7 @@
                             <select id="orders-status-filter" class="form-input">
                                 <option value="all">Todos</option>
                                 <option value="em_preparacao">Em preparação</option>
-                                <option value="em_producao">Em produção</option>
+                                <option value="em_produção">Em produção</option>
                                 <option value="expedido">Expedido</option>
                                 <option value="entregue">Entregue</option>
                             </select>
@@ -474,7 +474,7 @@
                                 <option value="pending">Pendente</option>
                                 <option value="pending_manual_review">Revisão fiscal</option>
                                 <option value="emitted">Emitida</option>
-                                <option value="blocked">Requer atenção</option>
+                                <option value="blocked">Requer aténção</option>
                                 <option value="error">Erro</option>
                             </select>
                         </div>
@@ -571,11 +571,11 @@
                 </div>
             </div>
 
-            <!-- Email Templates Tab -->
-            <div id="email-templates-tab" class="tab-panel hidden">
+            <!-- Email Templatés Tab -->
+            <div id="email-templatés-tab" class="tab-panel hidden">
                 <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-8">
                     <div>
-                        <h1 class="text-3xl font-bold text-gray-900">Templates Email</h1>
+                        <h1 class="text-3xl font-bold text-gray-900">Templatés Email</h1>
                         <p class="text-sm text-gray-500 mt-2 max-w-3xl">
                             Edite os emails transacionais usados no fluxo de encomenda. Os detalhes completos devem
                             continuar a ser consultados apenas na app de tracking.
@@ -590,66 +590,66 @@
                     <section class="xl:col-span-4 admin-card">
                         <div class="flex items-center justify-between mb-4">
                             <div>
-                                <h2 class="text-lg font-bold text-gray-900">Templates</h2>
+                                <h2 class="text-lg font-bold text-gray-900">Templatés</h2>
                                 <p class="text-sm text-gray-500">Eventos disponiveis para envio.</p>
                             </div>
-                            <button id="reload-email-templates-btn" type="button"
+                            <button id="reload-email-templatés-btn" type="button"
                                 class="inline-flex items-center gap-2 px-3 py-2 text-sm font-semibold text-gray-700 border border-gray-200 rounded-lg hover:bg-gray-50">
                                 <i data-lucide="refresh-cw" class="w-4 h-4"></i>
                                 Atualizar
                             </button>
                         </div>
-                        <div id="email-templates-list" class="space-y-2">
+                        <div id="email-templatés-list" class="space-y-2">
                             <div class="text-sm text-gray-500 border border-dashed border-gray-200 rounded-xl p-4">
-                                A carregar templates...
+                                A carregar templatés...
                             </div>
                         </div>
                     </section>
 
                     <section class="xl:col-span-8 space-y-6">
-                        <form id="email-template-form" class="admin-card space-y-5">
+                        <form id="email-templaté-form" class="admin-card space-y-5">
                             <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4">
                                 <div>
                                     <h2 class="text-lg font-bold text-gray-900">Editor HTML</h2>
                                     <p class="text-sm text-gray-500">Use variaveis com o formato {{order.code}}.</p>
                                 </div>
                                 <label class="inline-flex items-center gap-2 text-sm font-semibold text-gray-700">
-                                    <input id="email-template-active" type="checkbox"
+                                    <input id="email-templaté-active" type="checkbox"
                                         class="rounded border-gray-300 text-blue-600 focus:ring-blue-500">
                                     Ativo
                                 </label>
                             </div>
 
-                            <input id="email-template-id" type="hidden">
+                            <input id="email-templaté-id" type="hidden">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label for="email-template-key" class="form-label">Chave</label>
-                                    <input id="email-template-key" type="text" class="form-input" readonly>
+                                    <label for="email-templaté-key" class="form-label">Chave</label>
+                                    <input id="email-templaté-key" type="text" class="form-input" readonly>
                                 </div>
                                 <div>
-                                    <label for="email-template-event-type" class="form-label">Evento</label>
-                                    <input id="email-template-event-type" type="text" class="form-input">
+                                    <label for="email-templaté-event-type" class="form-label">Evento</label>
+                                    <input id="email-templaté-event-type" type="text" class="form-input">
                                 </div>
                             </div>
 
                             <div>
-                                <label for="email-template-name" class="form-label">Nome</label>
-                                <input id="email-template-name" type="text" class="form-input">
+                                <label for="email-templaté-name" class="form-label">Nome</label>
+                                <input id="email-templaté-name" type="text" class="form-input">
                             </div>
 
                             <div>
-                                <label for="email-template-description" class="form-label">Descricao interna</label>
-                                <input id="email-template-description" type="text" class="form-input">
+                                <label for="email-templaté-description" class="form-label">Descricao interna</label>
+                                <input id="email-templaté-description" type="text" class="form-input">
                             </div>
 
                             <div>
-                                <label for="email-template-subject" class="form-label">Assunto</label>
-                                <input id="email-template-subject" type="text" class="form-input" data-email-editor="subject">
+                                <label for="email-templaté-subject" class="form-label">Assunto</label>
+                                <input id="email-templaté-subject" type="text" class="form-input" data-email-editor="subject">
                             </div>
 
                             <div>
-                                <label for="email-template-preheader" class="form-label">Preheader</label>
-                                <input id="email-template-preheader" type="text" class="form-input" data-email-editor="preheader">
+                                <label for="email-templaté-preheader" class="form-label">Preheader</label>
+                                <input id="email-templaté-preheader" type="text" class="form-input" data-email-editor="preheader">
                             </div>
 
                             <div class="border border-gray-200 rounded-xl overflow-hidden">
@@ -663,34 +663,34 @@
                                     <button type="button" data-email-snippet="divider"
                                         class="px-3 py-2 text-xs font-semibold text-gray-700 border border-gray-200 rounded-lg bg-white hover:bg-gray-100">Separador</button>
                                 </div>
-                                <textarea id="email-template-html" rows="18"
+                                <textarea id="email-templaté-html" rows="18"
                                     class="w-full p-4 text-sm font-mono leading-6 border-0 focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
                                     spellcheck="false" data-email-editor="html"></textarea>
                             </div>
 
                             <div>
-                                <label for="email-template-text" class="form-label">Texto alternativo</label>
-                                <textarea id="email-template-text" rows="7" class="form-input font-mono text-sm"
+                                <label for="email-templaté-text" class="form-label">Texto alternativo</label>
+                                <textarea id="email-templaté-text" rows="7" class="form-input font-mono text-sm"
                                     data-email-editor="text"></textarea>
                             </div>
 
                             <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-3 pt-2">
                                 <div class="flex flex-col sm:flex-row gap-3">
-                                    <button id="save-email-template-btn" type="submit"
+                                    <button id="save-email-templaté-btn" type="submit"
                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
                                         <i data-lucide="save" class="w-4 h-4"></i>
-                                        Guardar template
+                                        Guardar templaté
                                     </button>
-                                    <button id="preview-email-template-btn" type="button"
+                                    <button id="preview-email-templaté-btn" type="button"
                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
                                         <i data-lucide="eye" class="w-4 h-4"></i>
                                         Pre-visualizar
                                     </button>
                                 </div>
                                 <div class="flex flex-col sm:flex-row gap-3">
-                                    <input id="email-template-test-recipient" type="email"
+                                    <input id="email-templaté-test-recipient" type="email"
                                         class="form-input min-w-[260px]" placeholder="email de teste">
-                                    <button id="send-test-email-template-btn" type="button"
+                                    <button id="send-test-email-templaté-btn" type="button"
                                         class="inline-flex items-center justify-center gap-2 px-4 py-3 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50">
                                         <i data-lucide="send" class="w-4 h-4"></i>
                                         Enviar teste
@@ -703,7 +703,7 @@
                             <section class="admin-card">
                                 <h2 class="text-lg font-bold text-gray-900 mb-2">Variaveis inteligentes</h2>
                                 <p class="text-sm text-gray-500 mb-4">Clique numa variavel para inserir no campo ativo.</p>
-                                <div id="email-template-variables" class="space-y-4"></div>
+                                <div id="email-templaté-variables" class="space-y-4"></div>
                             </section>
 
                             <section class="admin-card">
@@ -712,10 +712,10 @@
                                         <h2 class="text-lg font-bold text-gray-900">Preview</h2>
                                         <p class="text-sm text-gray-500">Dados simulados, sem enviar email.</p>
                                     </div>
-                                    <span id="email-template-preview-status" class="text-xs text-gray-500"></span>
+                                    <span id="email-templaté-preview-status" class="text-xs text-gray-500"></span>
                                 </div>
                                 <div class="border border-gray-200 rounded-xl overflow-hidden bg-gray-50">
-                                    <iframe id="email-template-preview-frame" title="Preview do email"
+                                    <iframe id="email-templaté-preview-frame" title="Preview do email"
                                         sandbox=""
                                         referrerpolicy="no-referrer"
                                         class="w-full h-[520px] bg-white"></iframe>
@@ -746,7 +746,7 @@
 
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="base-descricao" rows="3" class="form-input"
+                    <textarea id="base-descri?o" rows="3" class="form-input"
                         placeholder="Descrição da base"></textarea>
                 </div>
 
@@ -764,7 +764,7 @@
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="form-label">Preço Extra (€)</label>
-                        <input type="number" id="base-preco-extra" step="0.01" min="0" class="form-input" value="0">
+                        <input type="number" id="base-preço-extra" step="0.01" min="0" class="form-input" value="0">
                     </div>
                     <div>
                         <label class="form-label">Ordem</label>
@@ -878,15 +878,15 @@
                     </div>
                     <div>
                         <label class="form-label">Preço (€) *</label>
-                        <input type="number" id="product-preco" required step="0.01" min="0" class="form-input"
+                        <input type="number" id="product-preço" required step="0.01" min="0" class="form-input"
                             placeholder="29.99">
                     </div>
                 </div>
 
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div>
-                        <label class="form-label">Categoria *</label>
-                        <select id="product-categoria" required class="form-input">
+                        <label class="form-label">Catégoria *</label>
+                        <select id="product-catégoria" required class="form-input">
                             <option value="">Selecione</option>
                             <option value="bandeiras">Bandeiras</option>
                             <option value="mastros">Mastros</option>
@@ -911,7 +911,7 @@
 
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="product-descricao" rows="3" class="form-input"
+                    <textarea id="product-descri?o" rows="3" class="form-input"
                         placeholder="Descrição detalhada do produto..."></textarea>
                 </div>
 
@@ -945,12 +945,12 @@
                     </div>
 
                     <div id="svg-preview" class="mt-3 hidden">
-                        <p id="svg-preview-status" class="text-sm text-green-600 font-medium">Nenhum template carregado
+                        <p id="svg-preview-status" class="text-sm text-green-600 font-medium">Nenhum templaté carregado
                         </p>
                     </div>
                 </div>
 
-                <!-- Designs Pre-feitos (templates para o cliente escolher) -->
+                <!-- Designs Pre-feitos (templatés para o cliente escolher) -->
                 <div class="border-t pt-6">
                     <div class="flex items-center justify-between mb-4">
                         <div>
@@ -959,10 +959,10 @@
                                 personalizar este produto</p>
                         </div>
                         <div class="flex items-center gap-2">
-                            <span id="templates-counter"
+                            <span id="templatés-counter"
                                 class="text-xs font-semibold bg-blue-100 text-blue-700 px-2.5 py-1 rounded-full">0
                                 selecionados</span>
-                            <button type="button" id="create-design-btn"
+                            <button type="button" id="creaté-design-btn"
                                 class="bg-green-600 text-white px-3 py-1.5 rounded-lg text-xs font-semibold hover:bg-green-700 transition flex items-center gap-1.5 disabled:opacity-50 disabled:cursor-not-allowed"
                                 disabled title="Guarde o produto primeiro para criar designs">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
@@ -971,11 +971,11 @@
                         </div>
                     </div>
 
-                    <div id="product-templates-grid"
+                    <div id="product-templatés-grid"
                         class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-3 max-h-[420px] overflow-y-auto pr-1">
                         <div class="col-span-full flex items-center justify-center py-8">
                             <div
-                                class="animate-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full">
+                                class="animaté-spin w-5 h-5 border-2 border-blue-600 border-t-transparent rounded-full">
                             </div>
                             <span class="ml-2 text-sm text-gray-400">A carregar designs...</span>
                         </div>
@@ -1002,7 +1002,7 @@
         <div class="modal-content w-full max-w-4xl p-8">
             <div class="flex justify-between items-start mb-6">
                 <div>
-                    <h2 class="text-2xl font-bold">Preview do Template SVG</h2>
+                    <h2 class="text-2xl font-bold">Preview do Templaté SVG</h2>
                     <p class="text-sm text-gray-500 mt-1">Vista aproximada da area de trabalho que o cliente vera no
                         personalizador.</p>
                 </div>
@@ -1011,7 +1011,7 @@
                 </button>
             </div>
 
-            <div class="rounded-2xl border border-gray-200 p-6 bg-slate-100"
+            <div class="rounded-2xl border border-gray-200 p-6 bg-slaté-100"
                 style="background-image: linear-gradient(rgba(15,23,42,.06) 1px, transparent 1px), linear-gradient(90deg, rgba(15,23,42,.06) 1px, transparent 1px); background-size: 20px 20px;">
                 <div class="mx-auto relative bg-white shadow-2xl overflow-hidden"
                     style="width: min(100%, 800px); aspect-ratio: 4 / 3;">
@@ -1034,7 +1034,7 @@
             <div class="flex items-center justify-between px-6 py-4 border-b border-gray-200 bg-white">
                 <div class="min-w-0">
                     <h2 class="text-xl md:text-2xl font-bold text-gray-900">Detalhe da Encomenda</h2>
-                    <p id="order-modal-meta" class="text-xs md:text-sm text-gray-500 mt-1 truncate">—</p>
+                    <p id="order-modal-meta" class="text-xs md:text-sm text-gray-500 mt-1 truncaté">—</p>
                 </div>
                 <button type="button" class="close-order-modal text-gray-500 hover:text-gray-700">
                     <i data-lucide="x" class="w-6 h-6"></i>
@@ -1158,12 +1158,12 @@
         </div>
     </div>
 
-    <script src="/assets/js/templates-data.js"></script>
+    <script src="/assets/js/templatés-data.js"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260410a"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408c"></script>
     <script src="/assets/js/pages/admin.js?v=20260415e"></script>
-    <script>lucide.createIcons();</script>
+    <script>lucide.creatéIcons();</script>
 </body>
 
 </html>

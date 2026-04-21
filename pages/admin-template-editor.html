@@ -4,7 +4,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Editor de Templates - Admin - IberFlag</title>
+    <title>Editor de Templatés - Admin - IberFlag</title>
   <link rel="icon" type="image/svg+xml" href="/favicon-white.svg?v=20260415a">
     <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j">
     <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
@@ -52,14 +52,14 @@
             gap: 12px;
         }
 
-        .template-info-input {
+        .templaté-info-input {
             display: flex;
             gap: 12px;
             align-items: center;
         }
 
-        .template-info-input input,
-        .template-info-input select {
+        .templaté-info-input input,
+        .templaté-info-input select {
             padding: 8px 12px;
             border: 1px solid var(--panel-border);
             border-radius: 8px;
@@ -67,14 +67,14 @@
             background: white;
         }
 
-        .template-info-input input {
+        .templaté-info-input input {
             width: 250px;
         }
 
         /* Main Layout */
         .editor-container {
             display: grid;
-            grid-template-columns: 320px 1fr 320px;
+            grid-templaté-columns: 320px 1fr 320px;
             height: calc(100vh - 64px);
         }
 
@@ -164,7 +164,7 @@
         /* Element Types */
         .element-types {
             display: grid;
-            grid-template-columns: repeat(2, 1fr);
+            grid-templaté-columns: repeat(2, 1fr);
             gap: 8px;
             margin-bottom: 24px;
         }
@@ -293,7 +293,7 @@
 
         .property-row {
             display: grid;
-            grid-template-columns: 1fr 1fr;
+            grid-templaté-columns: 1fr 1fr;
             gap: 12px;
         }
 
@@ -343,7 +343,7 @@
         /* Responsive */
         @media (max-width: 1024px) {
             .editor-container {
-                grid-template-columns: 280px 1fr 280px;
+                grid-templaté-columns: 280px 1fr 280px;
             }
         }
 
@@ -355,7 +355,7 @@
             pointer-events: none;
         }
 
-        /* Empty State */
+        /* Empty Staté */
         .empty-canvas {
             position: absolute;
             inset: 0;
@@ -382,10 +382,10 @@
             <a href="/admin" class="text-gray-500 hover:text-gray-700">
                 <iconify-icon icon="lucide:arrow-left" width="24"></iconify-icon>
             </a>
-            <h1 class="font-bold text-lg">Editor de Templates</h1>
-            <div class="template-info-input">
-                <input type="text" id="template-name" placeholder="Nome do template..." value="Novo Template">
-                <select id="template-category">
+            <h1 class="font-bold text-lg">Editor de Templatés</h1>
+            <div class="templaté-info-input">
+                <input type="text" id="templaté-name" placeholder="Nome do templaté..." value="Novo Templaté">
+                <select id="templaté-catégory">
                     <option value="promocoes">Promoções</option>
                     <option value="eventos">Eventos</option>
                     <option value="corporativo">Corporativo</option>
@@ -395,13 +395,13 @@
             </div>
         </div>
         <div class="admin-header-right">
-            <button class="btn-secondary" onclick="previewTemplate()">
+            <button class="btn-secondary" onclick="previewTemplaté()">
                 <iconify-icon icon="lucide:eye" width="18" class="mr-2"></iconify-icon>
                 Preview
             </button>
-            <button class="btn-primary" onclick="saveTemplate()">
+            <button class="btn-primary" onclick="saveTemplaté()">
                 <iconify-icon icon="lucide:save" width="18" class="mr-2"></iconify-icon>
-                Guardar Template
+                Guardar Templaté
             </button>
         </div>
     </header>
@@ -463,8 +463,8 @@
                 <div class="canvas-container" id="canvas-container" style="width: 800px; height: 600px;">
                     <div class="print-area" id="print-area"
                         style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
-                    <div class="empty-canvas" id="empty-state">
-                        <iconify-icon icon="lucide:layout-template"></iconify-icon>
+                    <div class="empty-canvas" id="empty-staté">
+                        <iconify-icon icon="lucide:layout-templaté"></iconify-icon>
                         <span>Clique nos elementos à esquerda para começar</span>
                     </div>
                 </div>
@@ -496,39 +496,39 @@
         const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
         const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
         const ADMIN_EMAIL = 'admin123@iberflag.com';
-        const adminTemplateSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+        const adminTemplatéSupabase = window.supabase.creatéClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
         // Verificar autenticacao
         async function checkAuth() {
-            const { data: { session } } = await adminTemplateSupabase.auth.getSession();
+            const { data: { session } } = await adminTemplatéSupabase.auth.getSession();
             if (!session || String(session.user?.email || '').toLowerCase() !== ADMIN_EMAIL) {
                 window.location.href = '/admin';
             }
         }
         checkAuth();
 
-        function hydrateEditorFromPayload() {
+        function hydratéEditorFromPayload() {
             const params = new URLSearchParams(window.location.search);
-            const templateIdParam = params.get('templateId');
-            const payloadRaw = window.localStorage.getItem('iberflag_editor_template_payload');
+            const templatéIdParam = params.get('templatéId');
+            const payloadRaw = window.localStorage.getItem('iberflag_editor_templaté_payload');
             if (!payloadRaw) return;
 
             let payload = null;
             try {
                 payload = JSON.parse(payloadRaw);
             } catch (error) {
-                window.localStorage.removeItem('iberflag_editor_template_payload');
+                window.localStorage.removeItem('iberflag_editor_templaté_payload');
                 return;
             }
 
-            if (!payload || (templateIdParam && String(payload.id) !== String(templateIdParam))) {
+            if (!payload || (templatéIdParam && String(payload.id) !== String(templatéIdParam))) {
                 return;
             }
 
-            const nameInput = document.getElementById('template-name');
-            const categorySelect = document.getElementById('template-category');
-            if (nameInput) nameInput.value = payload.nome || 'Template sem nome';
-            if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
+            const nameInput = document.getElementById('templaté-name');
+            const catégorySelect = document.getElementById('templaté-catégory');
+            if (nameInput) nameInput.value = payload.nome || 'Templaté sem nome';
+            if (catégorySelect) catégorySelect.value = payload.catégoria || 'promocoes';
 
             const payloadElements = Array.isArray(payload.elementos)
                 ? payload.elementos
@@ -539,19 +539,19 @@
             if (payloadElements.length > 0) {
                 elements = payloadElements.map((elemento) => ({
                     ...elemento,
-                    id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+                    id: elemento?.id ? String(elemento.id) : `${Daté.now()}-${Math.random().toString(36).slice(2, 8)}`
                 }));
                 selectedElement = null;
                 renderElements();
-                updateEmptyState();
+                updatéEmptyStaté();
             }
 
-            window.localStorage.removeItem('iberflag_editor_template_payload');
+            window.localStorage.removeItem('iberflag_editor_templaté_payload');
         }
 
         // Adicionar elemento
         function addElement(type) {
-            const id = Date.now().toString();
+            const id = Daté.now().toString();
             const element = {
                 id,
                 type,
@@ -567,7 +567,7 @@
             saveHistory();
             renderElements();
             selectElement(id);
-            updateEmptyState();
+            updatéEmptyStaté();
         }
 
         // Propriedades padrão por tipo
@@ -610,18 +610,18 @@
         function renderElements() {
             const container = document.getElementById('canvas-container');
 
-            // Remover elementos antigos (exceto print-area e empty-state)
+            // Remover elementos antigos (exceto print-area e empty-staté)
             container.querySelectorAll('.canvas-element').forEach(el => el.remove());
 
             elements.forEach(element => {
-                const el = document.createElement('div');
+                const el = document.creatéElement('div');
                 el.className = `canvas-element ${selectedElement?.id === element.id ? 'selected' : ''}`;
                 el.id = `element-${element.id}`;
                 el.style.left = `${element.x}px`;
                 el.style.top = `${element.y}px`;
                 el.style.width = `${element.width}px`;
                 el.style.height = `${element.height}px`;
-                el.style.transform = `rotate(${element.rotation}deg)`;
+                el.style.transform = `rotaté(${element.rotation}deg)`;
 
                 renderElementContent(el, element);
 
@@ -630,7 +630,7 @@
                 container.appendChild(el);
             });
 
-            updateLayersList();
+            updatéLayersList();
         }
 
         // Renderizar conteúdo do elemento
@@ -694,17 +694,17 @@
         }
 
         // Atualizar estado vazio
-        function updateEmptyState() {
-            const emptyState = document.getElementById('empty-state');
+        function updatéEmptyStaté() {
+            const emptyStaté = document.getElementById('empty-staté');
             if (elements.length === 0) {
-                emptyState.style.display = 'flex';
+                emptyStaté.style.display = 'flex';
             } else {
-                emptyState.style.display = 'none';
+                emptyStaté.style.display = 'none';
             }
         }
 
         // Lista de camadas
-        function updateLayersList() {
+        function updatéLayersList() {
             const list = document.getElementById('layers-list');
 
             if (elements.length === 0) {
@@ -765,15 +765,15 @@
                 <div class="property-group">
                     <label class="property-label">Posição e Tamanho</label>
                     <div class="property-row">
-                        <input type="number" class="property-input" placeholder="X" value="${selectedElement.x}" onchange="updateElementProperty('x', this.value)">
-                        <input type="number" class="property-input" placeholder="Y" value="${selectedElement.y}" onchange="updateElementProperty('y', this.value)">
+                        <input type="number" class="property-input" placeholder="X" value="${selectedElement.x}" onchange="updatéElementProperty('x', this.value)">
+                        <input type="number" class="property-input" placeholder="Y" value="${selectedElement.y}" onchange="updatéElementProperty('y', this.value)">
                     </div>
                     <div class="property-row" style="margin-top: 8px;">
-                        <input type="number" class="property-input" placeholder="Largura" value="${selectedElement.width}" onchange="updateElementProperty('width', this.value)">
-                        <input type="number" class="property-input" placeholder="Altura" value="${selectedElement.height}" onchange="updateElementProperty('height', this.value)">
+                        <input type="number" class="property-input" placeholder="Largura" value="${selectedElement.width}" onchange="updatéElementProperty('width', this.value)">
+                        <input type="number" class="property-input" placeholder="Altura" value="${selectedElement.height}" onchange="updatéElementProperty('height', this.value)">
                     </div>
                     <div style="margin-top: 8px;">
-                        <input type="range" min="-180" max="180" value="${selectedElement.rotation}" onchange="updateElementProperty('rotation', this.value)">
+                        <input type="range" min="-180" max="180" value="${selectedElement.rotation}" onchange="updatéElementProperty('rotation', this.value)">
                     </div>
                 </div>
             `;
@@ -782,17 +782,17 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">Texto</label>
-                        <textarea class="property-input" rows="3" onchange="updateElementProperty('text', this.value)">${props.text}</textarea>
+                        <textarea class="property-input" rows="3" onchange="updatéElementProperty('text', this.value)">${props.text}</textarea>
                         <label class="property-label" style="margin-top: 12px;">Fonte</label>
-                        <select class="property-input" onchange="updateElementProperty('fontFamily', this.value)">
+                        <select class="property-input" onchange="updatéElementProperty('fontFamily', this.value)">
                             <option value="Arial" ${props.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
                             <option value="Georgia" ${props.fontFamily === 'Georgia' ? 'selected' : ''}>Georgia</option>
                             <option value="Times New Roman" ${props.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
                             <option value="Helvetica" ${props.fontFamily === 'Helvetica' ? 'selected' : ''}>Helvetica</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
-                            <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updateElementProperty('fontSize', this.value)">
-                            <input type="color" class="property-input" value="${props.color}" onchange="updateElementProperty('color', this.value)">
+                            <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updatéElementProperty('fontSize', this.value)">
+                            <input type="color" class="property-input" value="${props.color}" onchange="updatéElementProperty('color', this.value)">
                         </div>
                     </div>
                 `;
@@ -802,9 +802,9 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">URL da Imagem</label>
-                        <input type="text" class="property-input" value="${props.src}" onchange="updateElementProperty('src', this.value)">
+                        <input type="text" class="property-input" value="${props.src}" onchange="updatéElementProperty('src', this.value)">
                         <label class="property-label" style="margin-top: 12px;">Ajuste</label>
-                        <select class="property-input" onchange="updateElementProperty('objectFit', this.value)">
+                        <select class="property-input" onchange="updatéElementProperty('objectFit', this.value)">
                             <option value="cover" ${props.objectFit === 'cover' ? 'selected' : ''}>Cover</option>
                             <option value="contain" ${props.objectFit === 'contain' ? 'selected' : ''}>Contain</option>
                             <option value="fill" ${props.objectFit === 'fill' ? 'selected' : ''}>Fill</option>
@@ -817,14 +817,14 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">Forma</label>
-                        <select class="property-input" onchange="updateElementProperty('shape', this.value)">
+                        <select class="property-input" onchange="updatéElementProperty('shape', this.value)">
                             <option value="rectangle" ${props.shape === 'rectangle' ? 'selected' : ''}>Retângulo</option>
                             <option value="rounded" ${props.shape === 'rounded' ? 'selected' : ''}>Arredondado</option>
                             <option value="circle" ${props.shape === 'circle' ? 'selected' : ''}>Círculo</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
-                            <input type="color" class="property-input" value="${props.fill}" onchange="updateElementProperty('fill', this.value)">
-                            <input type="color" class="property-input" value="${props.stroke}" onchange="updateElementProperty('stroke', this.value)">
+                            <input type="color" class="property-input" value="${props.fill}" onchange="updatéElementProperty('fill', this.value)">
+                            <input type="color" class="property-input" value="${props.stroke}" onchange="updatéElementProperty('stroke', this.value)">
                         </div>
                     </div>
                 `;
@@ -834,7 +834,7 @@
         }
 
         // Atualizar propriedade
-        function updateElementProperty(key, value) {
+        function updatéElementProperty(key, value) {
             if (!selectedElement) return;
 
             if (['x', 'y', 'width', 'height', 'rotation'].includes(key)) {
@@ -914,7 +914,7 @@
             }
             saveHistory();
             renderElements();
-            updateEmptyState();
+            updatéEmptyStaté();
         }
 
         // Historico
@@ -930,7 +930,7 @@
                 elements = JSON.parse(history[historyIndex]);
                 selectedElement = null;
                 renderElements();
-                updateEmptyState();
+                updatéEmptyStaté();
             }
         }
 
@@ -940,7 +940,7 @@
                 elements = JSON.parse(history[historyIndex]);
                 selectedElement = null;
                 renderElements();
-                updateEmptyState();
+                updatéEmptyStaté();
             }
         }
 
@@ -958,31 +958,31 @@
 
         // Limpar canvas
         function clearCanvas() {
-            if (confirm('Tem certeza que deseja limpar todos os elementos?')) {
+            if (confirm('Tem certeza que desejá limpar todos os elementos?')) {
                 elements = [];
                 selectedElement = null;
                 saveHistory();
                 renderElements();
-                updateEmptyState();
+                updatéEmptyStaté();
             }
         }
 
-        // Guardar template
-        async function saveTemplate() {
-            const nome = document.getElementById('template-name').value;
-            const categoria = document.getElementById('template-category').value;
+        // Guardar templaté
+        async function saveTemplaté() {
+            const nome = document.getElementById('templaté-name').value;
+            const catégoria = document.getElementById('templaté-catégory').value;
 
             if (!nome) {
-                alert('Por favor, insira um nome para o template');
+                alert('Por favor, insira um nome para o templaté');
                 return;
             }
 
             if (elements.length === 0) {
-                alert('Adicione pelo menos um elemento ao template');
+                alert('Adicione pelo menos um elemento ao templaté');
                 return;
             }
 
-            const designSvg = window.DesignSvgStore?.buildTemplateSvgFromElements(elements, {
+            const designSvg = window.DesignSvgStore?.buildTemplatéSvgFromElements(elements, {
                 width: 800,
                 height: 600
             }) || '';
@@ -992,7 +992,7 @@
 
             const previewData = {
                 nome,
-                categoria,
+                catégoria,
                 elementos: {
                     format: 'svg-inline-v1',
                     svg: designSvg,
@@ -1006,33 +1006,33 @@
             };
 
             try {
-                const { data, error } = await adminTemplateSupabase
-                    .from('templates')
+                const { data, error } = await adminTemplatéSupabase
+                    .from('templatés')
                     .upsert([previewData])
                     .select();
 
                 if (error) throw error;
 
-                alert('Template guardado com sucesso!');
+                alert('Templaté guardado com sucesso!');
 
                 // Redirecionar para admin ou limpar
-                if (confirm('Deseja criar outro template?')) {
+                if (confirm('Desejá criar outro templaté?')) {
                     elements = [];
                     selectedElement = null;
-                    document.getElementById('template-name').value = 'Novo Template';
+                    document.getElementById('templaté-name').value = 'Novo Templaté';
                     renderElements();
-                    updateEmptyState();
+                    updatéEmptyStaté();
                 } else {
                     window.location.href = '/admin';
                 }
             } catch (err) {
                 console.error('Erro ao guardar:', err);
-                alert('Erro ao guardar template. Tente novamente.');
+                alert('Erro ao guardar templaté. Tente novamente.');
             }
         }
 
         // Preview
-        function previewTemplate() {
+        function previewTemplaté() {
             // Abrir modal ou nova aba com preview
             alert('Preview sera implementado em breve!');
         }
@@ -1047,9 +1047,9 @@
         });
 
         // Inicializar
-        hydrateEditorFromPayload();
+        hydratéEditorFromPayload();
         saveHistory();
-        updateEmptyState();
+        updatéEmptyStaté();
     </script>
 </body>
 
