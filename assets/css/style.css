@@ -3845,8 +3845,8 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-link {
     display: block;
-    width: 30px;
-    height: 20px;
+    width: 60px;
+    height: 40px;
     overflow: hidden;
     border: 0;
     border-radius: 0;
@@ -3857,7 +3857,7 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-track {
     display: flex;
-    width: 60px;
+    width: 120px;
     height: 100%;
     transform: translateX(0);
     transition: transform 280ms ease, filter 280ms ease;
@@ -3865,13 +3865,13 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-link:hover .language-rail-track,
 .language-rail-link:focus-visible .language-rail-track {
-    transform: translateX(-30px);
+    transform: translateX(-60px);
 }
 
 .language-rail-panel {
-    width: 30px;
+    width: 60px;
     height: 100%;
-    flex: 0 0 30px;
+    flex: 0 0 60px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3886,8 +3886,8 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 }
 
 .language-rail-flag {
-    width: 30px;
-    height: 20px;
+    width: 60px;
+    height: 40px;
     display: block;
     border-radius: 0;
     box-shadow: none;
@@ -3906,27 +3906,27 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 @media (max-width: 767px) {
     .language-rail-link {
-        width: 27px;
-        height: 18px;
+        width: 54px;
+        height: 36px;
     }
 
     .language-rail-track {
-        width: 54px;
+        width: 108px;
         transform: translateX(0);
     }
 
     .language-rail-link:hover .language-rail-track,
     .language-rail-link:focus-visible .language-rail-track {
-        transform: translateX(-27px);
+        transform: translateX(-54px);
     }
 
     .language-rail-panel {
-        width: 27px;
-        flex-basis: 27px;
+        width: 54px;
+        flex-basis: 54px;
     }
 
     .language-rail-flag {
-        width: 27px;
-        height: 18px;
+        width: 54px;
+        height: 36px;
     }
 }
