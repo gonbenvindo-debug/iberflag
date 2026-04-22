@@ -437,7 +437,7 @@ function buildLanguageSwitcherMarkup(currentLocale, currentPath, variant = 'desk
     }
 
     const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
-    const targetLocaleLegacy = currentLocale === 'es' ? 'pt' : 'es';
+    const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
     const currentLocaleMeta = SiteRoutes.getLocaleMeta?.(currentLocale) || {};
     const targetLocaleMeta = SiteRoutes.getLocaleMeta?.(targetLocale) || {};
     const currentFlag = currentLocale === 'es' ? '&#x1F1EA;&#x1F1F8;' : '&#x1F1F5;&#x1F1F9;';
@@ -478,7 +478,7 @@ function injectLanguageSwitcher() {
 
     const currentPath = `${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`;
     const currentLocale = SiteRoutes.getLocaleFromPathname?.(window.location.pathname || '/') || 'pt';
-    const targetLocaleOld = currentLocale === 'es' ? 'pt' : 'es';
+    const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
     if (!document.querySelector('[data-language-switcher="rail"]')) {
         const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
         const href = SiteRoutes.getLocalizedPath
@@ -507,43 +507,7 @@ function injectLanguageSwitcher() {
     }
     window.__iberflagLanguageSwitcherInjected = true;
     return;
-    const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
-    const desktopActions = document.getElementById('cart-btn')?.parentElement;
-    const mobileActions = document.getElementById('mobile-header-actions') || document.querySelector('.mobile-header-actions');
-    const mobileMenu = document.getElementById('mobile-menu');
 
-    if (desktopActions && !desktopActions.querySelector('[data-language-switcher="desktop"]')) {
-        const desktopSwitcher = document.createElement('div');
-        desktopSwitcher.dataset.languageSwitcher = 'desktop';
-        desktopSwitcher.className = 'mr-2';
-        desktopSwitcher.innerHTML = buildLanguageSwitcherMarkup(currentLocale, currentPath, 'desktop');
-        const cartButton = document.getElementById('cart-btn');
-        desktopActions.insertBefore(desktopSwitcher, cartButton || desktopActions.firstChild);
-    }
-
-    if (mobileActions && !mobileActions.querySelector('[data-language-switcher="mobile"]')) {
-        const mobileSwitcher = document.createElement('div');
-        mobileSwitcher.dataset.languageSwitcher = 'mobile';
-        mobileSwitcher.className = 'mr-2';
-        mobileSwitcher.innerHTML = buildLanguageSwitcherMarkup(currentLocale, currentPath, 'mobile');
-        const menuButton = document.getElementById('mobile-menu-btn');
-        mobileActions.insertBefore(mobileSwitcher, menuButton || mobileActions.firstChild);
-    }
-
-    if (mobileMenu && !mobileMenu.querySelector('[data-language-switcher="menu"]')) {
-        const menuSwitcher = document.createElement('div');
-        menuSwitcher.dataset.languageSwitcher = 'menu';
-        menuSwitcher.className = 'border-b border-slate-100 px-4 py-4';
-        menuSwitcher.innerHTML = `
-            <div class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Idioma</div>
-            <div class="flex">
-                ${buildLanguageSwitcherMarkup(currentLocale, currentPath, 'mobile')}
-            </div>
-        `;
-        mobileMenu.insertBefore(menuSwitcher, mobileMenu.firstChild);
-    }
-
-    window.__iberflagLanguageSwitcherInjected = true;
 }
 
 // ===== INITIAL PRODUCTS (FALLBACK) =====
