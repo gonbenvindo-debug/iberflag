@@ -3844,11 +3844,11 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-link {
     display: block;
-    width: 54px;
-    height: 36px;
+    width: 42px;
+    height: 28px;
     overflow: hidden;
     border: 0;
-    border-radius: 0;
+    border-radius: 4px;
     background: transparent;
     box-shadow: none;
     color: inherit;
@@ -3856,7 +3856,7 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-track {
     display: flex;
-    width: 108px;
+    width: 84px;
     height: 100%;
     transform: translateX(0);
     transition: transform 280ms ease, filter 280ms ease;
@@ -3864,13 +3864,13 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-link:hover .language-rail-track,
 .language-rail-link:focus-visible .language-rail-track {
-    transform: translateX(-54px);
+    transform: translateX(-42px);
 }
 
 .language-rail-panel {
-    width: 54px;
+    width: 42px;
     height: 100%;
-    flex: 0 0 54px;
+    flex: 0 0 42px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -3885,10 +3885,10 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 }
 
 .language-rail-flag {
-    width: 54px;
-    height: 36px;
+    width: 42px;
+    height: 28px;
     display: block;
-    border-radius: 0;
+    border-radius: 4px;
     box-shadow: none;
     overflow: hidden;
 }
@@ -3901,27 +3901,27 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 @media (max-width: 767px) {
     .language-rail-link {
-        width: 49px;
-        height: 33px;
+        width: 36px;
+        height: 24px;
     }
 
     .language-rail-track {
-        width: 98px;
+        width: 72px;
         transform: translateX(0);
     }
 
     .language-rail-link:hover .language-rail-track,
     .language-rail-link:focus-visible .language-rail-track {
-        transform: translateX(-49px);
+        transform: translateX(-36px);
     }
 
     .language-rail-panel {
-        width: 49px;
-        flex-basis: 49px;
+        width: 36px;
+        flex-basis: 36px;
     }
 
     .language-rail-flag {
-        width: 49px;
-        height: 33px;
+        width: 36px;
+        height: 24px;
     }
 }
