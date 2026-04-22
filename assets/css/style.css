@@ -3836,7 +3836,7 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail {
     position: fixed;
-    top: 50%;
+    top: 28%;
     right: 0;
     z-index: 70;
     transform: translateY(-50%);
@@ -3845,41 +3845,41 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 
 .language-rail-link {
     display: block;
-    width: 64px;
-    height: 118px;
+    width: 44px;
+    height: 88px;
     overflow: hidden;
-    border: 1px solid rgba(15, 23, 42, 0.14);
+    border: 1px solid rgba(15, 23, 42, 0.12);
     border-right: 0;
-    border-radius: 18px 0 0 18px;
+    border-radius: 14px 0 0 14px;
     background: #ffffff;
-    box-shadow: 0 18px 36px rgba(15, 23, 42, 0.16);
+    box-shadow: 0 14px 28px rgba(15, 23, 42, 0.12);
     color: inherit;
 }
 
 .language-rail-track {
     display: flex;
-    width: 128px;
+    width: 88px;
     height: 100%;
-    transform: translateX(-64px);
+    transform: translateX(0);
     transition: transform 280ms ease, filter 280ms ease;
 }
 
 .language-rail-link:hover .language-rail-track,
 .language-rail-link:focus-visible .language-rail-track {
-    transform: translateX(0);
+    transform: translateX(-44px);
 }
 
 .language-rail-panel {
-    width: 64px;
+    width: 44px;
     height: 100%;
-    flex: 0 0 64px;
+    flex: 0 0 44px;
     display: flex;
     align-items: center;
     justify-content: center;
 }
 
 .language-rail-panel-target {
-    background: linear-gradient(180deg, #fafafa 0%, #eef2ff 100%);
+    background: linear-gradient(180deg, #f8fafc 0%, #eef2ff 100%);
 }
 
 .language-rail-panel-current {
@@ -3887,29 +3887,34 @@ footer.bg-gray-900 .brand-logo-footer[src*="logo-minimalista-white.svg"],
 }
 
 .language-rail-flag {
-    font-size: 1.65rem;
+    font-size: 1.25rem;
     line-height: 1;
     filter: drop-shadow(0 1px 1px rgba(15, 23, 42, 0.15));
 }
 
 @media (max-width: 767px) {
     .language-rail-link {
-        width: 52px;
-        height: 96px;
-        border-radius: 16px 0 0 16px;
+        width: 38px;
+        height: 76px;
+        border-radius: 12px 0 0 12px;
     }
 
     .language-rail-track {
-        width: 104px;
-        transform: translateX(-52px);
+        width: 76px;
+        transform: translateX(0);
+    }
+
+    .language-rail-link:hover .language-rail-track,
+    .language-rail-link:focus-visible .language-rail-track {
+        transform: translateX(-38px);
     }
 
     .language-rail-panel {
-        width: 52px;
-        flex-basis: 52px;
+        width: 38px;
+        flex-basis: 38px;
     }
 
     .language-rail-flag {
-        font-size: 1.35rem;
+        font-size: 1.05rem;
     }
 }

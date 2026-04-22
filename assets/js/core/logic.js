@@ -493,11 +493,11 @@ function injectLanguageSwitcher() {
         rail.innerHTML = `
             <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
                 <span class="language-rail-track" aria-hidden="true">
-                    <span class="language-rail-panel language-rail-panel-target">
-                        <span class="language-rail-flag">${currentLocale === 'es' ? '&#x1F1F5;&#x1F1F9;' : '&#x1F1EA;&#x1F1F8;'}</span>
-                    </span>
                     <span class="language-rail-panel language-rail-panel-current">
-                        <span class="language-rail-flag">${currentLocale === 'es' ? '&#x1F1EA;&#x1F1F8;' : '&#x1F1F5;&#x1F1F9;'}</span>
+                        <span class="language-rail-flag">${currentLocale === 'es' ? '🇪🇸' : '🇵🇹'}</span>
+                    </span>
+                    <span class="language-rail-panel language-rail-panel-target">
+                        <span class="language-rail-flag">${currentLocale === 'es' ? '🇵🇹' : '🇪🇸'}</span>
                     </span>
                 </span>
                 <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
