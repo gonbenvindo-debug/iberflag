@@ -494,10 +494,10 @@ function injectLanguageSwitcher() {
             <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
                 <span class="language-rail-track" aria-hidden="true">
                     <span class="language-rail-panel language-rail-panel-current">
-                        <span class="language-rail-flag">${currentLocale === 'es' ? '🇪🇸' : '🇵🇹'}</span>
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}"></span>
                     </span>
                     <span class="language-rail-panel language-rail-panel-target">
-                        <span class="language-rail-flag">${currentLocale === 'es' ? '🇵🇹' : '🇪🇸'}</span>
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}"></span>
                     </span>
                 </span>
                 <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
