@@ -1,17 +1,22 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Contacto - IberFlag</title>
-    <meta name="description"
-        content="Entre em contacto com a IberFlag para orçamentos, apoio de design, estado de encomendas e informações comerciais.">
+    <meta name="description" content="Entre em contacto com a IberFlag para orçamentos, apoio de design, estado de encomendas e informações comerciais.">
     <link rel="canonical" href="https://iberflag.com/contacto">
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/contacto">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/contacto">
+  
+  
+  
+  
+  
+  
+  
+  
     <meta property="og:type" content="website">
     <meta property="og:title" content="Contacto - IberFlag">
-    <meta property="og:description"
-        content="Fale com a equipa IberFlag para apoio comercial e técnico.">
+    <meta property="og:description" content="Fale com a equipa IberFlag para apoio comercial e técnico.">
     <meta property="og:url" content="https://iberflag.com/contacto">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -32,7 +37,7 @@
     <script src="/assets/js/config.js"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
- <script src="/assets/js/core/logic.js?v=20260410a"></script>
+ <script src="/assets/js/core/logic.js?v=20260422b"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260330u">
 </head>
 
@@ -50,12 +55,10 @@
                     <a href="/sobre" class="nav-link">Sobre Nós</a>
                     <a href="/faq" class="nav-link">FAQ</a>
                     <a href="/contacto" class="nav-link text-blue-600">Contacto</a>
-                    <button id="cart-btn"
-                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2">
                         <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                         <span class="hidden sm:inline">Carrinho</span>
-                        <span id="cart-count"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
                 <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu(event)" aria-expanded="false" class="md:hidden text-gray-700">
@@ -96,8 +99,7 @@
                             </div>
                             <div>
                                 <h3 class="font-bold mb-1">Email</h3>
-                                <a href="mailto:geral@iberflag.com"
-                                    class="text-blue-600 hover:underline">geral@iberflag.com</a>
+                                <a href="mailto:geral@iberflag.com" class="text-blue-600 hover:underline">geral@iberflag.com</a>
                                 <p class="text-sm text-gray-600 mt-1">Atendimento online 24h</p>
                             </div>
                         </div>
@@ -109,7 +111,7 @@
                                 <i data-lucide="monitor-smartphone" class="w-6 h-6 text-blue-600"></i>
                             </div>
                             <div>
-                                <h3 class="font-bold mb-1">Lojá 100% online</h3>
+                                <h3 class="font-bold mb-1">Loja 100% online</h3>
                                 <p class="text-gray-600">Todo o processo de encomenda e acompanhamento é feito online.</p>
                             </div>
                         </div>
@@ -133,23 +135,22 @@
                     <div class="bg-white rounded-xl p-8 border border-gray-200">
                         <h2 class="text-2xl font-bold mb-6">Envie-nos uma Mensagem</h2>
 
-                        <form id="contact-form" class="space-y-6" action="/api/contact" method="post" data-contact-form data-contact-source="contact-page">
+                        <form id="contact-form" class="space-y-6" action="/api/contact" method="post" data-contact-form="" data-contact-source="contact-page">
                             <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 <div>
                                     <label class="form-label">Nome Completo *</label>
-                                    <input type="text" name="nome" required class="form-input" placeholder="O seu nome">
+                                    <input type="text" name="nome" required="" class="form-input" placeholder="O seu nome">
                                 </div>
                                 <div>
                                     <label class="form-label">Email *</label>
-                                    <input type="email" name="email" required class="form-input"
-                                        placeholder="seu@email.com">
+                                    <input type="email" name="email" required="" class="form-input" placeholder="seu@email.com">
                                 </div>
                             </div>
 
                             <div>
                                 <div>
                                     <label class="form-label">Assunto *</label>
-                                    <select name="assunto" required class="form-input">
+                                    <select name="assunto" required="" class="form-input">
                                         <option value="">Selecione um assunto</option>
                                         <option value="orcamento">Pedido de Orçamento</option>
                                         <option value="informacao">Informação sobre Produtos</option>
@@ -162,20 +163,18 @@
 
                             <div>
                                 <label class="form-label">Mensagem *</label>
-                                <textarea name="mensagem" required rows="6" class="form-input"
-                                    placeholder="Escreva a sua mensagem aqui..."></textarea>
+                                <textarea name="mensagem" required="" rows="6" class="form-input" placeholder="Escreva a sua mensagem aqui..."></textarea>
                             </div>
 
                             <div class="privacy-consent-row flex items-start gap-3">
-                                <input type="checkbox" id="privacy" required class="custom-checkbox mt-1">
+                                <input type="checkbox" id="privacy" required="" class="custom-checkbox mt-1">
                                 <label for="privacy" class="text-sm text-gray-600">
                                     Aceito a <a href="/privacidade" class="text-blue-600 hover:underline">Política
                                         de Privacidade</a> e autorizo o tratamento dos meus dados pessoais.
                                 </label>
                             </div>
 
-                            <button type="submit"
-                                class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
+                            <button type="submit" class="w-full bg-blue-600 text-white py-3 rounded-lg font-bold hover:bg-blue-700 transition-all flex items-center justify-center gap-2">
                                 <i data-lucide="send" class="w-5 h-5"></i>
                                 Enviar Mensagem
                             </button>
@@ -225,25 +224,18 @@
                     </div>
                     <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.</p>
                     <div class="flex gap-4">
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                             </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="20" height="20" x="2" y="2" rx="5" />
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="20" x="2" y="2" rx="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                             </svg></a>
-                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5"
-                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
-                                stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                                <rect width="4" height="12" x="2" y="9" />
-                                <circle cx="4" cy="4" r="2" />
+                        <a href="#" class="social-icon"><svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                <rect width="4" height="12" x="2" y="9"></rect>
+                                <circle cx="4" cy="4" r="2"></circle>
                             </svg></a>
                     </div>
                 </div>
@@ -264,7 +256,7 @@
                         <li><a href="/termos" class="hover:text-white transition">Termos e Condições</a></li>
                         <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a>
                         </li>
-                        <li><a href="/devoluções" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/devolucoes" class="hover:text-white transition">Devoluções</a></li>
                     </ul>
                 </div>
             </div>
@@ -282,7 +274,7 @@
 
     <!-- Cart Sidebar removido
     <div id="cart-sidebar"
-        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translaté-x-full transition-transform duration-300 z-50">
+        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-6 border-b">
                 <h3 class="text-xl font-bold">Carrinho de Compras</h3>
@@ -312,7 +304,8 @@
 
     <script src="/assets/js/pages/contacto.js?v=20260419c"></script>
     <script>lucide.createIcons();</script>
-</body>
 
-</html>
 
+
+
+</body></html>

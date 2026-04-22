@@ -398,6 +398,123 @@ function initPageUiInteractions() {
 
     updateCart();
     injectOrdersTrackingLink();
+    injectLanguageSwitcher();
+}
+
+function buildLocaleSwitcherMarkup(targetLocale, currentLocale, currentPath, variant = 'desktop') {
+    if (typeof SiteRoutes === 'undefined') {
+        return '';
+    }
+
+    const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
+    const localeMeta = SiteRoutes.getLocaleMeta?.(targetLocale) || {};
+    const isActive = targetLocale === currentLocale;
+    const label = targetLocale === 'pt' ? 'PT' : 'ES';
+    const flag = targetLocale === 'pt' ? '🇵🇹' : '🇪🇸';
+    const href = SiteRoutes.getLocalizedPath
+        ? `${SiteRoutes.getLocalizedPath(currentUrl.pathname, targetLocale)}${currentUrl.search}${currentUrl.hash}`
+        : (targetLocale === 'es'
+            ? `/es${currentUrl.pathname === '/' ? '/' : currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+            : `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    const baseClasses = variant === 'mobile'
+        ? 'inline-flex flex-1 items-center justify-center gap-2 rounded-2xl border px-4 py-3 text-sm font-semibold transition'
+        : 'inline-flex items-center gap-2 rounded-full border px-3 py-2 text-sm font-semibold transition';
+    const activeClasses = isActive
+        ? 'border-slate-900 bg-slate-900 text-white'
+        : 'border-slate-200 bg-white text-slate-700 hover:border-slate-300 hover:bg-slate-50';
+
+    return `
+        <a href="${href}" lang="${localeMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${localeMeta.label || label}" class="${baseClasses} ${activeClasses}">
+            <span aria-hidden="true" class="text-base leading-none">${flag}</span>
+            <span>${label}</span>
+        </a>
+    `;
+}
+
+function buildLanguageSwitcherMarkup(currentLocale, currentPath, variant = 'desktop') {
+    if (typeof SiteRoutes === 'undefined') {
+        return '';
+    }
+
+    const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
+    const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
+    const currentLocaleMeta = SiteRoutes.getLocaleMeta?.(currentLocale) || {};
+    const targetLocaleMeta = SiteRoutes.getLocaleMeta?.(targetLocale) || {};
+    const currentFlag = currentLocale === 'es' ? '&#x1F1EA;&#x1F1F8;' : '&#x1F1F5;&#x1F1F9;';
+    const targetFlag = currentLocale === 'es' ? '&#x1F1F5;&#x1F1F9;' : '&#x1F1EA;&#x1F1F8;';
+    const href = SiteRoutes.getLocalizedPath
+        ? `${SiteRoutes.getLocalizedPath(currentUrl.pathname, targetLocale)}${currentUrl.search}${currentUrl.hash}`
+        : (targetLocale === 'es'
+            ? `/es${currentUrl.pathname === '/' ? '/' : currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+            : `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+    const baseClasses = variant === 'mobile'
+        ? 'inline-flex items-center gap-2 rounded-2xl border border-slate-200 bg-white px-3 py-2 text-xs font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50'
+        : 'inline-flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:border-slate-300 hover:bg-slate-50';
+    const flagSize = variant === 'mobile' ? 'text-lg' : 'text-base';
+    const targetLabel = targetLocale === 'es' ? 'Español' : 'Português';
+    const ariaLabel = currentLocale === 'es'
+        ? 'Ver site em Português'
+        : 'Ver site em Español';
+
+    return `
+        <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${ariaLabel}" title="${ariaLabel}" class="${baseClasses}">
+            <span class="inline-flex items-center gap-1.5" aria-hidden="true">
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 ${flagSize}">${currentFlag}</span>
+                <span class="text-slate-400">/</span>
+                <span class="inline-flex h-7 w-7 items-center justify-center rounded-full bg-slate-100 ${flagSize}">${targetFlag}</span>
+            </span>
+            <span class="flex flex-col items-start leading-tight">
+                <span class="text-[10px] uppercase tracking-[0.18em] text-slate-500">${currentLocaleMeta.code === 'es' ? 'ES' : 'PT'}</span>
+                <span>${targetLabel}</span>
+            </span>
+        </a>
+    `;
+}
+
+function injectLanguageSwitcher() {
+    if (typeof SiteRoutes === 'undefined' || window.__iberflagLanguageSwitcherInjected) {
+        return;
+    }
+
+    const currentPath = `${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`;
+    const currentLocale = SiteRoutes.getLocaleFromPathname?.(window.location.pathname || '/') || 'pt';
+    const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
+    const desktopActions = document.getElementById('cart-btn')?.parentElement;
+    const mobileActions = document.getElementById('mobile-header-actions') || document.querySelector('.mobile-header-actions');
+    const mobileMenu = document.getElementById('mobile-menu');
+
+    if (desktopActions && !desktopActions.querySelector('[data-language-switcher="desktop"]')) {
+        const desktopSwitcher = document.createElement('div');
+        desktopSwitcher.dataset.languageSwitcher = 'desktop';
+        desktopSwitcher.className = 'mr-2';
+        desktopSwitcher.innerHTML = buildLanguageSwitcherMarkup(currentLocale, currentPath, 'desktop');
+        const cartButton = document.getElementById('cart-btn');
+        desktopActions.insertBefore(desktopSwitcher, cartButton || desktopActions.firstChild);
+    }
+
+    if (mobileActions && !mobileActions.querySelector('[data-language-switcher="mobile"]')) {
+        const mobileSwitcher = document.createElement('div');
+        mobileSwitcher.dataset.languageSwitcher = 'mobile';
+        mobileSwitcher.className = 'mr-2';
+        mobileSwitcher.innerHTML = buildLanguageSwitcherMarkup(currentLocale, currentPath, 'mobile');
+        const menuButton = document.getElementById('mobile-menu-btn');
+        mobileActions.insertBefore(mobileSwitcher, menuButton || mobileActions.firstChild);
+    }
+
+    if (mobileMenu && !mobileMenu.querySelector('[data-language-switcher="menu"]')) {
+        const menuSwitcher = document.createElement('div');
+        menuSwitcher.dataset.languageSwitcher = 'menu';
+        menuSwitcher.className = 'border-b border-slate-100 px-4 py-4';
+        menuSwitcher.innerHTML = `
+            <div class="mb-3 text-xs font-semibold uppercase tracking-[0.2em] text-slate-500">Idioma</div>
+            <div class="flex">
+                ${buildLanguageSwitcherMarkup(currentLocale, currentPath, 'mobile')}
+            </div>
+        `;
+        mobileMenu.insertBefore(menuSwitcher, mobileMenu.firstChild);
+    }
+
+    window.__iberflagLanguageSwitcherInjected = true;
 }
 
 // ===== INITIAL PRODUCTS (FALLBACK) =====

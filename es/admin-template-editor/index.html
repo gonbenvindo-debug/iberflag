@@ -1,0 +1,931 @@
+<!DOCTYPE html><html lang="es-ES"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"><title>Editor de Templates - Admin - IberFlag</title><link rel="icon" type="image/svg+xml" href="/favicon-white.svg?v=20260415a"><link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260330j"><script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script><script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script><script src="/assets/js/core/design-svg.js"></script><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script><link rel="stylesheet" href="/assets/css/style.css?v=20260330u"><style>
+        :root {
+            --ui-bg: #f3f6fb;
+            --panel-bg: #ffffff;
+            --panel-border: #e5eaf3;
+            --panel-shadow: 0 12px 28px rgba(15, 23, 42, 0.08);
+            --text-muted: #64748b;
+            --admin-primary: #2563eb;
+            --admin-primary-dark: #1d4ed8;
+        }
+
+        body {
+            background: var(--ui-bg);
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        /* Admin Header */
+        .admin-header {
+            background: white;
+            border-bottom: 1px solid var(--panel-border);
+            padding: 12px 24px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 64px;
+        }
+
+        .admin-header-left {
+            display: flex;
+            align-items: center;
+            gap: 16px;
+        }
+
+        .admin-header-right {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .template-info-input {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .template-info-input input,
+        .template-info-input select {
+            padding: 8px 12px;
+            border: 1px solid var(--panel-border);
+            border-radius: 8px;
+            font-size: 14px;
+            background: white;
+        }
+
+        .template-info-input input {
+            width: 250px;
+        }
+
+        /* Main Layout */
+        .editor-container {
+            display: grid;
+            grid-template-columns: 320px 1fr 320px;
+            height: calc(100vh - 64px);
+        }
+
+        /* Sidebars */
+        .sidebar {
+            background: white;
+            border-right: 1px solid var(--panel-border);
+            overflow-y: auto;
+            padding: 20px;
+        }
+
+        .sidebar-right {
+            border-right: none;
+            border-left: 1px solid var(--panel-border);
+        }
+
+        /* Canvas Area */
+        .canvas-area {
+            background: var(--ui-bg);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .canvas-toolbar {
+            background: white;
+            border-bottom: 1px solid var(--panel-border);
+            padding: 12px 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+        }
+
+        .canvas-wrapper {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            overflow: auto;
+        }
+
+        .canvas-container {
+            background: white;
+            border-radius: 16px;
+            box-shadow: var(--panel-shadow);
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Tool Buttons */
+        .tool-btn {
+            width: 40px;
+            height: 40px;
+            border: none;
+            background: transparent;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+        }
+
+        .tool-btn:hover {
+            background: #f1f5f9;
+            color: #334155;
+        }
+
+        .tool-btn.active {
+            background: var(--admin-primary);
+            color: white;
+        }
+
+        /* Section Titles */
+        .section-title {
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: var(--text-muted);
+            margin-bottom: 12px;
+        }
+
+        /* Element Types */
+        .element-types {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 8px;
+            margin-bottom: 24px;
+        }
+
+        .element-type-btn {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+            padding: 16px 12px;
+            border: 1px solid var(--panel-border);
+            border-radius: 12px;
+            background: white;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+        }
+
+        .element-type-btn:hover {
+            border-color: var(--admin-primary);
+            background: #eff6ff;
+        }
+
+        .element-type-btn iconify-icon {
+            font-size: 24px;
+            color: var(--admin-primary);
+        }
+
+        .element-type-btn span {
+            font-size: 12px;
+            font-weight: 500;
+            color: #334155;
+        }
+
+        /* Layers List */
+        .layers-list {
+            display: flex;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .layer-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+            border: 1px solid transparent;
+        }
+
+        .layer-item:hover {
+            background: #f8fafc;
+        }
+
+        .layer-item.active {
+            background: #eff6ff;
+            border-color: var(--admin-primary);
+        }
+
+        .layer-item iconify-icon {
+            color: var(--text-muted);
+        }
+
+        .layer-name {
+            flex: 1;
+            font-size: 13px;
+            color: #334155;
+        }
+
+        .layer-actions {
+            display: flex;
+            gap: 4px;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .layer-item:hover .layer-actions {
+            opacity: 1;
+        }
+
+        .layer-action-btn {
+            width: 24px;
+            height: 24px;
+            border: none;
+            background: transparent;
+            border-radius: 4px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+        }
+
+        .layer-action-btn:hover {
+            background: #e2e8f0;
+            color: #ef4444;
+        }
+
+        /* Properties Panel */
+        .property-group {
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--panel-border);
+        }
+
+        .property-group:last-child {
+            border-bottom: none;
+        }
+
+        .property-label {
+            font-size: 12px;
+            font-weight: 500;
+            color: var(--text-muted);
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .property-input {
+            width: 100%;
+            padding: 8px 12px;
+            border: 1px solid var(--panel-border);
+            border-radius: 6px;
+            font-size: 14px;
+        }
+
+        .property-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        /* Canvas Elements */
+        .canvas-element {
+            position: absolute;
+            cursor: move;
+            user-select: none;
+        }
+
+        .canvas-element.selected {
+            outline: 2px solid var(--admin-primary);
+            outline-offset: 2px;
+        }
+
+        /* Action Buttons */
+        .btn-primary {
+            background: var(--admin-primary);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: none;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: var(--admin-primary-dark);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: #334155;
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-weight: 600;
+            border: 1px solid var(--panel-border);
+            cursor: pointer;
+            transition: background-color 0.2s, border-color 0.2s, color 0.2s, opacity 0.2s, transform 0.2s;
+        }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+        /* Responsive */
+        @media (max-width: 1024px) {
+            .editor-container {
+                grid-template-columns: 280px 1fr 280px;
+            }
+        }
+
+        /* Print Area Overlay */
+        .print-area {
+            position: absolute;
+            border: 2px dashed #94a3b8;
+            background: rgba(255, 255, 255, 0.5);
+            pointer-events: none;
+        }
+
+        /* Empty State */
+        .empty-canvas {
+            position: absolute;
+            inset: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .empty-canvas iconify-icon {
+            font-size: 48px;
+            margin-bottom: 12px;
+            opacity: 0.5;
+        }
+    </style>
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es"></head><body><!-- Admin Header --><header class="admin-header"><div class="admin-header-left"><a href="/es/admin" class="text-gray-500 hover:text-gray-700"><iconify-icon icon="lucide:arrow-left" width="24"></iconify-icon></a><h1 class="font-bold text-lg">Editor de Templates</h1><div class="template-info-input"><input type="text" id="template-name" placeholder="Nome do template..." value="Novo Template"><select id="template-category"><option value="promocoes">Promoções</option><option value="eventos">Eventos</option><option value="corporativo">Corporativo</option><option value="festas">Festas</option><option value="varejo">Varejo</option></select></div></div><div class="admin-header-right"><button class="btn-secondary" onclick="previewTemplate()"><iconify-icon icon="lucide:eye" width="18" class="mr-2"></iconify-icon>Preview</button><button class="btn-primary" onclick="saveTemplate()"><iconify-icon icon="lucide:save" width="18" class="mr-2"></iconify-icon>Guardar Template</button></div></header><!-- Editor Layout --><div class="editor-container"><!-- Left Sidebar - Tools & Layers --><aside class="sidebar"><div class="section-title">Adicionar Elementos</div><div class="element-types"><button class="element-type-btn" onclick="addElement('text')"><iconify-icon icon="lucide:type"></iconify-icon><span>Texto</span></button><button class="element-type-btn" onclick="addElement('image')"><iconify-icon icon="lucide:image"></iconify-icon><span>Imagem</span></button><button class="element-type-btn" onclick="addElement('shape')"><iconify-icon icon="lucide:square"></iconify-icon><span>Forma</span></button><button class="element-type-btn" onclick="addElement('qrcode')"><iconify-icon icon="lucide:qr-code"></iconify-icon><span>QR Code</span></button></div><div class="section-title">Camadas</div><div class="layers-list" id="layers-list"><div class="text-center text-gray-400 text-sm py-8">Nenhum elemento adicionado</div></div></aside><!-- Canvas Area --><main class="canvas-area"><div class="canvas-toolbar"><button class="tool-btn" onclick="setZoom(0.5)">50%</button><button class="tool-btn" onclick="setZoom(0.75)">75%</button><button class="tool-btn active" onclick="setZoom(1)">100%</button><button class="tool-btn" onclick="setZoom(1.25)">125%</button><button class="tool-btn" onclick="setZoom(1.5)">150%</button><span class="text-gray-300">|</span><button class="tool-btn" onclick="undo()" title="Desfazer"><iconify-icon icon="lucide:undo-2" width="20"></iconify-icon></button><button class="tool-btn" onclick="redo()" title="Refazer"><iconify-icon icon="lucide:redo-2" width="20"></iconify-icon></button><span class="text-gray-300">|</span><button class="tool-btn" onclick="clearCanvas()" title="Limpar"><iconify-icon icon="lucide:trash-2" width="20"></iconify-icon></button></div><div class="canvas-wrapper"><div class="canvas-container" id="canvas-container" style="width: 800px; height: 600px;"><div class="print-area" id="print-area" style="left: 100px; top: 100px; width: 600px; height: 400px;"></div><div class="empty-canvas" id="empty-state"><iconify-icon icon="lucide:layout-template"></iconify-icon><span>Clique nos elementos à esquerda para começar</span></div></div></div></main><!-- Right Sidebar - Properties --><aside class="sidebar sidebar-right"><div id="properties-panel"><div class="text-center text-gray-400 text-sm py-8">Selecione um elemento para editar as propriedades</div></div></aside></div><script src="/assets/js/config.js"></script><script>
+        // Estado do editor
+        let elements = [];
+        let selectedElement = null;
+        let zoom = 1;
+        let history = [];
+        let historyIndex = -1;
+        let isDragging = false;
+        let dragOffset = { x: 0, y: 0 };
+
+        // Inicializar Supabase
+        const SUPABASE_URL = window.SUPABASE_URL || 'https://nzwfquivulxkmxrwqalz.supabase.co';
+        const SUPABASE_ANON_KEY = window.SUPABASE_ANON_KEY || window.APP_CONFIG?.SUPABASE_ANON_KEY;
+        const ADMIN_EMAIL = 'admin123@iberflag.com';
+        const adminTemplateSupabase = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+
+        // Verificar autenticacao
+        async function checkAuth() {
+            const { data: { session } } = await adminTemplateSupabase.auth.getSession();
+            if (!session || String(session.user?.email || '').toLowerCase() !== ADMIN_EMAIL) {
+                window.location.href = '/admin';
+            }
+        }
+        checkAuth();
+
+        function hydratéEditorFromPayload() {
+            const params = new URLSearchParams(window.location.search);
+            const templateIdParam = params.get('templateId');
+            const payloadRaw = window.localStorage.getItem('iberflag_editor_template_payload');
+            if (!payloadRaw) return;
+
+            let payload = null;
+            try {
+                payload = JSON.parse(payloadRaw);
+            } catch (error) {
+                window.localStorage.removeItem('iberflag_editor_template_payload');
+                return;
+            }
+
+            if (!payload || (templateIdParam && String(payload.id) !== String(templateIdParam))) {
+                return;
+            }
+
+            const nameInput = document.getElementById('template-name');
+            const categorySelect = document.getElementById('template-category');
+            if (nameInput) nameInput.value = payload.nome || 'Template sem nome';
+            if (categorySelect) categorySelect.value = payload.categoria || 'promocoes';
+
+            const payloadElements = Array.isArray(payload.elementos)
+                ? payload.elementos
+                : Array.isArray(payload.elementos?.elements)
+                    ? payload.elementos.elements
+                    : [];
+
+            if (payloadElements.length > 0) {
+                elements = payloadElements.map((elemento) => ({
+                    ...elemento,
+                    id: elemento?.id ? String(elemento.id) : `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`
+                }));
+                selectedElement = null;
+                renderElements();
+                updateEmptyState();
+            }
+
+            window.localStorage.removeItem('iberflag_editor_template_payload');
+        }
+
+        // Adicionar elemento
+        function addElement(type) {
+            const id = Date.now().toString();
+            const element = {
+                id,
+                type,
+                x: 150 + (elements.length * 20),
+                y: 150 + (elements.length * 20),
+                width: type === 'text' ? 200 : type === 'qrcode' ? 120 : 150,
+                height: type === 'text' ? 60 : type === 'qrcode' ? 120 : 150,
+                rotation: 0,
+                properties: getDefaultProperties(type)
+            };
+
+            elements.push(element);
+            saveHistory();
+            renderElements();
+            selectElement(id);
+            updateEmptyState();
+        }
+
+        // Propriedades padrão por tipo
+        function getDefaultProperties(type) {
+            switch (type) {
+                case 'text':
+                    return {
+                        text: 'Digite seu texto aqui',
+                        fontFamily: 'Arial',
+                        fontSize: 24,
+                        color: '#000000',
+                        textAlign: 'center',
+                        fontWeight: 'normal'
+                    };
+                case 'image':
+                    return {
+                        src: '',
+                        objectFit: 'cover',
+                        borderRadius: 0
+                    };
+                case 'shape':
+                    return {
+                        shape: 'rectangle',
+                        fill: '#2563eb',
+                        stroke: '#1d4ed8',
+                        strokeWidth: 0
+                    };
+                case 'qrcode':
+                    return {
+                        content: 'https://iberflag.com',
+                        color: '#000000',
+                        bgColor: '#ffffff'
+                    };
+                default:
+                    return {};
+            }
+        }
+
+        // Renderizar elementos
+        function renderElements() {
+            const container = document.getElementById('canvas-container');
+
+            // Remover elementos antigos (exceto print-area e empty-state)
+            container.querySelectorAll('.canvas-element').forEach(el => el.remove());
+
+            elements.forEach(element => {
+                const el = document.createElement('div');
+                el.className = `canvas-element ${selectedElement?.id === element.id ? 'selected' : ''}`;
+                el.id = `element-${element.id}`;
+                el.style.left = `${element.x}px`;
+                el.style.top = `${element.y}px`;
+                el.style.width = `${element.width}px`;
+                el.style.height = `${element.height}px`;
+                el.style.transform = `rotate(${element.rotation}deg)`;
+
+                renderElementContent(el, element);
+
+                el.addEventListener('mousedown', (e) => startDrag(e, element.id));
+
+                container.appendChild(el);
+            });
+
+            updateLayersList();
+        }
+
+        // Renderizar conteúdo do elemento
+        function renderElementContent(el, element) {
+            const props = element.properties;
+
+            switch (element.type) {
+                case 'text':
+                    el.innerHTML = `<div style="
+                        width: 100%; 
+                        height: 100%; 
+                        display: flex; 
+                        align-items: center; 
+                        justify-content: ${props.textAlign === 'left' ? 'flex-start' : props.textAlign === 'right' ? 'flex-end' : 'center'};
+                        font-family: ${props.fontFamily};
+                        font-size: ${props.fontSize}px;
+                        color: ${props.color};
+                        font-weight: ${props.fontWeight};
+                        text-align: ${props.textAlign};
+                        overflow: hidden;
+                    ">${props.text}</div>`;
+                    break;
+                case 'image':
+                    el.innerHTML = `<img src="${props.src || '/assets/images/placeholder.svg'}" style="
+                        width: 100%; 
+                        height: 100%; 
+                        object-fit: ${props.objectFit};
+                        border-radius: ${props.borderRadius}px;
+                    ">`;
+                    break;
+                case 'shape':
+                    el.innerHTML = `<div style="
+                        width: 100%; 
+                        height: 100%; 
+                        background: ${props.fill};
+                        border: ${props.strokeWidth}px solid ${props.stroke};
+                        border-radius: ${props.shape === 'circle' ? '50%' : props.shape === 'rounded' ? '12px' : '0'};
+                    "></div>`;
+                    break;
+                case 'qrcode':
+                    // Simplificado - na implementacao real usaria biblioteca QR
+                    el.innerHTML = `<div style="
+                        width: 100%; 
+                        height: 100%; 
+                        background: ${props.bgColor};
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 10px;
+                        color: ${props.color};
+                    ">QR: ${props.content.substring(0, 20)}...</div>`;
+                    break;
+            }
+        }
+
+        // Selecionar elemento
+        function selectElement(id) {
+            selectedElement = elements.find(e => e.id === id);
+            renderElements();
+            renderPropertiesPanel();
+        }
+
+        // Atualizar estado vazio
+        function updateEmptyState() {
+            const emptyState = document.getElementById('empty-state');
+            if (elements.length === 0) {
+                emptyState.style.display = 'flex';
+            } else {
+                emptyState.style.display = 'none';
+            }
+        }
+
+        // Lista de camadas
+        function updateLayersList() {
+            const list = document.getElementById('layers-list');
+
+            if (elements.length === 0) {
+                list.innerHTML = '<div class="text-center text-gray-400 text-sm py-8">Nenhum elemento adicionado</div>';
+                return;
+            }
+
+            list.innerHTML = elements.slice().reverse().map((element, index) => `
+                <div class="layer-item ${selectedElement?.id === element.id ? 'active' : ''}" onclick="selectElement('${element.id}')">
+                    <iconify-icon icon="${getElementIcon(element.type)}" width="16"></iconify-icon>
+                    <span class="layer-name">${getElementLabel(element)}</span>
+                    <div class="layer-actions">
+                        <button class="layer-action-btn" onclick="event.stopPropagation(); moveElementUp('${element.id}')">
+                            <iconify-icon icon="lucide:arrow-up" width="14"></iconify-icon>
+                        </button>
+                        <button class="layer-action-btn" onclick="event.stopPropagation(); moveElementDown('${element.id}')">
+                            <iconify-icon icon="lucide:arrow-down" width="14"></iconify-icon>
+                        </button>
+                        <button class="layer-action-btn" onclick="event.stopPropagation(); deleteElement('${element.id}')">
+                            <iconify-icon icon="lucide:trash-2" width="14"></iconify-icon>
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function getElementIcon(type) {
+            const icons = {
+                text: 'lucide:type',
+                image: 'lucide:image',
+                shape: 'lucide:square',
+                qrcode: 'lucide:qr-code'
+            };
+            return icons[type] || 'lucide:box';
+        }
+
+        function getElementLabel(element) {
+            switch (element.type) {
+                case 'text': return element.properties.text.substring(0, 20) || 'Texto';
+                case 'image': return 'Imagem';
+                case 'shape': return 'Forma';
+                case 'qrcode': return 'QR Code';
+                default: return 'Elemento';
+            }
+        }
+
+        // Painel de propriedades
+        function renderPropertiesPanel() {
+            const panel = document.getElementById('properties-panel');
+
+            if (!selectedElement) {
+                panel.innerHTML = '<div class="text-center text-gray-400 text-sm py-8">Selecione um elemento para editar as propriedades</div>';
+                return;
+            }
+
+            const props = selectedElement.properties;
+            let html = `
+                <div class="property-group">
+                    <label class="property-label">Posição e Tamanho</label>
+                    <div class="property-row">
+                        <input type="number" class="property-input" placeholder="X" value="${selectedElement.x}" onchange="updateElementProperty('x', this.value)">
+                        <input type="number" class="property-input" placeholder="Y" value="${selectedElement.y}" onchange="updateElementProperty('y', this.value)">
+                    </div>
+                    <div class="property-row" style="margin-top: 8px;">
+                        <input type="number" class="property-input" placeholder="Largura" value="${selectedElement.width}" onchange="updateElementProperty('width', this.value)">
+                        <input type="number" class="property-input" placeholder="Altura" value="${selectedElement.height}" onchange="updateElementProperty('height', this.value)">
+                    </div>
+                    <div style="margin-top: 8px;">
+                        <input type="range" min="-180" max="180" value="${selectedElement.rotation}" onchange="updateElementProperty('rotation', this.value)">
+                    </div>
+                </div>
+            `;
+
+            if (selectedElement.type === 'text') {
+                html += `
+                    <div class="property-group">
+                        <label class="property-label">Texto</label>
+                        <textarea class="property-input" rows="3" onchange="updateElementProperty('text', this.value)">${props.text}</textarea>
+                        <label class="property-label" style="margin-top: 12px;">Fonte</label>
+                        <select class="property-input" onchange="updateElementProperty('fontFamily', this.value)">
+                            <option value="Arial" ${props.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
+                            <option value="Georgia" ${props.fontFamily === 'Georgia' ? 'selected' : ''}>Georgia</option>
+                            <option value="Times New Roman" ${props.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
+                            <option value="Helvetica" ${props.fontFamily === 'Helvetica' ? 'selected' : ''}>Helvetica</option>
+                        </select>
+                        <div class="property-row" style="margin-top: 8px;">
+                            <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updateElementProperty('fontSize', this.value)">
+                            <input type="color" class="property-input" value="${props.color}" onchange="updateElementProperty('color', this.value)">
+                        </div>
+                    </div>
+                `;
+            }
+
+            if (selectedElement.type === 'image') {
+                html += `
+                    <div class="property-group">
+                        <label class="property-label">URL da Imagem</label>
+                        <input type="text" class="property-input" value="${props.src}" onchange="updateElementProperty('src', this.value)">
+                        <label class="property-label" style="margin-top: 12px;">Ajuste</label>
+                        <select class="property-input" onchange="updateElementProperty('objectFit', this.value)">
+                            <option value="cover" ${props.objectFit === 'cover' ? 'selected' : ''}>Cover</option>
+                            <option value="contain" ${props.objectFit === 'contain' ? 'selected' : ''}>Contain</option>
+                            <option value="fill" ${props.objectFit === 'fill' ? 'selected' : ''}>Fill</option>
+                        </select>
+                    </div>
+                `;
+            }
+
+            if (selectedElement.type === 'shape') {
+                html += `
+                    <div class="property-group">
+                        <label class="property-label">Forma</label>
+                        <select class="property-input" onchange="updateElementProperty('shape', this.value)">
+                            <option value="rectangle" ${props.shape === 'rectangle' ? 'selected' : ''}>Retângulo</option>
+                            <option value="rounded" ${props.shape === 'rounded' ? 'selected' : ''}>Arredondado</option>
+                            <option value="circle" ${props.shape === 'circle' ? 'selected' : ''}>Círculo</option>
+                        </select>
+                        <div class="property-row" style="margin-top: 8px;">
+                            <input type="color" class="property-input" value="${props.fill}" onchange="updateElementProperty('fill', this.value)">
+                            <input type="color" class="property-input" value="${props.stroke}" onchange="updateElementProperty('stroke', this.value)">
+                        </div>
+                    </div>
+                `;
+            }
+
+            panel.innerHTML = html;
+        }
+
+        // Atualizar propriedade
+        function updateElementProperty(key, value) {
+            if (!selectedElement) return;
+
+            if (['x', 'y', 'width', 'height', 'rotation'].includes(key)) {
+                selectedElement[key] = parseFloat(value);
+            } else {
+                selectedElement.properties[key] = value;
+            }
+
+            saveHistory();
+            renderElements();
+        }
+
+        // Arrastar elemento
+        function startDrag(e, id) {
+            e.stopPropagation();
+            selectElement(id);
+
+            const element = elements.find(el => el.id === id);
+            isDragging = true;
+            dragOffset = {
+                x: e.clientX - element.x,
+                y: e.clientY - element.y
+            };
+
+            document.addEventListener('mousemove', onDrag);
+            document.addEventListener('mouseup', stopDrag);
+        }
+
+        function onDrag(e) {
+            if (!isDragging || !selectedElement) return;
+
+            selectedElement.x = e.clientX - dragOffset.x;
+            selectedElement.y = e.clientY - dragOffset.y;
+
+            const el = document.getElementById(`element-${selectedElement.id}`);
+            if (el) {
+                el.style.left = `${selectedElement.x}px`;
+                el.style.top = `${selectedElement.y}px`;
+            }
+
+            renderPropertiesPanel();
+        }
+
+        function stopDrag() {
+            if (isDragging) {
+                saveHistory();
+            }
+            isDragging = false;
+            document.removeEventListener('mousemove', onDrag);
+            document.removeEventListener('mouseup', stopDrag);
+        }
+
+        // Mover elemento (camadas)
+        function moveElementUp(id) {
+            const index = elements.findIndex(e => e.id === id);
+            if (index < elements.length - 1) {
+                [elements[index], elements[index + 1]] = [elements[index + 1], elements[index]];
+                saveHistory();
+                renderElements();
+            }
+        }
+
+        function moveElementDown(id) {
+            const index = elements.findIndex(e => e.id === id);
+            if (index > 0) {
+                [elements[index], elements[index - 1]] = [elements[index - 1], elements[index]];
+                saveHistory();
+                renderElements();
+            }
+        }
+
+        // Deletar elemento
+        function deleteElement(id) {
+            elements = elements.filter(e => e.id !== id);
+            if (selectedElement?.id === id) {
+                selectedElement = null;
+            }
+            saveHistory();
+            renderElements();
+            updateEmptyState();
+        }
+
+        // Historico
+        function saveHistory() {
+            history = history.slice(0, historyIndex + 1);
+            history.push(JSON.stringify(elements));
+            historyIndex++;
+        }
+
+        function undo() {
+            if (historyIndex > 0) {
+                historyIndex--;
+                elements = JSON.parse(history[historyIndex]);
+                selectedElement = null;
+                renderElements();
+                updateEmptyState();
+            }
+        }
+
+        function redo() {
+            if (historyIndex < history.length - 1) {
+                historyIndex++;
+                elements = JSON.parse(history[historyIndex]);
+                selectedElement = null;
+                renderElements();
+                updateEmptyState();
+            }
+        }
+
+        // Zoom
+        function setZoom(value) {
+            zoom = value;
+            document.querySelectorAll('.canvas-toolbar .tool-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+
+            const container = document.getElementById('canvas-container');
+            container.style.transform = `scale(${zoom})`;
+        }
+
+        // Limpar canvas
+        function clearCanvas() {
+            if (confirm('Tem certeza que deseja limpar todos os elementos?')) {
+                elements = [];
+                selectedElement = null;
+                saveHistory();
+                renderElements();
+                updateEmptyState();
+            }
+        }
+
+        // Guardar template
+        async function saveTemplate() {
+            const nome = document.getElementById('template-name').value;
+            const categoria = document.getElementById('template-category').value;
+
+            if (!nome) {
+                alert('Por favor, insira um nome para o template');
+                return;
+            }
+
+            if (elements.length === 0) {
+                alert('Adicione pelo menos um elemento ao template');
+                return;
+            }
+
+            const designSvg = window.DesignSvgStore?.buildTemplateSvgFromElements(elements, {
+                width: 800,
+                height: 600
+            }) || '';
+            const previewUrl = designSvg
+                ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
+                : '';
+
+            const previewData = {
+                nome,
+                categoria,
+                elementos: {
+                    format: 'svg-inline-v1',
+                    svg: designSvg,
+                    design_svg: designSvg,
+                    elements
+                },
+                largura: 800,
+                altura: 600,
+                preview_url: previewUrl,
+                ativo: true
+            };
+
+            try {
+                const { data, error } = await adminTemplateSupabase
+                    .from('templates')
+                    .upsert([previewData])
+                    .select();
+
+                if (error) throw error;
+
+                alert('Template guardado com sucesso!');
+
+                // Redirecionar para admin ou limpar
+                if (confirm('Deseja criar outro template?')) {
+                    elements = [];
+                    selectedElement = null;
+                    document.getElementById('template-name').value = 'Novo Template';
+                    renderElements();
+                    updateEmptyState();
+                } else {
+                    window.location.href = '/admin';
+                }
+            } catch (err) {
+                console.error('Erro ao guardar:', err);
+                alert('Erro ao guardar template. Tente novamente.');
+            }
+        }
+
+        // Preview
+        function previewTemplate() {
+            // Abrir modal ou nova aba com preview
+            alert('Preview sera implementado em breve!');
+        }
+
+        // Click no canvas para desselecionar
+        document.getElementById('canvas-container').addEventListener('mousedown', (e) => {
+            if (e.target.id === 'canvas-container') {
+                selectedElement = null;
+                renderElements();
+                renderPropertiesPanel();
+            }
+        });
+
+        // Inicializar
+        hydratéEditorFromPayload();
+        saveHistory();
+        updateEmptyState();
+    </script></body></html>

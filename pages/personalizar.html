@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-    <title>Pers?nalizar Produto - IberFlag</title>
-    <meta name="description"
-        content="Editor de personalização IberFlag para criar o design final do seu produto antes de adicionar ao carrinho.">
+    <title>Personalizar Produto - IberFlag</title>
+    <meta name="description" content="Editor de personalização IberFlag para criar o design final do seu produto antes de adicionar ao carrinho.">
     <meta name="robots" content="noindex,follow">
     <link rel="canonical" href="https://iberflag.com/produtos">
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/personalizar">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/personalizar">
+  
+  
+  
+  
+  
+  
+  
+  
     <meta property="og:type" content="website">
-    <meta property="og:title" content="Pers?nalizar Produto - IberFlag">
-    <meta property="og:description"
-        content="Crie e ajuste o seu design no editor IberFlag em desktop e mobile.">
+    <meta property="og:title" content="Personalizar Produto - IberFlag">
+    <meta property="og:description" content="Crie e ajuste o seu design no editor IberFlag em desktop e mobile.">
     <meta property="og:url" content="https://iberflag.com/produtos">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -48,9 +53,7 @@
                 </button>
             </div>
             <div class="w-px h-6 bg-gray-300 editor-undo-redo"></div>
-            <button id="add-to-cart-btn"
-                class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold"
-                style="display:flex;align-items:center;gap:0.5rem;">
+            <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold" style="display:flex;align-items:center;gap:0.5rem;">
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
                 <span class="editor-cart-text">Adicionar ao Carrinho</span>
             </button>
@@ -87,7 +90,7 @@
                             </button>
                             <input type="file" id="image-upload" accept="image/*" class="hidden">
 
-                            <button id="add-qr-btn" class="tool-tile tool-tile--slaté" title="QR" aria-label="QR">
+                            <button id="add-qr-btn" class="tool-tile tool-tile--slate" title="QR" aria-label="QR">
                                 <span class="tool-tile__icon tool-tile--dark">
                                     <i data-lucide="qr-code" class="w-5 h-5"></i>
                                 </span>
@@ -98,19 +101,19 @@
 
                     <div class="elements-group">
                         <div class="elements-grid elements-grid--compact">
-                            <button class="shape-btn tool-tile tool-tile--slaté" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
                                 <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="square" class="w-5 h-5"></i></span>
                                 <span class="tool-tile__label">Retângulo</span>
                             </button>
-                            <button class="shape-btn tool-tile tool-tile--slaté" data-shape="circle" title="Circulo" aria-label="Circulo">
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="circle" title="Circulo" aria-label="Circulo">
                                 <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="circle" class="w-5 h-5"></i></span>
                                 <span class="tool-tile__label">Círculo</span>
                             </button>
-                            <button class="shape-btn tool-tile tool-tile--slaté" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="triangle" title="Triangulo" aria-label="Triangulo">
                                 <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="triangle" class="w-5 h-5"></i></span>
                                 <span class="tool-tile__label">Triângulo</span>
                             </button>
-                            <button class="shape-btn tool-tile tool-tile--slaté" data-shape="diamond" title="Diamante" aria-label="Diamante">
+                            <button class="shape-btn tool-tile tool-tile--slate" data-shape="diamond" title="Diamante" aria-label="Diamante">
                                 <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="diamond" class="w-5 h-5"></i></span>
                                 <span class="tool-tile__label">Diamante</span>
                             </button>
@@ -132,12 +135,9 @@
         <!-- Canvas Area -->
         <main class="editor-main">
             <div id="canvas-stage" class="canvas-container">
-                <div id="canvas-wrapper" class="relative w-full h-full"
-                    style="position: relative; z-index: 1;">
-                    <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet"
-                        class="absolute inset-0 w-full h-full">
-                        <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none"
-                            opacity="0" pointer-events="none" />
+                <div id="canvas-wrapper" class="relative w-full h-full" style="position: relative; z-index: 1;">
+                    <svg id="design-canvas" viewBox="0 0 800 600" preserveAspectRatio="xMidYMid meet" class="absolute inset-0 w-full h-full">
+                        <rect id="print-area-outline" x="0" y="0" width="800" height="600" fill="none" stroke="none" opacity="0" pointer-events="none"></rect>
                         <!-- Template will be loaded here -->
                     </svg>
 
@@ -145,8 +145,7 @@
             </div>
 
             <!-- Bottom Toolbar (desktop apenas - em mobile está escondido) -->
-            <div id="editor-floating-context-bar" class="panel-clean editor-floating-context-bar hidden"
-                aria-label="Opcoes contextuais do elemento">
+            <div id="editor-floating-context-bar" class="panel-clean editor-floating-context-bar hidden" aria-label="Opcoes contextuais do elemento">
                 <div class="editor-floating-context-inner">
                     <div class="editor-floating-actions" role="group" aria-label="Acoes do elemento">
                         <button id="top-duplicaté-btn" type="button" class="editor-floating-btn" title="Duplicar" aria-label="Duplicar">
@@ -262,41 +261,33 @@
                     </div>
                 </div>
                 <div id="element-quick-toolbar" class="editor-context-toolbar hidden" aria-label="Ações rápidas do elemento">
-                    <button id="quick-delete-btn" type="button" class="context-action context-action--danger"
-                        title="Apagar" aria-label="Apagar">
+                    <button id="quick-delete-btn" type="button" class="context-action context-action--danger" title="Apagar" aria-label="Apagar">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-duplicaté-btn" type="button" class="context-action"
-                        title="Duplicar" aria-label="Duplicar">
+                    <button id="quick-duplicaté-btn" type="button" class="context-action" title="Duplicar" aria-label="Duplicar">
                         <i data-lucide="copy" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-center-h-btn" type="button" class="context-action"
-                        title="Centrar horizontalmente" aria-label="Centrar horizontalmente">
+                    <button id="quick-center-h-btn" type="button" class="context-action" title="Centrar horizontalmente" aria-label="Centrar horizontalmente">
                         <i data-lucide="align-center-horizontal" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-center-v-btn" type="button" class="context-action"
-                        title="Centrar verticalmente" aria-label="Centrar verticalmente">
+                    <button id="quick-center-v-btn" type="button" class="context-action" title="Centrar verticalmente" aria-label="Centrar verticalmente">
                         <i data-lucide="align-center-vertical" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-keep-aspect-btn" type="button" class="context-action context-action--toggle"
-                        title="Manter proporcoes" aria-label="Manter proporcoes" aria-pressed="true">
+                    <button id="quick-keep-aspect-btn" type="button" class="context-action context-action--toggle" title="Manter proporcoes" aria-label="Manter proporcoes" aria-pressed="true">
                         <i id="quick-keep-aspect-icon" class="keep-aspect-lock-icon" aria-hidden="true"></i>
                     </button>
                     <div id="quick-font-anchor" class="context-popover-anchor hidden">
-                        <button id="quick-font-btn" type="button" class="context-action context-action--text hidden"
-                            title="Fonte" aria-label="Fonte" aria-expanded="false">
+                        <button id="quick-font-btn" type="button" class="context-action context-action--text hidden" title="Fonte" aria-label="Fonte" aria-expanded="false">
                             <i data-lucide="type" class="w-4 h-4"></i>
                         </button>
                     </div>
                     <div id="quick-opacity-anchor" class="context-popover-anchor hidden">
-                        <button id="quick-opacity-btn" type="button" class="context-action context-action--opacity"
-                            title="Opacidade" aria-label="Opacidade" aria-expanded="false">
+                        <button id="quick-opacity-btn" type="button" class="context-action context-action--opacity" title="Opacidade" aria-label="Opacidade" aria-expanded="false">
                             <i data-lucide="blend" class="w-4 h-4"></i>
                         </button>
                         <div id="quick-opacity-popover" class="context-popover context-popover--opacity" aria-hidden="true">
                             <div id="quick-opacity-shell" class="context-range-shell">
-                                <input type="range" id="quick-opacity-range" min="0" max="100" value="100"
-                                    class="context-range-vertical" aria-label="Opacidade">
+                                <input type="range" id="quick-opacity-range" min="0" max="100" value="100" class="context-range-vertical" aria-label="Opacidade">
                             </div>
                             <span id="quick-opacity-value" class="context-popover-value">100%</span>
                         </div>
@@ -306,8 +297,7 @@
 
             <!-- Mobile Tab Bar -->
             <nav class="editor-mobile-tabs" aria-label="Ferramentas do editor">
-                <button class="editor-mobile-tab active" id="mobile-tab-elements" data-sidebar="editor-sidebar-left"
-                    data-panel="elements-panel">
+                <button class="editor-mobile-tab active" id="mobile-tab-elements" data-sidebar="editor-sidebar-left" data-panel="elements-panel">
                     <i data-lucide="plus-square" class="w-5 h-5 mx-auto"></i>
                     <span>Adicionar</span>
                 </button>
@@ -339,8 +329,7 @@
                             <button id="zoom-in" class="action-btn toolbar-btn toolbar-btn--zoom" title="Aumentar zoom" aria-label="Aumentar zoom">
                                 <i data-lucide="zoom-in" class="w-4 h-4"></i>
                             </button>
-                            <button id="keep-aspect-ratio" class="slide-button toolbar-btn toolbar-btn--icon active" title="Manter proporcoes"
-                                aria-label="Manter proporcoes" aria-pressed="true">
+                            <button id="keep-aspect-ratio" class="slide-button toolbar-btn toolbar-btn--icon active" title="Manter proporcoes" aria-label="Manter proporcoes" aria-pressed="true">
                                 <i data-lucide="maximize-2" class="w-4 h-4"></i>
                             </button>
                         </div>
@@ -446,30 +435,22 @@
                             </select>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span
-                                    id="prop-text-size-val">24</span>px</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Tamanho: <span id="prop-text-size-val">24</span>px</label>
                             <input type="range" id="prop-text-size" min="12" max="120" value="24" class="w-full">
                         </div>
                         <div>
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Cor</label>
-                            <input type="color" id="prop-text-color" value="#000000"
-                                class="w-full h-10 rounded cursor-pointer">
+                            <input type="color" id="prop-text-color" value="#000000" class="w-full h-10 rounded cursor-pointer">
                         </div>
                         <div class="flex gap-2">
-                            <button id="prop-text-bold"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
-                            <button id="prop-text-italic"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
-                            <button id="prop-text-underline"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">U</button>
-                            <button id="prop-text-caps"
-                                class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">Aa</button>
+                            <button id="prop-text-bold" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">B</button>
+                            <button id="prop-text-italic" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 italic">I</button>
+                            <button id="prop-text-underline" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">U</button>
+                            <button id="prop-text-caps" class="flex-1 border-2 py-2 rounded hover:bg-gray-100 font-bold">Aa</button>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-text-rotation-val">0</span>°</label>
-                            <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-text-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-text-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
                         </div>
                     </div>
 
@@ -491,29 +472,23 @@
                         </div>
                         <div id="qr-properties" class="hidden">
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Destino do QR</label>
-                            <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2"
-                                placeholder="https://site.pt ou texto livre">
+                            <input type="text" id="prop-qr-content" class="w-full border rounded-lg px-3 py-2" placeholder="https://site.pt ou texto livre">
                             <div class="mt-3">
                                 <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do QR</label>
-                                <input type="color" id="prop-qr-color" value="#111827"
-                                    class="w-full h-10 rounded cursor-pointer">
+                                <input type="color" id="prop-qr-color" value="#111827" class="w-full h-10 rounded cursor-pointer">
                             </div>
                             <p class="mt-2 text-xs text-gray-500 leading-relaxed">Cole um URL ou texto e o QR sera
                                 atualizado no canvas.</p>
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span
-                                    id="prop-image-opacity-val">100</span>%</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Opacidade: <span id="prop-image-opacity-val">100</span>%</label>
                             <input type="range" id="prop-image-opacity" min="0" max="100" value="100" class="w-full">
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-image-rotation-val">0</span>°</label>
-                            <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-image-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-image-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
                         </div>
-                        <button id="crop-image-btn"
-                            class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition font-semibold flex items-center justify-center gap-2 mt-4">
+                        <button id="crop-image-btn" class="w-full bg-black text-white py-2 rounded-lg hover:bg-gray-800 transition font-semibold flex items-center justify-center gap-2 mt-4">
                             <i data-lucide="crop" class="w-4 h-4"></i>
                             Cortar Imagem
                         </button>
@@ -523,44 +498,38 @@
                         <h3 class="font-bold text-lg mb-4">Propriedades da Forma</h3>
                         <div>
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Cor de Preenchimento</label>
-                            <input type="color" id="prop-shape-fill" value="#3b82f6"
-                                class="w-full h-10 rounded cursor-pointer">
+                            <input type="color" id="prop-shape-fill" value="#3b82f6" class="w-full h-10 rounded cursor-pointer">
                         </div>
                         <div>
                             <label class="text-sm font-semibold text-gray-700 block mb-1">Cor do Contorno</label>
-                            <input type="color" id="prop-shape-stroke" value="#000000"
-                                class="w-full h-10 rounded cursor-pointer">
+                            <input type="color" id="prop-shape-stroke" value="#000000" class="w-full h-10 rounded cursor-pointer">
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span
-                                    id="prop-shape-stroke-val">0</span>px</label>
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Espessura: <span id="prop-shape-stroke-val">0</span>px</label>
                             <input type="range" id="prop-shape-stroke-width" min="0" max="10" value="0" class="w-full">
                         </div>
                         <div>
-                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span
-                                    id="prop-shape-rotation-val">0</span>°</label>
-                            <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0"
-                                class="w-full">
+                            <label class="text-sm font-semibold text-gray-700 block mb-1">Rotação: <span id="prop-shape-rotation-val">0</span>°</label>
+                            <input type="range" id="prop-shape-rotation" min="0" max="360" step="0.5" value="0" class="w-full">
                         </div>
                     </div>
                 </div>
             </div>
         </aside>
 
-        <!-- Mobile backdrop: at layout level s? it's always clickable -->
+        <!-- Mobile backdrop: at layout level, so it's always clickable -->
         <div id="mobile-panel-backdrop" class="editor-mobile-backdrop" aria-hidden="true"></div>
     </div>
 
     <div id="upload-crop-modal" class="upload-crop-modal hidden" aria-hidden="true">
         <div class="upload-crop-panel">
-            <div class="px-6 py-4 border-b border-slaté-200 flex items-center justify-between">
+            <div class="px-6 py-4 border-b border-slate-200 flex items-center justify-between">
                 <div>
-                    <h2 class="text-xl font-bold text-slaté-900">Recortar Imagem</h2>
-                    <p class="text-sm text-slaté-500">A imagem s? sera adicionada ao canvas depois de confirmar o
+                    <h2 class="text-xl font-bold text-slate-900">Recortar Imagem</h2>
+                    <p class="text-sm text-slate-500">A imagem só será adicionada ao canvas depois de confirmar o
                         recorte.</p>
                 </div>
-                <button id="upload-crop-cancel-top" class="p-2 rounded-lg hover:bg-slaté-100" type="button"
-                    aria-label="Fechar recorte">
+                <button id="upload-crop-cancel-top" class="p-2 rounded-lg hover:bg-slate-100" type="button" aria-label="Fechar recorte">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
@@ -577,18 +546,16 @@
                 </div>
             </div>
 
-            <div class="px-6 py-4 border-t border-slaté-200 flex items-center justify-end gap-3 bg-slaté-50">
-                <button id="upload-crop-cancel" type="button"
-                    class="px-4 py-2 rounded-lg border border-slaté-300 bg-white text-slaté-700 font-semibold hover:bg-slaté-100">
+            <div class="px-6 py-4 border-t border-slate-200 flex items-center justify-end gap-3 bg-slate-50">
+                <button id="upload-crop-cancel" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100">
                     Cancelar
                 </button>
-                <button id="upload-crop-apply" type="button"
-                    class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
+                <button id="upload-crop-apply" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700">
                     Inserir imagem
                 </button>
             </div>
         </div>
-    </div><div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true" inert>
+    </div><div id="cart-steps-modal" class="cart-steps-modal" aria-hidden="true" role="dialog" aria-modal="true" inert="">
         <div class="cart-steps-panel">
             <div class="checkout-steps">
                 <div id="checkout-step-1" class="checkout-step active">
@@ -600,39 +567,35 @@
                     <span class="checkout-step-dot">2</span>
                     <span id="checkout-step-2-label">Escolher base</span>
                 </div>
-                <button id="close-cart-steps" type="button" class="ml-auto p-2 rounded-lg hover:bg-slaté-100"
-                    aria-label="Fechar popup">
+                <button id="close-cart-steps" type="button" class="ml-auto p-2 rounded-lg hover:bg-slate-100" aria-label="Fechar popup">
                     <i data-lucide="x" class="w-5 h-5"></i>
                 </button>
             </div>
 
             <div class="cart-step-content">
                 <section id="cart-step-pane-1" class="cart-step-pane active">
-                    <h3 class="text-lg font-bold text-slaté-900 mb-1">Confirmar design antes de adicionar</h3>
-                    <p class="text-sm text-slaté-500 mb-4">Reve o resultado final para garantir que esta tudo correto.
+                    <h3 class="text-lg font-bold text-slate-900 mb-1">Confirmar design antes de adicionar</h3>
+                    <p class="text-sm text-slate-500 mb-4">Revê o resultado final para garantir que está tudo correto.
                     </p>
                     <img id="cart-design-preview" class="cart-design-preview" alt="Preview do design">
                 </section>
 
                 <section id="cart-step-pane-2" class="cart-step-pane">
-                    <p class="text-sm text-slaté-500 mb-4">Seleciona uma base para este design.</p>
+                    <p class="text-sm text-slate-500 mb-4">Seleciona uma base para este design.</p>
                     <div id="cart-base-options" class="cart-base-grid"></div>
-                    <p id="cart-base-empty" class="hidden text-sm text-slaté-500">Este produto não tem bases configuradas. O design será adicionado sem base.</p>
+                    <p id="cart-base-empty" class="hidden text-sm text-slate-500">Este produto não tem bases configuradas. O design será adicionado sem base.</p>
                 </section>
             </div>
 
-            <div class="px-5 py-4 border-t border-slaté-200 bg-slaté-50 flex items-center justify-between gap-3">
+            <div class="px-5 py-4 border-t border-slate-200 bg-slate-50 flex items-center justify-between gap-3">
                 <div>
-                    <p class="text-xs text-slaté-500">Total a adicionar</p>
-                    <p id="cart-steps-total" class="text-lg font-bold text-slaté-900"></p>
+                    <p class="text-xs text-slate-500">Total a adicionar</p>
+                    <p id="cart-steps-total" class="text-lg font-bold text-slate-900"></p>
                 </div>
                 <div class="flex items-center gap-2">
-                    <button id="cart-steps-back" type="button"
-                        class="px-4 py-2 rounded-lg border border-slaté-300 bg-white text-slaté-700 font-semibold hover:bg-slaté-100 hidden">Voltar</button>
-                    <button id="cart-steps-next" type="button"
-                        class="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-slaté-900">Continuar</button>
-                    <button id="cart-steps-confirm" type="button"
-                        class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar
+                    <button id="cart-steps-back" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hidden">Voltar</button>
+                    <button id="cart-steps-next" type="button" class="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-slate-900">Continuar</button>
+                    <button id="cart-steps-confirm" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar
                         ao carrinho</button>
                 </div>
             </div>
@@ -665,34 +628,35 @@
             propertiesPanel.remove();
         }
     </script>
-    <script src="/assets/js/templates-data.js" defer></script>
-    <script src="/assets/js/core/cart-assets.js?v=20260401a" defer></script>
-    <script src="/assets/js/core/logic.js?v=20260409k1" defer></script>
-    <script src="/assets/js/core/design-svg.js?v=20260402a" defer></script>
+    <script src="/assets/js/templates-data.js" defer=""></script>
+    <script src="/assets/js/core/cart-assets.js?v=20260401a" defer=""></script>
+    <script src="/assets/js/core/logic.js?v=20260422b" defer=""></script>
+    <script src="/assets/js/core/design-svg.js?v=20260402a" defer=""></script>
 
     <!-- Carregar módulos do personalizador em paralelo com defer -->
-    <script src="/assets/js/pages/personalizador/core/core.js?v=20260405a" defer></script>
-    <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer></script>
-    <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer></script>
-    <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260405a" defer></script>
-    <script src="/assets/js/pages/personalizador/data/product.js?v=20260419e" defer></script>
-    <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260404a" defer></script>
-    <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260405a" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260405b" defer></script>
-    <script src="/assets/js/pages/personalizador/data/upload.js?v=20260405a" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260405d" defer></script>
-<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260405b" defer></script>
-    <script src="/assets/js/pages/personalizador/editor/export.js?v=20260405d" defer></script>
+    <script src="/assets/js/pages/personalizador/core/core.js?v=20260405a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260405a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/data/product.js?v=20260419e" defer=""></script>
+    <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260404a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260405a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer=""></script>
+<script src="/assets/js/pages/personalizador/sidebar/elements.js?v=20260405b" defer=""></script>
+    <script src="/assets/js/pages/personalizador/data/upload.js?v=20260405a" defer=""></script>
+    <script src="/assets/js/pages/personalizador/editor/handles.js?v=20260405d" defer=""></script>
+<script src="/assets/js/pages/personalizador/sidebar/properties.js?v=20260405b" defer=""></script>
+    <script src="/assets/js/pages/personalizador/editor/export.js?v=20260405d" defer=""></script>
 
     <!-- Entry point - deve carregar por último -->
-    <script src="/assets/js/pages/personalizar.js" defer></script>
+    <script src="/assets/js/pages/personalizar.js" defer=""></script>
     <script>
         lucide.createIcons();
     </script>
-</body>
-
-</html>
 
 
 
+
+
+
+</body></html>

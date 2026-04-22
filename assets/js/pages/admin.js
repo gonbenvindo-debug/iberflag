@@ -309,7 +309,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!await validateAdminSession(session)) {
                 await supabaseClient.auth.signOut();
-                errorEl.textContent = adminWriteSessionLastError || 'Acess? nao autorizado para este utilizador.';
+                errorEl.textContent = adminWriteSessionLastError || 'Acesso nao autorizado para este utilizador.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';

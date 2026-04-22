@@ -84,6 +84,23 @@
         adminTemplateEditor: '/admin-template-editor'
     };
 
+    const LOCALES = {
+        pt: {
+            code: 'pt',
+            prefix: '',
+            lang: 'pt-PT',
+            ogLocale: 'pt_PT',
+            label: 'Português'
+        },
+        es: {
+            code: 'es',
+            prefix: '/es',
+            lang: 'es-ES',
+            ogLocale: 'es_ES',
+            label: 'Español'
+        }
+    };
+
     function stripDiacritics(value) {
         return String(value || '')
             .normalize('NFD')
@@ -103,6 +120,46 @@
         const trimmed = String(pathname || '/').trim() || '/';
         if (trimmed === '/') return '/';
         return `/${trimmed.replace(/^\/+/, '').replace(/\/+$/, '')}`;
+    }
+
+    function normalizeLocale(locale) {
+        const candidate = String(locale || '').trim().toLowerCase();
+        if (candidate === 'es' || candidate.startsWith('es-')) return 'es';
+        return 'pt';
+    }
+
+    function getLocaleMeta(locale) {
+        return LOCALES[normalizeLocale(locale)] || LOCALES.pt;
+    }
+
+    function getLocaleFromPathname(pathname) {
+        const normalized = normalizePath(pathname);
+        return normalized === '/es' || normalized.startsWith('/es/') ? 'es' : 'pt';
+    }
+
+    function stripLocalePrefix(pathname) {
+        const normalized = normalizePath(pathname);
+        if (normalized === '/es') return '/';
+        if (normalized.startsWith('/es/')) return normalized.slice(3) || '/';
+        return normalized;
+    }
+
+    function withLocalePrefix(pathname, locale) {
+        const normalizedPath = normalizePath(pathname);
+        const currentLocale = normalizeLocale(locale);
+        if (currentLocale === 'es') {
+            return normalizedPath === '/' ? '/es/' : `/es${stripLocalePrefix(normalizedPath)}`;
+        }
+
+        return stripLocalePrefix(normalizedPath);
+    }
+
+    function getLocalizedPath(pathname, locale) {
+        return withLocalePrefix(pathname, locale);
+    }
+
+    function buildLocalizedPublicUrl(pathname, locale, params) {
+        return buildPublicUrl(getLocalizedPath(pathname, locale), params);
     }
 
     function withQuery(pathname, params) {
@@ -200,35 +257,35 @@
         }) || null;
     }
 
-    function buildProductPath(productOrSlug) {
+    function buildProductPath(productOrSlug, locale) {
         const slug = typeof productOrSlug === 'string'
             ? inferProductSlug(productOrSlug)
             : inferProductSlug(productOrSlug);
-        return `/produto/${encodeURIComponent(slug)}`;
+        return getLocalizedPath(`/produto/${encodeURIComponent(slug)}`, locale);
     }
 
-    function buildProductPersonalizerPath(productOrSlug, params) {
-        return withQuery(`${buildProductPath(productOrSlug)}/personalizar`, params);
+    function buildProductPersonalizerPath(productOrSlug, params, locale) {
+        return withQuery(`${buildProductPath(productOrSlug, locale)}/personalizar`, params);
     }
 
-    function buildCategoryPath(category) {
-        return `/produtos/${encodeURIComponent(normalizeCategorySlug(category))}`;
+    function buildCategoryPath(category, locale) {
+        return getLocalizedPath(`/produtos/${encodeURIComponent(normalizeCategorySlug(category))}`, locale);
     }
 
-    function buildOrderPath(code) {
-        return `/encomenda/${encodeURIComponent(String(code || '').trim().toUpperCase())}`;
+    function buildOrderPath(code, locale) {
+        return getLocalizedPath(`/encomenda/${encodeURIComponent(String(code || '').trim().toUpperCase())}`, locale);
     }
 
-    function buildContactPath(params) {
-        return withQuery(STATIC_PATHS.contact, params);
+    function buildContactPath(params, locale) {
+        return withQuery(getLocalizedPath(STATIC_PATHS.contact, locale), params);
     }
 
-    function buildCheckoutSuccessPath(params) {
-        return withQuery(STATIC_PATHS.checkoutSuccess, params);
+    function buildCheckoutSuccessPath(params, locale) {
+        return withQuery(getLocalizedPath(STATIC_PATHS.checkoutSuccess, locale), params);
     }
 
-    function buildTemplatesPath(params) {
-        return withQuery(STATIC_PATHS.templates, params);
+    function buildTemplatesPath(params, locale) {
+        return withQuery(getLocalizedPath(STATIC_PATHS.templates, locale), params);
     }
 
     function getCanonicalOrigin() {
@@ -237,21 +294,25 @@
 
     function parseLocationPath(pathname) {
         const normalized = normalizePath(pathname);
-        const productMatch = normalized.match(/^\/produto\/([^/]+)(?:\/personalizar)?$/i);
-        const orderMatch = normalized.match(/^\/encomenda\/([^/]+)$/i);
-        const categoryMatch = normalized.match(/^\/produtos\/([^/]+)$/i);
+        const locale = getLocaleFromPathname(normalized);
+        const localizedPath = stripLocalePrefix(normalized);
+        const productMatch = localizedPath.match(/^\/produto\/([^/]+)(?:\/personalizar)?$/i);
+        const orderMatch = localizedPath.match(/^\/encomenda\/([^/]+)$/i);
+        const categoryMatch = localizedPath.match(/^\/produtos\/([^/]+)$/i);
 
         return {
             pathname: normalized,
+            locale,
+            basePath: localizedPath,
             productSlug: productMatch ? decodeURIComponent(productMatch[1]) : '',
-            isProductPersonalizer: /^\/produto\/[^/]+\/personalizar$/i.test(normalized),
+            isProductPersonalizer: /^\/produto\/[^/]+\/personalizar$/i.test(localizedPath),
             orderCode: orderMatch ? decodeURIComponent(orderMatch[1]) : '',
             categorySlug: categoryMatch ? decodeURIComponent(categoryMatch[1]) : ''
         };
     }
 
     function isIndexablePublicPath(pathname) {
-        const normalized = normalizePath(pathname);
+        const normalized = stripLocalePrefix(pathname);
         if (normalized === STATIC_PATHS.home) return true;
 
         return [
@@ -272,9 +333,17 @@
     return {
         CANONICAL_ORIGIN,
         CATEGORY_META,
+        LOCALES,
         STATIC_PATHS,
         slugify,
         normalizePath,
+        normalizeLocale,
+        getLocaleMeta,
+        getLocaleFromPathname,
+        stripLocalePrefix,
+        withLocalePrefix,
+        getLocalizedPath,
+        buildLocalizedPublicUrl,
         normalizeCategorySlug,
         getCategoryMeta,
         inferProductSlug,

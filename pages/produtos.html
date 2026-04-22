@@ -1,17 +1,22 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Produtos - IberFlag | Catálogo de Publicidade Física</title>
-    <meta name="description"
-        content="Catálogo completo de flybanners, roll-ups e produtos publicitários com operação principal em Portugal.">
+    <meta name="description" content="Catálogo completo de flybanners, roll-ups e produtos publicitários com operação principal em Portugal.">
     <link rel="canonical" href="https://iberflag.com/produtos">
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/produtos">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/produtos">
+  
+  
+  
+  
+  
+  
+  
+  
     <meta property="og:type" content="website">
     <meta property="og:title" content="Produtos - IberFlag">
-    <meta property="og:description"
-        content="Catálogo de flybanners, roll-ups e formatos promocionais para o mercado iberico.">
+    <meta property="og:description" content="Catálogo de flybanners, roll-ups e formatos promocionais para o mercado iberico.">
     <meta property="og:url" content="https://iberflag.com/produtos">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -56,7 +61,7 @@
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
     <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
-    <script src="/assets/js/core/logic.js?v=20260410a"></script>
+    <script src="/assets/js/core/logic.js?v=20260422b"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260411cat4">
     <style>
         @media (max-width: 767px) {
@@ -88,20 +93,16 @@
                     <a href="/sobre" class="nav-link">Sobre Nós</a>
                     <a href="/faq" class="nav-link">FAQ</a>
                     <a href="/contacto" class="nav-link">Contacto</a>
-                    <button id="cart-btn"
-                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2"
-                        aria-label="Abrir carrinho">
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2" aria-label="Abrir carrinho">
                         <i data-lucide="shopping-cart" class="w-4 h-4" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Carrinho</span>
-                        <span id="cart-count"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center hidden">0</span>
                     </button>
                 </div>
                 <div class="mobile-header-actions md:hidden flex items-center gap-2">
                     <a id="cart-btn-mobile" href="/checkout" onclick="openCart(event)" aria-expanded="false" class="relative p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir carrinho">
                         <i data-lucide="shopping-cart" class="w-5 h-5" aria-hidden="true"></i>
-                        <span id="cart-count-mobile"
-                            class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
+                        <span id="cart-count-mobile" class="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-4 h-4 rounded-full flex items-center justify-center hidden text-[10px]">0</span>
                     </a>
                     <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu(event)" aria-expanded="false" class="p-2 hover:bg-gray-100 rounded-lg" aria-label="Abrir menu">
                         <i data-lucide="menu" class="w-6 h-6" aria-hidden="true"></i>
@@ -114,8 +115,7 @@
     <div id="mobile-menu" class="hidden md:hidden bg-white border-b">
         <div class="px-4 py-2 space-y-1">
             <a href="/" class="block px-4 py-3 hover:bg-gray-100 font-medium">Início</a>
-            <a href="/produtos"
-                class="block px-4 py-3 hover:bg-gray-100 font-medium text-blue-600">Produtos</a>
+            <a href="/produtos" class="block px-4 py-3 hover:bg-gray-100 font-medium text-blue-600">Produtos</a>
             <a href="/sobre" class="block px-4 py-3 hover:bg-gray-100 font-medium">Sobre Nós</a>
             <a href="/faq" class="block px-4 py-3 hover:bg-gray-100 font-medium">FAQ</a>
             <a href="/contacto" class="block px-4 py-3 hover:bg-gray-100 font-medium">Contacto</a>
@@ -210,7 +210,7 @@
                             <h4 class="font-semibold mb-3 text-sm text-gray-700">Categoria</h4>
                             <div id="category-filters-legacy" class="space-y-2">
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="radio" name="category" value="all" class="custom-radio" checked>
+                                    <input type="radio" name="category" value="all" class="custom-radio" checked="">
                                     <span class="ml-2 text-sm">Todos os Produtos</span>
                                 </label>
                             </div>
@@ -221,25 +221,21 @@
                             <h4 class="font-semibold mb-3 text-sm text-gray-700">Preço</h4>
                             <div class="space-y-2">
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="0"
-                                        data-max="50">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="0" data-max="50">
                                     <span class="ml-2 text-sm">Até 50€</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="50"
-                                        data-max="100">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="50" data-max="100">
                                     <span class="ml-2 text-sm">50€ - 100€</span>
                                 </label>
                                 <label class="flex items-center cursor-pointer">
-                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="100"
-                                        data-max="999999">
+                                    <input type="checkbox" class="custom-checkbox price-filter" data-min="100" data-max="999999">
                                     <span class="ml-2 text-sm">Acima de 100€</span>
                                 </label>
                             </div>
                         </div>
 
-                        <button id="clear-filters-legacy"
-                            class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-semibold">
+                        <button id="clear-filters-legacy" class="w-full bg-gray-100 text-gray-700 py-2 rounded-lg hover:bg-gray-200 transition text-sm font-semibold">
                             Limpar Filtros
                         </button>
                     </div>
@@ -269,7 +265,7 @@
                         <!-- Products will be loaded here -->
                     </div>
 
-                    <!-- Empty Staté -->
+                    <!-- Empty State -->
                     <div id="empty-state-legacy" class="hidden empty-state">
                         <i data-lucide="package-x" class="empty-state-icon"></i>
                         <h3 class="text-xl font-bold mb-2">Nenhum produto encontrado</h3>
@@ -293,26 +289,22 @@
                     <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.</p>
                     <div class="flex gap-4">
                         <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                             </svg>
                         </a>
                         <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <rect width="20" height="20" x="2" y="2" rx="5" />
-                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
-                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <rect width="20" height="20" x="2" y="2" rx="5"></rect>
+                                <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"></path>
+                                <line x1="17.5" x2="17.51" y1="6.5" y2="6.5"></line>
                             </svg>
                         </a>
                         <a href="#" class="social-icon">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none"
-                                stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                                <path
-                                    d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
-                                <rect width="4" height="12" x="2" y="9" />
-                                <circle cx="4" cy="4" r="2" />
+                            <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z"></path>
+                                <rect width="4" height="12" x="2" y="9"></rect>
+                                <circle cx="4" cy="4" r="2"></circle>
                             </svg>
                         </a>
                     </div>
@@ -335,7 +327,7 @@
                         <li><a href="/termos" class="hover:text-white transition">Termos e Condições</a></li>
                         <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a>
                         </li>
-                        <li><a href="/devoluções" class="hover:text-white transition">Devoluções</a></li>
+                        <li><a href="/devolucoes" class="hover:text-white transition">Devoluções</a></li>
                     </ul>
                 </div>
             </div>
@@ -355,7 +347,7 @@
 
     <!-- Cart Sidebar removido
     <div id="cart-sidebar"
-        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translaté-x-full transition-transform duration-300 z-50">
+        class="fixed top-0 right-0 h-full bg-white shadow-2xl transform translate-x-full transition-transform duration-300 z-50">
         <div class="flex flex-col h-full">
             <div class="flex items-center justify-between p-6 border-b">
                 <h3 class="text-xl font-bold">Carrinho de Compras</h3>
@@ -384,11 +376,8 @@
     -->
 
     <!-- Modal de Templates / Galeria de Designs -->
-    <div id="templates-modal"
-        class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4"
-        onclick="if(event.target===this)closeTemplatesModal()">
-        <div
-            class="bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animaté-in">
+    <div id="templates-modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden z-50 flex items-center justify-center p-4" onclick="if(event.target===this)closeTemplatesModal()">
+        <div class="bg-white rounded-3xl w-full max-w-6xl max-h-[90vh] overflow-hidden flex flex-col shadow-2xl animate-in">
             <!-- Header -->
             <div class="flex items-center justify-between px-6 py-5 border-b border-gray-100">
                 <div>
@@ -399,8 +388,7 @@
                     <p class="text-sm text-gray-500 mt-0.5" id="modal-product-name">Escolha um design pronto ou comece
                         do zero</p>
                 </div>
-                <button onclick="closeTemplatesModal()"
-                    class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
+                <button onclick="closeTemplatesModal()" class="w-9 h-9 flex items-center justify-center rounded-xl hover:bg-gray-100 transition-colors">
                     <i data-lucide="x" class="w-5 h-5 text-gray-400"></i>
                 </button>
             </div>
@@ -408,7 +396,7 @@
             <!-- Grid de Templates -->
             <div class="flex-1 overflow-y-auto p-6">
                 <div id="templates-modal-grid" class="grid gap-4 sm:gap-5">
-                    <!-- Templates serao carregados aqui -->
+                    <!-- Templates serão carregados aqui -->
                 </div>
 
                 <!-- Estado vazio -->
@@ -418,18 +406,16 @@
                     </div>
                     <p class="text-gray-500 font-medium">Nenhum design disponivel</p>
                     <p class="text-gray-400 text-sm mt-1">Pode comecar com um design em branco</p>
-                    <button onclick="startBlank()"
-                        class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition">
+                    <button onclick="startBlank()" class="mt-4 inline-flex items-center gap-2 px-5 py-2.5 bg-blue-600 text-white rounded-xl text-sm font-semibold hover:bg-blue-700 transition">
                         <i data-lucide="plus" class="w-4 h-4"></i>
-                        Comecar em Branco
+                        Começar em Branco
                     </button>
                 </div>
             </div>
 
             <!-- Footer -->
             <div class="flex items-center justify-end p-4 border-t border-gray-100 bg-gray-50/50">
-                <button onclick="closeTemplatesModal()"
-                    class="px-5 py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors">
+                <button onclick="closeTemplatesModal()" class="px-5 py-2.5 text-gray-500 text-sm font-medium hover:text-gray-700 transition-colors">
                     Cancelar
                 </button>
             </div>
@@ -439,7 +425,8 @@
     <script src="/assets/js/core/design-svg.js"></script>
 <script src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
     <script src="/assets/js/pages/produtos.js?v=20260415b"></script>
-</body>
 
-</html>
 
+
+
+</body></html>

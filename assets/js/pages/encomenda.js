@@ -723,7 +723,7 @@ function renderOrderItems(order, items, splitMeta) {
                     <th>Produto</th>
                     <th>Qtd</th>
                     <th>Subtotal</th>
-                    <th>Pers?nalizacao</th>
+                    <th>Personalizacao</th>
                     <th>Opcoes compradas</th>
                 </tr>
             </thead>

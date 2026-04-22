@@ -357,6 +357,14 @@
       "destination": "/404.html"
     },
     {
+      "source": "/es",
+      "destination": "/es/index.html"
+    },
+    {
+      "source": "/es/:path*",
+      "destination": "/es/:path*/index.html"
+    },
+    {
       "source": "/lib",
       "destination": "/404.html"
     },
@@ -473,7 +481,33 @@
       ]
     },
     {
+      "source": "/es/admin(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
+    },
+    {
       "source": "/checkout(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/es/checkout(.*)",
       "headers": [
         {
           "key": "Cache-Control",
@@ -499,6 +533,19 @@
       ]
     },
     {
+      "source": "/es/encomenda(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
       "source": "/encomendas(.*)",
       "headers": [
         {
@@ -512,7 +559,29 @@
       ]
     },
     {
+      "source": "/es/encomendas(.*)",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-store"
+        },
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
       "source": "/modelos(.*)",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, follow"
+        }
+      ]
+    },
+    {
+      "source": "/es/modelos(.*)",
       "headers": [
         {
           "key": "X-Robots-Tag",

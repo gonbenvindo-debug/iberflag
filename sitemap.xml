@@ -12,4 +12,21 @@
     <loc>https://iberflag.com/sitemaps/products.xml</loc>
     <lastmod>2026-04-21</lastmod>
   </sitemap>
+
+
+
+
+
+  <sitemap>
+    <loc>https://iberflag.com/sitemaps/es-pages.xml</loc>
+    <lastmod>2026-04-22</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://iberflag.com/sitemaps/es-categories.xml</loc>
+    <lastmod>2026-04-22</lastmod>
+  </sitemap>
+  <sitemap>
+    <loc>https://iberflag.com/sitemaps/es-products.xml</loc>
+    <lastmod>2026-04-22</lastmod>
+  </sitemap>
 </sitemapindex>

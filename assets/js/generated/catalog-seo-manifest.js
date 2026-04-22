@@ -362,14 +362,14 @@
     {
       "id": 138,
       "slug": "cubo-publcitario-tamanho-unico",
-      "nome": "Cubo publcitário (Tamanho único)",
+      "nome": "Cubo publicitário (Tamanho único)",
       "categoria": "cubo-publicitario",
       "categorySlug": "cubo-publicitario",
       "canonicalPath": "/produto/cubo-publcitario-tamanho-unico",
       "personalizePath": "/produto/cubo-publcitario-tamanho-unico/personalizar",
       "preco": 102.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/cubo-publicitario/cubo-publcitario-9c2fbc75ad.webp",
-      "seoTitle": "Cubo publcitário (Tamanho único) | Cubos | IberFlag",
+      "seoTitle": "Cubo publicitário (Tamanho único) | Cubos | IberFlag",
       "seoDescription": "O cubo publicitário é um assento que pode ser montado e desmontado em menos de um minuto sem ferramentas. O tecido é totalmente personalizável em todos os…"
     },
     {

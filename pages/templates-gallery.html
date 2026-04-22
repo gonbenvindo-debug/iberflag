@@ -1,17 +1,23 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Escolher Template - IberFlag</title>
-    <meta name="description"
-        content="Escolha um template pronto para personalizar rapidamente o seu produto na IberFlag.">
+    <meta name="description" content="Escolha um template pronto para personalizar rapidamente o seu produto na IberFlag.">
     <meta name="robots" content="noindex,follow">
     <link rel="canonical" href="https://iberflag.com/modelos">
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/modelos">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/modelos">
+  
+  
+  
+  
+  
+  
+  
+  
     <meta property="og:type" content="website">
     <meta property="og:title" content="Escolher Template - IberFlag">
-    <meta property="og:description"
-        content="Galeria de templates para acelerar a criacao de designs publicitários.">
+    <meta property="og:description" content="Galeria de templates para acelerar a criação de designs publicitários.">
     <meta property="og:url" content="https://iberflag.com/modelos">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -47,7 +53,7 @@
 
         .template-card:hover {
             border-color: var(--primary);
-            transform: translatéY(-1px);
+            transform: translateY(-1px);
         }
 
         .template-preview {
@@ -133,7 +139,7 @@
             position: absolute;
             left: 14px;
             top: 50%;
-            transform: translatéY(-50%);
+            transform: translateY(-50%);
             color: #94a3b8;
         }
 
@@ -187,13 +193,13 @@
             100% { background-position: -200% 0; }
         }
 
-        .empty-staté {
+        .empty-state {
             text-align: center;
             padding: 60px 20px;
             color: #64748b;
         }
 
-        .empty-staté iconify-icon {
+        .empty-state iconify-icon {
             font-size: 64px;
             color: #cbd5e1;
             margin-bottom: 16px;
@@ -252,11 +258,11 @@
                 </div>
             </div>
 
-            <!-- Templates serao carregados aqui -->
+            <!-- Templates serão carregados aqui -->
         </div>
 
         <!-- Estado vazio -->
-        <div class="empty-staté hidden" id="empty-staté">
+        <div class="empty-state hidden" id="empty-state">
             <iconify-icon icon="lucide:image-off"></iconify-icon>
             <h3 class="text-lg font-semibold mb-2">Nenhum template encontrado</h3>
             <p class="text-sm">Tente uma pesquisa diferente ou crie um design do zero.</p>
@@ -324,7 +330,7 @@
                                 <div class="blank-icon">
                                     <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                                 </div>
-                                <span class="font-medium">Comecar em branco</span>
+                                <span class="font-medium">Começar em branco</span>
                             </div>
                         </div>
                         <div class="template-info">
@@ -345,7 +351,7 @@
                                 <div class="blank-icon">
                                     <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                                 </div>
-                                <span class="font-medium">Comecar em branco</span>
+                                <span class="font-medium">Começar em branco</span>
                             </div>
                         </div>
                         <div class="template-info">
@@ -366,7 +372,7 @@
         // Renderizar templates
         function renderTemplates(templates) {
             const grid = document.getElementById('templates-grid');
-            const emptyStaté = document.getElementById('empty-staté');
+            const emptyState = document.getElementById('empty-state');
             
             // Manter o card "em branco"
             const blankCard = grid.firstElementChild;
@@ -374,20 +380,20 @@
             grid.appendChild(blankCard);
 
             if (templates.length === 0) {
-                emptyStaté.classList.remove('hidden');
+                emptyState.classList.remove('hidden');
                 return;
             }
 
-            emptyStaté.classList.add('hidden');
+            emptyState.classList.add('hidden');
 
             templates.forEach(template => {
-                const card = creatéTemplateCard(template);
+                const card = createTemplateCard(template);
                 grid.appendChild(card);
             });
         }
 
         // Criar card de template
-        function creatéTemplateCard(template) {
+        function createTemplateCard(template) {
             const div = document.createElement('div');
             div.className = 'template-card';
             div.onclick = () => selectTemplate(template);
@@ -428,7 +434,7 @@
                 ? SiteRoutes.findProductById(productId)
                 : null);
             if (!resolvedProduct && !productId) {
-                alert('Erro: Produto nao especificado');
+                alert('Erro: Produto não especificado');
                 return;
             }
 
@@ -487,6 +493,7 @@
         // Carregar ao iniciar
         loadTemplates();
     </script>
-</body>
-</html>
 
+
+
+</body></html>

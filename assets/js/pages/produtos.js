@@ -361,10 +361,10 @@ function getCategoryName(categoria) {
         'x-banner': 'X-Banner',
         'roll-up': 'Roll Up',
         'wall-banner': 'Wall Banner',
-        'tenda-publicit?ria': 'Tenda Publicitária',
+        'tenda-publicitaria': 'Tenda Publicitária',
         'photocall': 'Photocall',
         'mastros': 'Mastros',
-        'cubo-publicit?rio': 'Cubo Publicitário',
+        'cubo-publicitario': 'Cubo Publicitário',
         'balcao-promocional': 'Balcão Promocional',
         'bandeiras': 'Bandeiras'
     };

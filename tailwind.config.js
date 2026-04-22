@@ -2,6 +2,7 @@
 module.exports = {
   content: [
     "./pages/**/*.{html,js}",
+    "./es/**/*.html",
     "./produto/**/*.html",
     "./produtos/**/*.html",
     "./mapa-do-site/**/*.html",

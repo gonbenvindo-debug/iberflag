@@ -1,7 +1,4 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>Editor de Templates - Admin - IberFlag</title>
@@ -355,7 +352,7 @@
             pointer-events: none;
         }
 
-        /* Empty Staté */
+        /* Empty State */
         .empty-canvas {
             position: absolute;
             inset: 0;
@@ -373,7 +370,17 @@
             opacity: 0.5;
         }
     </style>
-</head>
+
+  
+  
+  
+  
+  
+  
+  
+  
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/admin-template-editor">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/admin-template-editor"></head>
 
 <body>
     <!-- Admin Header -->
@@ -461,9 +468,8 @@
 
             <div class="canvas-wrapper">
                 <div class="canvas-container" id="canvas-container" style="width: 800px; height: 600px;">
-                    <div class="print-area" id="print-area"
-                        style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
-                    <div class="empty-canvas" id="empty-staté">
+                    <div class="print-area" id="print-area" style="left: 100px; top: 100px; width: 600px; height: 400px;"></div>
+                    <div class="empty-canvas" id="empty-state">
                         <iconify-icon icon="lucide:layout-template"></iconify-icon>
                         <span>Clique nos elementos à esquerda para começar</span>
                     </div>
@@ -543,7 +549,7 @@
                 }));
                 selectedElement = null;
                 renderElements();
-                updatéEmptyStaté();
+                updateEmptyState();
             }
 
             window.localStorage.removeItem('iberflag_editor_template_payload');
@@ -567,7 +573,7 @@
             saveHistory();
             renderElements();
             selectElement(id);
-            updatéEmptyStaté();
+            updateEmptyState();
         }
 
         // Propriedades padrão por tipo
@@ -610,7 +616,7 @@
         function renderElements() {
             const container = document.getElementById('canvas-container');
 
-            // Remover elementos antigos (exceto print-area e empty-staté)
+            // Remover elementos antigos (exceto print-area e empty-state)
             container.querySelectorAll('.canvas-element').forEach(el => el.remove());
 
             elements.forEach(element => {
@@ -630,7 +636,7 @@
                 container.appendChild(el);
             });
 
-            updatéLayersList();
+            updateLayersList();
         }
 
         // Renderizar conteúdo do elemento
@@ -694,17 +700,17 @@
         }
 
         // Atualizar estado vazio
-        function updatéEmptyStaté() {
-            const emptyStaté = document.getElementById('empty-staté');
+        function updateEmptyState() {
+            const emptyState = document.getElementById('empty-state');
             if (elements.length === 0) {
-                emptyStaté.style.display = 'flex';
+                emptyState.style.display = 'flex';
             } else {
-                emptyStaté.style.display = 'none';
+                emptyState.style.display = 'none';
             }
         }
 
         // Lista de camadas
-        function updatéLayersList() {
+        function updateLayersList() {
             const list = document.getElementById('layers-list');
 
             if (elements.length === 0) {
@@ -765,15 +771,15 @@
                 <div class="property-group">
                     <label class="property-label">Posição e Tamanho</label>
                     <div class="property-row">
-                        <input type="number" class="property-input" placeholder="X" value="${selectedElement.x}" onchange="updatéElementProperty('x', this.value)">
-                        <input type="number" class="property-input" placeholder="Y" value="${selectedElement.y}" onchange="updatéElementProperty('y', this.value)">
+                        <input type="number" class="property-input" placeholder="X" value="${selectedElement.x}" onchange="updateElementProperty('x', this.value)">
+                        <input type="number" class="property-input" placeholder="Y" value="${selectedElement.y}" onchange="updateElementProperty('y', this.value)">
                     </div>
                     <div class="property-row" style="margin-top: 8px;">
-                        <input type="number" class="property-input" placeholder="Largura" value="${selectedElement.width}" onchange="updatéElementProperty('width', this.value)">
-                        <input type="number" class="property-input" placeholder="Altura" value="${selectedElement.height}" onchange="updatéElementProperty('height', this.value)">
+                        <input type="number" class="property-input" placeholder="Largura" value="${selectedElement.width}" onchange="updateElementProperty('width', this.value)">
+                        <input type="number" class="property-input" placeholder="Altura" value="${selectedElement.height}" onchange="updateElementProperty('height', this.value)">
                     </div>
                     <div style="margin-top: 8px;">
-                        <input type="range" min="-180" max="180" value="${selectedElement.rotation}" onchange="updatéElementProperty('rotation', this.value)">
+                        <input type="range" min="-180" max="180" value="${selectedElement.rotation}" onchange="updateElementProperty('rotation', this.value)">
                     </div>
                 </div>
             `;
@@ -782,17 +788,17 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">Texto</label>
-                        <textarea class="property-input" rows="3" onchange="updatéElementProperty('text', this.value)">${props.text}</textarea>
+                        <textarea class="property-input" rows="3" onchange="updateElementProperty('text', this.value)">${props.text}</textarea>
                         <label class="property-label" style="margin-top: 12px;">Fonte</label>
-                        <select class="property-input" onchange="updatéElementProperty('fontFamily', this.value)">
+                        <select class="property-input" onchange="updateElementProperty('fontFamily', this.value)">
                             <option value="Arial" ${props.fontFamily === 'Arial' ? 'selected' : ''}>Arial</option>
                             <option value="Georgia" ${props.fontFamily === 'Georgia' ? 'selected' : ''}>Georgia</option>
                             <option value="Times New Roman" ${props.fontFamily === 'Times New Roman' ? 'selected' : ''}>Times New Roman</option>
                             <option value="Helvetica" ${props.fontFamily === 'Helvetica' ? 'selected' : ''}>Helvetica</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
-                            <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updatéElementProperty('fontSize', this.value)">
-                            <input type="color" class="property-input" value="${props.color}" onchange="updatéElementProperty('color', this.value)">
+                            <input type="number" class="property-input" placeholder="Tamanho" value="${props.fontSize}" onchange="updateElementProperty('fontSize', this.value)">
+                            <input type="color" class="property-input" value="${props.color}" onchange="updateElementProperty('color', this.value)">
                         </div>
                     </div>
                 `;
@@ -802,9 +808,9 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">URL da Imagem</label>
-                        <input type="text" class="property-input" value="${props.src}" onchange="updatéElementProperty('src', this.value)">
+                        <input type="text" class="property-input" value="${props.src}" onchange="updateElementProperty('src', this.value)">
                         <label class="property-label" style="margin-top: 12px;">Ajuste</label>
-                        <select class="property-input" onchange="updatéElementProperty('objectFit', this.value)">
+                        <select class="property-input" onchange="updateElementProperty('objectFit', this.value)">
                             <option value="cover" ${props.objectFit === 'cover' ? 'selected' : ''}>Cover</option>
                             <option value="contain" ${props.objectFit === 'contain' ? 'selected' : ''}>Contain</option>
                             <option value="fill" ${props.objectFit === 'fill' ? 'selected' : ''}>Fill</option>
@@ -817,14 +823,14 @@
                 html += `
                     <div class="property-group">
                         <label class="property-label">Forma</label>
-                        <select class="property-input" onchange="updatéElementProperty('shape', this.value)">
+                        <select class="property-input" onchange="updateElementProperty('shape', this.value)">
                             <option value="rectangle" ${props.shape === 'rectangle' ? 'selected' : ''}>Retângulo</option>
                             <option value="rounded" ${props.shape === 'rounded' ? 'selected' : ''}>Arredondado</option>
                             <option value="circle" ${props.shape === 'circle' ? 'selected' : ''}>Círculo</option>
                         </select>
                         <div class="property-row" style="margin-top: 8px;">
-                            <input type="color" class="property-input" value="${props.fill}" onchange="updatéElementProperty('fill', this.value)">
-                            <input type="color" class="property-input" value="${props.stroke}" onchange="updatéElementProperty('stroke', this.value)">
+                            <input type="color" class="property-input" value="${props.fill}" onchange="updateElementProperty('fill', this.value)">
+                            <input type="color" class="property-input" value="${props.stroke}" onchange="updateElementProperty('stroke', this.value)">
                         </div>
                     </div>
                 `;
@@ -834,7 +840,7 @@
         }
 
         // Atualizar propriedade
-        function updatéElementProperty(key, value) {
+        function updateElementProperty(key, value) {
             if (!selectedElement) return;
 
             if (['x', 'y', 'width', 'height', 'rotation'].includes(key)) {
@@ -914,7 +920,7 @@
             }
             saveHistory();
             renderElements();
-            updatéEmptyStaté();
+            updateEmptyState();
         }
 
         // Historico
@@ -930,7 +936,7 @@
                 elements = JSON.parse(history[historyIndex]);
                 selectedElement = null;
                 renderElements();
-                updatéEmptyStaté();
+                updateEmptyState();
             }
         }
 
@@ -940,7 +946,7 @@
                 elements = JSON.parse(history[historyIndex]);
                 selectedElement = null;
                 renderElements();
-                updatéEmptyStaté();
+                updateEmptyState();
             }
         }
 
@@ -958,12 +964,12 @@
 
         // Limpar canvas
         function clearCanvas() {
-            if (confirm('Tem certeza que desejá limpar todos os elementos?')) {
+            if (confirm('Tem certeza que deseja limpar todos os elementos?')) {
                 elements = [];
                 selectedElement = null;
                 saveHistory();
                 renderElements();
-                updatéEmptyStaté();
+                updateEmptyState();
             }
         }
 
@@ -1016,12 +1022,12 @@
                 alert('Template guardado com sucesso!');
 
                 // Redirecionar para admin ou limpar
-                if (confirm('Desejá criar outro template?')) {
+                if (confirm('Deseja criar outro template?')) {
                     elements = [];
                     selectedElement = null;
                     document.getElementById('template-name').value = 'Novo Template';
                     renderElements();
-                    updatéEmptyStaté();
+                    updateEmptyState();
                 } else {
                     window.location.href = '/admin';
                 }
@@ -1049,9 +1055,10 @@
         // Inicializar
         hydratéEditorFromPayload();
         saveHistory();
-        updatéEmptyStaté();
+        updateEmptyState();
     </script>
-</body>
 
-</html>
 
+
+
+</body></html>

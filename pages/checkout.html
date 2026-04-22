@@ -1,18 +1,23 @@
-<!DOCTYPE html>
-<html lang="pt-PT">
-
-<head>
+<!DOCTYPE html><html lang="pt-PT"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Finalizar Encomenda - IberFlag</title>
-    <meta name="description"
-        content="Finalize a sua encomenda IberFlag com pagamento online via Stripe, faturacao validada e envio para a morada indicada.">
+    <meta name="description" content="Finalize a sua encomenda IberFlag com pagamento online via Stripe, faturação validada e envio para a morada indicada.">
     <meta name="robots" content="noindex,follow">
     <link rel="canonical" href="https://iberflag.com/checkout">
+  <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/checkout">
+  <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/checkout">
+  
+  
+  
+  
+  
+  
+  
+  
     <meta property="og:type" content="website">
     <meta property="og:title" content="Finalizar Encomenda - IberFlag">
-    <meta property="og:description"
-        content="Checkout online seguro com cartoes, MB Way, Multibanco e Bizum.">
+    <meta property="og:description" content="Checkout online seguro com cartoes, MB Way, Multibanco e Bizum.">
     <meta property="og:url" content="https://iberflag.com/checkout">
     <meta property="og:image" content="https://iberflag.com/assets/logos/logo-completo.svg">
     <meta name="twitter:card" content="summary_large_image">
@@ -25,11 +30,11 @@
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
-    <script src="/assets/js/core/logic.js?v=20260410a"></script>
+    <script src="/assets/js/core/logic.js?v=20260422b"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260409c">
 </head>
 
-<body class="app-page checkout-page bg-slaté-50">
+<body class="app-page checkout-page bg-slate-50">
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -42,13 +47,10 @@
                     <a href="/sobre" class="nav-link">Sobre Nós</a>
                     <a href="/faq" class="nav-link">FAQ</a>
                     <a href="/contacto" class="nav-link">Contacto</a>
-                    <button id="cart-btn"
-                        class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2"
-                        aria-label="Abrir carrinho">
+                    <button id="cart-btn" class="relative bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-all hover:shadow-lg flex items-center gap-2" aria-label="Abrir carrinho">
                         <i data-lucide="shopping-cart" class="w-4 h-4" aria-hidden="true"></i>
                         <span class="hidden sm:inline">Carrinho</span>
-                        <span id="cart-count"
-                            class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
+                        <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center font-bold hidden">0</span>
                     </button>
                 </div>
                 <button id="mobile-menu-btn" type="button" onclick="toggleMobileMenu(event)" aria-expanded="false" class="md:hidden text-gray-700" aria-label="Abrir menu">
@@ -94,32 +96,31 @@
                 <div class="lg:col-span-2 space-y-6">
                     <div class="app-surface checkout-surface-card checkout-main-card p-6 md:p-7">
                         <div class="mb-6">
-                            <h2 class="app-section-title">Dados de faturacao</h2>
+                            <h2 class="app-section-title">Dados de faturação</h2>
                             <p class="app-section-subtitle mt-1">Preencha apenas o essencial para emitir a encomenda e entregar.</p>
                         </div>
                         <form id="checkout-form" class="checkout-form-stack">
                             <div class="checkout-form-section">
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <label class="form-label">Tipo de faturacao</label>
+                                        <label class="form-label">Tipo de faturação</label>
                                         <select id="customer-type-select" name="tipo_cliente" class="form-input">
-                                            <option value="particular" selected>Particular</option>
+                                            <option value="particular" selected="">Particular</option>
                                             <option value="empresa">Empresa</option>
                                         </select>
-                                        <p id="customer-type-description" class="mt-2 text-xs text-slaté-500">Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.</p>
+                                        <p id="customer-type-description" class="mt-2 text-xs text-slate-500">Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.</p>
                                     </div>
                                     <div id="tax-field-row">
                                         <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
-                                        <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12"
-                                            placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
-                                        <p id="nif-help" class="mt-2 text-xs text-slaté-500">Se preencher, o número fiscal tem de ser valido para emitirmos a fatura.</p>
+                                        <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12" placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
+                                        <p id="nif-help" class="mt-2 text-xs text-slate-500">Se preencher, o número fiscal tem de ser válido para emitirmos a fatura.</p>
                                         <p id="company-lookup-status" class="hidden"></p>
                                     </div>
                                 </div>
                                 <div class="mt-4">
                                     <label class="form-label">País fiscal *</label>
-                                    <select id="country-select" name="country" class="form-input" required>
-                                        <option value="PT" selected>Portugal</option>
+                                    <select id="country-select" name="country" class="form-input" required="">
+                                        <option value="PT" selected="">Portugal</option>
                                         <option value="ES">Espanha</option>
                                         <option value="FR">França</option>
                                         <option value="DE">Alemanha</option>
@@ -154,38 +155,38 @@
                                         <option value="MZ">Moçambique</option>
                                         <option value="OTHER">Outro país / revisão manual</option>
                                     </select>
-                                    <p class="mt-2 text-xs text-slaté-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
+                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
                                 </div>
                                 <div id="company-field-row" class="hidden mt-4">
                                     <label id="company-label" class="form-label">Empresa *</label>
                                     <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
                                 </div>
-                                <div id="checkout-fiscal-summary" class="mt-4 rounded-2xl border border-slaté-200 bg-slaté-50 px-4 py-4">
-                                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-slaté-500">Resumo fiscal</p>
-                                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slaté-700">
+                                <div id="checkout-fiscal-summary" class="mt-4 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
+                                    <p class="text-xs font-bold uppercase tracking-[0.2em] text-slate-500">Resumo fiscal</p>
+                                    <div class="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3 text-sm text-slate-700">
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Nome fiscal</p>
-                                            <p id="fiscal-summary-name" class="font-semibold text-slaté-900">—</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Nome fiscal</p>
+                                            <p id="fiscal-summary-name" class="font-semibold text-slate-900">—</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Documento</p>
-                                            <p id="fiscal-summary-document" class="font-semibold text-slaté-900">Factura Recibo</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Documento</p>
+                                            <p id="fiscal-summary-document" class="font-semibold text-slate-900">Factura Recibo</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">NIF / VAT</p>
-                                            <p id="fiscal-summary-tax-id" class="font-semibold text-slaté-900">—</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">NIF / VAT</p>
+                                            <p id="fiscal-summary-tax-id" class="font-semibold text-slate-900">—</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Regime</p>
-                                            <p id="fiscal-summary-regime" class="font-semibold text-slaté-900">Artigo 53.º do CIVA</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Regime</p>
+                                            <p id="fiscal-summary-regime" class="font-semibold text-slate-900">Artigo 53.º do CIVA</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">País fiscal</p>
-                                            <p id="fiscal-summary-country" class="font-semibold text-slaté-900">Portugal</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">País fiscal</p>
+                                            <p id="fiscal-summary-country" class="font-semibold text-slate-900">Portugal</p>
                                         </div>
                                         <div>
-                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slaté-400">Tratamento</p>
-                                            <p id="fiscal-summary-treatment" class="font-semibold text-slaté-900">Sem liquidação de IVA (M10)</p>
+                                            <p class="text-[11px] uppercase tracking-[0.18em] text-slate-400">Tratamento</p>
+                                            <p id="fiscal-summary-treatment" class="font-semibold text-slate-900">Sem liquidação de IVA (M10)</p>
                                         </div>
                                     </div>
                                     <p id="fiscal-summary-warning" class="hidden mt-3 rounded-xl border border-amber-200 bg-amber-50 px-3 py-2 text-xs font-medium text-amber-800"></p>
@@ -196,17 +197,17 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label id="contact-name-label" class="form-label">Nome completo *</label>
-                                        <input type="text" name="nome" required class="form-input" autocomplete="name">
+                                        <input type="text" name="nome" required="" class="form-input" autocomplete="name">
                                     </div>
                                     <div>
                                         <label class="form-label">Email *</label>
-                                        <input type="text" name="email" required class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
+                                        <input type="text" name="email" required="" class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
                                         <label class="form-label">Telemovel / telefone *</label>
-                                        <input type="text" name="telefone" required class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
+                                        <input type="text" name="telefone" required="" class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
                                     </div>
                                 </div>
                             </div>
@@ -215,26 +216,26 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label class="form-label">País de entrega *</label>
-                                        <select id="address-country-select" name="pais_entrega" class="form-input" required autocomplete="country">
-                                            <option value="PT" selected>Portugal</option>
+                                        <select id="address-country-select" name="pais_entrega" class="form-input" required="" autocomplete="country">
+                                            <option value="PT" selected="">Portugal</option>
                                             <option value="ES">Espanha</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label class="form-label">Código postal *</label>
-                                        <input type="text" name="codigo_postal" required class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
+                                        <input type="text" name="codigo_postal" required="" class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
                                     </div>
                                 </div>
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label id="address-region-label" class="form-label">Distrito / ilha *</label>
-                                        <select id="address-region-select" name="distrito" class="form-input" required autocomplete="address-level1">
+                                        <select id="address-region-select" name="distrito" class="form-input" required="" autocomplete="address-level1">
                                             <option value="">Escolha primeiro o país</option>
                                         </select>
                                     </div>
                                     <div>
                                         <label id="address-municipality-label" class="form-label">Concelho *</label>
-                                        <select id="address-municipality-select" name="concelho" class="form-input" required autocomplete="address-level2">
+                                        <select id="address-municipality-select" name="concelho" class="form-input" required="" autocomplete="address-level2">
                                             <option value="">Escolha primeiro o distrito</option>
                                         </select>
                                     </div>
@@ -242,11 +243,11 @@
                                 <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                     <div>
                                         <label class="form-label">Localidade / cidade *</label>
-                                        <input type="text" name="cidade" required class="form-input" autocomplete="address-level2" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Madrid...">
+                                        <input type="text" name="cidade" required="" class="form-input" autocomplete="address-level2" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Madrid...">
                                     </div>
                                     <div>
                                         <label class="form-label">Morada *</label>
-                                        <input type="text" name="morada" required class="form-input" autocomplete="street-address">
+                                        <input type="text" name="morada" required="" class="form-input" autocomplete="street-address">
                                     </div>
                                 </div>
                             </div>
@@ -257,8 +258,7 @@
                                 </button>
                                 <div id="order-notes-field" class="hidden mt-4">
                                     <label class="form-label">Notas da encomenda (opcional)</label>
-                                    <textarea name="notas" rows="3" class="form-input"
-                                        placeholder="Informacoes adicionais para a equipa."></textarea>
+                                    <textarea name="notas" rows="3" class="form-input" placeholder="Informacoes adicionais para a equipa."></textarea>
                                 </div>
                             </div>
                         </form>
@@ -267,15 +267,15 @@
                     <div class="app-surface checkout-surface-card p-6 md:p-7">
                         <div class="mb-5">
                             <h2 class="app-section-title">Pagamento online</h2>
-                            <p class="app-section-subtitle mt-1">Escolha o metodo. O checkout seguro abre no pass? seguinte.</p>
+                            <p class="app-section-subtitle mt-1">Escolha o m?todo. O checkout seguro abre no passo seguinte.</p>
                         </div>
                         <div class="space-y-2">
                             <label class="checkout-payment-option flex items-center p-3 rounded-xl cursor-pointer">
-                                <input type="radio" name="payment" value="card" checked class="custom-radio">
+                                <input type="radio" name="payment" value="card" checked="" class="custom-radio">
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
-                                        <span class="font-semibold">Cartoes (Visa, Mastercard, etc.)</span>
-                                        <i data-lucide="credit-card" class="w-5 h-5 text-slaté-900"></i>
+                                        <span class="font-semibold">Cartões (Visa, Mastercard, etc.)</span>
+                                        <i data-lucide="credit-card" class="w-5 h-5 text-slate-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -284,7 +284,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">MB Way</span>
-                                        <i data-lucide="smartphone" class="w-5 h-5 text-slaté-900"></i>
+                                        <i data-lucide="smartphone" class="w-5 h-5 text-slate-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -293,7 +293,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">Multibanco</span>
-                                        <i data-lucide="receipt" class="w-5 h-5 text-slaté-900"></i>
+                                        <i data-lucide="receipt" class="w-5 h-5 text-slate-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -302,7 +302,7 @@
                                 <div class="ml-3 flex-1">
                                     <div class="flex items-center justify-between">
                                         <span class="font-semibold">Bizum</span>
-                                        <i data-lucide="wallet" class="w-5 h-5 text-slaté-900"></i>
+                                        <i data-lucide="wallet" class="w-5 h-5 text-slate-900"></i>
                                     </div>
                                 </div>
                             </label>
@@ -310,17 +310,17 @@
                     </div>
 
                     <div class="app-surface checkout-surface-card checkout-support-card p-5 md:p-6">
-                        <label class="flex items-start gap-3 cursor-pointer mb-4 pb-4 border-b border-slaté-200">
+                        <label class="flex items-start gap-3 cursor-pointer mb-4 pb-4 border-b border-slate-200">
                             <input type="checkbox" id="design-review-checkbox" class="custom-checkbox mt-0.5">
                             <span class="text-sm text-gray-700">
-                                Adicionar revisão de design por <strong>5&#8364;</strong> antes da produção.
+                                Adicionar revisão de design por <strong>5€</strong> antes da produção.
                                 <a href="/termos#responsabilidade-design" class="text-blue-600 hover:underline">Consulta os termos de responsabilidade do design</a>.
                             </span>
                         </label>
                         <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="terms-checkbox" required class="custom-checkbox mt-0.5">
+                            <input type="checkbox" id="terms-checkbox" required="" class="custom-checkbox mt-0.5">
                             <span class="text-sm text-gray-700">
-                                Li e aceito os <a href="/termos" class="text-blue-600 hover:underline">Termos e Condicoes</a> e a
+                                Li e aceito os <a href="/termos" class="text-blue-600 hover:underline">Termos e Condições</a> e a
                                 <a href="/privacidade" class="text-blue-600 hover:underline">Política de Privacidade</a>.
                             </span>
                         </label>
@@ -331,19 +331,18 @@
                             </div>
                             <div class="checkout-support-item">
                                 <i data-lucide="receipt-text" class="w-4 h-4"></i>
-                                <span>Documento fiscal emitido apos pagamento</span>
+                                <span>Documento fiscal emitido após pagamento</span>
                             </div>
                             <div class="checkout-support-item">
                                 <i data-lucide="package" class="w-4 h-4"></i>
-                                <span>Tracking disponivel na página da encomenda e no email</span>
+                                <span>Tracking dispon?vel na página da encomenda e no email</span>
                             </div>
                         </div>
                     </div>
 
                     <div id="checkout-feedback" class="hidden rounded-xl border px-4 py-3 text-sm font-medium"></div>
 
-                    <button id="place-order-btn"
-                        class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
+                    <button id="place-order-btn" class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
                         <i data-lucide="lock" class="w-5 h-5"></i>
                         Finalizar encomenda
                     </button>
@@ -352,7 +351,7 @@
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Prazo comunicado apos pagamento confirmado e validação da encomenda.</p>
+                        <p class="app-section-subtitle mb-6">Prazo comunicado após pagamento confirmado e validação da encomenda.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -360,8 +359,8 @@
                                 <span id="subtotal" class="font-semibold">0.00€</span>
                             </div>
                             <div id="design-review-row" class="hidden flex justify-between text-sm">
-                                <span class="text-gray-600">Revisao de design</span>
-                                <span id="design-review-amount" class="font-semibold">5.00&#8364;</span>
+                                <span class="text-gray-600">Revisão de design</span>
+                                <span id="design-review-amount" class="font-semibold">5.00€</span>
                             </div>
                             <div class="flex justify-between text-sm">
                                 <span class="text-gray-600">Envio</span>
@@ -376,7 +375,7 @@
                             <div class="flex items-start gap-2">
                                 <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
                                 <div class="text-sm text-emerald-900">
-                                    <p class="font-semibold">Envio gratis</p>
+                                    <p class="font-semibold">Envio grátis</p>
                                     <p id="free-shipping-msg">Cobertura confirmada com base na morada de entrega.</p>
                                     <span id="remaining" class="hidden">0.00€</span>
                                 </div>
@@ -388,16 +387,16 @@
                                 <span>Pagamento seguro com Stripe</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-slaté-700"></i>
-                                <span>Prazo total 24-48h apos pagamento</span>
+                                <i data-lucide="clock" class="w-4 h-4 text-slate-700"></i>
+                                <span>Prazo total 24-48h após pagamento</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="package" class="w-4 h-4 text-slaté-700"></i>
+                                <i data-lucide="package" class="w-4 h-4 text-slate-700"></i>
                                 <span>Tracking enviado por email assim que a expedicao for criada</span>
                             </div>
                             <div class="flex items-center gap-2">
-                                <i data-lucide="pen-tool" class="w-4 h-4 text-slaté-700"></i>
-                                <span>Revisao de design opcional: 5&#8364; antes da produção, sujeita aos termos de responsabilidade</span>
+                                <i data-lucide="pen-tool" class="w-4 h-4 text-slate-700"></i>
+                                <span>Revisão de design opcional: 5€ antes da produção, sujeita aos termos de responsabilidade</span>
                             </div>
                         </div>
                     </div>
@@ -431,9 +430,9 @@
                     <h4 class="text-white font-bold mb-4">Informacoes</h4>
                     <ul class="space-y-3">
                         <li><a href="/envios" class="hover:text-white transition">Envios e Entregas</a></li>
-                        <li><a href="/termos" class="hover:text-white transition">Termos e Condicoes</a></li>
+                        <li><a href="/termos" class="hover:text-white transition">Termos e Condições</a></li>
                         <li><a href="/privacidade" class="hover:text-white transition">Política de Privacidade</a></li>
-                        <li><a href="/devoluções" class="hover:text-white transition">Devolucoes</a></li>
+                        <li><a href="/devolucoes" class="hover:text-white transition">Devolucoes</a></li>
                     </ul>
                 </div>
             </div>
@@ -455,9 +454,6 @@
     <script>
         lucide.createIcons();
     </script>
-</body>
-
-</html>
 
 
 
@@ -465,3 +461,7 @@
 
 
 
+
+
+
+</body></html>
