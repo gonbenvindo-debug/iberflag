@@ -351,7 +351,7 @@ async function ensureDir(dirPath) {
 
 async function writeFile(targetPath, content) {
     await ensureDir(path.dirname(targetPath));
-    await fs.writeFile(targetPath, content, 'utf8');
+    await fs.writeFile(targetPath, String(content || '').replace(/[ \t]+$/gm, ''), 'utf8');
 }
 
 async function removeGeneratedPath(targetPath) {

@@ -487,23 +487,62 @@ function injectLanguageSwitcher() {
                 ? `/es${currentUrl.pathname === '/' ? '/' : currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
                 : `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
         const targetLocaleMeta = SiteRoutes.getLocaleMeta?.(targetLocale) || {};
+        const flagSvg = (locale) => locale === 'es'
+            ? `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="54" height="36" fill="#AA151B"/>
+                    <rect y="9" width="54" height="18" fill="#F1BF00"/>
+                    <g transform="translate(14 12)">
+                        <path d="M5 3.2h7.2v8.1c0 3-1.8 5-3.6 6.1-1.8-1.1-3.6-3.1-3.6-6.1z" fill="#D8DEE8" stroke="#7A1B16" stroke-width=".7"/>
+                        <path d="M5 3.2h3.6v5.2H5z" fill="#C60B1E"/>
+                        <path d="M8.6 3.2h3.6v5.2H8.6z" fill="#F1BF00"/>
+                        <path d="M5 8.4h3.6v4.2H5z" fill="#F1BF00"/>
+                        <path d="M8.6 8.4h3.6v4.2H8.6z" fill="#C60B1E"/>
+                        <path d="M3.9 2.5h9.4l-1.1-1.3H5z" fill="#F1BF00" stroke="#7A1B16" stroke-width=".5"/>
+                        <circle cx="5.7" cy=".8" r=".7" fill="#F1BF00"/>
+                        <circle cx="8.6" cy=".5" r=".7" fill="#F1BF00"/>
+                        <circle cx="11.5" cy=".8" r=".7" fill="#F1BF00"/>
+                        <path d="M3.7 4.4h-1.8v10.2h1.8zM15.3 4.4h-1.8v10.2h1.8z" fill="#D9A441"/>
+                    </g>
+                </svg>`
+            : `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="21.6" height="36" fill="#006A4E"/>
+                    <rect x="21.6" width="32.4" height="36" fill="#DA291C"/>
+                    <g transform="translate(21.6 18)">
+                        <circle r="7.6" fill="#F6C645" stroke="#C58A00" stroke-width=".7"/>
+                        <circle r="6.1" fill="none" stroke="#C58A00" stroke-width=".8"/>
+                        <path d="M-3.6-5h7.2v8.3c0 2.9-1.8 4.8-3.6 5.8-1.8-1-3.6-2.9-3.6-5.8z" fill="#FFFFFF" stroke="#C60B1E" stroke-width=".9"/>
+                        <path d="M-2.4-3.8h4.8v2.6h-4.8zM-2.4-.2h4.8v2.6h-4.8z" fill="#1D5DA8"/>
+                        <circle cx="-1.4" cy="-2.5" r=".45" fill="#FFFFFF"/>
+                        <circle cx="0" cy="-2.5" r=".45" fill="#FFFFFF"/>
+                        <circle cx="1.4" cy="-2.5" r=".45" fill="#FFFFFF"/>
+                        <circle cx="-1.4" cy="1.1" r=".45" fill="#FFFFFF"/>
+                        <circle cx="0" cy="1.1" r=".45" fill="#FFFFFF"/>
+                        <circle cx="1.4" cy="1.1" r=".45" fill="#FFFFFF"/>
+                        <path d="M-5.2-1.1h10.4M-1.1-7.1v14.2M-6.4 2.8l12.8-5.6M-6.4-2.8 6.4 2.8" stroke="#C58A00" stroke-width=".55" opacity=".9"/>
+                    </g>
+                </svg>`;
         const rail = document.createElement('div');
         rail.dataset.languageSwitcher = 'rail';
-        rail.className = 'language-rail';
+        rail.className = 'language-rail language-rail-navbar';
         rail.innerHTML = `
             <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
                 <span class="language-rail-track" aria-hidden="true">
                     <span class="language-rail-panel language-rail-panel-current">
-                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}"></span>
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}">${flagSvg(currentLocale)}</span>
                     </span>
                     <span class="language-rail-panel language-rail-panel-target">
-                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}"></span>
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}">${flagSvg(targetLocale)}</span>
                     </span>
                 </span>
                 <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
             </a>
         `;
-        document.body.appendChild(rail);
+        const firstDesktopNavLink = document.querySelector('nav .nav-link');
+        if (firstDesktopNavLink?.parentElement) {
+            firstDesktopNavLink.parentElement.insertBefore(rail, firstDesktopNavLink);
+        } else {
+            document.body.appendChild(rail);
+        }
     }
     window.__iberflagLanguageSwitcherInjected = true;
     return;

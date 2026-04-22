@@ -7,14 +7,20 @@
     <link rel="canonical" href="https://iberflag.com/modelos">
   <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/modelos">
   <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/modelos">
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
     <meta property="og:type" content="website">
     <meta property="og:title" content="Escolher Template - IberFlag">
     <meta property="og:description" content="Galeria de templates para acelerar a criação de designs publicitários.">
@@ -28,7 +34,7 @@
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
     <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
     <script src="/assets/js/core/design-svg.js"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260422f">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260422g">
     <style>
         :root {
             --primary: #2563eb;
@@ -219,7 +225,7 @@
                     <h1 class="text-2xl font-bold text-gray-900">Escolher Template</h1>
                     <p class="text-sm text-gray-500 mt-1" id="product-name">Personalize seu produto</p>
                 </div>
-                
+
                 <div class="search-box">
                     <iconify-icon icon="lucide:search" width="18"></iconify-icon>
                     <input type="text" id="search-templates" placeholder="Pesquisar templates...">
@@ -298,7 +304,7 @@
         // Carregar templates
         async function loadTemplates() {
             const grid = document.getElementById('templates-grid');
-            
+
             // Mostrar skeletons
             for (let i = 0; i < 6; i++) {
                 const skeleton = document.createElement('div');
@@ -360,7 +366,7 @@
                         </div>
                     </div>
                 `;
-                
+
                 // Fallback: usar templates locais
                 if (typeof TEMPLATES_DATA !== 'undefined') {
                     allTemplates = Object.values(TEMPLATES_DATA).flat();
@@ -373,7 +379,7 @@
         function renderTemplates(templates) {
             const grid = document.getElementById('templates-grid');
             const emptyState = document.getElementById('empty-state');
-            
+
             // Manter o card "em branco"
             const blankCard = grid.firstElementChild;
             grid.innerHTML = '';
@@ -457,7 +463,7 @@
             if (e.target.classList.contains('filter-btn')) {
                 document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
                 e.target.classList.add('active');
-                
+
                 currentCategory = e.target.dataset.category;
                 filterTemplates();
             }
@@ -480,7 +486,7 @@
             // Filtro por pesquisa
             if (searchTerm) {
                 const term = searchTerm.toLowerCase();
-                filtered = filtered.filter(t => 
+                filtered = filtered.filter(t =>
                     t.nome.toLowerCase().includes(term) ||
                     (t.descrição && t.descrição.toLowerCase().includes(term)) ||
                     (t.tags && t.tags.s?me(tag => tag.toLowerCase().includes(term)))

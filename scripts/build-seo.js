@@ -148,7 +148,19 @@ async function fetchCatalogProducts() {
     }
 
     if (result.error) throw result.error;
-    return Array.isArray(result.data) ? result.data : [];
+    return Array.isArray(result.data) ? result.data.map(applyCatalogTextCorrections) : [];
+}
+
+function applyCatalogTextCorrections(product) {
+    const fixText = (value) => String(value || '')
+        .replace(/Cubo publcitário/g, 'Cubo publicitário')
+        .replace(/cubo publcitário/g, 'cubo publicitário');
+
+    return {
+        ...product,
+        nome: fixText(product.nome),
+        seo_title: product.seo_title ? fixText(product.seo_title) : product.seo_title
+    };
 }
 
 function assignUniqueProductSlugs(products) {
@@ -237,7 +249,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
   <link rel="icon" type="image/svg+xml" href="/favicon-white.svg?v=20260415a">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260422f">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260422g">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -346,7 +358,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
   <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
   <script src="/assets/js/core/analytics.js?v=20260410a"></script>
-  <script src="/assets/js/core/logic.js?v=20260422c"></script>
+  <script src="/assets/js/core/logic.js?v=20260422d"></script>
   <script src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
@@ -484,7 +496,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
     const fallbackProducts = related.length > 0 ? related : productEntries.filter((candidate) => candidate.slug !== product.slug).slice(0, 4);
     const shuffledSuggestions = productEntries
         .filter((candidate) => candidate.slug !== product.slug && !fallbackProducts.some((item) => item.slug === candidate.slug))
-        .sort(() => Math.random() - 0.5)
+        .sort((left, right) => String(left.slug || '').localeCompare(String(right.slug || ''), 'pt-PT'))
         .slice(0, 4);
     const structuredData = [
         {

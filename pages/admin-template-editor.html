@@ -8,7 +8,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="/assets/js/core/design-svg.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260422f">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260422g">
     <style>
         :root {
             --ui-bg: #f3f6fb;
@@ -371,14 +371,20 @@
         }
     </style>
 
-  
-  
-  
-  
-  
-  
-  
-  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
   <link rel="alternate" hreflang="pt-PT" href="https://iberflag.com/admin-template-editor">
   <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/admin-template-editor"></head>
 
@@ -646,10 +652,10 @@
             switch (element.type) {
                 case 'text':
                     el.innerHTML = `<div style="
-                        width: 100%; 
-                        height: 100%; 
-                        display: flex; 
-                        align-items: center; 
+                        width: 100%;
+                        height: 100%;
+                        display: flex;
+                        align-items: center;
                         justify-content: ${props.textAlign === 'left' ? 'flex-start' : props.textAlign === 'right' ? 'flex-end' : 'center'};
                         font-family: ${props.fontFamily};
                         font-size: ${props.fontSize}px;
@@ -661,16 +667,16 @@
                     break;
                 case 'image':
                     el.innerHTML = `<img src="${props.src || '/assets/images/placeholder.svg'}" style="
-                        width: 100%; 
-                        height: 100%; 
+                        width: 100%;
+                        height: 100%;
                         object-fit: ${props.objectFit};
                         border-radius: ${props.borderRadius}px;
                     ">`;
                     break;
                 case 'shape':
                     el.innerHTML = `<div style="
-                        width: 100%; 
-                        height: 100%; 
+                        width: 100%;
+                        height: 100%;
                         background: ${props.fill};
                         border: ${props.strokeWidth}px solid ${props.stroke};
                         border-radius: ${props.shape === 'circle' ? '50%' : props.shape === 'rounded' ? '12px' : '0'};
@@ -679,8 +685,8 @@
                 case 'qrcode':
                     // Simplificado - na implementacao real usaria biblioteca QR
                     el.innerHTML = `<div style="
-                        width: 100%; 
-                        height: 100%; 
+                        width: 100%;
+                        height: 100%;
                         background: ${props.bgColor};
                         display: flex;
                         align-items: center;
