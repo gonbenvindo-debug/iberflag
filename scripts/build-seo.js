@@ -358,7 +358,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
   <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
   <script src="/assets/js/core/analytics.js?v=20260410a"></script>
-  <script src="/assets/js/core/logic.js?v=20260422e"></script>
+  <script src="/assets/js/core/logic.js?v=20260422f"></script>
   <script src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
