@@ -537,9 +537,9 @@ function injectLanguageSwitcher() {
                 <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
             </a>
         `;
-        const firstDesktopNavLink = document.querySelector('nav .nav-link');
-        if (firstDesktopNavLink?.parentElement) {
-            firstDesktopNavLink.parentElement.insertBefore(rail, firstDesktopNavLink);
+        const desktopCartButton = document.querySelector('nav #cart-btn');
+        if (desktopCartButton?.parentElement) {
+            desktopCartButton.parentElement.insertBefore(rail, desktopCartButton.nextSibling);
         } else {
             document.body.appendChild(rail);
         }
