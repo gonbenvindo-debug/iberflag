@@ -361,6 +361,14 @@
       "destination": "/es/index.html"
     },
     {
+      "source": "/es/produto/:slug/personalizar",
+      "destination": "/pages/personalizar.html?slug=:slug"
+    },
+    {
+      "source": "/es/encomenda/:codigo",
+      "destination": "/pages/encomenda.html?codigo=:codigo"
+    },
+    {
       "source": "/es/:path*",
       "destination": "/es/:path*/index.html"
     },
