@@ -18,6 +18,8 @@
       "personalizePath": "/produto/bandeiras-de-mesa-15-x-25-cm/personalizar",
       "preco": 34.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-de-mesa-57ffbbe884.webp",
+      "nomeEs": "Banderas de mesa (15 x 25 cm)",
+      "descricaoEs": "Banderas de mesa personalizadas para escritorios, recepciones y espacios institucionales. Aportan una presencia formal, cuidada y profesional en reuniones, ferias y oficinas.",
       "seoTitle": "Bandeiras de mesa (15 x 25 cm) | Bandeiras | IberFlag",
       "seoDescription": "Ideais para serem colocados em mesas e estantes de escritórios e escritórios, proporcionam um toque formal e profissional. Eles são muito populares como p…"
     },
@@ -31,6 +33,8 @@
       "personalizePath": "/produto/bandeiras-horizontais-tamanho-unico/personalizar",
       "preco": 19.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-horizontais-f4aa29690d.webp",
+      "nomeEs": "Banderas horizontales (tamaño único)",
+      "descricaoEs": "Banderas horizontales personalizadas para exterior, instituciones, empresas y eventos. Una solución visible para reforzar identidad de marca y comunicación en fachada.",
       "seoTitle": "Bandeiras Horizontais (Tamanho único) | Bandeiras | IberFlag",
       "seoDescription": "As bandeiras horizontais são feitas especialmente para exteriores. Indicado para instituições públicas ou para empresas que pretendem chamar a atenção ao…"
     },
@@ -44,6 +48,8 @@
       "personalizePath": "/produto/bandeiras-para-despacho-150-x-100-cm/personalizar",
       "preco": 22.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-despacho-4bf3f0bd61.webp",
+      "nomeEs": "Banderas para despacho (150 x 100 cm)",
+      "descricaoEs": "Banderas para despachos, salas institucionales y oficinas, disponibles para una presentación elegante y corporativa con impresión personalizada.",
       "seoTitle": "Bandeiras para despacho (150 x 100 cm) | Bandeiras | IberFlag",
       "seoDescription": "As bandeiras para escritórios, escritórios e salas institucionais podem ser feitas de tecido de poliéster 115 g / m2 ou tecido cetim / cetim 130 g / m2, c…"
     },
@@ -57,6 +63,8 @@
       "personalizePath": "/produto/bandeiras-para-manifestacoes-20-x-30-cm/personalizar",
       "preco": 24.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp",
+      "nomeEs": "Banderas para manifestaciones (20 x 30 cm)",
+      "descricaoEs": "Banderas de mano personalizadas para manifestaciones, campañas, eventos y acciones colectivas, fáciles de distribuir y usar en grupo.",
       "seoTitle": "Bandeiras para manifestações (20 x 30 cm) | Bandeiras | IberFlag",
       "seoDescription": "Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação e sua per…"
     },
@@ -70,6 +78,8 @@
       "personalizePath": "/produto/bandeiras-para-manifestacoes-30-x-45-cm/personalizar",
       "preco": 27.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp",
+      "nomeEs": "Banderas para manifestaciones (30 x 45 cm)",
+      "descricaoEs": "Banderas de mano personalizadas para manifestaciones, campañas, eventos y acciones colectivas, con formato cómodo y buena visibilidad.",
       "seoTitle": "Bandeiras para manifestações (30 x 45 cm) | Bandeiras | IberFlag",
       "seoDescription": "Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação e sua per…"
     },
@@ -83,6 +93,8 @@
       "personalizePath": "/produto/bandeiras-para-manifestacoes-45-x-70-cm/personalizar",
       "preco": 29.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp",
+      "nomeEs": "Banderas para manifestaciones (45 x 70 cm)",
+      "descricaoEs": "Banderas personalizadas para manifestaciones y eventos con mayor presencia visual, pensadas para comunicar mensajes de forma clara en espacios públicos.",
       "seoTitle": "Bandeiras para manifestações (45 x 70 cm) | Bandeiras | IberFlag",
       "seoDescription": "Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação e sua per…"
     },
@@ -96,6 +108,8 @@
       "personalizePath": "/produto/bandeiras-para-manifestacoes-70-x-100-cm/personalizar",
       "preco": 32.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp",
+      "nomeEs": "Banderas para manifestaciones (70 x 100 cm)",
+      "descricaoEs": "Banderas de gran visibilidad para manifestaciones, campañas y actos públicos, preparadas para destacar mensajes, símbolos o identidad visual.",
       "seoTitle": "Bandeiras para manifestações (70 x 100 cm) | Bandeiras | IberFlag",
       "seoDescription": "Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação e sua per…"
     },
@@ -109,6 +123,8 @@
       "personalizePath": "/produto/bandeiras-para-manifestacoes-100-x-150-cm/personalizar",
       "preco": 34.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-para-manifestacoes-22d759111a.webp",
+      "nomeEs": "Banderas para manifestaciones (100 x 150 cm)",
+      "descricaoEs": "Banderas personalizadas de gran formato para manifestaciones, campañas y eventos donde se necesita impacto visual y lectura a distancia.",
       "seoTitle": "Bandeiras para manifestações (100 x 150 cm) | Bandeiras | IberFlag",
       "seoDescription": "Cole bandeiras ou bandeiras de mão. Eles são projetados como um elemento individual para que cada participante possa expressar sua reivindicação e sua per…"
     },
@@ -122,6 +138,8 @@
       "personalizePath": "/produto/bandeiras-de-parede-150-x-100-cm/personalizar",
       "preco": 19.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-de-parede-8e6293fb75.webp",
+      "nomeEs": "Banderas de pared (150 x 100 cm)",
+      "descricaoEs": "Banderas de pared personalizadas para fachadas, interiores corporativos y espacios institucionales, ideales para reforzar identidad visual.",
       "seoTitle": "Bandeiras de parede (150 x 100 cm) | Bandeiras | IberFlag",
       "seoDescription": "Este tipo de bandeiras são visíveis nas fachadas dos edifícios públicos com bandeiras institucionais e de empresas como sinal publicitário dos seus estabe…"
     },
@@ -135,6 +153,8 @@
       "personalizePath": "/produto/bandeiras-verticais-tamanho-unico/personalizar",
       "preco": 22.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-verticais-0758ff2c44.webp",
+      "nomeEs": "Banderas verticales (tamaño único)",
+      "descricaoEs": "Banderas verticales personalizadas para acciones comerciales, comunicación exterior y refuerzo de imagen corporativa con lectura clara.",
       "seoTitle": "Bandeiras Verticais (Tamanho único) | Bandeiras | IberFlag",
       "seoDescription": "Os banners publicitários verticais são utilizados por muitas empresas para a realização de diversas atividades comerciais, como o reforço da imagem corpor…"
     },
@@ -148,6 +168,8 @@
       "personalizePath": "/produto/bandeirolas-esportivas-20-x-27-cm/personalizar",
       "preco": 29.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeirolas-esportivas/bandeirolas-esportivas-a759c917ee.webp",
+      "nomeEs": "Banderines deportivos (20 x 27 cm)",
+      "descricaoEs": "Banderines deportivos personalizados para clubes, eventos, premios y merchandising, con formato clásico para escudos, emblemas y mensajes institucionales.",
       "seoTitle": "Bandeirolas esportivas (20 x 27 cm) | Bandeirolas | IberFlag",
       "seoDescription": "As bandeirolas se tornaram um formato clássico para representar escudos ou emblemas de diferentes organizações. Nossas bandeirolas esportivas retangulares…"
     },
@@ -161,6 +183,8 @@
       "personalizePath": "/produto/tenda-personalizada-5-x-1-m/personalizar",
       "preco": 257.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
+      "nomeEs": "Carpa personalizada (5 x 1 m)",
+      "descricaoEs": "Carpa publicitaria personalizada para ferias, eventos y activaciones de marca. Una solución visible y funcional para presencia exterior.",
       "seoTitle": "Tenda personalizada (5 x 1 m) | Tendas | IberFlag",
       "seoDescription": "As tendas publicitárias podem ser utilizadas como stands em feiras e eventos, sendo um dos formatos publicitários de maior impacto visual. Todas as peças…"
     },
@@ -174,6 +198,8 @@
       "personalizePath": "/produto/tenda-personalizada-3-x-3-m/personalizar",
       "preco": 259.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
+      "nomeEs": "Carpa personalizada (3 x 3 m)",
+      "descricaoEs": "Carpa publicitaria personalizada para stands, ferias y eventos, con formato versátil para crear una zona de marca visible y protegida.",
       "seoTitle": "Tenda personalizada (3 x 3 m) | Tendas | IberFlag",
       "seoDescription": "As tendas publicitárias podem ser utilizadas como stands em feiras e eventos, sendo um dos formatos publicitários de maior impacto visual. Todas as peças…"
     },
@@ -187,6 +213,8 @@
       "personalizePath": "/produto/tenda-personalizada-3-x-4-m/personalizar",
       "preco": 262.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
+      "nomeEs": "Carpa personalizada (3 x 4 m)",
+      "descricaoEs": "Carpa publicitaria personalizada para eventos y acciones promocionales que requieren más presencia visual y espacio operativo.",
       "seoTitle": "Tenda personalizada (3 x 4 m) | Tendas | IberFlag",
       "seoDescription": "As tendas publicitárias podem ser utilizadas como stands em feiras e eventos, sendo um dos formatos publicitários de maior impacto visual. Todas as peças…"
     },
@@ -200,6 +228,8 @@
       "personalizePath": "/produto/tenda-personalizada-3-x-6-m/personalizar",
       "preco": 264.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
+      "nomeEs": "Carpa personalizada (3 x 6 m)",
+      "descricaoEs": "Carpa publicitaria personalizada de gran formato para eventos, ferias y activaciones donde se necesita cobertura amplia y máxima visibilidad.",
       "seoTitle": "Tenda personalizada (3 x 6 m) | Tendas | IberFlag",
       "seoDescription": "As tendas publicitárias podem ser utilizadas como stands em feiras e eventos, sendo um dos formatos publicitários de maior impacto visual. Todas as peças…"
     },
@@ -213,6 +243,8 @@
       "personalizePath": "/produto/fly-banner-drop-75-x-194-cm/personalizar",
       "preco": 69.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp",
+      "nomeEs": "Fly Banner Drop (75 x 194 cm)",
+      "descricaoEs": "Fly Banner Drop personalizado con forma de gota, ideal para eventos, exterior, promociones y puntos de venta con presencia dinámica.",
       "seoTitle": "Fly Banner Drop (75 x 194 cm) | Fly Banners | IberFlag",
       "seoDescription": "O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida. Esta for…"
     },
@@ -226,6 +258,8 @@
       "personalizePath": "/produto/fly-banner-drop-92-x-228-cm/personalizar",
       "preco": 72.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp",
+      "nomeEs": "Fly Banner Drop (92 x 228 cm)",
+      "descricaoEs": "Fly Banner Drop personalizado con formato de gota y mayor altura, pensado para destacar mensajes de marca en exterior y eventos.",
       "seoTitle": "Fly Banner Drop (92 x 228 cm) | Fly Banners | IberFlag",
       "seoDescription": "O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida. Esta for…"
     },
@@ -239,6 +273,8 @@
       "personalizePath": "/produto/fly-banner-drop-103-x-298-cm/personalizar",
       "preco": 74.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp",
+      "nomeEs": "Fly Banner Drop (103 x 298 cm)",
+      "descricaoEs": "Fly Banner Drop personalizado de gran visibilidad, adecuado para campañas, activaciones y espacios exteriores con tráfico de personas.",
       "seoTitle": "Fly Banner Drop (103 x 298 cm) | Fly Banners | IberFlag",
       "seoDescription": "O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida. Esta for…"
     },
@@ -252,6 +288,8 @@
       "personalizePath": "/produto/fly-banner-drop-132-x-352-cm/personalizar",
       "preco": 77.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp",
+      "nomeEs": "Fly Banner Drop (132 x 352 cm)",
+      "descricaoEs": "Fly Banner Drop personalizado de gran formato para reforzar presencia de marca en eventos, accesos, promociones y zonas exteriores.",
       "seoTitle": "Fly Banner Drop (132 x 352 cm) | Fly Banners | IberFlag",
       "seoDescription": "O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida. Esta for…"
     },
@@ -265,6 +303,8 @@
       "personalizePath": "/produto/fly-banner-drop-145-x-446-cm/personalizar",
       "preco": 91.5,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-drop-32bef41264.webp",
+      "nomeEs": "Fly Banner Drop (145 x 446 cm)",
+      "descricaoEs": "Fly Banner Drop personalizado extra alto para máxima presencia visual en exterior, eventos, campañas y accesos principales.",
       "seoTitle": "Fly Banner Drop (145 x 446 cm) | Fly Banners | IberFlag",
       "seoDescription": "O Drop Fly Banner, também conhecido como Teardrop Fly Banner ou Beach Flag TearDrop, é característico por sua forma de lágrima ou gota invertida. Esta for…"
     },
@@ -278,6 +318,8 @@
       "personalizePath": "/produto/fly-banner-retangular-70-x-180-cm/personalizar",
       "preco": 82.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-retangular-41989ea3eb.webp",
+      "nomeEs": "Fly Banner rectangular (70 x 180 cm)",
+      "descricaoEs": "Fly Banner rectangular personalizado con superficie visual amplia, ideal para mensajes promocionales claros en exterior, ferias y puntos de venta.",
       "seoTitle": "Fly Banner Retangular (70 x 180 cm) | Fly Banners | IberFlag",
       "seoDescription": "É um dos modelos mais clássicos de Fly Banners usados em publicidade. Uma de suas principais vantagens é que oferece uma maior superfície visual para o de…"
     },
@@ -291,6 +333,8 @@
       "personalizePath": "/produto/fly-banner-retangular-70-x-280-cm/personalizar",
       "preco": 84.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-retangular-41989ea3eb.webp",
+      "nomeEs": "Fly Banner rectangular (70 x 280 cm)",
+      "descricaoEs": "Fly Banner rectangular personalizado de mayor altura para campañas que necesitan lectura vertical, presencia de marca y montaje sencillo.",
       "seoTitle": "Fly Banner Retangular (70 x 280 cm) | Fly Banners | IberFlag",
       "seoDescription": "É um dos modelos mais clássicos de Fly Banners usados em publicidade. Uma de suas principais vantagens é que oferece uma maior superfície visual para o de…"
     },
@@ -304,6 +348,8 @@
       "personalizePath": "/produto/fly-banner-surf-55-x-226-cm/personalizar",
       "preco": 69.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-surf-c42586901f.webp",
+      "nomeEs": "Fly Banner Surf (55 x 226 cm)",
+      "descricaoEs": "Fly Banner Surf personalizado con forma de vela, ligero y llamativo para campañas, eventos, exterior y acciones promocionales.",
       "seoTitle": "Fly Banner Surf (55 x 226 cm) | Fly Banners | IberFlag",
       "seoDescription": "Fly Banner Surf, também conhecido como Surf tipo Sail ou Beach Flag, é um Fly Banner com sua bandeira em formato de prancha. Uma de suas principais vantag…"
     },
@@ -317,6 +363,8 @@
       "personalizePath": "/produto/fly-banner-surf-65-x-272-cm/personalizar",
       "preco": 72.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-surf-c42586901f.webp",
+      "nomeEs": "Fly Banner Surf (65 x 272 cm)",
+      "descricaoEs": "Fly Banner Surf personalizado con presencia vertical y diseño dinámico, adecuado para eventos, promociones y señalización exterior.",
       "seoTitle": "Fly Banner Surf (65 x 272 cm) | Fly Banners | IberFlag",
       "seoDescription": "Fly Banner Surf, também conhecido como Surf tipo Sail ou Beach Flag, é um Fly Banner com sua bandeira em formato de prancha. Uma de suas principais vantag…"
     },
@@ -330,6 +378,8 @@
       "personalizePath": "/produto/fly-banner-surf-75-5-x-351-cm/personalizar",
       "preco": 74.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-surf-c42586901f.webp",
+      "nomeEs": "Fly Banner Surf (75.5 x 351 cm)",
+      "descricaoEs": "Fly Banner Surf personalizado de gran altura para campañas con fuerte presencia visual en exterior, ferias y activaciones de marca.",
       "seoTitle": "Fly Banner Surf (75.5 x 351 cm) | Fly Banners | IberFlag",
       "seoDescription": "Fly Banner Surf, também conhecido como Surf tipo Sail ou Beach Flag, é um Fly Banner com sua bandeira em formato de prancha. Uma de suas principais vantag…"
     },
@@ -343,6 +393,8 @@
       "personalizePath": "/produto/fly-banner-surf-75-5-x-417-cm/personalizar",
       "preco": 77.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-surf-c42586901f.webp",
+      "nomeEs": "Fly Banner Surf (75.5 x 417 cm)",
+      "descricaoEs": "Fly Banner Surf personalizado extra visible para eventos y espacios exteriores donde la marca necesita destacar a distancia.",
       "seoTitle": "Fly Banner Surf (75.5 x 417 cm) | Fly Banners | IberFlag",
       "seoDescription": "Fly Banner Surf, também conhecido como Surf tipo Sail ou Beach Flag, é um Fly Banner com sua bandeira em formato de prancha. Uma de suas principais vantag…"
     },
@@ -356,6 +408,8 @@
       "personalizePath": "/produto/fly-banner-surf-90-x-516-cm/personalizar",
       "preco": 79.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/fly-banner-surf-c42586901f.webp",
+      "nomeEs": "Fly Banner Surf (90 x 516 cm)",
+      "descricaoEs": "Fly Banner Surf personalizado de formato máximo para campañas exteriores, accesos, eventos y activaciones con gran impacto visual.",
       "seoTitle": "Fly Banner Surf (90 x 516 cm) | Fly Banners | IberFlag",
       "seoDescription": "Fly Banner Surf, também conhecido como Surf tipo Sail ou Beach Flag, é um Fly Banner com sua bandeira em formato de prancha. Uma de suas principais vantag…"
     },
@@ -369,6 +423,8 @@
       "personalizePath": "/produto/cubo-publicitario-tamanho-unico/personalizar",
       "preco": 102.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/cubo-publicitario/cubo-publcitario-9c2fbc75ad.webp",
+      "nomeEs": "Cubo publicitario (tamaño único)",
+      "descricaoEs": "Cubo publicitario personalizado, fácil de montar y desmontar, con tejido personalizable para campañas promocionales, eventos y puntos de venta.",
       "seoTitle": "Cubo publicitário (Tamanho único) | Cubos | IberFlag",
       "seoDescription": "O cubo publicitário é um assento que pode ser montado e desmontado em menos de um minuto sem ferramentas. O tecido é totalmente personalizável em todos os…"
     },
@@ -382,6 +438,8 @@
       "personalizePath": "/produto/mastro-de-aluminio-6-metros-tamanho-unico/personalizar",
       "preco": 54.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/mastros/mastro-de-aluminio-6-metros-8d945ec7ad.webp",
+      "nomeEs": "Mástil de aluminio (6 metros) (tamaño único)",
+      "descricaoEs": "Mástil de aluminio para banderas exteriores, indicado para uso institucional y publicitario con resistencia y buena visibilidad.",
       "seoTitle": "Mastro de Alumínio (6 metros) (Tamanho único) | Mastros | IberFlag",
       "seoDescription": "Os mastros de bandeiras exteriores são feitos de alumínio. Especialmente indicado para utilização no exterior devido à sua composição, resistente às intem…"
     },
@@ -395,6 +453,8 @@
       "personalizePath": "/produto/photocall-tamanho-unico/personalizar",
       "preco": 50,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/photocall/photocall-469c5105b9.webp",
+      "nomeEs": "Photocall (tamaño único)",
+      "descricaoEs": "Photocall extensible personalizado con todo lo necesario para instalación y montaje, ideal para eventos, conferencias, marcas y zonas de fotografía.",
       "seoTitle": "Photocall (Tamanho único) | Photocalls | IberFlag",
       "seoDescription": "Pacote completo de Photocall extensível com todo o necessário para a instalação e a montagem: – Tecido 100% poliéster (250 g/m²), impresso num dos lados c…"
     },
@@ -408,6 +468,8 @@
       "personalizePath": "/produto/mini-fly-banner-tamanho-unico/personalizar",
       "preco": 72.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/fly-banner/mini-fly-banner-559a5ec5e8.webp",
+      "nomeEs": "Mini Fly Banner (tamaño único)",
+      "descricaoEs": "Mini Fly Banner personalizado, una versión compacta y original de las banderas de playa para mostradores, recepciones y acciones promocionales.",
       "seoTitle": "Mini Fly Banner (Tamanho único) | Fly Banners | IberFlag",
       "seoDescription": "Os Mini Fly Banners são miniaturas das “Bandeiras de Praia” com um tamanho menor, o que os torna originais suportes publicitários, mais baratos, mais leve…"
     },
@@ -421,6 +483,8 @@
       "personalizePath": "/produto/x-banner-80-x-180-cm/personalizar",
       "preco": 54.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/x-banner/x-banner-c20defa540.webp",
+      "nomeEs": "X-Banner (80 x 180 cm)",
+      "descricaoEs": "X-Banner personalizado con soporte incluido, ligero y práctico para campañas interiores, promociones, escaparates y presentaciones.",
       "seoTitle": "X-Banner (80 x 180 cm) | X-Banners | IberFlag",
       "seoDescription": "Pacote completo de X-Banner, com tudo o que é necessário para a instalação e montagem. Inclui: – Suporte impresso. Tela Frontlit 510 g/m². Disponível no t…"
     },
@@ -434,6 +498,8 @@
       "personalizePath": "/produto/roll-up-85-x-200-cm/personalizar",
       "preco": 67.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/roll-up/roll-up-055eb83162.webp",
+      "nomeEs": "Roll Up (85 x 200 cm)",
+      "descricaoEs": "Roll Up personalizado enrollable con todo lo necesario para montaje, ideal para ferias, tiendas, presentaciones y comunicación interior.",
       "seoTitle": "Roll Up (85 x 200 cm) | Roll Ups | IberFlag",
       "seoDescription": "Banner enrolável com tudo o que é necessário para o montar. Inclui: – Suporte impresso: Banner para animais de estimação 340 g/m². Disponível em 85×200 cm…"
     },
@@ -447,6 +513,8 @@
       "personalizePath": "/produto/photocall-286-x-217-cm/personalizar",
       "preco": 164.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/photocall/photocall-471df28066.webp",
+      "nomeEs": "Photocall (286 x 217 cm)",
+      "descricaoEs": "Photocall personalizado en lona Frontlit de PVC, preparado para instalación y montaje en eventos, stands y acciones de marca.",
       "seoTitle": "Photocall (286 x 217 cm) | Photocalls | IberFlag",
       "seoDescription": "Pack completo com tudo o necessário para a sua instalação e montagem: Lona Frontlit em PVC de 510 g/m² impressa de um lado. Dimensões: 286 x 217 cm. Taman…"
     },
@@ -460,6 +528,8 @@
       "personalizePath": "/produto/wall-banner-60-x-230-cm/personalizar",
       "preco": 70,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp",
+      "nomeEs": "Wall Banner (60 x 230 cm)",
+      "descricaoEs": "Wall Banner personalizado de doble cara, ligero y desmontable, ideal para eventos, exposiciones y puntos de venta.",
       "seoTitle": "Wall Banner (60 x 230 cm) | Wall Banners | IberFlag",
       "seoDescription": "Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 60 x 230 cm"
     },
@@ -473,6 +543,8 @@
       "personalizePath": "/produto/wall-banner-90-x-230-cm/personalizar",
       "preco": 67.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp",
+      "nomeEs": "Wall Banner (90 x 230 cm)",
+      "descricaoEs": "Wall Banner personalizado de doble cara con formato versátil para eventos, exposiciones, campañas interiores y puntos de venta.",
       "seoTitle": "Wall Banner (90 x 230 cm) | Wall Banners | IberFlag",
       "seoDescription": "Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 90 x 230 cm"
     },
@@ -486,6 +558,8 @@
       "personalizePath": "/produto/wall-banner-120-x-230-cm/personalizar",
       "preco": 69.9,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp",
+      "nomeEs": "Wall Banner (120 x 230 cm)",
+      "descricaoEs": "Wall Banner personalizado de doble cara con mayor presencia visual para eventos, exposiciones, ferias y puntos de venta.",
       "seoTitle": "Wall Banner (120 x 230 cm) | Wall Banners | IberFlag",
       "seoDescription": "Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 120 x 230 cm"
     },
@@ -499,6 +573,8 @@
       "personalizePath": "/produto/wall-banner-150-x-230-cm/personalizar",
       "preco": 72.4,
       "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/wall-banner/wall-banner-a0e113e431.webp",
+      "nomeEs": "Wall Banner (150 x 230 cm)",
+      "descricaoEs": "Wall Banner personalizado de gran formato, doble cara y desmontable, pensado para eventos, exposiciones y comunicación de marca.",
       "seoTitle": "Wall Banner (150 x 230 cm) | Wall Banners | IberFlag",
       "seoDescription": "Display de dupla face, leve e desmontável — uma solução ideal e elegante para eventos, exposições e pontos de venda. Tamanho: 150 x 230 cm"
     }

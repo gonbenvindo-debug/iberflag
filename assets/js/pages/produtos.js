@@ -9,6 +9,12 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function i18nProduct(product) {
+    return window.IberFlagI18n?.localizeProduct
+        ? window.IberFlagI18n.localizeProduct(product)
+        : product;
+}
+
 let allProducts = [];
 let filteredProducts = [];
 let currentCategory = 'all';
@@ -232,7 +238,9 @@ function renderProductsGrid(products) {
 
     clampCurrentPage(products.length);
     const startIndex = (currentPage - 1) * PRODUCTS_PER_PAGE;
-    const paginatedProducts = products.slice(startIndex, startIndex + PRODUCTS_PER_PAGE);
+    const paginatedProducts = products
+        .slice(startIndex, startIndex + PRODUCTS_PER_PAGE)
+        .map(i18nProduct);
 
     productsGrid.classList.remove('hidden');
     if (emptyState) {

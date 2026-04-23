@@ -5,6 +5,13 @@ const cheerio = require('cheerio');
 const SiteRoutes = require('../assets/js/core/site-routes.js');
 const ES_STATIC = require('../data/i18n/es-static.json');
 const ES_CATALOG = require('../data/i18n/es-catalog.json');
+let GENERATED_MANIFEST = { products: [], categories: [] };
+
+try {
+    GENERATED_MANIFEST = require('../assets/js/generated/catalog-seo-manifest.js');
+} catch {
+    GENERATED_MANIFEST = { products: [], categories: [] };
+}
 
 const ROOT_DIR = path.resolve(__dirname, '..');
 const SOURCE_PAGES_DIR = path.join(ROOT_DIR, 'pages');
@@ -136,7 +143,18 @@ const TEXT_REPLACEMENTS = (Array.isArray(ES_STATIC.replacements) ? ES_STATIC.rep
     ['para ajudar', 'para ayudar'],
     ['perguntas frequentes', 'preguntas frecuentes']
 ]).slice().sort((left, right) => String(right[0] || '').length - String(left[0] || '').length);
-const PRODUCT_TRANSLATIONS = ES_CATALOG.products || {};
+const PRODUCT_TRANSLATIONS = (() => {
+    const merged = { ...(ES_CATALOG.products || {}) };
+    (Array.isArray(GENERATED_MANIFEST.products) ? GENERATED_MANIFEST.products : []).forEach((product) => {
+        if (!product?.slug) return;
+        merged[product.slug] = {
+            ...(merged[product.slug] || {}),
+            ...(product.nomeEs ? { name: product.nomeEs } : {}),
+            ...(product.descricaoEs ? { description: product.descricaoEs } : {})
+        };
+    });
+    return merged;
+})();
 const CATEGORY_TRANSLATIONS = ES_CATALOG.categories || {};
 
 const ATTRIBUTE_TRANSLATIONS = {
@@ -279,6 +297,12 @@ function catalogSlugFromCanonical(canonicalPath, prefix) {
     return match ? decodeURIComponent(match[1]) : '';
 }
 
+function catalogSlugFromHref(value, prefix) {
+    const { path: pathname } = splitUrl(value);
+    const match = String(pathname || '').match(new RegExp(`^/(?:es/)?${prefix}/([^/]+)$`, 'i'));
+    return match ? decodeURIComponent(match[1]) : '';
+}
+
 function productTranslationForPath(canonicalPath) {
     const slug = catalogSlugFromCanonical(canonicalPath, 'produto');
     return slug ? PRODUCT_TRANSLATIONS[slug] || null : null;
@@ -333,6 +357,62 @@ function updateJsonLdForCatalog($, productTranslation, categoryTranslation) {
     });
 }
 
+function replaceSupportSubject(href, localizedName) {
+    const raw = String(href || '').trim();
+    if (!raw || !localizedName) return href;
+
+    const [base, query = ''] = raw.split('?');
+    const params = new URLSearchParams(query);
+    if (!params.has('assunto')) {
+        return href;
+    }
+
+    params.set('assunto', localizedName);
+    const nextQuery = params.toString();
+    return nextQuery ? `${base}?${nextQuery}` : base;
+}
+
+function localizeProductCards($) {
+    $('article').each((_, element) => {
+        const card = $(element);
+        const primaryLink = card.find('a[href*="/produto/"]').first();
+        if (primaryLink.length === 0) return;
+
+        const translation = PRODUCT_TRANSLATIONS[catalogSlugFromHref(primaryLink.attr('href'), 'produto')];
+        if (!translation) return;
+
+        const localizedName = String(translation.name || '').trim();
+        const localizedDescription = String(translation.description || '').trim();
+
+        if (card.attr('data-name') && localizedName) {
+            card.attr('data-name', localizedName.toLowerCase());
+        }
+
+        if (localizedName) {
+            const image = card.find('img[alt]').first();
+            if (image.length > 0) {
+                image.attr('alt', localizedName);
+            }
+
+            const titleLink = card.find('h2 a, h3 a').first();
+            if (titleLink.length > 0) {
+                titleLink.text(localizedName);
+            }
+
+            card.find('a[data-product-name]').each((__, linkElement) => {
+                $(linkElement).attr('data-product-name', localizedName);
+            });
+        }
+
+        if (localizedDescription) {
+            const descriptionNode = card.find('p.text-slate-600').first();
+            if (descriptionNode.length > 0) {
+                descriptionNode.text(localizedDescription);
+            }
+        }
+    });
+}
+
 function applyCatalogTranslations($, canonicalPath) {
     const productTranslation = productTranslationForPath(canonicalPath);
     const categoryTranslation = categoryTranslationForPath(canonicalPath);
@@ -348,7 +428,33 @@ function applyCatalogTranslations($, canonicalPath) {
         updateMeta($, 'meta[name="twitter:description"]', description);
         $('body').attr('data-product-name', productTranslation.name);
         $('h1').first().text(productTranslation.name);
-        $('[data-product-name]').attr('data-product-name', productTranslation.name);
+        $('a[data-personalize-link]').attr('data-product-name', productTranslation.name);
+
+        const detailParagraph = $('p').filter((_, element) => {
+            const className = $(element).attr('class') || '';
+            return className.includes('text-[0.95rem]') && className.includes('leading-7') && className.includes('text-slate-600');
+        }).first();
+        if (detailParagraph.length > 0 && productTranslation.description) {
+            detailParagraph.text(productTranslation.description);
+        }
+
+        const supportLink = $('.product-quick-links a[href*="/contacto"]').first();
+        if (supportLink.length > 0) {
+            supportLink.attr('href', replaceSupportSubject(supportLink.attr('href'), productTranslation.name));
+        }
+
+        const relatedHeading = $('h2').filter((_, element) => $(element).text().trim() === 'Productos relacionados').first();
+        if (relatedHeading.length > 0) {
+            const relatedEyebrow = relatedHeading.prevAll('p').first();
+            const relatedSummary = relatedHeading.nextAll('p').first();
+            if (relatedEyebrow.length > 0) {
+                relatedEyebrow.text('Siga explorando');
+            }
+            if (relatedSummary.length > 0) {
+                relatedSummary.text(`Vea más modelos de la categoría ${(categoryTranslation?.label || translateText('Bandeiras')).trim()} y compare formatos, tamaños y precios.`);
+            }
+        }
+
         $('img[alt]').each((_, element) => {
             const node = $(element);
             const value = node.attr('alt') || '';
@@ -370,6 +476,7 @@ function applyCatalogTranslations($, canonicalPath) {
         $('h1').first().text(categoryTranslation.label);
     }
 
+    localizeProductCards($);
     updateJsonLdForCatalog($, productTranslation, categoryTranslation);
 }
 

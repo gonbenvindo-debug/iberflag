@@ -9,6 +9,7 @@ const crypto = require('crypto');
 const { createClient } = require('@supabase/supabase-js');
 const cheerio = require('cheerio');
 const sharp = require('sharp');
+const ES_CATALOG = require('../data/i18n/es-catalog.json');
 
 const SUPPLIER_BASE_URL = 'https://www.beachflagscatalog.com';
 const SUPPLIER_WP_PAGES_URL = `${SUPPLIER_BASE_URL}/wp-json/wp/v2/pages`;
@@ -465,6 +466,23 @@ function buildDescription(baseDescription, sizeLabel) {
     return merged.slice(0, 1900);
 }
 
+function resolveSpanishCopy(productName) {
+    const rawSlug = slugify(productName);
+    const normalizedSlug = rawSlug === 'tenda-personalizada-5-x-1-cm'
+        ? 'tenda-personalizada-5-x-1-m'
+        : rawSlug === 'tenda-personalizada-3-x-4-cm'
+            ? 'tenda-personalizada-3-x-4-m'
+            : rawSlug === 'cubo-publcitario-tamanho-unico'
+                ? 'cubo-publicitario-tamanho-unico'
+                : rawSlug;
+
+    const translation = ES_CATALOG?.products?.[normalizedSlug] || null;
+    return {
+        nome_es: translation?.name || null,
+        descricao_es: translation?.description || null
+    };
+}
+
 function buildProductsFromPage(page, parsedPage) {
     const baseName = sanitizeLongText(page?.title?.rendered || page?.slug || 'Produto');
     const category = normalizeCategoryFromPage(page);
@@ -475,9 +493,13 @@ function buildProductsFromPage(page, parsedPage) {
             ? `${baseName} (Tamanho único)`
             : `${baseName} (${sizeLabel})`;
 
+        const esCopy = resolveSpanishCopy(finalName);
+
         return {
             nome: finalName,
+            nome_es: esCopy.nome_es,
             descricao: buildDescription(parsedPage.baseDescription, sizeLabel),
+            descricao_es: esCopy.descricao_es,
             preco: 0,
             categoria: category,
             destaque: false,

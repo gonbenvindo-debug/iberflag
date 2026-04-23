@@ -132,13 +132,19 @@ function resolveSupabaseConfig() {
 async function fetchCatalogProducts() {
     const { url, anonKey } = resolveSupabaseConfig();
     const client = createClient(url, anonKey);
-    const baseQuery = client
+    let result = await client
         .from('produtos')
-        .select('id, nome, descricao, preco, categoria, imagem, destaque, ativo, created_at, updated_at, slug, seo_title, seo_description')
+        .select('id, nome, nome_es, descricao, descricao_es, preco, categoria, imagem, destaque, ativo, created_at, updated_at, slug, seo_title, seo_description')
         .eq('ativo', true)
         .order('id', { ascending: true });
 
-    let result = await baseQuery;
+    if (result.error?.code === '42703') {
+        result = await client
+            .from('produtos')
+            .select('id, nome, descricao, preco, categoria, imagem, destaque, ativo, created_at, updated_at, slug, seo_title, seo_description')
+            .eq('ativo', true)
+            .order('id', { ascending: true });
+    }
 
     if (result.error?.code === '42703') {
         result = await client
@@ -171,22 +177,27 @@ function assignUniqueProductSlugs(products) {
         const sourceName = String(product.nome || '').trim();
         let correctedSlug = sourceSlug;
         let correctedName = sourceName;
+        let correctedNameEs = String(product.nome_es || '').trim();
 
         if (sourceSlug === 'tenda-personalizada-5-x-1-cm' || /\(5 x 1 cm\)/i.test(sourceName)) {
             correctedSlug = 'tenda-personalizada-5-x-1-m';
             correctedName = 'Tenda personalizada (5 x 1 m)';
+            if (!correctedNameEs) correctedNameEs = 'Carpa personalizada (5 x 1 m)';
         } else if (sourceSlug === 'tenda-personalizada-3-x-4-cm' || /\(3 x 4 cm\)/i.test(sourceName)) {
             correctedSlug = 'tenda-personalizada-3-x-4-m';
             correctedName = 'Tenda personalizada (3 x 4 m)';
+            if (!correctedNameEs) correctedNameEs = 'Carpa personalizada (3 x 4 m)';
         } else if (sourceSlug === 'cubo-publcitario-tamanho-unico' || /cubo publcit/i.test(sourceName)) {
             correctedSlug = 'cubo-publicitario-tamanho-unico';
             correctedName = 'Cubo publicitário (Tamanho único)';
+            if (!correctedNameEs) correctedNameEs = 'Cubo publicitario (tamaño único)';
         }
 
         const correctedProduct = {
             ...product,
             slug: correctedSlug,
-            nome: correctedName
+            nome: correctedName,
+            nome_es: correctedNameEs || null
         };
 
         const baseSlug = SiteRoutes.inferProductSlug(correctedProduct);
@@ -986,6 +997,8 @@ function renderCatalogManifest(products, categories) {
             personalizePath: product.personalizePath,
             preco: Number(product.preco || 0),
             imagem: product.imageUrl,
+            nomeEs: product.nome_es || null,
+            descricaoEs: product.descricao_es || null,
             seoTitle: product.seo_title,
             seoDescription: product.seo_description
         })),

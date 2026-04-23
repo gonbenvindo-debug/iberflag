@@ -79,23 +79,43 @@
             return product;
         }
 
+        const dbName = String(product.nome_es || product.nomeEs || '').trim();
+        const dbDescription = String(product.descricao_es || product.descricaoEs || '').trim();
         const translation = findProductTranslation(product);
+        if (!translation && (dbName || dbDescription)) {
+            return {
+                ...product,
+                nome: dbName || product.nome,
+                name: dbName || product.name || product.nome,
+                descricao: dbDescription || product.descricao,
+                description: dbDescription || product.description || product.descricao,
+                seoTitle: translateText(product.seoTitle || product.seo_title || dbName || ''),
+                seo_title: translateText(product.seo_title || product.seoTitle || dbName || ''),
+                seoDescription: translateText(product.seoDescription || product.seo_description || dbDescription || ''),
+                seo_description: translateText(product.seo_description || product.seoDescription || dbDescription || '')
+            };
+        }
+
         if (!translation) {
             return {
                 ...product,
-                nome: translateText(product.nome || product.name || ''),
-                name: translateText(product.name || product.nome || ''),
+                nome: translateText(dbName || product.nome || product.name || ''),
+                name: translateText(dbName || product.name || product.nome || ''),
+                descricao: translateText(dbDescription || product.descricao || product.description || ''),
+                description: translateText(dbDescription || product.description || product.descricao || ''),
                 seoTitle: translateText(product.seoTitle || product.seo_title || ''),
-                seoDescription: translateText(product.seoDescription || product.seo_description || '')
+                seoDescription: translateText(product.seoDescription || product.seo_description || ''),
+                seo_title: translateText(product.seo_title || product.seoTitle || ''),
+                seo_description: translateText(product.seo_description || product.seoDescription || '')
             };
         }
 
         return {
             ...product,
-            nome: translation.name || product.nome,
-            name: translation.name || product.name || product.nome,
-            descricao: translation.description || product.descricao,
-            description: translation.description || product.description || product.descricao,
+            nome: dbName || translation.name || product.nome,
+            name: dbName || translation.name || product.name || product.nome,
+            descricao: dbDescription || translation.description || product.descricao,
+            description: dbDescription || translation.description || product.description || product.descricao,
             seoTitle: translation.seoTitle || product.seoTitle,
             seo_title: translation.seoTitle || product.seo_title,
             seoDescription: translation.seoDescription || product.seoDescription,

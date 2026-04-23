@@ -1408,15 +1408,26 @@ if (productForm) {
             return;
         }
 
+        const productNomeField = document.getElementById('product-nome');
+        const productNomeEsField = document.getElementById('product-nome-es');
+        const productDescricaoField = document.getElementById('product-descricao') || document.getElementById('product-descrição');
+        const productDescricaoEsField = document.getElementById('product-descricao-es');
+        const productPrecoField = document.getElementById('product-preco') || document.getElementById('product-preço');
+        const productCategoriaField = document.getElementById('product-categoria');
+        const productDestaqueField = document.getElementById('product-destaque');
+        const productAtivoField = document.getElementById('product-ativo');
+
         const productData = {
-            nome: document.getElementById('product-nome').value,
-            descricao: document.getElementById('product-descricao').value,
-            preco: parseFloat(document.getElementById('product-preco').value),
-            categoria: document.getElementById('product-categoria').value,
+            nome: productNomeField?.value || '',
+            nome_es: productNomeEsField?.value || null,
+            descricao: productDescricaoField?.value || '',
+            descricao_es: productDescricaoEsField?.value || null,
+            preco: parseFloat(productPrecoField?.value || '0'),
+            categoria: productCategoriaField?.value || '',
             imagem: productImageValue,
             svg_template: svgTemplateContent || null,
-            destaque: document.getElementById('product-destaque').checked,
-            ativo: document.getElementById('product-ativo').checked
+            destaque: Boolean(productDestaqueField?.checked),
+            ativo: Boolean(productAtivoField?.checked)
         };
 
         try {
@@ -1488,10 +1499,16 @@ async function editProduct(id) {
         const productNome = el('product-nome');
         if (productNome) productNome.value = data.nome || '';
 
-        const productDescricao = el('product-descricao');
+        const productNomeEs = el('product-nome-es');
+        if (productNomeEs) productNomeEs.value = data.nome_es || '';
+
+        const productDescricao = el('product-descricao') || el('product-descrição');
         if (productDescricao) productDescricao.value = data.descricao || '';
 
-        const productPreco = el('product-preco');
+        const productDescricaoEs = el('product-descricao-es');
+        if (productDescricaoEs) productDescricaoEs.value = data.descricao_es || '';
+
+        const productPreco = el('product-preco') || el('product-preço');
         if (productPreco) productPreco.value = data.preco || '';
 
         const productCategoria = el('product-categoria');
