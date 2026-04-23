@@ -567,7 +567,9 @@ function applyHtmlFallbackTranslations(html) {
         .replace(/Ocorreu um problema ao carregar a encomenda\./g, 'Se ha producido un problema al cargar el pedido.')
         .replace(/Cortar Imagem/g, 'Recortar imagen')
         .replace(/Tamanho:/g, 'Tamaño:')
-        .replace(/Espessura:/g, 'Grosor:');
+        .replace(/Espessura:/g, 'Grosor:')
+        .replace(/Rev\u00ea o resultado final para garantir que est\u00e1 tudo correto\./g, 'Revise el resultado final para asegurarse de que todo está correcto.')
+        .replace(/Rota\u00e7\u00e3o:/g, 'Rotación:');
 }
 
 function translateDom($) {
