@@ -123,6 +123,10 @@ function getCheckoutErrorMessage(error) {
         return error?.message || 'Escolha o país fiscal antes de continuar.';
     }
 
+    if (errorCode === 'COUNTRY_INVALIDO') {
+        return error?.message || 'Apenas Portugal e Espanha estão disponíveis no checkout.';
+    }
+
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
         return 'Existem produtos no carrinho que ja nao existem na base de dados.';
     }
@@ -179,6 +183,7 @@ function getCheckoutErrorStatus(error) {
         'TELEFONE_INVALIDO',
         'TIPO_CLIENTE_INVALIDO',
         'CODIGO_POSTAL_INVALIDO',
+        'COUNTRY_INVALIDO',
         'BASE_INVALIDA',
         'CUSTOMER_IDENTITY_CONFLICT'
     ].includes(errorCode)) {
@@ -211,6 +216,13 @@ function normalizeBooleanFlag(value) {
 
     const normalized = String(value ?? '').trim().toLowerCase();
     return ['1', 'true', 'yes', 'on', 'sim'].includes(normalized);
+}
+
+const ALLOWED_CHECKOUT_COUNTRIES = new Set(['PT', 'ES']);
+
+function normalizeAllowedCheckoutCountry(value) {
+    const normalized = String(value || '').trim().toUpperCase();
+    return ALLOWED_CHECKOUT_COUNTRIES.has(normalized) ? normalized : '';
 }
 
 module.exports = async function createCheckoutSessionHandler(req, res) {
@@ -261,6 +273,27 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
+        const fiscalCountryRaw = String(
+            customer.country
+            || customer.countryCode
+            || customer.country_code
+            || customer.pais
+            || body?.country
+            || body?.countryCode
+            || body?.country_code
+            || body?.pais
+            || ''
+        ).trim();
+        const shippingCountryRaw = String(
+            body?.pais_entrega
+            || body?.shippingCountry
+            || body?.shipping_country
+            || customer.pais_entrega
+            || customer.shippingCountry
+            || customer.shipping_country
+            || ''
+        ).trim();
+
         if (!String(customer.country || customer.countryCode || customer.country_code || customer.pais || '').trim()) {
             sendJson(res, 400, {
                 error: 'COUNTRY_REQUIRED',
@@ -270,7 +303,45 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return;
         }
 
+        const fiscalCountry = normalizeAllowedCheckoutCountry(fiscalCountryRaw || customer.country || customer.countryCode || customer.country_code || customer.pais || '');
+        if (!fiscalCountry) {
+            sendJson(res, 400, {
+                error: 'COUNTRY_INVALIDO',
+                message: 'Apenas Portugal e Espanha estão disponíveis no checkout.',
+                field: 'country'
+            });
+            return;
+        }
+
+        const shippingCountry = shippingCountryRaw
+            ? normalizeAllowedCheckoutCountry(shippingCountryRaw)
+            : fiscalCountry;
+        if (!shippingCountry) {
+            sendJson(res, 400, {
+                error: 'COUNTRY_INVALIDO',
+                message: 'Apenas Portugal e Espanha estão disponíveis no checkout.',
+                field: 'pais_entrega'
+            });
+            return;
+        }
+
+        customer.country = fiscalCountry;
+        customer.countryCode = fiscalCountry;
+        customer.country_code = fiscalCountry;
+        customer.pais = fiscalCountry;
+        customer.pais_fiscal = fiscalCountry;
+        customer.pais_entrega = shippingCountry;
+        customer.shippingCountry = shippingCountry;
+
         const customerSnapshot = buildCheckoutCustomerSnapshot(customer);
+        if (!ALLOWED_CHECKOUT_COUNTRIES.has(customerSnapshot.country)) {
+            sendJson(res, 400, {
+                error: 'COUNTRY_INVALIDO',
+                message: 'Apenas Portugal e Espanha estão disponíveis no checkout.',
+                field: 'country'
+            });
+            return;
+        }
         const customerTypeValidation = validateCheckoutCustomerType(customerSnapshot);
         if (!customerTypeValidation.valid) {
             sendJson(res, 400, {

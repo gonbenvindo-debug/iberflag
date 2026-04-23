@@ -65,45 +65,9 @@ const POSTAL_LOOKUP_DEBOUNCE_MS = 650;
 const LOCATION_HELPERS = window.IBERFLAG_LOCATION_HELPERS || {};
 const COUNTRY_LABELS = {
     PT: 'Portugal',
-    ES: 'Espanha',
-    FR: 'França',
-    DE: 'Alemanha',
-    IT: 'Itália',
-    NL: 'Países Baixos',
-    BE: 'Bélgica',
-    IE: 'Irlanda',
-    LU: 'Luxemburgo',
-    AT: 'Áustria',
-    PL: 'Polónia',
-    CZ: 'Chéquia',
-    SE: 'Suécia',
-    DK: 'Dinamarca',
-    FI: 'Finlândia',
-    RO: 'Roménia',
-    BG: 'Bulgária',
-    HR: 'Croácia',
-    GR: 'Grécia',
-    HU: 'Hungria',
-    LT: 'Lituânia',
-    LV: 'Letónia',
-    SI: 'Eslovénia',
-    SK: 'Eslováquia',
-    EE: 'Estónia',
-    CY: 'Chipre',
-    MT: 'Malta',
-    US: 'Estados Unidos',
-    GB: 'Reino Unido',
-    CH: 'Suíça',
-    BR: 'Brasil',
-    AO: 'Angola',
-    MZ: 'Moçambique',
-    OTHER: 'Outro país'
+    ES: 'Espanha'
 };
-const EU_COUNTRIES = new Set([
-    'AT', 'BE', 'BG', 'HR', 'CY', 'CZ', 'DK', 'EE', 'FI', 'FR', 'DE', 'GR',
-    'HU', 'IE', 'IT', 'LV', 'LT', 'LU', 'MT', 'NL', 'PL', 'PT', 'RO', 'SK',
-    'SI', 'ES', 'SE'
-]);
+const EU_COUNTRIES = new Set(['PT', 'ES']);
 let companyLookupInFlight = false;
 let companyLookupDebounceTimer = null;
 let beginCheckoutTracked = false;
@@ -214,7 +178,7 @@ function getSelectedCustomerType() {
 
 function getSelectedFiscalCountry() {
     const normalized = String(countrySelect?.value || 'PT').trim().toUpperCase();
-    return normalized || 'PT';
+    return ['PT', 'ES'].includes(normalized) ? normalized : 'PT';
 }
 
 function getSelectedAddressCountry() {
@@ -240,10 +204,6 @@ function isBusinessCustomerSelected() {
 
 function detectTaxCountry(value, postalCode = '') {
     const explicitCountry = getSelectedFiscalCountry();
-    if (explicitCountry) {
-        return explicitCountry;
-    }
-
     const normalized = normalizeTaxId(value);
     const normalizedPostalCode = String(postalCode || '').trim().toUpperCase();
 
@@ -253,6 +213,10 @@ function detectTaxCountry(value, postalCode = '') {
 
     if (/^\d{5}(-\d{4})?$/.test(normalizedPostalCode)) {
         return 'ES';
+    }
+
+    if (/^\d{4}-\d{3}$/.test(normalizedPostalCode)) {
+        return 'PT';
     }
 
     return 'PT';
@@ -329,9 +293,7 @@ function validateTaxId(value, postalCode = '') {
     const country = detectTaxCountry(normalized, postalCode);
     const valid = country === 'ES'
         ? isValidSpanishDniOrNie(normalized) || isValidSpanishCif(normalized)
-        : country === 'PT'
-            ? isValidPortugueseNif(normalized)
-            : /^[A-Z0-9]{2,14}$/.test(normalized);
+        : isValidPortugueseNif(normalized);
 
     return {
         valid,
@@ -340,9 +302,7 @@ function validateTaxId(value, postalCode = '') {
             ? ''
             : country === 'ES'
                 ? i18nText('NIF/NIE espanhol inválido. Verifique o número fiscal antes de continuar.')
-            : country === 'PT'
-                ? i18nText('NIF português inválido. Verifique os 9 dígitos antes de continuar.')
-                : i18nText('VAT/NIF intracomunitário inválido. Verifique o número fiscal antes de continuar.')
+            : i18nText('NIF português inválido. Verifique os 9 dígitos antes de continuar.')
     };
 }
 
@@ -711,7 +671,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
         };
     }
 
-    if (country === 'ES' || /^[678]\d{8}$/.test(digits)) {
+    if (country === 'ES' || /^[6789]\d{8}$/.test(digits)) {
         return {
             valid: /^[6789]\d{8}$/.test(digits),
             normalized: `+34${digits}`,
@@ -719,18 +679,6 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
             message: /^[6789]\d{8}$/.test(digits)
                 ? ''
                 : i18nText('Introduza um número espanhol com 9 dígitos válido.')
-        };
-    }
-
-    if (country !== 'PT' && country !== 'ES') {
-        const validInternational = /^\d{6,15}$/.test(digits);
-        return {
-            valid: validInternational,
-            normalized: normalized.startsWith('+') ? normalized : `+${digits}`,
-            country,
-            message: validInternational
-                ? ''
-                : i18nText('Introduza um número internacional válido com indicativo.')
         };
     }
 
@@ -932,15 +880,15 @@ function buildFiscalSummaryState() {
     let treatment = 'Sem liquidação de IVA (M10)';
     let warning = '';
 
-    if (!countryCode || countryCode === 'OTHER' || !isEuCountry(countryCode)) {
+    if (countryCode !== 'PT' && countryCode !== 'ES') {
         treatment = 'Revisão manual antes de emitir';
         warning = 'Este país fica fora da emissão automática. O pagamento pode avançar, mas a faturação segue para revisão manual.';
-    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'valid') {
+    } else if (customerType === 'empresa' && countryCode === 'ES' && vatValidationStatus === 'valid') {
         treatment = 'Empresa UE validada em VIES';
-    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'invalid') {
+    } else if (customerType === 'empresa' && countryCode === 'ES' && vatValidationStatus === 'invalid') {
         treatment = 'Faturação normal sem benefício intracomunitário';
         warning = latestVatValidation?.message || 'O VAT não foi validado no VIES. A compra pode continuar, mas sem tratamento intracomunitário.';
-    } else if (customerType === 'empresa' && countryCode !== 'PT' && vatValidationStatus === 'unavailable') {
+    } else if (customerType === 'empresa' && countryCode === 'ES' && vatValidationStatus === 'unavailable') {
         treatment = 'Faturação normal sem benefício intracomunitário';
         warning = latestVatValidation?.message || 'O VIES está indisponível. A compra pode continuar, mas sem tratamento intracomunitário automático.';
     }
@@ -1394,7 +1342,7 @@ async function loadCart() {
 
     // Free shipping message
     if (freeShippingMsg) {
-        freeShippingMsg.innerHTML = '<p class="font-semibold">Envio gratis aplicado nas zonas operacionais ativas.</p>';
+        freeShippingMsg.innerHTML = 'Envio grátis para Portugal e Espanha.<span class="mt-1 block text-xs text-emerald-800">A cobertura é confirmada com base na morada de entrega.</span>';
     }
     if (remainingEl) {
         remainingEl.textContent = '0.00€';

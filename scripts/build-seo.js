@@ -11,6 +11,7 @@ const SITEMAPS_DIR = path.join(ROOT_DIR, 'sitemaps');
 const HTML_SITEMAP_DIR = path.join(ROOT_DIR, 'mapa-do-site');
 const GENERATED_JS_DIR = path.join(ROOT_DIR, 'assets', 'js', 'generated');
 const CANONICAL_ORIGIN = SiteRoutes.getCanonicalOrigin();
+const SOCIAL_LINKS = SiteRoutes.getSocialLinks();
 
 const STATIC_INDEXABLE_PAGES = [
     { path: SiteRoutes.STATIC_PATHS.home, title: 'IberFlag - Fly Banners, Roll Ups e Publicidade Física Personalizada', description: 'Especialistas em fly banners, roll ups, bandeiras, photocalls e publicidade física personalizada com operação principal em Portugal.' },
@@ -166,23 +167,45 @@ function applyCatalogTextCorrections(product) {
 function assignUniqueProductSlugs(products) {
     const seen = new Set();
     return products.map((product) => {
-        const baseSlug = SiteRoutes.inferProductSlug(product);
+        const sourceSlug = String(product.slug || '').trim();
+        const sourceName = String(product.nome || '').trim();
+        let correctedSlug = sourceSlug;
+        let correctedName = sourceName;
+
+        if (sourceSlug === 'tenda-personalizada-5-x-1-cm' || /\(5 x 1 cm\)/i.test(sourceName)) {
+            correctedSlug = 'tenda-personalizada-5-x-1-m';
+            correctedName = 'Tenda personalizada (5 x 1 m)';
+        } else if (sourceSlug === 'tenda-personalizada-3-x-4-cm' || /\(3 x 4 cm\)/i.test(sourceName)) {
+            correctedSlug = 'tenda-personalizada-3-x-4-m';
+            correctedName = 'Tenda personalizada (3 x 4 m)';
+        } else if (sourceSlug === 'cubo-publcitario-tamanho-unico' || /cubo publcit/i.test(sourceName)) {
+            correctedSlug = 'cubo-publicitario-tamanho-unico';
+            correctedName = 'Cubo publicitário (Tamanho único)';
+        }
+
+        const correctedProduct = {
+            ...product,
+            slug: correctedSlug,
+            nome: correctedName
+        };
+
+        const baseSlug = SiteRoutes.inferProductSlug(correctedProduct);
         let finalSlug = baseSlug || `produto-${product.id}`;
         if (seen.has(finalSlug)) finalSlug = `${finalSlug}-${product.id}`;
         seen.add(finalSlug);
 
-        const category = SiteRoutes.getCategoryMeta(product.categoria);
+        const category = SiteRoutes.getCategoryMeta(correctedProduct.categoria);
         return {
-            ...product,
+            ...correctedProduct,
             slug: finalSlug,
             categorySlug: category.slug,
             categoryLabel: category.label,
             categoryDescription: category.description,
-            seo_title: buildProductSeoTitle(product, category),
-            seo_description: buildProductSeoDescription(product, category),
+            seo_title: buildProductSeoTitle(correctedProduct, category),
+            seo_description: buildProductSeoDescription(correctedProduct, category),
             canonicalPath: SiteRoutes.buildProductPath(finalSlug),
             personalizePath: SiteRoutes.buildProductPersonalizerPath(finalSlug),
-            imageUrl: safeImageUrl(product.imagem)
+            imageUrl: safeImageUrl(correctedProduct.imagem)
         };
     });
 }
@@ -350,16 +373,16 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
       window.addEventListener('resize', applyCatalogTwoColumns, { passive: true });
     });
   </script>
-  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
-  <script src="/assets/js/core/icon-engine.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="/assets/js/config.js"></script>
-  <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
-  <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
-  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
-  <script src="/assets/js/core/analytics.js?v=20260410a"></script>
-  <script src="/assets/js/core/logic.js?v=20260422f"></script>
-  <script src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
+  <script defer src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <script defer src="/assets/js/core/icon-engine.js"></script>
+  <script defer src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script defer src="/assets/js/config.js"></script>
+  <script defer src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+  <script defer src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
+  <script defer src="/assets/js/core/cart-assets.js?v=20260401a"></script>
+  <script defer src="/assets/js/core/analytics.js?v=20260410a"></script>
+  <script defer src="/assets/js/core/logic.js?v=20260422f"></script>
+  <script defer src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
 }
@@ -434,19 +457,19 @@ function renderFooter() {
         </div>
                     <p class="max-w-sm mb-6">Especialistas em flybanners e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.</p>
         <div class="flex gap-4">
-          <a href="#" class="social-icon" aria-label="Facebook">
+          <a href="${SOCIAL_LINKS.facebook}" class="social-icon" aria-label="Facebook">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z" />
             </svg>
           </a>
-          <a href="#" class="social-icon" aria-label="Instagram">
+          <a href="${SOCIAL_LINKS.instagram}" class="social-icon" aria-label="Instagram">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <rect width="20" height="20" x="2" y="2" rx="5" />
               <path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z" />
               <line x1="17.5" x2="17.51" y1="6.5" y2="6.5" />
             </svg>
           </a>
-          <a href="#" class="social-icon" aria-label="LinkedIn">
+          <a href="${SOCIAL_LINKS.linkedin}" class="social-icon" aria-label="LinkedIn">
             <svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M16 8a6 6 0 0 1 6 6v7h-4v-7a2 2 0 0 0-2-2 2 2 0 0 0-2 2v7h-4v-7a6 6 0 0 1 6-6z" />
               <rect width="4" height="12" x="2" y="9" />
@@ -553,7 +576,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
     <section class="bg-white">
       <div class="mx-auto grid max-w-7xl gap-8 px-4 pb-8 pt-0 sm:px-6 sm:pt-3 lg:grid-cols-[minmax(0,1.08fr),minmax(340px,0.92fr)] lg:px-8 lg:py-14">
         <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-4">
-          <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" width="1200" height="900" decoding="async">
+          <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
         </div>
         <div class="flex flex-col gap-5 sm:gap-6">
           <div>
@@ -759,7 +782,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
         ${category.products.map((product, index) => `
           <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="${index}" data-price="${Number(product.preco || 0)}" data-name="${escapeHtml(String(product.nome || '').toLowerCase())}">
             <a href="${product.canonicalPath}" class="block">
-              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="${index < 6 ? 'eager' : 'lazy'}" fetchpriority="${index < 4 ? 'high' : 'auto'}" width="720" height="540" decoding="async">
             </a>
             <div class="flex flex-1 flex-col p-3 sm:p-5">
               <div class="flex flex-1 flex-col">
@@ -849,7 +872,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         ${highlightedProducts.map((product, index) => `
           <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="${index}" data-price="${Number(product.preco || 0)}" data-name="${escapeHtml(String(product.nome || '').toLowerCase())}">
             <a href="${product.canonicalPath}" class="block">
-              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="${index < 8 ? 'eager' : 'lazy'}" fetchpriority="${index < 4 ? 'high' : 'auto'}" width="720" height="540" decoding="async">
             </a>
             <div class="flex flex-1 flex-col p-3 sm:p-5">
               <div class="flex flex-1 flex-col">
@@ -1034,6 +1057,7 @@ async function buildSeoArtifacts() {
         return writeFile(filePath, renderCategoryPage(category, categories, products));
     }));
 
+    await writeFile(path.join(PRODUCTS_DIR, 'index.html'), renderProductsLandingPage(categories, products));
     await writeFile(path.join(HTML_SITEMAP_DIR, 'index.html'), renderHtmlSitemap(categories, products));
     await writeFile(path.join(GENERATED_JS_DIR, 'catalog-seo-manifest.js'), renderCatalogManifest(products, categories));
 

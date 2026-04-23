@@ -426,7 +426,7 @@
     },
     {
       "source": "/produtos",
-      "destination": "/pages/produtos.html"
+      "destination": "/produtos/index.html"
     },
     {
       "source": "/sobre",

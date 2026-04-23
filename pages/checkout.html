@@ -53,6 +53,10 @@
 
 
 
+
+
+
+
     <meta property="og:type" content="website">
     <meta property="og:title" content="Finalizar Encomenda - IberFlag">
     <meta property="og:description" content="Checkout online seguro com cartoes, MB Way, Multibanco e Bizum.">
@@ -156,44 +160,12 @@
                                     </div>
                                 </div>
                                 <div class="mt-4">
-                                    <label class="form-label">País fiscal *</label>
-                                    <select id="country-select" name="country" class="form-input" required="">
-                                        <option value="PT" selected="">Portugal</option>
-                                        <option value="ES">Espanha</option>
-                                        <option value="FR">França</option>
-                                        <option value="DE">Alemanha</option>
-                                        <option value="IT">Itália</option>
-                                        <option value="NL">Países Baixos</option>
-                                        <option value="BE">Bélgica</option>
-                                        <option value="IE">Irlanda</option>
-                                        <option value="LU">Luxemburgo</option>
-                                        <option value="AT">Áustria</option>
-                                        <option value="PL">Polónia</option>
-                                        <option value="CZ">Chéquia</option>
-                                        <option value="SE">Suécia</option>
-                                        <option value="DK">Dinamarca</option>
-                                        <option value="FI">Finlândia</option>
-                                        <option value="RO">Roménia</option>
-                                        <option value="BG">Bulgária</option>
-                                        <option value="HR">Croácia</option>
-                                        <option value="GR">Grécia</option>
-                                        <option value="HU">Hungria</option>
-                                        <option value="LT">Lituânia</option>
-                                        <option value="LV">Letónia</option>
-                                        <option value="SI">Eslovénia</option>
-                                        <option value="SK">Eslováquia</option>
-                                        <option value="EE">Estónia</option>
-                                        <option value="CY">Chipre</option>
-                                        <option value="MT">Malta</option>
-                                        <option value="US">Estados Unidos</option>
-                                        <option value="GB">Reino Unido</option>
-                                        <option value="CH">Suíça</option>
-                                        <option value="BR">Brasil</option>
-                                        <option value="AO">Angola</option>
-                                        <option value="MZ">Moçambique</option>
-                                        <option value="OTHER">Outro país / revisão manual</option>
-                                    </select>
-                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento.</p>
+                                        <label class="form-label">País fiscal *</label>
+                                        <select id="country-select" name="country" class="form-input" required="">
+                                            <option value="PT" selected="">Portugal</option>
+                                            <option value="ES">Espanha</option>
+                                        </select>
+                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento. Apenas Portugal e Espanha estão disponíveis.</p>
                                 </div>
                                 <div id="company-field-row" class="hidden mt-4">
                                     <label id="company-label" class="form-label">Empresa *</label>
@@ -400,10 +372,10 @@
                                 <span class="text-gray-600">Revisão de design</span>
                                 <span id="design-review-amount" class="font-semibold">5.00€</span>
                             </div>
-                            <div class="flex justify-between text-sm">
-                                <span class="text-gray-600">Envio</span>
-                                <span id="shipping" class="font-semibold">Gratis</span>
-                            </div>
+                                <div class="flex justify-between text-sm">
+                                    <span class="text-gray-600">Envio</span>
+                                    <span id="shipping" class="font-semibold">Gratis</span>
+                                </div>
                             <div class="flex justify-between text-lg font-bold border-t pt-3">
                                 <span>Total</span>
                                 <span id="total" class="checkout-total">0.00€</span>
@@ -414,7 +386,7 @@
                                 <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
                                 <div class="text-sm text-emerald-900">
                                     <p class="font-semibold">Envio grátis</p>
-                                    <p id="free-shipping-msg">Cobertura confirmada com base na morada de entrega.</p>
+                                    <p id="free-shipping-msg">Envio grátis para Portugal e Espanha, confirmado com base na morada de entrega.</p>
                                     <span id="remaining" class="hidden">0.00€</span>
                                 </div>
                             </div>
@@ -492,6 +464,7 @@
     <script>
         lucide.createIcons();
     </script>
+
 
 
 

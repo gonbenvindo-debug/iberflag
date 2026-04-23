@@ -592,6 +592,10 @@ function sourceCanonicalPath(relativePath) {
         return route ? `/${route}` : '/';
     }
 
+    if (normalized === 'produtos/index.html') {
+        return '/produtos';
+    }
+
     if (normalized.startsWith('produto/')) {
         const slug = normalized.split('/')[1];
         return `/produto/${slug}`;
@@ -616,6 +620,16 @@ function translateHtmlFile(html, sourceFileName) {
 
     if (sourceFileName === 'index.html' && sourceCanonical === '/') {
         $('title').text('IberFlag - Fly banners y publicidad física personalizada');
+    }
+
+    if (sourceFileName === 'index.html' && sourceCanonical === '/produtos') {
+        $('title').text('Catálogo de productos publicitarios | IberFlag');
+        $('meta[name="description"]').attr('content', 'Explora el catálogo IberFlag con fly banners, roll ups, banderas, photocalls, carpas y soportes promocionales personalizados.');
+        $('meta[property="og:title"]').attr('content', 'Catálogo de productos publicitarios | IberFlag');
+        $('meta[property="og:description"]').attr('content', 'Explora el catálogo IberFlag con fly banners, roll ups, banderas, photocalls, carpas y soportes promocionales personalizados.');
+        $('meta[name="twitter:title"]').attr('content', 'Catálogo de productos publicitarios | IberFlag');
+        $('meta[name="twitter:description"]').attr('content', 'Explora el catálogo IberFlag con fly banners, roll ups, banderas, photocalls, carpas y soportes promocionales personalizados.');
+        $('h1').first().text('Catálogo de productos publicitarios');
     }
 
     return applyHtmlFallbackTranslations($.html());
@@ -675,6 +689,8 @@ async function buildSpanishStaticPages() {
 
         if (relative.startsWith('pages/')) {
             targetPath = staticTargetPath(path.basename(sourcePath));
+        } else if (relative === 'produtos/index.html') {
+            targetPath = path.join(OUTPUT_ROOT, 'produtos', 'index.html');
         } else if (relative.startsWith('produto/')) {
             const productSlug = relative.split('/')[1];
             targetPath = path.join(OUTPUT_ROOT, 'produto', productSlug, 'index.html');

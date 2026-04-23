@@ -84,6 +84,12 @@
         adminTemplateEditor: '/admin-template-editor'
     };
 
+    const SOCIAL_LINKS = {
+        facebook: 'https://www.facebook.com/iberflag',
+        instagram: 'https://www.instagram.com/iberflag/',
+        linkedin: 'https://www.linkedin.com/company/iberflag/'
+    };
+
     const LOCALES = {
         pt: {
             code: 'pt',
@@ -363,6 +369,10 @@
         return withQuery(getLocalizedPath(STATIC_PATHS.templates, locale), params);
     }
 
+    function getSocialLinks() {
+        return { ...SOCIAL_LINKS };
+    }
+
     function getCanonicalOrigin() {
         return CANONICAL_ORIGIN;
     }
@@ -432,6 +442,7 @@
         buildContactPath,
         buildCheckoutSuccessPath,
         buildTemplatesPath,
+        getSocialLinks,
         getCanonicalOrigin,
         getCatalogManifest,
         findProductById,
