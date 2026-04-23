@@ -101,6 +101,64 @@
         }
     };
 
+    const CATEGORY_META_ES = {
+        'balcao-promocional': {
+            label: 'Mostrador promocional',
+            shortLabel: 'Mostradores',
+            description: 'Mostradores promocionales para ferias, activaciones de marca y puntos de venta con montaje rápido e imagen profesional.'
+        },
+        'bandeiras': {
+            label: 'Banderas',
+            shortLabel: 'Banderas',
+            description: 'Banderas promocionales, institucionales y de mesa para exterior, interior y eventos con impresión personalizada.'
+        },
+        'bandeirolas-esportivas': {
+            label: 'Banderines deportivos',
+            shortLabel: 'Banderines',
+            description: 'Banderines deportivos personalizados para clubes, eventos, premios y merchandising institucional.'
+        },
+        'cubo-publicitario': {
+            label: 'Cubo publicitario',
+            shortLabel: 'Cubos',
+            description: 'Cubos publicitarios personalizados para campañas promocionales, puntos de venta y eventos de marca.'
+        },
+        'fly-banner': {
+            label: 'Fly Banner',
+            shortLabel: 'Fly Banners',
+            description: 'Fly banners personalizados para exterior y eventos con gran impacto visual, varias bases y formatos profesionales.'
+        },
+        'mastros': {
+            label: 'Mástiles',
+            shortLabel: 'Mástiles',
+            description: 'Mástiles publicitarios e institucionales para banderas de exterior con resistencia y buena visibilidad.'
+        },
+        'photocall': {
+            label: 'Photocall',
+            shortLabel: 'Photocalls',
+            description: 'Photocalls y backdrops personalizados para eventos, stands, conferencias y zonas de fotografía.'
+        },
+        'roll-up': {
+            label: 'Roll Up',
+            shortLabel: 'Roll Ups',
+            description: 'Roll ups personalizados para ferias, tiendas y presentaciones con estructura compacta e instalación sencilla.'
+        },
+        'tenda-publicitaria': {
+            label: 'Carpa publicitaria',
+            shortLabel: 'Carpas',
+            description: 'Carpas publicitarias personalizadas para eventos, activaciones de marca y presencia exterior de gran formato.'
+        },
+        'wall-banner': {
+            label: 'Wall Banner',
+            shortLabel: 'Wall Banners',
+            description: 'Wall banners, lonas y estructuras de fondo para escenografía, stands, eventos y comunicación de gran formato.'
+        },
+        'x-banner': {
+            label: 'X-Banner',
+            shortLabel: 'X-Banners',
+            description: 'X-banners promocionales ligeros y portátiles para campañas, escaparates y comunicación interior.'
+        }
+    };
+
     function stripDiacritics(value) {
         return String(value || '')
             .normalize('NFD')
@@ -128,8 +186,21 @@
         return 'pt';
     }
 
+    function resolveLocale(locale) {
+        const candidate = String(locale || '').trim();
+        if (candidate) {
+            return normalizeLocale(candidate);
+        }
+
+        if (typeof globalThis !== 'undefined' && globalThis.location?.pathname) {
+            return getLocaleFromPathname(globalThis.location.pathname);
+        }
+
+        return 'pt';
+    }
+
     function getLocaleMeta(locale) {
-        return LOCALES[normalizeLocale(locale)] || LOCALES.pt;
+        return LOCALES[resolveLocale(locale)] || LOCALES.pt;
     }
 
     function getLocaleFromPathname(pathname) {
@@ -146,7 +217,7 @@
 
     function withLocalePrefix(pathname, locale) {
         const normalizedPath = normalizePath(pathname);
-        const currentLocale = normalizeLocale(locale);
+        const currentLocale = resolveLocale(locale);
         if (currentLocale === 'es') {
             return normalizedPath === '/' ? '/es/' : `/es${stripLocalePrefix(normalizedPath)}`;
         }
@@ -180,9 +251,11 @@
         return candidate || 'produtos';
     }
 
-    function getCategoryMeta(value) {
+    function getCategoryMeta(value, locale) {
         const slug = normalizeCategorySlug(value);
-        const meta = CATEGORY_META[slug];
+        const currentLocale = resolveLocale(locale);
+        const localizedMeta = currentLocale === 'es' ? CATEGORY_META_ES[slug] : null;
+        const meta = localizedMeta || CATEGORY_META[slug];
         if (meta) {
             return {
                 slug,
@@ -204,7 +277,9 @@
             slug,
             label: fallbackLabel,
             shortLabel: fallbackLabel,
-            description: 'Produtos publicitários personalizados para comunicação física, eventos e presença de marca.'
+            description: currentLocale === 'es'
+                ? 'Productos publicitarios personalizados para comunicación física, eventos y presencia de marca.'
+                : 'Produtos publicitários personalizados para comunicação física, eventos e presença de marca.'
         };
     }
 
@@ -333,11 +408,13 @@
     return {
         CANONICAL_ORIGIN,
         CATEGORY_META,
+        CATEGORY_META_ES,
         LOCALES,
         STATIC_PATHS,
         slugify,
         normalizePath,
         normalizeLocale,
+        resolveLocale,
         getLocaleMeta,
         getLocaleFromPathname,
         stripLocalePrefix,

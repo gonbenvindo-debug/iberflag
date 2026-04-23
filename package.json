@@ -13,6 +13,7 @@
     "test-flow:check": "node scripts/verify-test-checkout-flow.js",
     "build:seo": "node scripts/build-seo.js",
     "build:i18n": "node scripts/build-es-site.js",
+    "audit:i18n": "node scripts/audit-es-translations.js",
     "build:css": "tailwindcss -i ./assets/css/tailwind.css -o ./assets/css/tailwind.output.css --minify",
     "build": "npm run build:seo && npm run build:i18n && npm run build:css"
   },

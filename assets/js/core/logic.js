@@ -30,6 +30,26 @@ function escapeHtml(value) {
         .replace(/'/g, '&#039;');
 }
 
+function i18nText(value) {
+    return window.IberFlagI18n?.translateText
+        ? window.IberFlagI18n.translateText(value)
+        : value;
+}
+
+function i18nProduct(product) {
+    return window.IberFlagI18n?.localizeProduct
+        ? window.IberFlagI18n.localizeProduct(product)
+        : product;
+}
+
+function getLocalizedStaticPath(pathname, fallback) {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
+        return SiteRoutes.getLocalizedPath(pathname);
+    }
+
+    return fallback;
+}
+
 function getStoredCart() {
     const storageKeys = [CART_STORAGE_KEY, ...LEGACY_CART_STORAGE_KEYS];
 
@@ -106,7 +126,7 @@ function buildLegacyCartSidebarMarkup() {
     }
 
     const checkoutPath = typeof SiteRoutes !== 'undefined'
-        ? SiteRoutes.STATIC_PATHS.checkout
+        ? getLocalizedStaticPath(SiteRoutes.STATIC_PATHS.checkout, '/checkout')
         : '/checkout';
 
     if (!cartSidebar) {
@@ -120,7 +140,7 @@ function buildLegacyCartSidebarMarkup() {
         sidebar.innerHTML = `
             <div class="flex flex-col h-full">
                 <div class="flex items-center justify-between p-6 border-b">
-                    <h3 class="text-xl font-bold">Carrinho de Compras</h3>
+                    <h3 class="text-xl font-bold">${i18nText('Carrinho de Compras')}</h3>
                     <button id="close-cart" class="text-gray-500 hover:text-gray-700">
                         <i data-lucide="x" class="w-6 h-6"></i>
                     </button>
@@ -128,7 +148,7 @@ function buildLegacyCartSidebarMarkup() {
                 <div id="cart-items" class="flex-1 overflow-y-auto p-6">
                     <div class="text-center text-gray-500 py-12">
                         <i data-lucide="shopping-cart" class="w-16 h-16 mx-auto mb-4 text-gray-300"></i>
-                        <p>O seu carrinho está vazio</p>
+                        <p>${i18nText('O seu carrinho está vazio')}</p>
                     </div>
                 </div>
                 <div class="border-t p-6">
@@ -138,7 +158,7 @@ function buildLegacyCartSidebarMarkup() {
                     </div>
                     <a href="${checkoutPath}"
                         class="block w-full bg-blue-600 text-white text-center py-3 rounded-lg font-bold hover:bg-blue-700 transition">
-                        Finalizar Encomenda
+                        ${i18nText('Finalizar Encomenda')}
                     </a>
                 </div>
             </div>
@@ -163,21 +183,21 @@ function buildLegacyCartSidebarMarkup() {
         <div class="flex h-full w-full flex-col">
             <div class="flex items-start justify-between gap-4 border-b border-slate-200 px-5 py-4">
                 <div>
-                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">Carrinho</p>
-                    <h3 class="text-xl font-bold text-slate-900">Carrinho de Compras</h3>
+                    <p class="text-[11px] font-semibold uppercase tracking-[0.24em] text-slate-500">${i18nText('Carrinho')}</p>
+                    <h3 class="text-xl font-bold text-slate-900">${i18nText('Carrinho de Compras')}</h3>
                 </div>
                 <div class="flex items-center gap-2">
                     <span id="cart-sidebar-count"
                         class="hidden min-w-8 rounded-full bg-blue-600 px-2.5 py-1 text-center text-xs font-bold text-white">0</span>
                     <button id="close-cart"
                         class="inline-flex h-10 w-10 items-center justify-center rounded-xl text-gray-500 transition hover:bg-slate-100 hover:text-gray-800"
-                        aria-label="Fechar carrinho">
+                        aria-label="${i18nText('Fechar carrinho')}">
                         <i data-lucide="x" class="w-5 h-5"></i>
                     </button>
                 </div>
             </div>
             <div class="flex items-center justify-between border-b border-slate-200 bg-slate-50 px-5 py-3 text-sm text-slate-600">
-                <span>Itens no carrinho</span>
+                <span>${i18nText('Itens no carrinho')}</span>
                 <span id="cart-total-items" class="font-semibold text-slate-900">0</span>
             </div>
             <div id="cart-items" class="flex-1 space-y-3 overflow-y-auto p-4 sm:p-5">
@@ -185,8 +205,8 @@ function buildLegacyCartSidebarMarkup() {
                     <div class="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-2xl bg-white shadow-sm">
                         <i data-lucide="shopping-cart" class="w-7 h-7 text-gray-300"></i>
                     </div>
-                    <p class="font-semibold text-slate-700">O seu carrinho está vazio</p>
-                    <p class="mt-1 text-sm text-slate-500">Escolha um produto para começar.</p>
+                    <p class="font-semibold text-slate-700">${i18nText('O seu carrinho está vazio')}</p>
+                    <p class="mt-1 text-sm text-slate-500">${i18nText('Escolha um produto para começar.')}</p>
                 </div>
             </div>
             <div class="border-t border-slate-200 bg-white p-5">
@@ -196,7 +216,7 @@ function buildLegacyCartSidebarMarkup() {
                 </div>
                 <a href="${checkoutPath}"
                     class="inline-flex w-full items-center justify-center rounded-xl bg-blue-600 px-4 py-3 font-bold text-white transition hover:bg-blue-700">
-                    Finalizar Encomenda
+                    ${i18nText('Finalizar Encomenda')}
                 </a>
             </div>
         </div>
@@ -260,8 +280,8 @@ function renderCartItemsList() {
                 <div class="mx-auto mb-4 w-16 h-16 rounded-2xl bg-gray-100 flex items-center justify-center">
                     <i data-lucide="shopping-cart" class="w-8 h-8 text-gray-300"></i>
                 </div>
-                <p class="font-semibold text-gray-700">O seu carrinho está vazio</p>
-                <p class="text-sm text-gray-500 mt-1">Adicione produtos para continuar.</p>
+                <p class="font-semibold text-gray-700">${i18nText('O seu carrinho está vazio')}</p>
+                <p class="text-sm text-gray-500 mt-1">${i18nText('Adicione produtos para continuar.')}</p>
             </div>
         `;
         return;
@@ -270,7 +290,7 @@ function renderCartItemsList() {
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
             <div class="cart-item-row flex items-start gap-3">
-                <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="Abrir personalizador do item">
+                <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
                     </div>
@@ -281,24 +301,24 @@ function renderCartItemsList() {
                             <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
                             <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
                         </div>
-                        <button type="button" data-cart-action="remove" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="Remover item">
+                        <button type="button" data-cart-action="remove" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="${i18nText('Remover item')}">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
                     <div class="mt-2 flex items-center gap-2">
-                        ${item.quantity > 1 ? `<span class="text-xs text-gray-500">Qtd. ${item.quantity}</span>` : ''}
+                        ${item.quantity > 1 ? `<span class="text-xs text-gray-500">${i18nText('Qtd.')} ${item.quantity}</span>` : ''}
                     </div>
                     <div class="cart-item-actions mt-3 flex flex-wrap items-center gap-2">
                         <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                             <i data-lucide="${item.customized ? 'edit-3' : 'palette'}" class="w-3.5 h-3.5"></i>
-                            ${item.customized ? 'Editar' : 'Personalizar'}
+                            ${item.customized ? i18nText('Editar') : i18nText('Personalizar')}
                         </a>
                         <div class="ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
-                            <button type="button" data-cart-action="decrease" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="Diminuir quantidade">
+                            <button type="button" data-cart-action="decrease" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="${i18nText('Diminuir quantidade')}">
                                 <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                             </button>
                             <span class="min-w-8 px-2 text-center text-sm font-semibold text-gray-900">${item.quantity}</span>
-                            <button type="button" data-cart-action="increase" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="Aumentar quantidade">
+                            <button type="button" data-cart-action="increase" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="${i18nText('Aumentar quantidade')}">
                                 <i data-lucide="plus" class="w-3.5 h-3.5"></i>
                             </button>
                         </div>
@@ -557,7 +577,7 @@ var initialProducts = [
     {
         id: 4,
         nome: "Lona PVC 440g/m²",
-        descricao: "Lona PVC de alta resistência com ilhós para fixação. Impressão digital de alta res?lução.",
+        descricao: "Lona PVC de alta resistência com ilhós para fixação. Impressão digital de alta resolução.",
         preco: 25.00,
         categoria: "lonas",
         imagem: "https://images.unsplash.com/photo-1541746972996-4e0b0f43e02a?auto=format&fit=crop&q=80",
@@ -806,12 +826,12 @@ function openProductCustomizationChoice(productData = {}) {
     const productLabel = productData.nome ? String(productData.nome) : 'este produto';
     const editButtons = matchingItems.map(({ item, index }, position) => {
         const link = getCartItemEditorLink(item, index);
-        const status = item.customized ? 'Personalizado' : 'Base';
+        const status = item.customized ? i18nText('Personalizado') : i18nText('Base');
         const designLabel = item.designId ? ` • ${String(item.designId).slice(-6).toUpperCase()}` : '';
 
         return `
                 <a href="${link}" class="choice-edit-item block w-full text-left border border-gray-200 rounded-lg px-3 py-2 hover:bg-gray-50 transition">
-                <span class="block text-sm font-semibold text-gray-900">Editar item ${position + 1}</span>
+                <span class="block text-sm font-semibold text-gray-900">${i18nText('Editar item')} ${position + 1}</span>
                 <span class="block text-xs text-gray-500">${status}${designLabel}</span>
             </a>
         `;
@@ -821,22 +841,22 @@ function openProductCustomizationChoice(productData = {}) {
         <div class="w-full max-w-lg bg-white rounded-2xl shadow-2xl border border-gray-200 overflow-hidden">
             <div class="px-5 py-4 border-b border-gray-200 flex items-start justify-between gap-4">
                 <div>
-                    <h3 class="text-lg font-bold text-gray-900">Produto já existe no carrinho</h3>
-                    <p class="text-sm text-gray-600 mt-1">Escolha se quer criar uma nova personalização ou editar uma existente para ${productLabel}.</p>
+                    <h3 class="text-lg font-bold text-gray-900">${i18nText('Produto já existe no carrinho')}</h3>
+                    <p class="text-sm text-gray-600 mt-1">${i18nText('Escolha se quer criar uma nova personalização ou editar uma existente para')} ${escapeHtml(productLabel)}.</p>
                 </div>
                 <button type="button" data-action="close" class="text-gray-500 hover:text-gray-800 text-xl leading-none">&times;</button>
             </div>
             <div class="p-5 space-y-4">
                 <a href="${buildProductCustomizeUrl(productId)}" class="block w-full text-center bg-gray-900 text-white rounded-lg px-4 py-3 font-semibold hover:bg-gray-900 transition">
-                    Adicionar nova personalização
+                    ${i18nText('Adicionar nova personalização')}
                 </a>
                 <div class="space-y-2">
-                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Editar item existente</p>
+                    <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">${i18nText('Editar item existente')}</p>
                     ${editButtons}
                 </div>
             </div>
             <div class="px-5 py-3 border-t border-gray-200 text-right">
-                <button type="button" data-action="close" class="text-sm font-semibold text-gray-700 hover:text-black">Cancelar</button>
+                <button type="button" data-action="close" class="text-sm font-semibold text-gray-700 hover:text-black">${i18nText('Cancelar')}</button>
             </div>
         </div>
     `;
@@ -976,19 +996,20 @@ function renderProducts(products) {
     if (!productsContainer) return; // Safety check for pages without products container
 
     if (!products || products.length === 0) {
-        productsContainer.innerHTML = '<p class="text-center col-span-full py-10 text-gray-500">Nenhum produto encontrado.</p>';
+        productsContainer.innerHTML = `<p class="text-center col-span-full py-10 text-gray-500">${i18nText('Nenhum produto encontrado.')}</p>`;
         return;
     }
 
+    const localizedProducts = products.map(i18nProduct);
     // Filter only featured products for homepage
-    const purchasableProducts = products.filter(isCatalogProductPurchasable);
-    const displaySource = purchasableProducts.length > 0 ? purchasableProducts : products;
+    const purchasableProducts = localizedProducts.filter(isCatalogProductPurchasable);
+    const displaySource = purchasableProducts.length > 0 ? purchasableProducts : localizedProducts;
     const featuredProducts = displaySource.filter(p => p.destaque).slice(0, 3);
     const displayProducts = featuredProducts.length > 0 ? featuredProducts : displaySource.slice(0, 3);
 
     productsContainer.innerHTML = displayProducts.map(product => `
         <div class="product-card" data-product-id="${product.id}">
-            <div class="product-card-image image-zoom" tabindex="0" aria-label="Imagem do produto ${escapeHtml(String(product.nome || 'Produto sem nome'))}">
+            <div class="product-card-image image-zoom" tabindex="0" aria-label="${escapeHtml(i18nText(`Imagem do produto ${String(product.nome || 'Produto sem nome')}`))}">
                 <img src="${product.imagem}" alt="${product.nome}" class="w-full h-full object-cover">
             </div>
             <div class="product-card-body">
@@ -999,7 +1020,7 @@ function renderProducts(products) {
                     data-product-category="${escapeHtml(String(product.categoria || ''))}"
                     class="product-card-cta">
                     <i data-lucide="arrow-right" class="w-4 h-4"></i>
-                    Ver produto
+                    ${i18nText('Ver produto')}
                 </a>
             </div>
         </div>
@@ -1109,7 +1130,7 @@ function addToCart(productId) {
     const product = initialProducts.find(p => p.id === productId);
 
     if (!product) {
-        showToast('Produto não encontrado', 'error');
+        showToast(i18nText('Produto não encontrado'), 'error');
         return;
     }
 
@@ -1136,14 +1157,14 @@ function addToCart(productId) {
             }
         });
     }
-    showToast('Produto adicionado ao carrinho!', 'success');
+    showToast(i18nText('Produto adicionado ao carrinho!'), 'success');
     openCart();
 }
 
 function removeFromCart(index) {
     cart.splice(index, 1);
     updateCart();
-    showToast('Produto removido do carrinho', 'info');
+    showToast(i18nText('Produto removido do carrinho'), 'info');
 }
 
 function updateQuantity(index, newQuantity) {
@@ -1212,7 +1233,7 @@ function injectOrdersTrackingLink() {
     if (!cartSidebar) return;
 
     const checkoutHref = typeof SiteRoutes !== 'undefined'
-        ? SiteRoutes.STATIC_PATHS.checkout
+        ? getLocalizedStaticPath(SiteRoutes.STATIC_PATHS.checkout, '/checkout')
         : '/checkout';
     const checkoutLink = cartSidebar.querySelector(`a[href="${checkoutHref}"]`);
     if (!checkoutLink) return;
@@ -1222,10 +1243,10 @@ function injectOrdersTrackingLink() {
 
     const trackLink = document.createElement('a');
     trackLink.href = typeof SiteRoutes !== 'undefined'
-        ? SiteRoutes.STATIC_PATHS.orders
+        ? getLocalizedStaticPath(SiteRoutes.STATIC_PATHS.orders, '/encomendas')
         : '/encomendas';
     trackLink.className = 'orders-tracking-link block w-full mt-2 border border-blue-200 text-blue-700 text-center py-2.5 rounded-lg font-semibold hover:bg-blue-50 transition';
-    trackLink.innerHTML = '<i data-lucide="package-search" class="w-4 h-4 inline-block mr-1"></i> Acompanhar Encomendas';
+    trackLink.innerHTML = `<i data-lucide="package-search" class="w-4 h-4 inline-block mr-1"></i> ${i18nText('Acompanhar Encomendas')}`;
 
     checkoutLink.insertAdjacentElement('afterend', trackLink);
 }
@@ -1259,7 +1280,7 @@ function quickView(productId) {
     const product = initialProducts.find(p => p.id === productId);
     if (!product) return;
 
-    showToast('Funcionalidade de visualização rápida em desenvolvimento', 'info');
+    showToast(i18nText('Funcionalidade de visualização rápida em desenvolvimento'), 'info');
 }
 
 // ===== MOBILE MENU =====

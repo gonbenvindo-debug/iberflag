@@ -40,7 +40,7 @@
     };
 
     script.onerror = () => {
-        console.warn('Nao foi possivel carregar o Lucide via CDN.');
+        console.warn('Não foi possível carregar o Lucide via CDN.');
     };
 
     document.head.appendChild(script);

@@ -1,26 +1,29 @@
 (function (global) {
     const META_MARKER = '[IBERFLAG_META]';
+    const i18nText = (value) => global.IberFlagI18n?.translateText
+        ? global.IberFlagI18n.translateText(value)
+        : value;
 
     const ORDER_WORKFLOW_STEPS = [
         {
             value: 'em_preparacao',
-            label: 'Em Preparacao',
-            description: 'Encomenda recebida e em preparacao inicial.'
+            label: i18nText('Em Preparação'),
+            description: i18nText('Encomenda recebida e em preparação inicial.')
         },
         {
             value: 'em_producao',
-            label: 'Em Produ??o',
-            description: 'Material em producao e acabamento.'
+            label: i18nText('Em Produção'),
+            description: i18nText('Material em produção e acabamento.')
         },
         {
             value: 'expedido',
-            label: 'Expedido',
-            description: 'Encomenda entregue ao transportador.'
+            label: i18nText('Expedido'),
+            description: i18nText('Encomenda entregue ao transportador.')
         },
         {
             value: 'entregue',
-            label: 'Entregue',
-            description: 'Encomenda concluida com sucess?.'
+            label: i18nText('Entregue'),
+            description: i18nText('Encomenda concluída com sucesso.')
         }
     ];
 

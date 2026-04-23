@@ -1,0 +1,290 @@
+{
+  "locale": "es-ES",
+  "categories": {
+    "balcao-promocional": {
+      "label": "Mostrador promocional",
+      "shortLabel": "Mostradores",
+      "description": "Mostradores promocionales para ferias, activaciones de marca y puntos de venta con montaje rápido e imagen profesional."
+    },
+    "bandeiras": {
+      "label": "Banderas",
+      "shortLabel": "Banderas",
+      "description": "Banderas promocionales, institucionales y de mesa para exterior, interior y eventos con impresión personalizada."
+    },
+    "bandeirolas-esportivas": {
+      "label": "Banderines deportivos",
+      "shortLabel": "Banderines",
+      "description": "Banderines deportivos personalizados para clubes, eventos, premios y merchandising institucional."
+    },
+    "cubo-publicitario": {
+      "label": "Cubo publicitario",
+      "shortLabel": "Cubos",
+      "description": "Cubos publicitarios personalizados para campañas promocionales, puntos de venta y eventos de marca."
+    },
+    "fly-banner": {
+      "label": "Fly Banner",
+      "shortLabel": "Fly Banners",
+      "description": "Fly banners personalizados para exterior y eventos con gran impacto visual, varias bases y formatos profesionales."
+    },
+    "mastros": {
+      "label": "Mástiles",
+      "shortLabel": "Mástiles",
+      "description": "Mástiles publicitarios e institucionales para banderas de exterior con resistencia y buena visibilidad."
+    },
+    "photocall": {
+      "label": "Photocall",
+      "shortLabel": "Photocalls",
+      "description": "Photocalls y backdrops personalizados para eventos, stands, conferencias y zonas de fotografía."
+    },
+    "roll-up": {
+      "label": "Roll Up",
+      "shortLabel": "Roll Ups",
+      "description": "Roll ups personalizados para ferias, tiendas y presentaciones con estructura compacta e instalación sencilla."
+    },
+    "tenda-publicitaria": {
+      "label": "Carpa publicitaria",
+      "shortLabel": "Carpas",
+      "description": "Carpas publicitarias personalizadas para eventos, activaciones de marca y presencia exterior de gran formato."
+    },
+    "wall-banner": {
+      "label": "Wall Banner",
+      "shortLabel": "Wall Banners",
+      "description": "Wall banners, lonas y estructuras de fondo para escenografía, stands, eventos y comunicación de gran formato."
+    },
+    "x-banner": {
+      "label": "X-Banner",
+      "shortLabel": "X-Banners",
+      "description": "X-banners promocionales ligeros y portátiles para campañas, escaparates y comunicación interior."
+    }
+  },
+  "products": {
+    "bandeiras-de-mesa-15-x-25-cm": {
+      "name": "Banderas de mesa (15 x 25 cm)",
+      "description": "Banderas de mesa personalizadas para escritorios, recepciones y espacios institucionales. Aportan una presencia formal, cuidada y profesional en reuniones, ferias y oficinas.",
+      "seoTitle": "Banderas de mesa (15 x 25 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas de mesa personalizadas para oficinas, recepciones, ferias y espacios institucionales con acabado profesional."
+    },
+    "bandeiras-horizontais-tamanho-unico": {
+      "name": "Banderas horizontales (tamaño único)",
+      "description": "Banderas horizontales personalizadas para exterior, instituciones, empresas y eventos. Una solución visible para reforzar identidad de marca y comunicación en fachada.",
+      "seoTitle": "Banderas horizontales | Banderas | IberFlag",
+      "seoDescription": "Banderas horizontales personalizadas para exterior, empresas, instituciones y eventos con impresión profesional."
+    },
+    "bandeiras-para-despacho-150-x-100-cm": {
+      "name": "Banderas para despacho (150 x 100 cm)",
+      "description": "Banderas para despachos, salas institucionales y oficinas, disponibles para una presentación elegante y corporativa con impresión personalizada.",
+      "seoTitle": "Banderas para despacho (150 x 100 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas personalizadas para despachos, oficinas y salas institucionales con imagen corporativa profesional."
+    },
+    "bandeiras-para-manifestacoes-20-x-30-cm": {
+      "name": "Banderas para manifestaciones (20 x 30 cm)",
+      "description": "Banderas de mano personalizadas para manifestaciones, campañas, eventos y acciones colectivas, fáciles de distribuir y usar en grupo.",
+      "seoTitle": "Banderas para manifestaciones (20 x 30 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas de mano personalizadas para manifestaciones, campañas y eventos colectivos."
+    },
+    "bandeiras-para-manifestacoes-30-x-45-cm": {
+      "name": "Banderas para manifestaciones (30 x 45 cm)",
+      "description": "Banderas de mano personalizadas para manifestaciones, campañas, eventos y acciones colectivas, con formato cómodo y buena visibilidad.",
+      "seoTitle": "Banderas para manifestaciones (30 x 45 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas personalizadas para manifestaciones, campañas, eventos y acciones colectivas."
+    },
+    "bandeiras-para-manifestacoes-45-x-70-cm": {
+      "name": "Banderas para manifestaciones (45 x 70 cm)",
+      "description": "Banderas personalizadas para manifestaciones y eventos con mayor presencia visual, pensadas para comunicar mensajes de forma clara en espacios públicos.",
+      "seoTitle": "Banderas para manifestaciones (45 x 70 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas personalizadas para manifestaciones y eventos con buena visibilidad en espacios públicos."
+    },
+    "bandeiras-para-manifestacoes-70-x-100-cm": {
+      "name": "Banderas para manifestaciones (70 x 100 cm)",
+      "description": "Banderas de gran visibilidad para manifestaciones, campañas y actos públicos, preparadas para destacar mensajes, símbolos o identidad visual.",
+      "seoTitle": "Banderas para manifestaciones (70 x 100 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas personalizadas de gran visibilidad para manifestaciones, campañas y actos públicos."
+    },
+    "bandeiras-para-manifestacoes-100-x-150-cm": {
+      "name": "Banderas para manifestaciones (100 x 150 cm)",
+      "description": "Banderas personalizadas de gran formato para manifestaciones, campañas y eventos donde se necesita impacto visual y lectura a distancia.",
+      "seoTitle": "Banderas para manifestaciones (100 x 150 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas de gran formato para manifestaciones, campañas y eventos con impresión personalizada."
+    },
+    "bandeiras-de-parede-150-x-100-cm": {
+      "name": "Banderas de pared (150 x 100 cm)",
+      "description": "Banderas de pared personalizadas para fachadas, interiores corporativos y espacios institucionales, ideales para reforzar identidad visual.",
+      "seoTitle": "Banderas de pared (150 x 100 cm) | Banderas | IberFlag",
+      "seoDescription": "Banderas de pared personalizadas para fachadas, interiores corporativos y espacios institucionales."
+    },
+    "bandeiras-verticais-tamanho-unico": {
+      "name": "Banderas verticales (tamaño único)",
+      "description": "Banderas verticales personalizadas para acciones comerciales, comunicación exterior y refuerzo de imagen corporativa con lectura clara.",
+      "seoTitle": "Banderas verticales | Banderas | IberFlag",
+      "seoDescription": "Banderas verticales personalizadas para comunicación exterior, eventos y refuerzo de imagen corporativa."
+    },
+    "bandeirolas-esportivas-20-x-27-cm": {
+      "name": "Banderines deportivos (20 x 27 cm)",
+      "description": "Banderines deportivos personalizados para clubes, eventos, premios y merchandising, con formato clásico para escudos, emblemas y mensajes institucionales.",
+      "seoTitle": "Banderines deportivos (20 x 27 cm) | Banderines | IberFlag",
+      "seoDescription": "Banderines deportivos personalizados para clubes, eventos, premios y merchandising institucional."
+    },
+    "tenda-personalizada-5-x-1-cm": {
+      "name": "Carpa personalizada (5 x 1 cm)",
+      "description": "Carpa publicitaria personalizada para ferias, eventos y activaciones de marca. Una solución visible y funcional para presencia exterior.",
+      "seoTitle": "Carpa personalizada (5 x 1 cm) | Carpas | IberFlag",
+      "seoDescription": "Carpa publicitaria personalizada para ferias, eventos y activaciones de marca con presencia exterior."
+    },
+    "tenda-personalizada-3-x-3-m": {
+      "name": "Carpa personalizada (3 x 3 m)",
+      "description": "Carpa publicitaria personalizada para stands, ferias y eventos, con formato versátil para crear una zona de marca visible y protegida.",
+      "seoTitle": "Carpa personalizada (3 x 3 m) | Carpas | IberFlag",
+      "seoDescription": "Carpa personalizada 3 x 3 m para stands, ferias, eventos y activaciones de marca."
+    },
+    "tenda-personalizada-3-x-4-cm": {
+      "name": "Carpa personalizada (3 x 4 cm)",
+      "description": "Carpa publicitaria personalizada para eventos y acciones promocionales que requieren más presencia visual y espacio operativo.",
+      "seoTitle": "Carpa personalizada (3 x 4 cm) | Carpas | IberFlag",
+      "seoDescription": "Carpa publicitaria personalizada para eventos, ferias y acciones promocionales de marca."
+    },
+    "tenda-personalizada-3-x-6-m": {
+      "name": "Carpa personalizada (3 x 6 m)",
+      "description": "Carpa publicitaria personalizada de gran formato para eventos, ferias y activaciones donde se necesita cobertura amplia y máxima visibilidad.",
+      "seoTitle": "Carpa personalizada (3 x 6 m) | Carpas | IberFlag",
+      "seoDescription": "Carpa personalizada 3 x 6 m para eventos, ferias y activaciones de marca de gran formato."
+    },
+    "fly-banner-drop-75-x-194-cm": {
+      "name": "Fly Banner Drop (75 x 194 cm)",
+      "description": "Fly Banner Drop personalizado con forma de gota, ideal para eventos, exterior, promociones y puntos de venta con presencia dinámica.",
+      "seoTitle": "Fly Banner Drop (75 x 194 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Drop personalizado con forma de gota para eventos, exterior, promociones y puntos de venta."
+    },
+    "fly-banner-drop-92-x-228-cm": {
+      "name": "Fly Banner Drop (92 x 228 cm)",
+      "description": "Fly Banner Drop personalizado con formato de gota y mayor altura, pensado para destacar mensajes de marca en exterior y eventos.",
+      "seoTitle": "Fly Banner Drop (92 x 228 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Drop personalizado para exterior y eventos con impresión profesional."
+    },
+    "fly-banner-drop-103-x-298-cm": {
+      "name": "Fly Banner Drop (103 x 298 cm)",
+      "description": "Fly Banner Drop personalizado de gran visibilidad, adecuado para campañas, activaciones y espacios exteriores con tráfico de personas.",
+      "seoTitle": "Fly Banner Drop (103 x 298 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Drop personalizado de gran visibilidad para campañas, eventos y exterior."
+    },
+    "fly-banner-drop-132-x-352-cm": {
+      "name": "Fly Banner Drop (132 x 352 cm)",
+      "description": "Fly Banner Drop personalizado de gran formato para reforzar presencia de marca en eventos, accesos, promociones y zonas exteriores.",
+      "seoTitle": "Fly Banner Drop (132 x 352 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Drop de gran formato para eventos, promociones y comunicación exterior."
+    },
+    "fly-banner-drop-145-x-446-cm": {
+      "name": "Fly Banner Drop (145 x 446 cm)",
+      "description": "Fly Banner Drop personalizado extra alto para máxima presencia visual en exterior, eventos, campañas y accesos principales.",
+      "seoTitle": "Fly Banner Drop (145 x 446 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Drop extra alto para máxima visibilidad en exterior, eventos y campañas de marca."
+    },
+    "fly-banner-retangular-70-x-180-cm": {
+      "name": "Fly Banner rectangular (70 x 180 cm)",
+      "description": "Fly Banner rectangular personalizado con superficie visual amplia, ideal para mensajes promocionales claros en exterior, ferias y puntos de venta.",
+      "seoTitle": "Fly Banner rectangular (70 x 180 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner rectangular personalizado para mensajes promocionales claros en exterior y eventos."
+    },
+    "fly-banner-retangular-70-x-280-cm": {
+      "name": "Fly Banner rectangular (70 x 280 cm)",
+      "description": "Fly Banner rectangular personalizado de mayor altura para campañas que necesitan lectura vertical, presencia de marca y montaje sencillo.",
+      "seoTitle": "Fly Banner rectangular (70 x 280 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner rectangular personalizado de mayor altura para exterior, ferias y eventos."
+    },
+    "fly-banner-surf-55-x-226-cm": {
+      "name": "Fly Banner Surf (55 x 226 cm)",
+      "description": "Fly Banner Surf personalizado con forma de vela, ligero y llamativo para campañas, eventos, exterior y acciones promocionales.",
+      "seoTitle": "Fly Banner Surf (55 x 226 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Surf personalizado con forma de vela para campañas, eventos y comunicación exterior."
+    },
+    "fly-banner-surf-65-x-272-cm": {
+      "name": "Fly Banner Surf (65 x 272 cm)",
+      "description": "Fly Banner Surf personalizado con presencia vertical y diseño dinámico, adecuado para eventos, promociones y señalización exterior.",
+      "seoTitle": "Fly Banner Surf (65 x 272 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Surf personalizado para eventos, promociones y señalización exterior."
+    },
+    "fly-banner-surf-75-5-x-351-cm": {
+      "name": "Fly Banner Surf (75.5 x 351 cm)",
+      "description": "Fly Banner Surf personalizado de gran altura para campañas con fuerte presencia visual en exterior, ferias y activaciones de marca.",
+      "seoTitle": "Fly Banner Surf (75.5 x 351 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Surf personalizado de gran altura para exterior, ferias y activaciones de marca."
+    },
+    "fly-banner-surf-75-5-x-417-cm": {
+      "name": "Fly Banner Surf (75.5 x 417 cm)",
+      "description": "Fly Banner Surf personalizado extra visible para eventos y espacios exteriores donde la marca necesita destacar a distancia.",
+      "seoTitle": "Fly Banner Surf (75.5 x 417 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Surf personalizado extra visible para eventos y espacios exteriores."
+    },
+    "fly-banner-surf-90-x-516-cm": {
+      "name": "Fly Banner Surf (90 x 516 cm)",
+      "description": "Fly Banner Surf personalizado de formato máximo para campañas exteriores, accesos, eventos y activaciones con gran impacto visual.",
+      "seoTitle": "Fly Banner Surf (90 x 516 cm) | Fly Banners | IberFlag",
+      "seoDescription": "Fly Banner Surf de formato máximo para campañas exteriores, eventos y activaciones de marca."
+    },
+    "cubo-publcitario-tamanho-unico": {
+      "name": "Cubo publicitario (tamaño único)",
+      "description": "Cubo publicitario personalizado, fácil de montar y desmontar, con tejido personalizable para campañas promocionales, eventos y puntos de venta.",
+      "seoTitle": "Cubo publicitario | Cubos | IberFlag",
+      "seoDescription": "Cubo publicitario personalizado para campañas promocionales, eventos y puntos de venta."
+    },
+    "mastro-de-aluminio-6-metros-tamanho-unico": {
+      "name": "Mástil de aluminio (6 metros) (tamaño único)",
+      "description": "Mástil de aluminio para banderas exteriores, indicado para uso institucional y publicitario con resistencia y buena visibilidad.",
+      "seoTitle": "Mástil de aluminio 6 metros | Mástiles | IberFlag",
+      "seoDescription": "Mástil de aluminio para banderas exteriores con resistencia, visibilidad y uso institucional o publicitario."
+    },
+    "photocall-tamanho-unico": {
+      "name": "Photocall (tamaño único)",
+      "description": "Photocall extensible personalizado con todo lo necesario para instalación y montaje, ideal para eventos, conferencias, marcas y zonas de fotografía.",
+      "seoTitle": "Photocall personalizado | Photocalls | IberFlag",
+      "seoDescription": "Photocall extensible personalizado para eventos, conferencias, marcas y zonas de fotografía."
+    },
+    "mini-fly-banner-tamanho-unico": {
+      "name": "Mini Fly Banner (tamaño único)",
+      "description": "Mini Fly Banner personalizado, una versión compacta y original de las banderas de playa para mostradores, recepciones y acciones promocionales.",
+      "seoTitle": "Mini Fly Banner | Fly Banners | IberFlag",
+      "seoDescription": "Mini Fly Banner personalizado para mostradores, recepciones y acciones promocionales."
+    },
+    "x-banner-80-x-180-cm": {
+      "name": "X-Banner (80 x 180 cm)",
+      "description": "X-Banner personalizado con soporte incluido, ligero y práctico para campañas interiores, promociones, escaparates y presentaciones.",
+      "seoTitle": "X-Banner (80 x 180 cm) | X-Banners | IberFlag",
+      "seoDescription": "X-Banner personalizado con soporte incluido para campañas interiores, promociones y presentaciones."
+    },
+    "roll-up-85-x-200-cm": {
+      "name": "Roll Up (85 x 200 cm)",
+      "description": "Roll Up personalizado enrollable con todo lo necesario para montaje, ideal para ferias, tiendas, presentaciones y comunicación interior.",
+      "seoTitle": "Roll Up (85 x 200 cm) | Roll Ups | IberFlag",
+      "seoDescription": "Roll Up personalizado enrollable para ferias, tiendas, presentaciones y comunicación interior."
+    },
+    "photocall-286-x-217-cm": {
+      "name": "Photocall (286 x 217 cm)",
+      "description": "Photocall personalizado en lona Frontlit de PVC, preparado para instalación y montaje en eventos, stands y acciones de marca.",
+      "seoTitle": "Photocall (286 x 217 cm) | Photocalls | IberFlag",
+      "seoDescription": "Photocall personalizado para eventos, stands y acciones de marca con lona Frontlit de PVC."
+    },
+    "wall-banner-60-x-230-cm": {
+      "name": "Wall Banner (60 x 230 cm)",
+      "description": "Wall Banner personalizado de doble cara, ligero y desmontable, ideal para eventos, exposiciones y puntos de venta.",
+      "seoTitle": "Wall Banner (60 x 230 cm) | Wall Banners | IberFlag",
+      "seoDescription": "Wall Banner personalizado de doble cara para eventos, exposiciones y puntos de venta."
+    },
+    "wall-banner-90-x-230-cm": {
+      "name": "Wall Banner (90 x 230 cm)",
+      "description": "Wall Banner personalizado de doble cara con formato versátil para eventos, exposiciones, campañas interiores y puntos de venta.",
+      "seoTitle": "Wall Banner (90 x 230 cm) | Wall Banners | IberFlag",
+      "seoDescription": "Wall Banner personalizado de doble cara para eventos, exposiciones y comunicación interior."
+    },
+    "wall-banner-120-x-230-cm": {
+      "name": "Wall Banner (120 x 230 cm)",
+      "description": "Wall Banner personalizado de doble cara con mayor presencia visual para eventos, exposiciones, ferias y puntos de venta.",
+      "seoTitle": "Wall Banner (120 x 230 cm) | Wall Banners | IberFlag",
+      "seoDescription": "Wall Banner personalizado de doble cara con gran presencia visual para eventos y exposiciones."
+    },
+    "wall-banner-150-x-230-cm": {
+      "name": "Wall Banner (150 x 230 cm)",
+      "description": "Wall Banner personalizado de gran formato, doble cara y desmontable, pensado para eventos, exposiciones y comunicación de marca.",
+      "seoTitle": "Wall Banner (150 x 230 cm) | Wall Banners | IberFlag",
+      "seoDescription": "Wall Banner personalizado de gran formato para eventos, exposiciones y comunicación de marca."
+    }
+  }
+}

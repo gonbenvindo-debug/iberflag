@@ -21,6 +21,12 @@
             .replace(/'/g, '&#039;');
     }
 
+    function i18nText(value) {
+        return window.IberFlagI18n?.translateText
+            ? window.IberFlagI18n.translateText(value)
+            : value;
+    }
+
     function decodeProductName(value) {
         const raw = String(value || '').trim();
         if (!raw) {
@@ -110,10 +116,10 @@
             <div role="dialog" aria-modal="true" aria-labelledby="flybanner-selection-title" style="width:min(100%, 960px); max-height:90vh; overflow:hidden; display:flex; flex-direction:column; background:#ffffff; border-radius:28px; box-shadow:0 32px 90px rgba(15,23,42,0.24);">
                 <div style="display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.5rem; border-bottom:1px solid rgba(148,163,184,0.22);">
                     <div>
-                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">Escolha o reforço</h2>
-                        <p id="flybanner-selection-subtitle" style="margin:0.5rem 0 0; font-size:0.95rem; line-height:1.5; color:#64748b;">Selecione a opção pretendida antes de continuar.</p>
+                        <h2 id="flybanner-selection-title" style="margin:0; font-size:1.25rem; line-height:1.2; font-weight:700; color:#0f172a;">${i18nText('Escolha o reforço')}</h2>
+                        <p id="flybanner-selection-subtitle" style="margin:0.5rem 0 0; font-size:0.95rem; line-height:1.5; color:#64748b;">${i18nText('Selecione a opção pretendida antes de continuar.')}</p>
                     </div>
-                    <button type="button" data-flybanner-close="true" aria-label="Fechar seletor" style="width:2.5rem; height:2.5rem; border:0; border-radius:999px; background:#f8fafc; color:#475569; cursor:pointer; font-size:1.5rem; line-height:1;">&times;</button>
+                    <button type="button" data-flybanner-close="true" aria-label="${i18nText('Fechar seletor')}" style="width:2.5rem; height:2.5rem; border:0; border-radius:999px; background:#f8fafc; color:#475569; cursor:pointer; font-size:1.5rem; line-height:1;">&times;</button>
                 </div>
                 <div id="flybanner-selection-body" style="padding:1.5rem; overflow:auto;"></div>
             </div>
@@ -164,12 +170,12 @@
 
     function buildBaseOptionMarkup(base, nextUrl) {
         const baseId = String(base?.base_id || '').trim();
-        const baseName = escapeHtmlLocal(base?.base_nome || 'Base');
+        const baseName = escapeHtmlLocal(i18nText(base?.base_nome || 'Base'));
         const imageUrl = escapeHtmlLocal(base?.base_imagem || '/assets/images/template-placeholder.svg');
         const isAvailable = base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false';
         const extra = Number(base?.preco_extra_aplicado || 0);
-        const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluído';
-        const note = escapeHtmlLocal(base?.base_nota_indisponibilidade || 'Indisponível');
+        const priceLabel = extra > 0 ? `+${extra.toFixed(2)}€` : i18nText('Incluído');
+        const note = escapeHtmlLocal(i18nText(base?.base_nota_indisponibilidade || 'Indisponível'));
         const badgeLabel = isAvailable ? priceLabel : note;
         const buttonStyles = isAvailable
             ? 'cursor:pointer; border:1px solid rgba(148,163,184,0.28); background:#ffffff;'
@@ -269,10 +275,10 @@
     function renderLoading(productName) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha o reforço';
+            modal.title.textContent = i18nText('Escolha o reforço');
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `A carregar as opções disponiveis para ${productName || 'este flybanner'}...`;
+            modal.subtitle.textContent = `${i18nText('A carregar as opções disponíveis para')} ${i18nText(productName || 'este flybanner')}...`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
@@ -306,16 +312,16 @@
     function renderEmptyState(productName, nextUrl) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Sem opções configuradas';
+            modal.title.textContent = i18nText('Sem opções configuradas');
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `Este flybanner ainda nao tem opções configuradas para ${productName || 'este produto'}.`;
+            modal.subtitle.textContent = `${i18nText('Este flybanner ainda não tem opções configuradas para')} ${i18nText(productName || 'este produto')}.`;
         }
         if (modal.body) {
             modal.body.innerHTML = `
                 <div style="padding:1rem 0 0.25rem; text-align:center;">
-                    <p style="margin:0; color:#64748b; line-height:1.6;">Vamos continuar para a pagina do produto para nao bloquear a navegacao.</p>
-                    <button type="button" data-flybanner-fallback="true" style="margin-top:1rem; padding:0.85rem 1.35rem; border:0; border-radius:14px; background:#0f172a; color:#ffffff; font-weight:700; cursor:pointer;">Continuar</button>
+                    <p style="margin:0; color:#64748b; line-height:1.6;">${i18nText('Vamos continuar para a página do produto para não bloquear a navegação.')}</p>
+                    <button type="button" data-flybanner-fallback="true" style="margin-top:1rem; padding:0.85rem 1.35rem; border:0; border-radius:14px; background:#0f172a; color:#ffffff; font-weight:700; cursor:pointer;">${i18nText('Continuar')}</button>
                 </div>
             `;
 
@@ -334,10 +340,10 @@
     function renderOptions(productName, options, nextUrl) {
         const modal = ensureModal();
         if (modal.title) {
-            modal.title.textContent = 'Escolha o reforço';
+            modal.title.textContent = i18nText('Escolha o reforço');
         }
         if (modal.subtitle) {
-            modal.subtitle.textContent = `Selecione a opção pretendida para ${productName || 'este flybanner'} antes de continuar.`;
+            modal.subtitle.textContent = `${i18nText('Selecione a opção pretendida para')} ${i18nText(productName || 'este flybanner')} ${i18nText('antes de continuar.')}`;
         }
         if (modal.body) {
             modal.body.innerHTML = `

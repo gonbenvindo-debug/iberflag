@@ -1,6 +1,26 @@
 ﻿// ============================================================
 // PRODUCT & CART
 // ============================================================
+function i18nText(value) {
+    return window.IberFlagI18n?.translateText
+        ? window.IberFlagI18n.translateText(value)
+        : value;
+}
+
+function i18nProduct(product) {
+    return window.IberFlagI18n?.localizeProduct
+        ? window.IberFlagI18n.localizeProduct(product)
+        : product;
+}
+
+function getProductsPath() {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
+        return SiteRoutes.getLocalizedPath(SiteRoutes.STATIC_PATHS.products);
+    }
+
+    return '/produtos';
+}
+
 Object.assign(DesignEditor.prototype, {
 
     async loadProduct() {
@@ -37,9 +57,7 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (!productId && !productSlug) {
-            window.location.href = typeof SiteRoutes !== 'undefined'
-                ? SiteRoutes.STATIC_PATHS.products
-                : '/produtos';
+            window.location.href = getProductsPath();
             return;
         }
 
@@ -79,13 +97,12 @@ Object.assign(DesignEditor.prototype, {
         this.currentProduct = dbProduct
             || initialProducts.find((product) => String(product.id) === String(productId))
             || initialProducts.find((product) => typeof SiteRoutes !== 'undefined' && SiteRoutes.inferProductSlug(product) === productSlug);
+        this.currentProduct = i18nProduct(this.currentProduct);
 
         if (!this.currentProduct) {
-            showToast('Produto não encontrado', 'error');
+            showToast(i18nText('Produto não encontrado'), 'error');
             setTimeout(() => {
-                window.location.href = typeof SiteRoutes !== 'undefined'
-                    ? SiteRoutes.STATIC_PATHS.products
-                    : '/produtos';
+                window.location.href = getProductsPath();
             }, 2000);
             return;
         }
@@ -96,11 +113,9 @@ Object.assign(DesignEditor.prototype, {
             : productSlug;
 
         if (!this.isAdminMode && (this.currentProduct.ativo === false || !(Number(this.currentProduct.preco) > 0))) {
-            showToast('Este produto ainda não tem preço válido para checkout.', 'error');
+            showToast(i18nText('Este produto ainda não tem preço válido para checkout.'), 'error');
             setTimeout(() => {
-                window.location.href = typeof SiteRoutes !== 'undefined'
-                    ? SiteRoutes.STATIC_PATHS.products
-                    : '/produtos';
+                window.location.href = getProductsPath();
             }, 2000);
             return;
         }
@@ -194,7 +209,7 @@ Object.assign(DesignEditor.prototype, {
 
             if (localSvgMarkup && window.DesignSvgStore?.importSvgIntoEditor) {
                 window.DesignSvgStore.importSvgIntoEditor(this, localSvgMarkup);
-                showToast(`Template "${localTemplate.name}" carregado!`, 'success');
+                showToast(i18nText(`Template "${localTemplate.name}" carregado!`), 'success');
                 return;
             }
         }
@@ -243,7 +258,7 @@ Object.assign(DesignEditor.prototype, {
                 }
             }
 
-            showToast(`Template "${data.nome}" carregado!`, 'success');
+            showToast(i18nText(`Template "${data.nome}" carregado!`), 'success');
         } catch (err) {
             console.error('Erro ao carregar template:', err);
             const fallbackTemplate = window.DesignTemplates?.getById?.(templateId);
@@ -259,7 +274,7 @@ Object.assign(DesignEditor.prototype, {
 
             if (fallbackTemplate && fallbackSvg && window.DesignSvgStore?.importSvgIntoEditor) {
                 window.DesignSvgStore.importSvgIntoEditor(this, fallbackSvg);
-                showToast(`Template "${fallbackTemplate.name}" carregado!`, 'success');
+                showToast(i18nText(`Template "${fallbackTemplate.name}" carregado!`), 'success');
             }
         }
     },
@@ -338,15 +353,15 @@ Object.assign(DesignEditor.prototype, {
         const emptyState = document.getElementById('cart-base-empty');
 
         if (labelEl) {
-            labelEl.textContent = 'Escolher base';
+            labelEl.textContent = i18nText('Escolher base');
         }
 
         if (descriptionEl) {
-            descriptionEl.textContent = 'Seleciona uma base para este design.';
+            descriptionEl.textContent = i18nText('Selecione uma base para este design.');
         }
 
         if (emptyState) {
-            emptyState.textContent = 'Este produto nao tem bases configuradas. O design sera adicionado sem base.';
+            emptyState.textContent = i18nText('Este produto não tem bases configuradas. O design será adicionado sem base.');
         }
     },
 
@@ -361,7 +376,7 @@ Object.assign(DesignEditor.prototype, {
         confirmBtn.disabled = !canConfirm;
         confirmBtn.classList.toggle('opacity-50', !canConfirm);
         confirmBtn.classList.toggle('cursor-not-allowed', !canConfirm);
-        confirmBtn.textContent = canConfirm ? 'Adicionar ao carrinho' : 'Indisponivel';
+        confirmBtn.textContent = canConfirm ? i18nText('Adicionar ao carrinho') : i18nText('Indisponível');
     },
 
     renderProductBaseOptions() {
@@ -519,7 +534,7 @@ Object.assign(DesignEditor.prototype, {
 
     openCartStepsModal() {
         if (this.elements.length === 0) {
-            showToast('Adicione pelo menos um elemento ao design', 'warning');
+            showToast(i18nText('Adicione pelo menos um elemento ao design'), 'warning');
             return;
         }
 
@@ -684,7 +699,7 @@ Object.assign(DesignEditor.prototype, {
                 icon.setAttribute('data-lucide', 'save');
             }
             const text = cartBtn.querySelector('.editor-cart-text');
-            if (text) text.textContent = 'Guardar Design';
+            if (text) text.textContent = i18nText('Guardar Design');
             cartBtn.classList.remove('bg-blue-600', 'hover:bg-blue-700');
             cartBtn.classList.add('bg-green-600', 'hover:bg-green-700');
         }
@@ -701,7 +716,7 @@ Object.assign(DesignEditor.prototype, {
 
     async saveDesignAsTemplate() {
         if (this.elements.length === 0) {
-            showToast('Adicione pelo menos um elemento ao design', 'warning');
+            showToast(i18nText('Adicione pelo menos um elemento ao design'), 'warning');
             return;
         }
 
@@ -710,7 +725,7 @@ Object.assign(DesignEditor.prototype, {
 
         const nome = prompt('Nome do design:');
         if (!nome || !nome.trim()) {
-            showToast('Nome obrigatorio para guardar o design', 'warning');
+            showToast(i18nText('Nome obrigatorio para guardar o design'), 'warning');
             return;
         }
 
@@ -750,7 +765,7 @@ Object.assign(DesignEditor.prototype, {
                     .update(templateData)
                     .eq('id', this.editingTemplateId);
                 if (error) throw error;
-                showToast('Design atualizado com sucess?!', 'success');
+                showToast(i18nText('Design atualizado com sucess?!'), 'success');
             } else {
                 const { data, error } = await supabaseClient
                     .from('templates')
@@ -774,7 +789,7 @@ Object.assign(DesignEditor.prototype, {
                             ordem: 1
                         });
                 }
-                showToast('Design criado e associado ao produto!', 'success');
+                showToast(i18nText('Design criado e associado ao produto!'), 'success');
             }
 
             setTimeout(() => {
@@ -782,7 +797,7 @@ Object.assign(DesignEditor.prototype, {
             }, 1200);
         } catch (err) {
             console.error('Erro ao guardar design:', err);
-            showToast(err.message || 'Erro ao guardar design', 'error');
+            showToast(i18nText(err.message || 'Erro ao guardar design'), 'error');
         }
     }
 

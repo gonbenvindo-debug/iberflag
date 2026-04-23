@@ -15,6 +15,42 @@ const orderOpenDocumentBtn = document.getElementById('order-open-document-btn');
 const orderContactSupportBtn = document.getElementById('order-contact-support-btn');
 
 let renderedItemPreviews = [];
+const ES_TEXT = {
+    'Sem estado': 'Sin estado',
+    'Em Preparação': 'En preparación',
+    'Em Produção': 'En producción',
+    'Expedido': 'Expedido',
+    'Entregue': 'Entregado',
+    'atualizado em': 'actualizado el',
+    'Nada para copiar.': 'Nada que copiar.',
+    'Não foi possível copiar automaticamente.': 'No fue posible copiar automáticamente.',
+    'Faturação': 'Facturación',
+    'Ainda não disponível': 'Todavía no disponible',
+    'Disponível no email de confirmação': 'Disponible en el email de confirmación',
+    'Sem notas adicionais.': 'Sin notas adicionales.',
+    'Emissão pendente. A nossa equipa está a validar.': 'Emisión pendiente. Nuestro equipo lo está validando.',
+    'A aguardar emissão automática': 'Esperando la emisión automática',
+    'Disponível após confirmação do pagamento': 'Disponible tras la confirmación del pago',
+    'O pagamento ainda não foi confirmado. Assim que entrar, a equipa pode avançar para a validação do pedido.': 'El pago aún no ha sido confirmado. En cuanto entre, el equipo podrá avanzar con la validación del pedido.',
+    'Pagamento confirmado. A encomenda já está em fila operacional e pode ser atualizada pela equipa em tempo real.': 'Pago confirmado. El pedido ya está en cola operativa y puede actualizarse por el equipo en tiempo real.',
+    'A fatura já foi emitida e pode ser aberta diretamente a partir desta página.': 'La factura ya ha sido emitida y puede abrirse directamente desde esta página.',
+    'A emissão fiscal está a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.': 'La emisión fiscal se está tramitando automáticamente. Si hubiera retraso, el equipo puede reemitirla manualmente desde el panel.',
+    'Estamos a validar ficheiros e a preparar a produção do teu material.': 'Estamos validando archivos y preparando la producción de su material.',
+    'A encomenda já está em produção. O próximo passo normal é expedição.': 'El pedido ya está en producción. El siguiente paso habitual es la expedición.',
+    'A encomenda já saiu para entrega. Use o tracking': 'El pedido ya ha salido para la entrega. Use el seguimiento',
+    'para acompanhar o percurso.': 'para seguir el recorrido.',
+    'A encomenda já foi expedida. O tracking ficará visível assim que estiver disponível.': 'El pedido ya ha sido expedido. El seguimiento será visible en cuanto esté disponible.',
+    'A encomenda aparece como entregue. Se precisar de apoio, use o botão de contacto e responda com o código IBF.': 'El pedido figura como entregado. Si necesita ayuda, use el botón de contacto y responda con el código IBF.',
+    'Sem passos adicionais para mostrar neste momento.': 'No hay pasos adicionales que mostrar en este momento.',
+    'Código da encomenda copiado.': 'Código del pedido copiado.',
+    'Código de tracking copiado.': 'Código de seguimiento copiado.',
+    'Apoio à encomenda': 'Ayuda con el pedido',
+    'Ligação ao backend indisponível. Verifique a configuração do Supabase.': 'Conexión con el backend no disponible. Verifique la configuración de Supabase.',
+    'Não foi possível consultar o estado da encomenda neste momento.': 'No fue posible consultar el estado del pedido en este momento.',
+    'O contrato público de tracking do Supabase não está ativo (`get_order_tracking`).': 'El contrato público de seguimiento de Supabase no está activo (`get_order_tracking`).',
+    'O tracking público foi bloqueado por permissões do Supabase.': 'El seguimiento público fue bloqueado por permisos de Supabase.',
+    'Ocorreu um problema técnico ao consultar esta encomenda. Tente novamente dentro de momentos.': 'Se produjo un problema técnico al consultar este pedido. Inténtelo de nuevo dentro de unos instantes.'
+};
 
 function escapeHtml(value) {
     return String(value || '')
@@ -25,19 +61,38 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function i18nText(value) {
+    const locale = window.IberFlagI18n?.getLocale?.()
+        || (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocaleFromPathname === 'function'
+            ? SiteRoutes.getLocaleFromPathname(window.location.pathname)
+            : (window.location.pathname === '/es' || window.location.pathname.startsWith('/es/') ? 'es' : 'pt'));
+
+    if (locale === 'es' && Object.prototype.hasOwnProperty.call(ES_TEXT, value)) {
+        return ES_TEXT[value];
+    }
+
+    return window.IberFlagI18n?.translateText
+        ? window.IberFlagI18n.translateText(value)
+        : value;
+}
+
+function getCurrentLocaleTag() {
+    return window.IberFlagI18n?.getLocale?.() === 'es' ? 'es-ES' : 'pt-PT';
+}
+
 function buildWorkflowLabelWithGradeHtml(statusValue) {
     const label = typeof getWorkflowStatusLabel === 'function'
         ? getWorkflowStatusLabel(statusValue)
-        : String(statusValue || 'Sem estado');
+        : i18nText(String(statusValue || 'Sem estado'));
     return escapeHtml(label);
 }
 
 function getOrderProgressSteps(workflowStatus, splitMeta) {
     const defaultSteps = [
-        { value: 'em_preparacao', label: 'Em Preparacao' },
-        { value: 'em_producao', label: 'Em Produ??o' },
-        { value: 'expedido', label: 'Expedido' },
-        { value: 'entregue', label: 'Entregue' }
+        { value: 'em_preparacao', label: i18nText('Em Preparação') },
+        { value: 'em_producao', label: i18nText('Em Produção') },
+        { value: 'expedido', label: i18nText('Expedido') },
+        { value: 'entregue', label: i18nText('Entregue') }
     ];
     const sourceSteps = Array.isArray(window.ORDER_WORKFLOW_STEPS) && window.ORDER_WORKFLOW_STEPS.length > 0
         ? window.ORDER_WORKFLOW_STEPS
@@ -98,9 +153,9 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
         const currentStep = steps[currentIndex] || {};
         const currentLabel = currentStep.label || (typeof getWorkflowStatusLabel === 'function'
             ? getWorkflowStatusLabel(normalizedStatus)
-            : normalizedStatus || 'Sem estado');
+            : normalizedStatus || i18nText('Sem estado'));
         const updatedAt = order?.updated_at || order?.created_at;
-        summaryEl.textContent = `${currentLabel}${updatedAt ? ` · atualizado em ${formatDateTime(updatedAt)}` : ''}`;
+        summaryEl.textContent = `${currentLabel}${updatedAt ? ` · ${i18nText('atualizado em')} ${formatDateTime(updatedAt)}` : ''}`;
     }
 }
 
@@ -111,7 +166,7 @@ function formatCurrency(value) {
 
 function formatDateTime(value) {
     if (!value) return '-';
-    return new Date(value).toLocaleString('pt-PT');
+    return new Date(value).toLocaleString(getCurrentLocaleTag());
 }
 
 function normalizeOrderCode(value) {
@@ -121,7 +176,7 @@ function normalizeOrderCode(value) {
 async function copyTextToClipboard(value, successMessage) {
     const normalized = String(value || '').trim();
     if (!normalized) {
-        showToast('Nada para copiar.', 'warning');
+        showToast(i18nText('Nada para copiar.'), 'warning');
         return;
     }
 
@@ -143,7 +198,7 @@ async function copyTextToClipboard(value, successMessage) {
         showToast(successMessage, 'success');
     } catch (error) {
         console.error('Falha ao copiar texto:', error);
-        showToast('Não foi possível copiar automaticamente.', 'error');
+        showToast(i18nText('Não foi possível copiar automaticamente.'), 'error');
     }
 }
 
@@ -472,7 +527,7 @@ function renderOrderSidebar(order, splitMeta) {
         : ((order.facturalusa_document_number || splitMeta.meta.facturalusaDocumentNumber) ? 'emitted' : ((order.payment_status || splitMeta.meta.paymentStatus) === 'paid' ? 'pending' : 'not_required'));
 
     if (trackingCodeEl) {
-        trackingCodeEl.textContent = tracking.trackingCode || 'Ainda nao disponivel';
+        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda não disponível');
     }
 
     if (trackingLinkEl) {
@@ -486,14 +541,14 @@ function renderOrderSidebar(order, splitMeta) {
     }
 
     if (shippingEl) {
-        shippingEl.textContent = order.morada_envio || 'Disponivel no email de confirmacao';
+        shippingEl.textContent = order.morada_envio || i18nText('Disponível no email de confirmação');
     }
     if (notesEl) {
-        notesEl.textContent = splitMeta.publicNotes || 'Sem notas adicionais.';
+        notesEl.textContent = splitMeta.publicNotes || i18nText('Sem notas adicionais.');
     }
 
     if (nifEl) {
-        nifEl.textContent = order.clientes?.nif || 'Disponivel no email de confirmacao';
+        nifEl.textContent = order.clientes?.nif || i18nText('Disponível no email de confirmação');
     }
     if (facturalusaStatusEl) {
         facturalusaStatusEl.textContent = typeof getFacturalusaStatusLabel === 'function'
@@ -505,10 +560,10 @@ function renderOrderSidebar(order, splitMeta) {
         facturalusaNumberEl.textContent = documentNumber
             ? `Nº ${documentNumber}`
             : facturalusaStatus === 'blocked' || facturalusaStatus === 'error'
-                ? 'Emissão pendente. A nossa equipa está a validar.'
+                ? i18nText('Emissão pendente. A nossa equipa está a validar.')
                 : facturalusaStatus === 'pending'
-                    ? 'A aguardar emissão automática'
-                    : 'Disponível após confirmação do pagamento';
+                    ? i18nText('A aguardar emissão automática')
+                    : i18nText('Disponível após confirmação do pagamento');
     }
     if (facturalusaLinkEl) {
         const url = String(order.facturalusa_document_url || splitMeta.meta.facturalusaDocumentUrl || '').trim();
@@ -533,27 +588,27 @@ function buildOrderNextSteps(order, workflowStatus, splitMeta) {
     const steps = [];
 
     if (paymentStatus !== 'paid') {
-        steps.push('O pagamento ainda não foi confirmado. Assim que entrar, a equipa pode avançar para a validação do pedido.');
+        steps.push(i18nText('O pagamento ainda não foi confirmado. Assim que entrar, a equipa pode avançar para a validação do pedido.'));
     } else {
-        steps.push('Pagamento confirmado. A encomenda já está em fila operacional e pode ser atualizada pela equipa em tempo real.');
+        steps.push(i18nText('Pagamento confirmado. A encomenda já está em fila operacional e pode ser atualizada pela equipa em tempo real.'));
     }
 
     if (fiscalStatus === 'emitted') {
-        steps.push('A fatura já foi emitida e pode ser aberta diretamente a partir desta página.');
+        steps.push(i18nText('A fatura já foi emitida e pode ser aberta diretamente a partir desta página.'));
     } else if (paymentStatus === 'paid') {
-        steps.push('A emissão fiscal está a ser tratada automaticamente. Se houver atras?, a equipa consegue reemitir manualmente no painel.');
+        steps.push(i18nText('A emissão fiscal está a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.'));
     }
 
     if (workflowStatus === 'em_preparacao') {
-        steps.push('Estamos a validar ficheiros e a preparar a produção do teu material.');
+        steps.push(i18nText('Estamos a validar ficheiros e a preparar a produção do teu material.'));
     } else if (workflowStatus === 'em_producao') {
-        steps.push('A encomenda já está em produção. O próximo pass? normal é expedição.');
+        steps.push(i18nText('A encomenda já está em produção. O próximo passo normal é expedição.'));
     } else if (workflowStatus === 'expedido') {
         steps.push(tracking.trackingCode
-            ? `A encomenda já saiu para entrega. Usa o tracking ${tracking.trackingCode} para acompanhar o percurs?.`
-            : 'A encomenda já foi expedida. O tracking ficará visível assim que estiver disponível.');
+            ? `${i18nText('A encomenda já saiu para entrega. Use o tracking')} ${tracking.trackingCode} ${i18nText('para acompanhar o percurso.')}`
+            : i18nText('A encomenda já foi expedida. O tracking ficará visível assim que estiver disponível.'));
     } else if (workflowStatus === 'entregue') {
-        steps.push('A encomenda aparece como entregue. Se precisares de apoio, usa o botão de contacto e responde com o código IBF.');
+        steps.push(i18nText('A encomenda aparece como entregue. Se precisar de apoio, use o botão de contacto e responda com o código IBF.'));
     }
 
     return steps.slice(0, 4);
@@ -576,17 +631,17 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
                     <p>${escapeHtml(step)}</p>
                 </div>
             `).join('')
-            : '<p>Sem pass?s adicionais para mostrar neste momento.</p>';
+            : `<p>${escapeHtml(i18nText('Sem passos adicionais para mostrar neste momento.'))}</p>`;
     }
 
     if (orderCopyCodeBtn) {
-        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, 'Código da encomenda copiado.');
+        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, i18nText('Código da encomenda copiado.'));
         orderCopyCodeBtn.disabled = !orderCode;
     }
 
     if (orderCopyTrackingBtn) {
         const hasTracking = Boolean(tracking.trackingCode);
-        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, 'Código de tracking copiado.');
+        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, i18nText('Código de tracking copiado.'));
         orderCopyTrackingBtn.disabled = !hasTracking;
         orderCopyTrackingBtn.classList.toggle('opacity-50', !hasTracking);
         orderCopyTrackingBtn.classList.toggle('cursor-not-allowed', !hasTracking);
@@ -605,8 +660,10 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
     if (orderContactSupportBtn) {
         const params = new URLSearchParams();
         if (orderCode) params.set('codigo', orderCode);
-        params.set('assunto', 'Apoio a encomenda');
-        orderContactSupportBtn.href = `/contacto?${params.toString()}`;
+        params.set('assunto', i18nText('Apoio à encomenda'));
+        orderContactSupportBtn.href = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildContactPath === 'function'
+            ? SiteRoutes.buildContactPath(Object.fromEntries(params.entries()))
+            : `/contacto?${params.toString()}`;
     }
 }
 
@@ -864,22 +921,22 @@ function getOrderLoadErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
     if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
-        return 'Ligacao ao backend indisponivel. Verifique a configuracao do Supabase.';
+        return i18nText('Ligação ao backend indisponível. Verifique a configuração do Supabase.');
     }
 
     if (rawMessage.includes('session-status') || rawMessage.includes('checkout/session-status')) {
-        return 'Nao foi possivel consultar o estado da encomenda neste momento.';
+        return i18nText('Não foi possível consultar o estado da encomenda neste momento.');
     }
 
     if (rawMessage.includes('get_order_tracking')) {
-        return 'O contrato publico de tracking do Supabase nao esta ativo (`get_order_tracking`).';
+        return i18nText('O contrato público de tracking do Supabase não está ativo (`get_order_tracking`).');
     }
 
     if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
-        return 'O tracking publico foi bloqueado por permiss?es do Supabase.';
+        return i18nText('O tracking público foi bloqueado por permissões do Supabase.');
     }
 
-    return 'Ocorreu um problema tecnico ao consultar esta encomenda. Tente novamente dentro de momentos.';
+    return i18nText('Ocorreu um problema técnico ao consultar esta encomenda. Tente novamente dentro de momentos.');
 }
 
 async function initOrderPage() {

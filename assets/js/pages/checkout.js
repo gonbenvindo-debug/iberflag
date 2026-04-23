@@ -49,7 +49,6 @@ const fiscalSummaryCountry = document.getElementById('fiscal-summary-country');
 const fiscalSummaryTreatment = document.getElementById('fiscal-summary-treatment');
 const fiscalSummaryWarning = document.getElementById('fiscal-summary-warning');
 
-const PLACE_ORDER_DEFAULT_LABEL = '<i data-lucide="lock" class="w-5 h-5"></i> Finalizar Encomenda';
 const COMMON_EMAIL_DOMAIN_FIXES = {
     'gmail.com.pt': 'gmail.com',
     'gmail.pt': 'gmail.com',
@@ -124,6 +123,24 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function i18nText(value) {
+    return window.IberFlagI18n?.translateText
+        ? window.IberFlagI18n.translateText(value)
+        : value;
+}
+
+function getLocalizedStaticPath(pathname, fallback) {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
+        return SiteRoutes.getLocalizedPath(pathname);
+    }
+
+    return fallback;
+}
+
+function getPlaceOrderDefaultLabel() {
+    return `<i data-lucide="lock" class="w-5 h-5"></i> ${i18nText('Finalizar Encomenda')}`;
+}
+
 function setElementHidden(element, hidden) {
     if (!element) {
         return;
@@ -147,7 +164,7 @@ function validateCheckoutEmail(value) {
         return {
             valid: false,
             normalized,
-            message: 'Introduza um email valido.'
+            message: i18nText('Introduza um email válido.')
         };
     }
 
@@ -158,7 +175,7 @@ function validateCheckoutEmail(value) {
             valid: false,
             normalized,
             suggestion: normalized.replace(/@[^@]+$/, `@${suggestedDomain}`),
-            message: `O dominio do email parece invalido: @${domain}. Queria dizer @${suggestedDomain}?`
+            message: `${i18nText('O domínio do email parece inválido:')} @${domain}. ${i18nText('Queria dizer')} @${suggestedDomain}?`
         };
     }
 
@@ -322,10 +339,10 @@ function validateTaxId(value, postalCode = '') {
         message: valid
             ? ''
             : country === 'ES'
-                ? 'NIF/NIE espanhol invalido. Verifique o numero fiscal antes de continuar.'
+                ? i18nText('NIF/NIE espanhol inválido. Verifique o número fiscal antes de continuar.')
             : country === 'PT'
-                ? 'NIF portugues invalido. Verifique os 9 digitos antes de continuar.'
-                : 'VAT/NIF intracomunitario invalido. Verifique o numero fiscal antes de continuar.'
+                ? i18nText('NIF português inválido. Verifique os 9 dígitos antes de continuar.')
+                : i18nText('VAT/NIF intracomunitário inválido. Verifique o número fiscal antes de continuar.')
     };
 }
 
@@ -458,10 +475,10 @@ function syncAddressCountryFromFiscal({ force = false } = {}) {
 function updateAddressLabels() {
     const config = getLocationConfig();
     if (addressRegionLabel) {
-        addressRegionLabel.textContent = `${config?.regionLabel || 'Distrito / província'} *`;
+        addressRegionLabel.textContent = `${i18nText(config?.regionLabel || 'Distrito / província')} *`;
     }
     if (addressMunicipalityLabel) {
-        addressMunicipalityLabel.textContent = `${config?.municipalityLabel || 'Concelho / município'} *`;
+        addressMunicipalityLabel.textContent = `${i18nText(config?.municipalityLabel || 'Concelho / município')} *`;
     }
     if (postalCodeInput && config?.postalPlaceholder) {
         postalCodeInput.placeholder = config.postalPlaceholder;
@@ -477,7 +494,7 @@ function populateAddressMunicipalities({ preserveValue = true } = {}) {
     const region = findAddressRegion(addressRegionSelect?.value || '');
     const municipalityLabel = getLocationConfig()?.municipalityLabel || 'concelho';
     if (!region) {
-        setSelectOptions(addressMunicipalitySelect, [], `Escolha primeiro o ${getLocationConfig()?.regionLabel?.toLowerCase() || 'distrito'}`);
+        setSelectOptions(addressMunicipalitySelect, [], `${i18nText('Escolha primeiro o')} ${i18nText(getLocationConfig()?.regionLabel?.toLowerCase() || 'distrito')}`);
         addressMunicipalitySelect.value = '';
         addressMunicipalitySelect.disabled = true;
         return;
@@ -487,7 +504,7 @@ function populateAddressMunicipalities({ preserveValue = true } = {}) {
     setSelectOptions(
         addressMunicipalitySelect,
         (region.municipalities || []).map((municipality) => ({ value: municipality, label: municipality })),
-        `Escolha o ${municipalityLabel.toLowerCase()}`
+        `${i18nText('Escolha o')} ${i18nText(municipalityLabel.toLowerCase())}`
     );
 
     const matchingValue = findAddressMunicipality(region, previousValue);
@@ -508,7 +525,7 @@ function populateAddressRegions({ preserveValue = true } = {}) {
     setSelectOptions(
         addressRegionSelect,
         regions.map((region) => ({ value: region.name, label: region.name })),
-        `Escolha o ${(getLocationConfig()?.regionLabel || 'distrito').toLowerCase()}`
+        `${i18nText('Escolha o')} ${i18nText((getLocationConfig()?.regionLabel || 'distrito').toLowerCase())}`
     );
 
     const matchingRegion = findAddressRegion(previousValue);
@@ -666,7 +683,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
         return {
             valid: false,
             normalized,
-            message: 'Introduza um numero de telemovel ou telefone valido.'
+            message: i18nText('Introduza um número de telemóvel ou telefone válido.')
         };
     }
 
@@ -679,7 +696,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
             normalized: `+${digits}`,
             message: /^[29]\d{8}$/.test(localNumber)
                 ? ''
-                : 'O numero de contacto portugues parece invalido.'
+                : i18nText('O número de contacto português parece inválido.')
         };
     }
 
@@ -690,7 +707,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
             normalized: `+${digits}`,
             message: /^[6789]\d{8}$/.test(localNumber)
                 ? ''
-                : 'O numero de contacto espanhol parece invalido.'
+                : i18nText('O número de contacto espanhol parece inválido.')
         };
     }
 
@@ -701,7 +718,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
             country: 'ES',
             message: /^[6789]\d{8}$/.test(digits)
                 ? ''
-                : 'Introduza um numero espanhol com 9 digitos valido.'
+                : i18nText('Introduza um número espanhol com 9 dígitos válido.')
         };
     }
 
@@ -713,7 +730,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
             country,
             message: validInternational
                 ? ''
-                : 'Introduza um numero internacional valido com indicativo.'
+                : i18nText('Introduza um número internacional válido com indicativo.')
         };
     }
 
@@ -722,7 +739,7 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '') {
         normalized: `+351${digits}`,
         message: /^[29]\d{8}$/.test(digits)
             ? ''
-            : 'Introduza um numero portugues com 9 digitos valido.'
+            : i18nText('Introduza um número português com 9 dígitos válido.')
     };
 }
 
@@ -764,11 +781,11 @@ function updateTaxIdValidity() {
     nifInput.value = validation.normalized;
     const nifRequired = isBusinessCustomerSelected();
     if (nifRequired && !validation.normalized) {
-        nifInput.setCustomValidity('Para faturacao empresarial o NIF e obrigatorio.');
+        nifInput.setCustomValidity(i18nText('Para faturação empresarial o NIF é obrigatório.'));
         return {
             valid: false,
             normalized: validation.normalized,
-            message: 'Para faturacao empresarial o NIF e obrigatorio.'
+            message: i18nText('Para faturação empresarial o NIF é obrigatório.')
         };
     }
 
@@ -944,7 +961,7 @@ function updateFiscalSummary() {
         fiscalSummaryName.textContent = summary.fiscalName;
     }
     if (fiscalSummaryDocument) {
-        fiscalSummaryDocument.textContent = 'Factura Recibo';
+        fiscalSummaryDocument.textContent = i18nText('Fatura-recibo');
     }
     if (fiscalSummaryTaxId) {
         fiscalSummaryTaxId.textContent = summary.taxId;
@@ -983,7 +1000,7 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
             applyCompanyLookupResult(cached.customer);
             setCompanyLookupStatus(`Dados encontrados em ${cached.sourceLabel || 'registos anteriores'}.`, 'success');
         } else if (cached?.vatValidation?.status === 'invalid' || cached?.vatValidation?.status === 'unavailable') {
-            setCompanyLookupStatus(cached.vatValidation.message || 'Nao foi possivel validar o VAT automaticamente.', 'warning');
+            setCompanyLookupStatus(cached.vatValidation.message || i18nText('Não foi possível validar o VAT automaticamente.'), 'warning');
         }
         return cached;
     }
@@ -1011,7 +1028,7 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            const message = String(payload?.message || 'Nao foi possivel procurar a empresa pelo NIF.');
+            const message = String(payload?.message || i18nText('Não foi possível procurar a empresa pelo NIF.'));
             setCompanyLookupStatus(message, 'warning');
             return null;
         }
@@ -1032,14 +1049,14 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
         }
 
         if (payload?.vatValidation?.status === 'invalid' || payload?.vatValidation?.status === 'unavailable') {
-            setCompanyLookupStatus(payload.vatValidation.message || 'Nao foi possivel validar o VAT automaticamente.', 'warning');
+            setCompanyLookupStatus(payload.vatValidation.message || i18nText('Não foi possível validar o VAT automaticamente.'), 'warning');
         } else {
-            setCompanyLookupStatus('Nao encontrámos dados automaticos para este NIF. Podes continuar e preencher manualmente.', 'info');
+            setCompanyLookupStatus(i18nText('Não encontrámos dados automáticos para este NIF. Pode continuar e preencher manualmente.'), 'info');
         }
         return payload;
     } catch (error) {
         console.warn('Falha ao procurar empresa por NIF:', error);
-        setCompanyLookupStatus('Nao foi possivel procurar dados automaticos agora. Podes continuar manualmente.', 'warning');
+        setCompanyLookupStatus(i18nText('Não foi possível procurar dados automáticos agora. Pode continuar manualmente.'), 'warning');
         return null;
     } finally {
         setCompanyLookupLoading(false);
@@ -1051,26 +1068,26 @@ function syncCustomerTypeUI() {
 
     if (customerTypeDescription) {
         customerTypeDescription.textContent = business
-            ? 'Mostramos os campos fiscais da empresa e tentamos preencher o nome fiscal pelo NIF.'
-            : 'Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.';
+            ? i18nText('Mostramos os campos fiscais da empresa e tentamos preencher o nome fiscal pelo NIF.')
+            : i18nText('Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.');
     }
 
     if (contactNameLabel) {
-        contactNameLabel.textContent = business ? 'Pessoa de contacto *' : 'Nome completo *';
+        contactNameLabel.textContent = business ? i18nText('Pessoa de contacto *') : i18nText('Nome completo *');
     }
 
     if (companyLabel) {
-        companyLabel.textContent = 'Empresa *';
+        companyLabel.textContent = i18nText('Empresa *');
     }
 
     if (nifLabel) {
-        nifLabel.textContent = business ? 'NIF / VAT / CIF *' : 'NIF / NIE (opcional)';
+        nifLabel.textContent = business ? i18nText('NIF / VAT / CIF *') : i18nText('NIF / NIE (opcional)');
     }
 
     if (nifHelp) {
         nifHelp.textContent = business
-            ? 'Para faturacao empresarial precisamos do NIF valido e, se existir, tentamos preencher os dados automaticamente.'
-            : 'Se preencher, o numero fiscal tem de ser valido para emitirmos a fatura.';
+            ? i18nText('Para faturação empresarial precisamos do NIF válido e, se existir, tentamos preencher os dados automaticamente.')
+            : i18nText('Se preencher, o número fiscal tem de ser válido para emitirmos a fatura.');
     }
 
     if (companyFieldRow) {
@@ -1111,8 +1128,8 @@ function syncOrderNotesVisibility({ forceOpen = null } = {}) {
     if (toggleOrderNotesBtn) {
         toggleOrderNotesBtn.setAttribute('aria-expanded', shouldOpen ? 'true' : 'false');
         toggleOrderNotesBtn.textContent = shouldOpen
-            ? 'Remover nota da encomenda'
-            : 'Adicionar nota a encomenda';
+            ? i18nText('Remover nota da encomenda')
+            : i18nText('Adicionar nota à encomenda');
     }
 
     if (!shouldOpen && notesTextarea) {
@@ -1189,7 +1206,7 @@ function setPlaceOrderLoading(isLoading) {
     placeOrderBtn.disabled = isLoading;
     placeOrderBtn.innerHTML = isLoading
         ? '<div class="spinner mx-auto"></div>'
-        : PLACE_ORDER_DEFAULT_LABEL;
+        : getPlaceOrderDefaultLabel();
 
     if (!isLoading && typeof lucide !== 'undefined') {
         lucide.createIcons();
@@ -1200,15 +1217,15 @@ function getCheckoutErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
-        return 'Existem produtos no carrinho que ja nao existem na base de dados. Atualize o carrinho e tente novamente.';
+        return i18nText('Existem produtos no carrinho que já não existem na base de dados. Atualize o carrinho e tente novamente.');
     }
 
     if (error?.code === 'PRODUCT_INACTIVE') {
-        return 'Um produto do carrinho deixou de estar disponivel. Atualize o carrinho e tente novamente.';
+        return i18nText('Um produto do carrinho deixou de estar disponível. Atualize o carrinho e tente novamente.');
     }
 
     if (error?.code === 'BASE_INVALIDA') {
-        return 'Uma base selecionada ja nao esta disponivel para esse produto. Reabra o personalizador e escolha outra base.';
+        return i18nText('Uma base selecionada já não está disponível para esse produto. Reabra o personalizador e escolha outra base.');
     }
 
     if (error?.code === '23503') {
@@ -1216,7 +1233,7 @@ function getCheckoutErrorMessage(error) {
     }
 
     if (error?.code === 'CARRINHO_VAZIO') {
-        return 'O carrinho esta vazio.';
+        return i18nText('O carrinho está vazio.');
     }
 
     if (error?.code === 'DADOS_CLIENTE_INVALIDOS') {
@@ -1224,39 +1241,39 @@ function getCheckoutErrorMessage(error) {
     }
 
     if (error?.code === 'EMAIL_INVALIDO') {
-        return error?.message || 'Introduza um email valido para iniciar o checkout.';
+        return error?.message || i18nText('Introduza um email válido para iniciar o checkout.');
     }
 
     if (error?.code === 'CUSTOMER_IDENTITY_CONFLICT') {
-        return error?.message || 'Ja existe um cliente com este NIF associado a outro contacto. Confirme o email e o nome fiscal antes de continuar.';
+        return error?.message || i18nText('Já existe um cliente com este NIF associado a outro contacto. Confirme o email e o nome fiscal antes de continuar.');
     }
 
     if (error?.code === 'TELEFONE_INVALIDO') {
-        return error?.message || 'Introduza um numero de contacto valido.';
+        return error?.message || i18nText('Introduza um número de contacto válido.');
     }
 
     if (error?.code === 'MORADA_INVALIDA') {
-        return 'Preencha morada, codigo postal e cidade.';
+        return i18nText('Preencha morada, código postal e cidade.');
     }
 
     if (error?.code === 'CODIGO_POSTAL_INVALIDO') {
-        return error?.message || 'Introduza um codigo postal valido.';
+        return error?.message || i18nText('Introduza um código postal válido.');
     }
 
     if (error?.code === 'COUNTRY_REQUIRED') {
-        return error?.message || 'Escolha o pais fiscal antes de continuar.';
+        return error?.message || i18nText('Escolha o país fiscal antes de continuar.');
     }
 
     if (error?.code === 'TOTAL_INVALIDO') {
-        return 'O total da encomenda nao e valido.';
+        return i18nText('O total da encomenda não é válido.');
     }
 
     if (error?.code === 'NIF_INVALIDO') {
-        return error?.message || 'NIF invalido. Verifique o numero fiscal antes de continuar.';
+        return error?.message || i18nText('NIF inválido. Verifique o número fiscal antes de continuar.');
     }
 
     if (error?.code === 'NIF_REQUIRED') {
-        return error?.message || 'Para faturacao empresarial o NIF e obrigatorio.';
+        return error?.message || i18nText('Para faturação empresarial o NIF é obrigatório.');
     }
 
     if (error?.code === 'EMPRESA_REQUIRED') {
@@ -1264,19 +1281,19 @@ function getCheckoutErrorMessage(error) {
     }
 
     if (error?.code === 'TIPO_CLIENTE_INVALIDO') {
-        return error?.message || 'Escolha se a faturacao e para particular ou empresa.';
+        return error?.message || i18nText('Escolha se a faturação é para particular ou empresa.');
     }
 
     if (error?.code === 'CHECKOUT_SESSION_FAILED') {
-        return error?.message || 'Nao foi possivel iniciar a sessao de pagamento.';
+        return error?.message || i18nText('Não foi possível iniciar a sessão de pagamento.');
     }
 
     if (rawMessage.includes('stripe')) {
-        return 'Nao foi possivel iniciar o checkout com o Stripe.';
+        return i18nText('Não foi possível iniciar o checkout com o Stripe.');
     }
 
     if (rawMessage.includes('facturalusa')) {
-        return 'Nao foi possivel comunicar com o Facturalusa.';
+        return i18nText('Não foi possível comunicar com o Facturalusa.');
     }
 
     return 'Erro ao iniciar o checkout. Por favor, tente novamente.';
@@ -1296,7 +1313,7 @@ function buildCheckoutRequestCart(items) {
 
 function getCatalogPath() {
     return typeof SiteRoutes !== 'undefined'
-        ? SiteRoutes.STATIC_PATHS.products
+        ? getLocalizedStaticPath(SiteRoutes.STATIC_PATHS.products, '/produtos')
         : '/produtos';
 }
 
@@ -1406,7 +1423,7 @@ function validateCustomization() {
     const hasUncustomized = cart.some(item => !item.customized);
     
     if (hasUncustomized) {
-        showToast('Todos os produtos devem ser personalizados antes da compra', 'error');
+        showToast(i18nText('Todos os produtos devem ser personalizados antes da compra'), 'error');
         setTimeout(() => {
             window.location.href = getCatalogPath();
         }, 2000);
@@ -1460,7 +1477,7 @@ if (placeOrderBtn) {
         }
 
         if (!getSelectedFiscalCountry()) {
-            setCheckoutFeedback('Escolha o país fiscal antes de continuar.', 'error');
+            setCheckoutFeedback(i18nText('Escolha o país fiscal antes de continuar.'), 'error');
             revealCheckoutField(countrySelect);
             return;
         }
@@ -1483,7 +1500,7 @@ if (placeOrderBtn) {
 
         // Check terms
         if (!termsCheckbox.checked) {
-            showToast('Por favor, aceite os termos e condições', 'error');
+            showToast(i18nText('Por favor, aceite os termos e condições'), 'error');
             return;
         }
 
@@ -1548,8 +1565,8 @@ if (placeOrderBtn) {
                 setCheckoutFeedback(payload.fiscalSummary.warning, 'info');
             }
 
-            setCheckoutFeedback('Pagamento iniciado. Vamos abrir o checkout seguro.', 'success');
-            showToast('Pagamento iniciado com sucess?!', 'success');
+            setCheckoutFeedback(i18nText('Pagamento iniciado. Vamos abrir o checkout seguro.'), 'success');
+            showToast(i18nText('Pagamento iniciado com sucesso!'), 'success');
 
             cart = [];
             localStorage.removeItem('iberflag_cart');
@@ -1568,7 +1585,7 @@ if (placeOrderBtn) {
 
                 const fallbackSuccessPath = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.buildCheckoutSuccessPath({ codigo: payload?.orderCode || '' })
-                    : `/checkout/sucess??codigo=${encodeURIComponent(payload?.orderCode || '')}`;
+                    : `/checkout/sucesso?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
                 window.location.href = fallbackSuccessPath;
             }, 1000);
 
