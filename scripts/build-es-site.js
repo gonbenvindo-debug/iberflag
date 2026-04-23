@@ -533,6 +533,7 @@ function applyHtmlFallbackTranslations(html) {
         .replace(/Ver Catálogo/g, 'Ver catálogo')
         .replace(/Ver Todos os Produtos/g, 'Ver todos los productos')
         .replace(/Falar com Consultor/g, 'Hablar con un asesor')
+        .replace(/Ferramentas/g, 'Herramientas')
         .replace(/Nova marca/g, 'Nueva marca')
         .replace(/crescimento com cada projeto/g, 'crecimiento con cada proyecto')
         .replace(/produção standard/g, 'producción estándar')

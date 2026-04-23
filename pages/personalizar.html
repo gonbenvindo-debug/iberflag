@@ -10,7 +10,6 @@
 
 
 
-
     <meta property="og:type" content="website">
     <meta property="og:title" content="Personalizar Produto - IberFlag">
     <meta property="og:description" content="Crie e ajuste o seu design no editor IberFlag em desktop e mobile.">
@@ -30,7 +29,7 @@
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260423fix1">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260423fix1">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260423fix1">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260423fix1">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260423desk1">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -70,8 +69,11 @@
             <div class="sidebar-shell">
                 <span class="drawer-grip"></span>
                 <div id="elements-panel" class="sidebar-section overflow-y-auto">
-                    <div class="elements-group">
-                        <div class="elements-grid elements-grid--compact">
+                    <div class="elements-group elements-group--tools">
+                        <div class="elements-group-head">
+                            <p class="elements-group-title">Ferramentas</p>
+                        </div>
+                        <div class="elements-grid elements-grid--compact elements-tools-grid">
                             <button id="add-text-btn" class="tool-tile tool-tile--blue" title="Texto" aria-label="Texto">
                                 <span class="tool-tile__icon">
                                     <i data-lucide="type" class="w-5 h-5"></i>
@@ -93,11 +95,7 @@
                                 </span>
                                 <span class="tool-tile__label">QR</span>
                             </button>
-                        </div>
-                    </div>
 
-                    <div class="elements-group">
-                        <div class="elements-grid elements-grid--compact">
                             <button class="shape-btn tool-tile tool-tile--slate" data-shape="rectangle" title="Retangulo" aria-label="Retangulo">
                                 <span class="tool-tile__icon tool-tile--neutral"><i data-lucide="square" class="w-5 h-5"></i></span>
                                 <span class="tool-tile__label">Retângulo</span>
@@ -119,7 +117,7 @@
                 </div>
 
                 <div id="layers-panel" class="sidebar-section">
-                    <div class="elements-group">
+                    <div class="elements-group elements-group--layers">
                         <div class="elements-group-head">
                             <p class="elements-group-title">Camadas</p>
                         </div>
@@ -666,7 +664,6 @@
     <script>
         lucide.createIcons();
     </script>
-
 
 
 
