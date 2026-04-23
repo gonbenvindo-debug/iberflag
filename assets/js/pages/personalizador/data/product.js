@@ -166,7 +166,7 @@ Object.assign(DesignEditor.prototype, {
         try {
             let queryResult = await supabaseClient
                 .from('vw_produto_bases')
-                .select('base_id, base_nome, base_imagem, preco_extra_aplicado, is_default, base_disponivel, base_nota_indisponibilidade')
+                .select('base_id, base_nome, base_nome_es, base_imagem, preco_extra_aplicado, is_default, base_disponivel, base_nota_indisponibilidade')
                 .eq('produto_id', Number(this.currentProduct.id))
                 .eq('ativo', true)
                 .eq('base_ativa', true)
@@ -185,6 +185,8 @@ Object.assign(DesignEditor.prototype, {
             if (queryResult.error) throw queryResult.error;
             this.availableBases = (Array.isArray(queryResult.data) ? queryResult.data : []).map((base) => ({
                 ...base,
+                base_nome_pt: String(base?.base_nome || '').trim(),
+                base_nome: i18nText(String(base?.base_nome_es || '').trim() || base?.base_nome || ''),
                 base_disponivel: base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false',
                 base_nota_indisponibilidade: String(base?.base_nota_indisponibilidade || '').trim()
             }));
@@ -389,7 +391,7 @@ Object.assign(DesignEditor.prototype, {
         confirmBtn.disabled = !canConfirm;
         confirmBtn.classList.toggle('opacity-50', !canConfirm);
         confirmBtn.classList.toggle('cursor-not-allowed', !canConfirm);
-        confirmBtn.textContent = canConfirm ? i18nText('Adicionar ao carrinho') : i18nText('Indisponível');
+        confirmBtn.textContent = canConfirm ? i18nText('Confirmar Design') : i18nText('Indisponível');
     },
 
     renderProductBaseOptions() {

@@ -9,64 +9,6 @@
   <link rel="alternate" hreflang="es-ES" href="https://iberflag.com/es/personalizar">
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
     <meta property="og:type" content="website">
     <meta property="og:title" content="Personalizar Produto - IberFlag">
     <meta property="og:description" content="Crie e ajuste o seu design no editor IberFlag em desktop e mobile.">
@@ -83,10 +25,10 @@
     <script src="/assets/js/core/i18n.js?v=20260423a"></script>
     <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260422h">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260404a">
-<link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260404a">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260402g">
-    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260405n">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260423fix1">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/layout.css?v=20260423fix1">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/responsive.css?v=20260423fix1">
+    <link rel="stylesheet" href="/assets/css/pages/personalizador/controls.css?v=20260423fix1">
 </head>
 
 <body class="app-page" style="overflow: hidden;">
@@ -108,7 +50,7 @@
             <div class="w-px h-6 bg-gray-300 editor-undo-redo"></div>
             <button id="add-to-cart-btn" class="bg-blue-600 text-white px-3 lg:px-6 py-2 rounded-lg hover:bg-blue-700 transition font-semibold" style="display:flex;align-items:center;gap:0.5rem;">
                 <i data-lucide="shopping-cart" class="w-4 h-4"></i>
-                <span class="editor-cart-text">Adicionar ao Carrinho</span>
+                <span class="editor-cart-text">Confirmar Design</span>
             </button>
             <a id="close-editor-btn" href="/produtos" class="p-2 hover:bg-gray-100 rounded" title="Fechar editor">
                 <i data-lucide="x" class="w-5 h-5"></i>
@@ -201,7 +143,7 @@
             <div id="editor-floating-context-bar" class="panel-clean editor-floating-context-bar hidden" aria-label="Opcoes contextuais do elemento">
                 <div class="editor-floating-context-inner">
                     <div class="editor-floating-actions" role="group" aria-label="Acoes do elemento">
-                        <button id="top-duplicaté-btn" type="button" class="editor-floating-btn" title="Duplicar" aria-label="Duplicar">
+                        <button id="top-duplicate-btn" type="button" class="editor-floating-btn" title="Duplicar" aria-label="Duplicar">
                             <i data-lucide="copy" class="w-4 h-4"></i>
                             <span>Duplicar</span>
                         </button>
@@ -317,7 +259,7 @@
                     <button id="quick-delete-btn" type="button" class="context-action context-action--danger" title="Apagar" aria-label="Apagar">
                         <i data-lucide="trash-2" class="w-4 h-4"></i>
                     </button>
-                    <button id="quick-duplicaté-btn" type="button" class="context-action" title="Duplicar" aria-label="Duplicar">
+                    <button id="quick-duplicate-btn" type="button" class="context-action" title="Duplicar" aria-label="Duplicar">
                         <i data-lucide="copy" class="w-4 h-4"></i>
                     </button>
                     <button id="quick-center-h-btn" type="button" class="context-action" title="Centrar horizontalmente" aria-label="Centrar horizontalmente">
@@ -388,7 +330,7 @@
                         </div>
 
                         <div id="desktop-common-actions" class="toolbar-group toolbar-group--actions hidden" aria-label="Acoes do elemento">
-                            <button id="duplicaté-element-btn" class="action-btn toolbar-btn" title="Duplicar" aria-label="Duplicar">
+                            <button id="duplicate-element-btn" class="action-btn toolbar-btn" title="Duplicar" aria-label="Duplicar">
                                 <i data-lucide="copy" class="w-4 h-4"></i>
                             </button>
                             <button id="delete-element-btn" class="action-btn toolbar-btn" title="Apagar" aria-label="Apagar">
@@ -648,8 +590,7 @@
                 <div class="flex items-center gap-2">
                     <button id="cart-steps-back" type="button" class="px-4 py-2 rounded-lg border border-slate-300 bg-white text-slate-700 font-semibold hover:bg-slate-100 hidden">Voltar</button>
                     <button id="cart-steps-next" type="button" class="px-4 py-2 rounded-lg bg-black text-white font-semibold hover:bg-slate-900">Continuar</button>
-                    <button id="cart-steps-confirm" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Adicionar
-                        ao carrinho</button>
+                    <button id="cart-steps-confirm" type="button" class="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 hidden">Confirmar Design</button>
                 </div>
             </div>
         </div>
@@ -708,7 +649,7 @@
     <script src="/assets/js/pages/personalizador/core/bounds.js?v=20260401a" defer=""></script>
     <script src="/assets/js/pages/personalizador/svg/print-area-layout.js?v=20260401a" defer=""></script>
     <script src="/assets/js/pages/personalizador/sidebar/templates.js?v=20260405a" defer=""></script>
-    <script src="/assets/js/pages/personalizador/data/product.js?v=20260419e" defer=""></script>
+    <script src="/assets/js/pages/personalizador/data/product.js?v=20260423base1" defer=""></script>
     <script src="/assets/js/pages/personalizador/core/canvas.js?v=20260404a" defer=""></script>
     <script src="/assets/js/pages/personalizador/core/geometry.js?v=20260405a" defer=""></script>
     <script src="/assets/js/pages/personalizador/editor/template.js?v=20260402a" defer=""></script>
@@ -723,6 +664,8 @@
     <script>
         lucide.createIcons();
     </script>
+
+
 
 
 

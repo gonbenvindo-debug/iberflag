@@ -12,3 +12,4 @@ mobile-properties-check.png
 populate-products.js
 supabase-schema.sql
 README.md
+vercel-dev*.log

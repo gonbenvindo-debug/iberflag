@@ -1,7 +1,7 @@
 /* =============================================
            EDITOR LAYOUT â€” CSS puro, zero Tailwind no layout estrutural
            Os elementos estruturais (nav, body-layout, main, canvas-stage,
-           bottom-bar) n?o t?m classes Tailwind de layout â€” s? CSS aqui.
+           bottom-bar) nao tem classes Tailwind de layout â€” so CSS aqui.
            ============================================= */
 
         /* ----- Componentes UI (desktop e mobile) ----- */
@@ -13,7 +13,7 @@
             border-radius: 9999px;
             margin: 10px auto 8px;
             flex-shrink: 0;
-            curs?r: grab;
+            cursor: grab;
         }
 
         .editor-mobile-tabs {
@@ -31,9 +31,9 @@
             font-weight: 700;
             color: #94a3b8;
             border: none;
-            border-top: 2px s?lid transparent;
+            border-top: 2px solid transparent;
             background: transparent;
-            curs?r: pointer;
+            cursor: pointer;
             transition: color 0.15s, border-color 0.15s;
             min-height: 50px;
             letter-spacing: 0.04em;
@@ -61,7 +61,7 @@
             pointer-events: auto;
         }
 
-        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrep?e via @media) ----- */
+        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepoe via @media) ----- */
         #editor-nav {
             height: 4rem;
             display: flex;
@@ -73,7 +73,7 @@
             box-sizing: border-box;
         }
 
-        /* Logo: altura fixa do nav para imunidade a reflow dos ?cones */
+        /* Logo: altura fixa do nav para imunidade a reflow dos icones */
         #editor-nav>a:first-child {
             display: flex;
             align-items: center;
@@ -90,7 +90,7 @@
             height: 2.25rem;
             flex-shrink: 0;
             box-sizing: border-box;
-            border-bottom: 1px s?lid var(--panel-border);
+            border-bottom: 1px solid var(--panel-border);
             background: #f8fafc;
             overflow: hidden;
         }
@@ -141,7 +141,7 @@
 
         .editor-sidebar-right .sidebar-shell {
             border: 0;
-            border-bottom: 1px s?lid var(--panel-border);
+            border-bottom: 1px solid var(--panel-border);
             border-radius: 0;
             background: #ffffff;
             box-shadow: none;
@@ -187,7 +187,7 @@
         #properties-panel #text-properties,
         #properties-panel #image-properties,
         #properties-panel #shape-properties {
-            position: abs?lute;
+            position: absolute;
             top: calc(100% + 0.5rem);
             left: 0.75rem;
             right: 0.75rem;
@@ -196,7 +196,7 @@
 
         #properties-panel #no-selection {
             background: #ffffff;
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             border-radius: 0;
             box-shadow: none;
         }
@@ -205,7 +205,7 @@
         #properties-panel #image-properties,
         #properties-panel #shape-properties {
             background: #ffffff;
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             box-shadow: none;
             max-height: 42vh;
             overflow: auto;
@@ -271,7 +271,7 @@
         }
 
         .editor-bottom-bar > .context-popover {
-            position: abs?lute;
+            position: absolute;
             left: -0.75rem;
             right: -0.75rem;
             bottom: calc(100% - 1px);
@@ -281,7 +281,7 @@
             flex-direction: column;
             gap: 0.55rem;
             padding: 0.85rem 0.9rem 0.9rem;
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             border-bottom: 0;
             border-radius: 0;
             background: rgba(255, 255, 255, 0.99);
@@ -312,7 +312,7 @@
             width: 100%;
             min-height: 2.65rem;
             border-radius: 14px;
-            border: 1px s?lid #dbe4f0;
+            border: 1px solid #dbe4f0;
             background: #ffffff;
             color: #0f172a;
             font-size: 0.88rem;
@@ -324,7 +324,7 @@
 
         .quick-font-select.is-disabled {
             opacity: 0.45;
-            curs?r: not-allowed;
+            cursor: not-allowed;
         }
 
         .quick-font-select:focus {
@@ -338,7 +338,7 @@
             max-height: 9rem;
             resize: vertical;
             border-radius: 14px;
-            border: 1px s?lid #dbe4f0;
+            border: 1px solid #dbe4f0;
             background: #ffffff;
             color: #0f172a;
             font-size: 0.92rem;
@@ -377,7 +377,7 @@
             min-width: 0;
             height: 2.35rem;
             border-radius: 14px;
-            border: 1px s?lid #dbe4f0;
+            border: 1px solid #dbe4f0;
             background: #ffffff;
             color: #334155;
             box-shadow: none;

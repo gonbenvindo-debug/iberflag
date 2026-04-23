@@ -564,7 +564,10 @@ function applyHtmlFallbackTranslations(html) {
         .replace(/Voltar ao tracking/g, 'Volver al seguimiento')
         .replace(/Erro ao carregar a encomenda/g, 'Error al cargar el pedido')
         .replace(/Erro al carregar a pedido/g, 'Error al cargar el pedido')
-        .replace(/Ocorreu um problema ao carregar a encomenda\./g, 'Se ha producido un problema al cargar el pedido.');
+        .replace(/Ocorreu um problema ao carregar a encomenda\./g, 'Se ha producido un problema al cargar el pedido.')
+        .replace(/Cortar Imagem/g, 'Recortar imagen')
+        .replace(/Tamanho:/g, 'Tamaño:')
+        .replace(/Espessura:/g, 'Grosor:');
 }
 
 function translateDom($) {

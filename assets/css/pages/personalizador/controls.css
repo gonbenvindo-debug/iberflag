@@ -6,7 +6,7 @@
     --iber-text: #111111;
     --iber-subtext: #5f6673;
     --iber-accent: #ef4825;
-    --iber-accent-s?ft: #fff1ec;
+    --iber-accent-soft: #fff1ec;
 }
 
 body.app-page {
@@ -38,14 +38,14 @@ body.app-page {
 
 #editor-nav {
     background: var(--iber-surface) !important;
-    border-bottom: 1px s?lid var(--iber-border) !important;
+    border-bottom: 1px solid var(--iber-border) !important;
     box-shadow: none !important;
 }
 
 #editor-nav button:not(#add-to-cart-btn),
 #editor-nav a[title="Fechar editor"],
 #close-editor-btn {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -57,12 +57,12 @@ body.app-page {
 #close-editor-btn:hover {
     border-color: var(--iber-accent) !important;
     color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
 }
 
 #add-to-cart-btn {
     background: var(--iber-accent) !important;
-    border: 1px s?lid var(--iber-accent) !important;
+    border: 1px solid var(--iber-accent) !important;
     border-radius: 10px !important;
     color: #fff !important;
     box-shadow: none !important;
@@ -91,7 +91,7 @@ body.app-page {
 
 .editor-exit-modal__dialog {
     width: min(460px, 100%);
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     border-radius: 12px;
     background: #fff;
     box-shadow: 0 18px 44px rgba(15, 23, 42, 0.2);
@@ -123,7 +123,7 @@ body.app-page {
     min-height: 38px;
     padding: 0 12px;
     border-radius: 8px;
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     background: #fff;
     color: var(--iber-text);
     font-size: 13px;
@@ -152,7 +152,7 @@ body.app-page {
 
 #editor-info-bar {
     background: var(--iber-surface) !important;
-    border-bottom: 1px s?lid var(--iber-border) !important;
+    border-bottom: 1px solid var(--iber-border) !important;
     color: var(--iber-text) !important;
 }
 
@@ -170,7 +170,7 @@ body.app-page {
 .editor-sidebar-left,
 .editor-sidebar-right {
     background: var(--iber-surface) !important;
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 12px !important;
     box-shadow: none !important;
 }
@@ -192,7 +192,7 @@ body.app-page {
 
 .tool-tile,
 .shape-btn {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -208,7 +208,7 @@ body.app-page {
 .tool-tile:hover,
 .shape-btn:hover {
     border-color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
     color: var(--iber-accent) !important;
     box-shadow: none !important;
 }
@@ -216,13 +216,13 @@ body.app-page {
 .layer-item {
     margin: 0 !important;
     padding: 0.55rem 0.62rem !important;
-    border: 1px s?lid var(--iber-border) !important;
-    border-left: 2px s?lid transparent !important;
+    border: 1px solid var(--iber-border) !important;
+    border-left: 2px solid transparent !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
     box-shadow: none !important;
-    curs?r: pointer;
+    cursor: pointer;
 }
 
 .layer-item:hover {
@@ -232,13 +232,13 @@ body.app-page {
 
 .layer-item.is-selected,
 .layer-item.bg-blue-50 {
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
     border-left-color: var(--iber-accent) !important;
 }
 
 .layer-item.is-drag-over {
     border-color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
 }
 
 .layer-item-row {
@@ -304,7 +304,7 @@ body.app-page {
 
 .layer-item-action:disabled {
     opacity: 0.35;
-    curs?r: not-allowed;
+    cursor: not-allowed;
 }
 
 .layer-item-action-icon {
@@ -313,7 +313,7 @@ body.app-page {
 }
 
 .action-btn {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -322,7 +322,7 @@ body.app-page {
 
 .action-btn:hover {
     border-color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
     color: var(--iber-accent) !important;
 }
 
@@ -472,7 +472,7 @@ body.app-page {
 .desktop-inline-select:disabled,
 .desktop-inline-step:disabled {
     opacity: 0.45;
-    curs?r: not-allowed;
+    cursor: not-allowed;
 }
 
 .desktop-inline-label {
@@ -504,7 +504,7 @@ body.app-page {
 #text-properties,
 #image-properties,
 #shape-properties {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -513,7 +513,7 @@ body.app-page {
 #properties-panel input:not([type="range"]):not([type="color"]),
 #properties-panel select,
 #properties-panel textarea {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -535,14 +535,14 @@ body.app-page {
     background: transparent;
     border: 0;
     border-radius: 6px;
-    curs?r: pointer;
+    cursor: pointer;
     transition: background-color 0.18s ease, color 0.18s ease;
     padding: 0;
     box-shadow: none;
 }
 
 .slide-button:focus-visible {
-    outline: 2px s?lid rgba(239, 72, 37, 0.28);
+    outline: 2px solid rgba(239, 72, 37, 0.28);
     outline-offset: 2px;
 }
 
@@ -568,7 +568,7 @@ body.app-page {
 }
 
 .canvas-container {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -576,7 +576,7 @@ body.app-page {
 
 #canvas-stage {
     position: relative;
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -584,18 +584,18 @@ body.app-page {
 
 #canvas-stage.is-camera-panning,
 body.is-camera-panning #canvas-stage {
-    curs?r: grabbing !important;
+    cursor: grabbing !important;
 }
 
 .editor-bottom-bar {
-    border-top: 1px s?lid var(--iber-border) !important;
+    border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;
     color: var(--iber-text) !important;
     box-shadow: none !important;
 }
 
 .context-action {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -607,11 +607,11 @@ body.is-camera-panning #canvas-stage {
 .context-action[aria-pressed="true"] {
     border-color: var(--iber-accent) !important;
     color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
 }
 
 .context-popover {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -619,14 +619,14 @@ body.is-camera-panning #canvas-stage {
 
 .quick-font-textarea,
 .quick-font-select {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 10px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
 }
 
 .quick-font-action {
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 8px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -641,11 +641,11 @@ body.is-camera-panning #canvas-stage {
 .quick-font-action.active {
     border-color: var(--iber-accent) !important;
     color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
 }
 
 .editor-mobile-tabs {
-    border-top: 1px s?lid var(--iber-border) !important;
+    border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;
     position: relative;
     z-index: var(--z-mobile-tabs);
@@ -677,7 +677,7 @@ body.is-camera-panning #canvas-stage {
 }
 
 .editor-floating-context-bar {
-    position: abs?lute;
+    position: absolute;
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
@@ -685,7 +685,7 @@ body.is-camera-panning #canvas-stage {
     width: max-content;
     max-width: calc(100% - 20px);
     padding: 6px 8px;
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 8px !important;
     background: #ffffff !important;
     color: var(--iber-text) !important;
@@ -724,7 +724,7 @@ body.is-camera-panning #canvas-stage {
     height: 34px;
     min-height: 34px;
     padding: 0 10px;
-    border: 1px s?lid transparent;
+    border: 1px solid transparent;
     border-radius: 6px;
     background: transparent;
     color: var(--iber-text);
@@ -764,7 +764,7 @@ body.is-camera-panning #canvas-stage {
 }
 
 .keep-aspect-state-icon {
-    position: abs?lute;
+    position: absolute;
     top: -4px;
     right: -4px;
     width: 12px;
@@ -775,14 +775,14 @@ body.is-camera-panning #canvas-stage {
 }
 
 .editor-floating-btn:hover {
-    background: var(--iber-accent-s?ft);
+    background: var(--iber-accent-soft);
     color: var(--iber-accent);
     border-color: rgba(239, 72, 37, 0.24);
 }
 
 .editor-floating-btn.active,
 .editor-floating-btn[aria-pressed="true"] {
-    background: var(--iber-accent-s?ft);
+    background: var(--iber-accent-soft);
     color: var(--iber-accent);
     border-color: rgba(239, 72, 37, 0.32);
 }
@@ -796,7 +796,7 @@ body.is-camera-panning #canvas-stage {
 .editor-floating-btn:disabled,
 .editor-floating-btn.is-disabled {
     opacity: 0.45;
-    curs?r: not-allowed;
+    cursor: not-allowed;
     color: var(--iber-subtext);
     border-color: transparent;
     background: transparent;
@@ -807,7 +807,7 @@ body.is-camera-panning #canvas-stage {
     align-items: center;
     gap: 6px;
     padding-left: 10px;
-    border-left: 1px s?lid var(--iber-border);
+    border-left: 1px solid var(--iber-border);
     flex: 0 0 auto;
     min-width: max-content;
 }
@@ -869,7 +869,7 @@ body.is-camera-panning #canvas-stage {
     min-width: 180px;
     height: 34px;
     padding: 0 10px;
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     border-radius: 6px;
     background: #fff;
     color: var(--iber-text);
@@ -888,7 +888,7 @@ body.is-camera-panning #canvas-stage {
     gap: 6px;
     height: 34px;
     padding: 0 8px;
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     border-radius: 6px;
     background: #fff;
 }
@@ -896,7 +896,7 @@ body.is-camera-panning #canvas-stage {
 .editor-floating-step {
     width: 20px;
     height: 20px;
-    border: 1px s?lid transparent;
+    border: 1px solid transparent;
     border-radius: 4px;
     background: transparent;
     color: var(--iber-text);
@@ -907,7 +907,7 @@ body.is-camera-panning #canvas-stage {
 .editor-floating-step:hover {
     color: var(--iber-accent);
     border-color: rgba(239, 72, 37, 0.24);
-    background: var(--iber-accent-s?ft);
+    background: var(--iber-accent-soft);
 }
 
 .editor-floating-step.is-disabled {
@@ -927,7 +927,7 @@ body.is-camera-panning #canvas-stage {
     min-width: 170px;
     height: 34px;
     min-height: 34px;
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 6px !important;
     background: #fff !important;
     color: var(--iber-text) !important;
@@ -947,7 +947,7 @@ body.is-camera-panning #canvas-stage {
     min-height: 34px;
     min-width: 34px;
     padding: 0 8px;
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     border-radius: 6px;
     background: #fff;
     color: var(--iber-text);
@@ -965,14 +965,14 @@ body.is-camera-panning #canvas-stage {
 .editor-floating-font-btn.active,
 .editor-floating-font-btn[aria-pressed="true"] {
     border-color: rgba(239, 72, 37, 0.32);
-    background: var(--iber-accent-s?ft);
+    background: var(--iber-accent-soft);
     color: var(--iber-accent);
 }
 
 .editor-floating-font-btn:disabled,
 .editor-floating-font-btn.is-disabled {
     opacity: 0.45;
-    curs?r: not-allowed;
+    cursor: not-allowed;
 }
 
 #editor-bottom-context-bar.hidden {
@@ -1441,7 +1441,7 @@ body.is-camera-panning #canvas-stage {
     }
 
     #quick-keep-aspect-btn[aria-pressed="true"] {
-        background: var(--iber-accent-s?ft) !important;
+        background: var(--iber-accent-soft) !important;
         color: var(--iber-accent) !important;
         border-color: rgba(239, 72, 37, 0.38) !important;
     }
@@ -1486,7 +1486,7 @@ body.is-camera-panning #canvas-stage {
     justify-content: space-between;
     gap: 8px;
     padding-bottom: 6px;
-    border-bottom: 1px s?lid var(--iber-border);
+    border-bottom: 1px solid var(--iber-border);
 }
 
 .properties-panel-title {
@@ -1502,7 +1502,7 @@ body.is-camera-panning #canvas-stage {
     display: none;
     width: 30px;
     height: 30px;
-    border: 1px s?lid var(--iber-border);
+    border: 1px solid var(--iber-border);
     border-radius: 4px;
     background: #fff;
     color: var(--iber-text);
@@ -1551,7 +1551,7 @@ body.is-camera-panning #canvas-stage {
 #properties-panel .properties-toolbar-row #keep-aspect-ratio:focus-visible {
     outline: none !important;
     box-shadow: none !important;
-    border-style: s?lid !important;
+    border-style: solid !important;
 }
 
 #properties-panel .toolbar-group {
@@ -1669,7 +1669,7 @@ body.is-camera-panning #canvas-stage {
     border-radius: 4px;
     padding: 0;
     background: transparent;
-    curs?r: pointer;
+    cursor: pointer;
 }
 
 .top-inline-color-control {
@@ -1723,7 +1723,7 @@ body.is-camera-panning #canvas-stage {
 }
 
 .color-eyedropper-btn:hover {
-    background: var(--iber-accent-s?ft);
+    background: var(--iber-accent-soft);
     color: var(--iber-accent);
 }
 
@@ -1739,7 +1739,7 @@ body.is-camera-panning #canvas-stage {
     justify-content: space-between;
     gap: 10px;
     padding-top: 6px;
-    border-top: 1px s?lid var(--iber-border);
+    border-top: 1px solid var(--iber-border);
 }
 
 #properties-panel .properties-order-actions {
@@ -1803,7 +1803,7 @@ body.is-camera-panning #canvas-stage {
     width: 100% !important;
     max-height: none !important;
     overflow: visible !important;
-    border: 1px s?lid var(--iber-border) !important;
+    border: 1px solid var(--iber-border) !important;
     border-radius: 4px !important;
     background: #fff !important;
     box-shadow: none !important;
@@ -1854,7 +1854,7 @@ body.is-camera-panning #canvas-stage {
 #properties-panel #prop-text-caps.active {
     border-color: rgba(239, 72, 37, 0.32) !important;
     color: var(--iber-accent) !important;
-    background: var(--iber-accent-s?ft) !important;
+    background: var(--iber-accent-soft) !important;
 }
 
 #properties-panel .properties-toolbar-row .toolbar-btn.active,
@@ -1880,7 +1880,7 @@ body.is-camera-panning #canvas-stage {
 #properties-panel button.is-disabled,
 #properties-panel button:disabled {
     opacity: 0.45;
-    curs?r: not-allowed;
+    cursor: not-allowed;
 }
 
 #editor-sidebar-right #properties-panel,
@@ -1933,7 +1933,7 @@ body.is-camera-panning #canvas-stage {
     #editor-sidebar-right .sidebar-shell {
         width: fit-content;
         max-width: calc(100% - 8px);
-        border: 1px s?lid var(--iber-border) !important;
+        border: 1px solid var(--iber-border) !important;
         border-radius: 10px !important;
         background: #ffffff !important;
         box-shadow: 0 10px 26px rgba(15, 23, 42, 0.1) !important;
@@ -2077,22 +2077,22 @@ body.is-camera-panning #canvas-stage {
         display: block !important;
         margin: 10px auto 6px !important;
         background: #d0d5dd !important;
-        curs?r: grab;
+        cursor: grab;
     }
 
     #editor-sidebar-left .drawer-grip {
         display: block !important;
         margin: 10px auto 6px !important;
         background: #d0d5dd !important;
-        curs?r: grab;
+        cursor: grab;
     }
 
     #editor-sidebar-left.is-dragging .drawer-grip {
-        curs?r: grabbing;
+        cursor: grabbing;
     }
 
     #editor-sidebar-right.is-dragging .drawer-grip {
-        curs?r: grabbing;
+        cursor: grabbing;
     }
 
     .properties-panel-close {
@@ -2151,7 +2151,7 @@ body.is-camera-panning #canvas-stage {
     }
 }
 
-/* Pers?nalizador sem painel direito: fica sempre oculto */
+/* Personalizador sem painel direito: fica sempre oculto */
 #editor-sidebar-right {
     display: none !important;
 }

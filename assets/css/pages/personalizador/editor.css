@@ -18,12 +18,12 @@
                 linear-gradient(90deg, rgba(0, 0, 0, .05) 1px, transparent 1px);
             background-size: 20px 20px;
             border-radius: 16px;
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             box-shadow: var(--panel-shadow);
         }
 
         .element-selected {
-            outline: 2px s?lid #2563eb;
+            outline: 2px solid #2563eb;
             outline-offset: 2px;
         }
 
@@ -31,10 +31,10 @@
             width: 12px;
             height: 12px;
             background: white;
-            border: 2px s?lid #2563eb;
+            border: 2px solid #2563eb;
             border-radius: 50%;
-            position: abs?lute;
-            curs?r: pointer;
+            position: absolute;
+            cursor: pointer;
             z-index: 1000;
             touch-action: none;
             -webkit-touch-callout: none;
@@ -44,9 +44,9 @@
 
         .resize-handle::before {
             content: '';
-            position: abs?lute;
+            position: absolute;
             inset: -8px;
-            curs?r: inherit;
+            cursor: inherit;
         }
 
         .resize-handle:hover {
@@ -58,8 +58,8 @@
         .rotate-handle {
             width: 36px;
             height: 36px;
-            position: abs?lute;
-            curs?r: grab;
+            position: absolute;
+            cursor: grab;
             z-index: 1000;
             color: #2563eb;
             touch-action: none;
@@ -68,7 +68,7 @@
             align-items: center;
             justify-content: center;
             background: white;
-            border: 2px s?lid #2563eb;
+            border: 2px solid #2563eb;
             border-radius: 50%;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
             pointer-events: auto;
@@ -76,9 +76,9 @@
 
         .rotate-handle::before {
             content: '';
-            position: abs?lute;
+            position: absolute;
             inset: -8px;
-            curs?r: inherit;
+            cursor: inherit;
         }
 
         .rotate-handle:hover {
@@ -88,18 +88,18 @@
         }
 
         .rotate-handle:active {
-            curs?r: grabbing;
+            cursor: grabbing;
         }
 
         .panel-clean {
             background: var(--panel-bg);
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             box-shadow: none;
         }
 
         .sidebar-shell {
             background: var(--panel-bg);
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             border-radius: 0;
             height: 100%;
             display: flex;
@@ -111,7 +111,7 @@
         }
 
         .sidebar-section+.sidebar-section {
-            border-top: 1px s?lid #e2e8f0;
+            border-top: 1px solid #e2e8f0;
         }
 
         #elements-panel,
@@ -163,7 +163,7 @@
         .shape-card {
             width: 100%;
             min-width: 0;
-            border: 1px s?lid #dbe3ee;
+            border: 1px solid #dbe3ee;
             background: #ffffff;
             border-radius: 16px;
             text-align: left;
@@ -261,7 +261,7 @@
             min-width: 0;
             padding: 0.72rem 0.8rem;
             border-radius: 16px;
-            border: 1px s?lid #dbe3ee;
+            border: 1px solid #dbe3ee;
             background: #ffffff;
             box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
         }
@@ -285,7 +285,7 @@
             padding: 0.5rem;
             min-height: 0;
             border-radius: 16px;
-            border: 1px s?lid #dbe3ee;
+            border: 1px solid #dbe3ee;
             background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
             box-shadow: 0 1px 1px rgba(15, 23, 42, 0.03);
         }
@@ -312,7 +312,7 @@
         }
 
         .action-btn {
-            border: 1px s?lid var(--panel-border);
+            border: 1px solid var(--panel-border);
             background: #f8fafc;
             color: #334155;
             border-radius: 10px;
@@ -331,7 +331,7 @@
         #text-properties.active input,
         #text-properties.active select,
         #text-properties.active button {
-            border-left: 3px s?lid #2563eb;
+            border-left: 3px solid #2563eb;
             border-radius: 8px 10px 10px 8px;
         }
 
@@ -377,7 +377,7 @@
             background: #ffffff;
             border-radius: 16px;
             box-shadow: 0 25px 80px rgba(15, 23, 42, 0.4);
-            border: 1px s?lid #e2e8f0;
+            border: 1px solid #e2e8f0;
             display: flex;
             flex-direction: column;
             overflow: hidden;
@@ -395,16 +395,16 @@
             background-position: 0 0, 0 12px, 12px -12px, -12px 0px;
             overflow: hidden;
             user-select: none;
-            curs?r: grab;
+            cursor: grab;
             touch-action: none;
         }
 
         .upload-crop-stage.is-panning {
-            curs?r: grabbing;
+            cursor: grabbing;
         }
 
         .upload-crop-stage img {
-            position: abs?lute;
+            position: absolute;
             pointer-events: none;
             user-select: none;
             -webkit-user-drag: none;
@@ -415,7 +415,7 @@
         }
 
         .upload-crop-viewport {
-            position: abs?lute;
+            position: absolute;
             left: 0;
             top: 0;
             transform-origin: top left;
@@ -423,20 +423,20 @@
         }
 
         .upload-crop-selection {
-            position: abs?lute;
-            border: 2px s?lid #2563eb;
+            position: absolute;
+            border: 2px solid #2563eb;
             box-shadow: 0 0 0 9999px rgba(15, 23, 42, 0.45);
-            curs?r: move;
+            cursor: move;
             touch-action: none;
             pointer-events: auto;
         }
 
         .upload-crop-handle {
-            position: abs?lute;
+            position: absolute;
             width: 14px;
             height: 14px;
             background: #ffffff;
-            border: 2px s?lid #2563eb;
+            border: 2px solid #2563eb;
             border-radius: 9999px;
             z-index: 1300;
             pointer-events: auto;
@@ -446,25 +446,25 @@
         .upload-crop-handle.nw {
             left: -8px;
             top: -8px;
-            curs?r: nwse-resize;
+            cursor: nwse-resize;
         }
 
         .upload-crop-handle.ne {
             right: -8px;
             top: -8px;
-            curs?r: nesw-resize;
+            cursor: nesw-resize;
         }
 
         .upload-crop-handle.sw {
             left: -8px;
             bottom: -8px;
-            curs?r: nesw-resize;
+            cursor: nesw-resize;
         }
 
         .upload-crop-handle.se {
             right: -8px;
             bottom: -8px;
-            curs?r: nwse-resize;
+            cursor: nwse-resize;
         }
         .cart-steps-modal {
             position: fixed;
@@ -486,7 +486,7 @@
             max-height: 92vh;
             background: #fff;
             border-radius: 18px;
-            border: 1px s?lid #e2e8f0;
+            border: 1px solid #e2e8f0;
             box-shadow: 0 26px 80px rgba(2, 6, 23, 0.45);
             overflow: hidden;
             display: flex;
@@ -498,7 +498,7 @@
             gap: 1rem;
             align-items: center;
             padding: 0.9rem 1.2rem;
-            border-bottom: 1px s?lid #e2e8f0;
+            border-bottom: 1px solid #e2e8f0;
             background: #f8fafc;
         }
 
@@ -518,7 +518,7 @@
             display: inline-flex;
             align-items: center;
             justify-content: center;
-            border: 1px s?lid #cbd5e1;
+            border: 1px solid #cbd5e1;
             background: #fff;
             color: #64748b;
             font-size: 0.78rem;
@@ -567,7 +567,7 @@
             object-fit: contain;
             border-radius: 12px;
             background: repeating-conic-gradient(#f8fafc 0% 25%, #eef2f7 0% 50%) 50% / 24px 24px;
-            border: 1px s?lid #dbe3ee;
+            border: 1px solid #dbe3ee;
         }
 
         .cart-base-grid {
@@ -577,11 +577,11 @@
         }
 
         .cart-base-card {
-            border: 1px s?lid #dbe3ee;
+            border: 1px solid #dbe3ee;
             border-radius: 12px;
             background: #fff;
             padding: 0.75rem;
-            curs?r: pointer;
+            cursor: pointer;
             transition: border-color .15s ease, box-shadow .15s ease;
         }
 
@@ -595,7 +595,7 @@
             aspect-ratio: 16 / 10;
             object-fit: cover;
             border-radius: 8px;
-            border: 1px s?lid #e2e8f0;
+            border: 1px solid #e2e8f0;
             margin-bottom: 0.6rem;
         }
 
@@ -640,7 +640,7 @@
         /* =============================================
            EDITOR LAYOUT â€” CSS puro, zero Tailwind no layout estrutural
            Os elementos estruturais (nav, body-layout, main, canvas-stage,
-           bottom-bar) n?o t?m classes Tailwind de layout â€” s? CSS aqui.
+           bottom-bar) nao tem classes Tailwind de layout â€” so CSS aqui.
            ============================================= */
 
         /* ----- Componentes UI (desktop e mobile) ----- */
@@ -652,7 +652,7 @@
             border-radius: 9999px;
             margin: 10px auto 8px;
             flex-shrink: 0;
-            curs?r: grab;
+            cursor: grab;
         }
 
         .editor-mobile-tabs {
@@ -670,9 +670,9 @@
             font-weight: 700;
             color: #94a3b8;
             border: none;
-            border-top: 2px s?lid transparent;
+            border-top: 2px solid transparent;
             background: transparent;
-            curs?r: pointer;
+            cursor: pointer;
             transition: color 0.15s, border-color 0.15s;
             min-height: 50px;
             letter-spacing: 0.04em;
@@ -700,7 +700,7 @@
             pointer-events: auto;
         }
 
-        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrep?e via @media) ----- */
+        /* ----- BASE LAYOUT (desktop e mobile partilham estas regras; mobile sobrepoe via @media) ----- */
         #editor-nav {
             height: 4rem;
             display: flex;
@@ -712,7 +712,7 @@
             box-sizing: border-box;
         }
 
-        /* Logo: altura fixa do nav para imunidade a reflow dos ?cones */
+        /* Logo: altura fixa do nav para imunidade a reflow dos icones */
         #editor-nav>a:first-child {
             display: flex;
             align-items: center;
@@ -729,7 +729,7 @@
             height: 2.25rem;
             flex-shrink: 0;
             box-sizing: border-box;
-            border-bottom: 1px s?lid var(--panel-border);
+            border-bottom: 1px solid var(--panel-border);
             background: #f8fafc;
             overflow: hidden;
         }
@@ -792,7 +792,7 @@
             align-items: center;
             padding: 0.4rem 0.75rem;
             flex-shrink: 0;
-            border-top: 1px s?lid var(--panel-border);
+            border-top: 1px solid var(--panel-border);
         }
 
         /* ----- MOBILE (<1024px) ----- */
@@ -906,7 +906,7 @@
                 justify-content: center;
                 padding: 0.5rem;
                 background: #ffffff;
-                border-top: 1px s?lid #e5e7eb;
+                border-top: 1px solid #e5e7eb;
             }
 
             .editor-mobile-tabs {
@@ -914,7 +914,7 @@
                 grid-template-columns: repeat(3, 1fr);
                 gap: 0.5rem;
                 background: #ffffff;
-                border-top: 1px s?lid #e5e7eb;
+                border-top: 1px solid #e5e7eb;
                 flex-shrink: 0;
                 padding: 0.75rem;
                 padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px));
@@ -977,13 +977,13 @@
                 grid-template-columns: repeat(2, 1fr) !important;
             }
 
-            /* For?ar 2 colunas nos botoes de acoes */
+            /* Forcar 2 colunas nos botoes de acoes */
             .grid.grid-cols-2 {
                 display: grid !important;
                 grid-template-columns: 1fr 1fr !important;
             }
 
-            /* For?ar 3 colunas nas formas */
+            /* Forcar 3 colunas nas formas */
             .grid.grid-cols-3 {
                 display: grid !important;
                 grid-template-columns: repeat(3, 1fr) !important;
@@ -1037,9 +1037,9 @@
                 width: 24px;
                 height: 24px;
                 background: #2563eb;
-                curs?r: pointer;
+                cursor: pointer;
                 border-radius: 50%;
-                border: 2px s?lid white;
+                border: 2px solid white;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
 
@@ -1049,9 +1049,9 @@
                 width: 24px;
                 height: 24px;
                 background: #2563eb;
-                curs?r: pointer;
+                cursor: pointer;
                 border-radius: 50%;
-                border: 2px s?lid white;
+                border: 2px solid white;
                 box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
             }
 
