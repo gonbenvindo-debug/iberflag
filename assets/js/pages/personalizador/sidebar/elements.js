@@ -663,7 +663,12 @@ Object.assign(DesignEditor.prototype, {
 
                     if (this.elements.length > 0) {
                         this.updateLayers();
-                        showToast('Design recuperado automaticamente', 'info');
+                        showToast(
+                            window.personalizerI18nText
+                                ? window.personalizerI18nText('Design recuperado automaticamente')
+                                : 'Design recuperado automaticamente',
+                            'info'
+                        );
                         this.saveHistory();
                     }
                     return;
@@ -686,7 +691,12 @@ Object.assign(DesignEditor.prototype, {
 
             if (this.elements.length > 0) {
                 this.updateLayers();
-                showToast('Design recuperado automaticamente', 'info');
+                showToast(
+                    window.personalizerI18nText
+                        ? window.personalizerI18nText('Design recuperado automaticamente')
+                        : 'Design recuperado automaticamente',
+                    'info'
+                );
                 this.saveHistory();
             }
         } catch (error) {
@@ -729,7 +739,8 @@ Object.assign(DesignEditor.prototype, {
             closeEditorLink.addEventListener('click', async (event) => {
                 event.preventDefault();
 
-                const targetHref = closeEditorLink.getAttribute('href') || '/produtos';
+                const targetHref = closeEditorLink.getAttribute('href')
+                    || (window.personalizerProductsPath ? window.personalizerProductsPath() : '/produtos');
                 const clearAutosaveAndExit = () => {
                     const saveKeys = [this.getAutosaveKey?.(), ...(this.getLegacyAutosaveKeys?.() || [])]
                         .filter(Boolean);
@@ -749,9 +760,13 @@ Object.assign(DesignEditor.prototype, {
                     const saveBtn = document.getElementById('exit-editor-save');
 
                     if (!modal || !cancelBtn || !discardBtn || !saveBtn) {
-                        const shouldSaveFallback = window.confirm(
-                            'Quer guardar este design no carrinho antes de sair? Pode sempre alterar mais tarde.\n\nOK = Guardar no carrinho\nCancelar = Descartar design'
-                        );
+                        const translate = window.personalizerI18nText || ((value) => value);
+                        const shouldSaveFallback = window.confirm([
+                            translate('Quer guardar este design no carrinho antes de sair? Pode sempre alterar mais tarde.'),
+                            '',
+                            `OK = ${translate('Guardar no carrinho')}`,
+                            `${translate('Cancelar')} = ${translate('Descartar design')}`
+                        ].join('\n'));
                         resolve(shouldSaveFallback ? 'save' : 'discard');
                         return;
                     }

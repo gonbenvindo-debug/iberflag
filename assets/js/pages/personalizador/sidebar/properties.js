@@ -839,7 +839,12 @@ Object.assign(DesignEditor.prototype, {
                 this.cropBounds = null;
                 this.hideResizeHandles();
                 this.selectElement(this.selectedElement);
-                showToast('Corte cancelado', 'info');
+                showToast(
+                    window.personalizerI18nText
+                        ? window.personalizerI18nText('Corte cancelado')
+                        : 'Corte cancelado',
+                    'info'
+                );
                 return;
             }
         }
@@ -907,14 +912,18 @@ Object.assign(DesignEditor.prototype, {
             button.setAttribute(
                 'aria-label',
                 forced
-                    ? 'Manter proporcoes sempre ativo para este elemento'
-                    : shouldShowActive ? 'Manter proporcoes ativo' : 'Manter proporcoes desativo'
+                    ? (window.personalizerI18nText ? window.personalizerI18nText('Manter proporcoes sempre ativo para este elemento') : 'Manter proporcoes sempre ativo para este elemento')
+                    : shouldShowActive
+                        ? (window.personalizerI18nText ? window.personalizerI18nText('Manter proporcoes ativo') : 'Manter proporcoes ativo')
+                        : (window.personalizerI18nText ? window.personalizerI18nText('Manter proporcoes desativo') : 'Manter proporcoes desativo')
             );
             button.setAttribute(
                 'title',
                 forced
-                    ? 'Este elemento mantem sempre as proporcoes'
-                    : shouldShowActive ? 'Manter proporcoes: ligado' : 'Manter proporcoes: desligado'
+                    ? (window.personalizerI18nText ? window.personalizerI18nText('Este elemento mantem sempre as proporcoes') : 'Este elemento mantem sempre as proporcoes')
+                    : shouldShowActive
+                        ? (window.personalizerI18nText ? window.personalizerI18nText('Manter proporcoes: ligado') : 'Manter proporcoes: ligado')
+                        : (window.personalizerI18nText ? window.personalizerI18nText('Manter proporcoes: desligado') : 'Manter proporcoes: desligado')
             );
         });
 

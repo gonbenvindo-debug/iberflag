@@ -59,14 +59,14 @@ Object.assign(DesignEditor.prototype, {
 
     startCropMode() {
         if (!this.selectedElement || this.selectedElement.type !== 'image') {
-            showToast('Seleccione uma imagem para cortar', 'warning');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Selecione uma imagem para cortar') : 'Selecione uma imagem para cortar', 'warning');
             return;
         }
 
         // Obter a imagem atual do elemento selecionado
         const imgElement = this.selectedElement.element;
         if (!imgElement || imgElement.tagName !== 'image') {
-            showToast('Imagem não encontrada', 'error');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Imagem não encontrada') : 'Imagem não encontrada', 'error');
             return;
         }
 
@@ -96,7 +96,7 @@ Object.assign(DesignEditor.prototype, {
         ) || existingCropData;
 
         if (!srcToCrop) {
-            showToast('Fonte da imagem não encontrada', 'error');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Fonte da imagem não encontrada') : 'Fonte da imagem não encontrada', 'error');
             return;
         }
 
@@ -159,7 +159,7 @@ Object.assign(DesignEditor.prototype, {
                     this.applyElementRotation(elementToUpdate);
                 }
 
-                showToast('Imagem cortada com sucess?', 'success');
+                showToast(window.personalizerI18nText ? window.personalizerI18nText('Imagem cortada com sucesso!') : 'Imagem cortada com sucesso!', 'success');
                 this.hideResizeHandles();
                 this.showResizeHandles(elementToUpdate);
                 this.saveHistory();
@@ -297,7 +297,7 @@ Object.assign(DesignEditor.prototype, {
         this.hideResizeHandles();
         this.selectElement(this.selectedElement);
 
-        showToast('Imagem cortada com sucess?', 'success');
+        showToast(window.personalizerI18nText ? window.personalizerI18nText('Imagem cortada com sucesso!') : 'Imagem cortada com sucesso!', 'success');
         this.saveHistory();
     },
 
@@ -375,7 +375,7 @@ Object.assign(DesignEditor.prototype, {
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
-            showToast('Adicione pelo menos um elemento ao design', 'warning');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Adicione pelo menos um elemento ao design') : 'Adicione pelo menos um elemento ao design', 'warning');
             return;
         }
 
@@ -389,8 +389,8 @@ Object.assign(DesignEditor.prototype, {
         if (Array.isArray(this.availableBases) && this.availableBases.length > 0 && !selectedBase) {
             showToast(
                 this.isReinforcementOptionFlow?.()
-                ? 'Sem reforço indisponível. Escolha a opção com reforço.'
-                    : 'Selecione uma opcao disponivel antes de adicionar ao carrinho.',
+                ? (window.personalizerI18nText ? window.personalizerI18nText('Sem reforço indisponível. Escolha a opção com reforço.') : 'Sem reforço indisponível. Escolha a opção com reforço.')
+                    : (window.personalizerI18nText ? window.personalizerI18nText('Selecione uma opção disponível antes de adicionar ao carrinho.') : 'Selecione uma opção disponível antes de adicionar ao carrinho.'),
                 'warning'
             );
             return;
@@ -424,10 +424,10 @@ Object.assign(DesignEditor.prototype, {
 
         if (targetIndex >= 0) {
             cart[targetIndex] = cartItem;
-            showToast('Design atualizado no carrinho!', 'success');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Design atualizado no carrinho!') : 'Design atualizado no carrinho!', 'success');
         } else {
             cart.push(cartItem);
-            showToast('Produto adicionado ao carrinho!', 'success');
+            showToast(window.personalizerI18nText ? window.personalizerI18nText('Produto adicionado ao carrinho!') : 'Produto adicionado ao carrinho!', 'success');
         }
 
         this.saveCartData(cart);
@@ -436,7 +436,7 @@ Object.assign(DesignEditor.prototype, {
         this.closeCartStepsModal();
 
         setTimeout(() => {
-            window.location.href = '/produtos';
+            window.location.href = window.personalizerProductsPath ? window.personalizerProductsPath() : '/produtos';
         }, 1000);
     }
 

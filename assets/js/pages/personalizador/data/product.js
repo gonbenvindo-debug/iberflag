@@ -2,8 +2,8 @@
 // PRODUCT & CART
 // ============================================================
 function i18nText(value) {
-    return window.IberFlagI18n?.translateText
-        ? window.IberFlagI18n.translateText(value)
+    return window.personalizerI18nText
+        ? window.personalizerI18nText(value)
         : value;
 }
 
@@ -14,11 +14,9 @@ function i18nProduct(product) {
 }
 
 function getProductsPath() {
-    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
-        return SiteRoutes.getLocalizedPath(SiteRoutes.STATIC_PATHS.products);
-    }
-
-    return '/produtos';
+    return window.personalizerProductsPath
+        ? window.personalizerProductsPath()
+        : '/produtos';
 }
 
 Object.assign(DesignEditor.prototype, {
@@ -209,7 +207,12 @@ Object.assign(DesignEditor.prototype, {
 
             if (localSvgMarkup && window.DesignSvgStore?.importSvgIntoEditor) {
                 window.DesignSvgStore.importSvgIntoEditor(this, localSvgMarkup);
-                showToast(i18nText(`Template "${localTemplate.name}" carregado!`), 'success');
+                showToast(
+                    window.personalizerTemplateLoadedMessage
+                        ? window.personalizerTemplateLoadedMessage(localTemplate.name)
+                        : `Template "${localTemplate.name}" carregado!`,
+                    'success'
+                );
                 return;
             }
         }
@@ -258,7 +261,12 @@ Object.assign(DesignEditor.prototype, {
                 }
             }
 
-            showToast(i18nText(`Template "${data.nome}" carregado!`), 'success');
+            showToast(
+                window.personalizerTemplateLoadedMessage
+                    ? window.personalizerTemplateLoadedMessage(data.nome)
+                    : `Template "${data.nome}" carregado!`,
+                'success'
+            );
         } catch (err) {
             console.error('Erro ao carregar template:', err);
             const fallbackTemplate = window.DesignTemplates?.getById?.(templateId);
@@ -274,7 +282,12 @@ Object.assign(DesignEditor.prototype, {
 
             if (fallbackTemplate && fallbackSvg && window.DesignSvgStore?.importSvgIntoEditor) {
                 window.DesignSvgStore.importSvgIntoEditor(this, fallbackSvg);
-                showToast(i18nText(`Template "${fallbackTemplate.name}" carregado!`), 'success');
+                showToast(
+                    window.personalizerTemplateLoadedMessage
+                        ? window.personalizerTemplateLoadedMessage(fallbackTemplate.name)
+                        : `Template "${fallbackTemplate.name}" carregado!`,
+                    'success'
+                );
             }
         }
     },
@@ -707,10 +720,10 @@ Object.assign(DesignEditor.prototype, {
         const priceEl = document.getElementById('product-price');
         if (priceEl) priceEl.style.display = 'none';
 
-        const closeLink = document.querySelector('#editor-nav a[href="/produtos"], #editor-nav a[href="/produtos"]');
+        const closeLink = document.getElementById('close-editor-btn');
         if (closeLink) {
             closeLink.href = '/admin#produtos';
-            closeLink.title = 'Voltar ao Admin';
+            closeLink.title = i18nText('Voltar ao Admin');
         }
     },
 
@@ -723,7 +736,7 @@ Object.assign(DesignEditor.prototype, {
         const designSvg = this.getDesignSVG();
         const designPreview = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`;
 
-        const nome = prompt('Nome do design:');
+        const nome = prompt(i18nText('Nome do design:'));
         if (!nome || !nome.trim()) {
             showToast(i18nText('Nome obrigatorio para guardar o design'), 'warning');
             return;
@@ -765,7 +778,7 @@ Object.assign(DesignEditor.prototype, {
                     .update(templateData)
                     .eq('id', this.editingTemplateId);
                 if (error) throw error;
-                showToast(i18nText('Design atualizado com sucess?!'), 'success');
+                showToast(i18nText('Design atualizado com sucesso!'), 'success');
             } else {
                 const { data, error } = await supabaseClient
                     .from('templates')

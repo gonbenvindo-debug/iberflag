@@ -1,6 +1,12 @@
 // ============================================================
 // TEMPLATE SYSTEM MODULE - IberFlag
 // ============================================================
+function i18nTemplateText(value) {
+    return window.personalizerI18nText
+        ? window.personalizerI18nText(value)
+        : value;
+}
+
 Object.assign(DesignEditor.prototype, {
 
     // ===== TEMPLATE MODAL =====
@@ -27,8 +33,8 @@ Object.assign(DesignEditor.prototype, {
             <div id="templates-modal" class="templates-modal" aria-hidden="true" role="dialog" aria-modal="true" inert>
                 <div class="templates-panel">
                     <div class="templates-header">
-                        <h2>Galeria de Templates</h2>
-                        <button class="templates-close" id="templates-close-btn" aria-label="Fechar">
+                        <h2>${i18nTemplateText('Galeria de Templates')}</h2>
+                        <button class="templates-close" id="templates-close-btn" aria-label="${i18nTemplateText('Fechar')}">
                             <i data-lucide="x" class="w-5 h-5"></i>
                         </button>
                     </div>
@@ -36,7 +42,7 @@ Object.assign(DesignEditor.prototype, {
                         <div class="templates-sidebar">
                             <div class="templates-search">
                                 <i data-lucide="search" class="w-4 h-4"></i>
-                                <input type="text" id="template-search" placeholder="Pesquisar templates...">
+                                <input type="text" id="template-search" placeholder="${i18nTemplateText('Pesquisar templates...')}">
                             </div>
                             <div class="templates-categories" id="template-categories">
                                 <!-- Categorias renderizadas via JS -->
@@ -82,7 +88,7 @@ Object.assign(DesignEditor.prototype, {
         gridContainer.innerHTML = `
             <div class="templates-loading">
                 <i data-lucide="loader-2" class="w-8 h-8 animate-spin"></i>
-                <p>A carregar templates...</p>
+                <p>${i18nTemplateText('A carregar templates...')}</p>
             </div>
         `;
 
@@ -93,7 +99,7 @@ Object.assign(DesignEditor.prototype, {
             categoriesContainer.innerHTML = `
                 <button class="template-category ${!categoryId ? 'active' : ''}" data-category="all">
                     <i data-lucide="layout-grid" class="w-4 h-4"></i>
-                    <span>Todos</span>
+                    <span>${i18nTemplateText('Todos')}</span>
                 </button>
                 ${categories.map(cat => `
                     <button class="template-category ${categoryId === cat.id ? 'active' : ''}" data-category="${cat.id}">
@@ -128,7 +134,7 @@ Object.assign(DesignEditor.prototype, {
                 gridContainer.innerHTML = `
                     <div class="templates-empty">
                         <i data-lucide="image-off" class="w-12 h-12"></i>
-                        <p>Nenhum template encontrado</p>
+                        <p>${i18nTemplateText('Nenhum template encontrado')}</p>
                     </div>
                 `;
             } else {
@@ -144,7 +150,7 @@ Object.assign(DesignEditor.prototype, {
                         </div>
                         <button class="template-use-btn" data-template-id="${template.id}">
                             <i data-lucide="check" class="w-4 h-4"></i>
-                            Usar
+                            ${i18nTemplateText('Usar')}
                         </button>
                     </div>
                 `).join('');
@@ -234,13 +240,13 @@ Object.assign(DesignEditor.prototype, {
     loadTemplate(templateId) {
         const template = window.DesignTemplates?.getById?.(templateId);
         if (!template) {
-            showToast('Template não encontrado', 'error');
+            showToast(i18nTemplateText('Template não encontrado'), 'error');
             return;
         }
 
         // Confirm if canvas has content
         if (this.elements.length > 0) {
-            if (!confirm('O canvas atual será limpo. Deseja continuar?')) {
+            if (!confirm(i18nTemplateText('O canvas atual será limpo. Deseja continuar?'))) {
                 return;
             }
         }
@@ -262,7 +268,12 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.closeTemplateModal();
-        showToast(`Template "${template.name}" carregado!`, 'success');
+        showToast(
+            window.personalizerTemplateLoadedMessage
+                ? window.personalizerTemplateLoadedMessage(template.name)
+                : `Template "${template.name}" carregado!`,
+            'success'
+        );
     },
 
     normalizeTemplateElement(data = {}) {

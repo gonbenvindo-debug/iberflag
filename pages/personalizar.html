@@ -65,6 +65,8 @@
 
 
 
+
+
     <meta property="og:type" content="website">
     <meta property="og:title" content="Personalizar Produto - IberFlag">
     <meta property="og:description" content="Crie e ajuste o seu design no editor IberFlag em desktop e mobile.">
@@ -78,6 +80,7 @@
     <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <script src="/assets/js/core/site-routes.js?v=20260409seo1"></script>
+    <script src="/assets/js/core/i18n.js?v=20260423a"></script>
     <script src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
     <link rel="stylesheet" href="/assets/css/style.css?v=20260422h">
     <link rel="stylesheet" href="/assets/css/pages/personalizador/components.css?v=20260404a">
@@ -673,6 +676,23 @@
         window.SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im56d2ZxdWl2dWx4a214cndxYWx6Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzM3NzMzODQsImV4cCI6MjA4OTM0OTM4NH0.pelN5argByWYMij-wE1GRhQ-L8bEFGMDMJliOZrBBXU';
     </script>
     <script>
+        window.personalizerI18nText = function personalizerI18nText(value) {
+            return window.IberFlagI18n?.translateText
+                ? window.IberFlagI18n.translateText(value)
+                : value;
+        };
+        window.personalizerProductsPath = function personalizerProductsPath() {
+            if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
+                return SiteRoutes.getLocalizedPath(SiteRoutes.STATIC_PATHS.products);
+            }
+            return '/produtos';
+        };
+        window.personalizerTemplateLoadedMessage = function personalizerTemplateLoadedMessage(templateName) {
+            const translate = window.personalizerI18nText || ((value) => value);
+            return `${translate('Template')} "${templateName}" ${translate('carregado!')}`;
+        };
+    </script>
+    <script>
         const propertiesPanel = document.getElementById('properties-panel');
         if (propertiesPanel) {
             propertiesPanel.remove();
@@ -703,6 +723,7 @@
     <script>
         lucide.createIcons();
     </script>
+
 
 
 

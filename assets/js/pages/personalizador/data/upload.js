@@ -258,7 +258,9 @@ Object.assign(DesignEditor.prototype, {
         const baseFontSize = Math.round(Math.max(14, Math.min(40, scale.shortSide * 0.09)));
         const estimatedTextWidth = Math.max(80, baseFontSize * 5.2);
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        const defaultLabel = 'Clique para editar';
+        const defaultLabel = window.personalizerI18nText
+            ? window.personalizerI18nText('Clique para editar')
+            : 'Clique para editar';
         text.setAttribute('x', String(center.x - (estimatedTextWidth / 2)));
         text.setAttribute('y', String(center.y));
         text.setAttribute('font-family', 'Arial');
@@ -316,7 +318,7 @@ Object.assign(DesignEditor.prototype, {
             reader.onload = async (event) => {
                 const src = event.target.result;
                 const fallbackName = file.name ? file.name.replace(/\.[^.]+$/, '') : '';
-                const imageName = fallbackName || 'Imagem';
+                const imageName = fallbackName || (window.personalizerI18nText ? window.personalizerI18nText('Imagem') : 'Imagem');
                 try {
                     const cropped = await this.openUploadCropModal(src);
                     if (cropped) {
@@ -329,7 +331,12 @@ Object.assign(DesignEditor.prototype, {
                     }
                 } catch (error) {
                     console.error('Erro ao inserir imagem:', error);
-                    showToast('Nao foi possivel inserir a imagem', 'error');
+                    showToast(
+                        window.personalizerI18nText
+                            ? window.personalizerI18nText('Não foi possível inserir a imagem')
+                            : 'Não foi possível inserir a imagem',
+                        'error'
+                    );
                 } finally {
                     resolve();
                 }
@@ -989,16 +996,30 @@ Object.assign(DesignEditor.prototype, {
                 qrContent: content,
                 qrColor: color
             });
-            showToast('QR code adicionado ao design', 'success');
+            showToast(
+                window.personalizerI18nText
+                    ? window.personalizerI18nText('QR code adicionado ao design')
+                    : 'QR code adicionado ao design',
+                'success'
+            );
         } catch (error) {
             console.error('Erro ao gerar QR code:', error);
-            showToast('Nao foi possivel gerar o QR code', 'error');
+            showToast(
+                window.personalizerI18nText
+                    ? window.personalizerI18nText('Não foi possível gerar o QR code')
+                    : 'Não foi possível gerar o QR code',
+                'error'
+            );
         }
     },
 
     generateQRCodeDataUrl(content, color = '#111827') {
         if (typeof qrcode !== 'function') {
-            throw new Error('Biblioteca de QR code indisponivel');
+            throw new Error(
+                window.personalizerI18nText
+                    ? window.personalizerI18nText('Biblioteca de QR code indisponível')
+                    : 'Biblioteca de QR code indisponível'
+            );
         }
 
         const qr = qrcode(0, 'M');
@@ -1028,7 +1049,7 @@ Object.assign(DesignEditor.prototype, {
         return `data:image/svg+xml;charset=UTF-8,${encodeURIComponent(svgMarkup)}`;
     },
 
-    addImageFromSource(src, width, height, name = 'Imagem', options = {}) {
+    addImageFromSource(src, width, height, name = window.personalizerI18nText ? window.personalizerI18nText('Imagem') : 'Imagem', options = {}) {
         const fitted = this.fitSizeIntoEditableBounds(width, height, 0.45);
         const center = this.getEditableCenter();
         const imageKind = options.imageKind || 'image';

@@ -941,7 +941,12 @@ Object.assign(DesignEditor.prototype, {
         // ===== APPLY CROP AUTOMATICALLY =====
         if (this.cropMode && wasResizing) {
             // Auto-apply crop ap├│s reposicionar handles
-            showToast('Pressione Enter para confirmar corte ou Escape para cancelar', 'info');
+            showToast(
+                window.personalizerI18nText
+                    ? window.personalizerI18nText('Pressione Enter para confirmar corte ou Escape para cancelar')
+                    : 'Pressione Enter para confirmar corte ou Escape para cancelar',
+                'info'
+            );
         }
 
         if (this.selectedElement) {
