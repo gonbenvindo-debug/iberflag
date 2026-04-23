@@ -702,6 +702,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
 
 function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', productCount = 0 } = {}) {
     const safeSelectedCategory = String(selectedCategory || 'all').trim().toLowerCase() || 'all';
+    const productCountLabel = Number(productCount) === 1 ? 'produto' : 'produtos';
     const categoryOptions = [
         `<option value="all"${safeSelectedCategory === 'all' ? ' selected' : ''}>Todas as categorias</option>`,
         ...categoryEntries.map((category) => `<option value="${escapeHtml(category.slug)}"${safeSelectedCategory === category.slug ? ' selected' : ''}>${escapeHtml(category.label)}</option>`)
@@ -709,7 +710,7 @@ function renderCatalogToolbar(categoryEntries, { selectedCategory = 'all', produ
 
     return `
       <div class="mt-4 flex flex-col gap-3 sm:mt-5 sm:flex-row sm:items-end sm:justify-between">
-        <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">${escapeHtml(productCount)} produto(s)</p>
+        <p class="text-xs font-medium uppercase tracking-[0.18em] text-slate-500">${escapeHtml(productCount)} ${productCountLabel}</p>
         <div class="catalog-toolbar-grid grid grid-cols-2 gap-x-2 gap-y-1 sm:min-w-[30rem] sm:gap-x-3 sm:gap-y-2">
           <label for="catalog-category-select" class="text-[0.68rem] font-medium uppercase tracking-[0.18em] text-slate-500">
             Categoria
@@ -817,15 +818,14 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
 }
 
 function renderProductsLandingPage(categoryEntries, productEntries) {
-    const highlightedProducts = productEntries
+    const catalogProducts = productEntries
         .slice()
         .sort((left, right) => {
             const featuredDelta = Number(Boolean(right.destaque)) - Number(Boolean(left.destaque));
             if (featuredDelta !== 0) return featuredDelta;
             return String(left.nome || '').localeCompare(String(right.nome || ''), 'pt-PT');
-        })
-        .slice(0, 12);
-    const primaryImage = highlightedProducts[0]?.imageUrl || `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`;
+        });
+    const primaryImage = catalogProducts[0]?.imageUrl || `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`;
     const structuredData = [
         {
             '@context': 'https://schema.org',
@@ -845,7 +845,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         {
             '@context': 'https://schema.org',
             '@type': 'ItemList',
-            itemListElement: highlightedProducts.map((product, index) => ({
+            itemListElement: catalogProducts.map((product, index) => ({
                 '@type': 'ListItem',
                 position: index + 1,
                 name: product.nome,
@@ -875,12 +875,12 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
           <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
           <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
         </div>
-        ${renderCatalogToolbar(categoryEntries, { selectedCategory: 'all', productCount: highlightedProducts.length })}
+        ${renderCatalogToolbar(categoryEntries, { selectedCategory: 'all', productCount: catalogProducts.length })}
       </div>
     </section>
     <section class="mx-auto max-w-7xl px-4 py-4 sm:px-6 sm:py-10 lg:px-8">
       <div data-catalog-grid class="catalog-grid-two grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
-        ${highlightedProducts.map((product, index) => `
+        ${catalogProducts.map((product, index) => `
           <article class="flex h-full flex-col overflow-hidden rounded-2xl border border-slate-200 bg-white" data-catalog-item data-order-index="${index}" data-price="${Number(product.preco || 0)}" data-name="${escapeHtml(String(product.nome || '').toLowerCase())}">
             <a href="${product.canonicalPath}" class="block">
               <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="${index < 8 ? 'eager' : 'lazy'}" fetchpriority="${index < 4 ? 'high' : 'auto'}" width="720" height="540" decoding="async">

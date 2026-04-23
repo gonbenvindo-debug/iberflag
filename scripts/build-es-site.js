@@ -525,6 +525,8 @@ function injectI18nScript($) {
 
 function applyHtmlFallbackTranslations(html) {
     return String(html || '')
+        .replace(/(\d+)\s+produtos/g, '$1 productos')
+        .replace(/(\d+)\s+produto(?!s)/g, '$1 producto')
         .replace(/Publicidade física/g, 'Publicidad física')
         .replace(/tratada como marca\./g, 'tratada como marca.')
         .replace(/Flybanners, roll-ups e formatos promocionais com direção visual premium, operação rápida e\s+presença forte no momento em que o cliente entra no espaço\./g, 'Fly banners, roll ups y formatos promocionales con dirección visual premium, operación rápida y presencia fuerte cuando el cliente entra en el espacio.')
