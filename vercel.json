@@ -202,12 +202,22 @@
     },
     {
       "source": "/produto/bandeiras-horizontais-tamanho-unico",
-      "destination": "https://iberflag.com/produto/bandeiras-horizontais-medida-personalizada",
+      "destination": "https://iberflag.com/produtos/bandeiras",
+      "permanent": true
+    },
+    {
+      "source": "/produto/bandeiras-horizontais-medida-personalizada",
+      "destination": "https://iberflag.com/produtos/bandeiras",
       "permanent": true
     },
     {
       "source": "/produto/bandeiras-verticais-tamanho-unico",
-      "destination": "https://iberflag.com/produto/bandeiras-verticais-medida-personalizada",
+      "destination": "https://iberflag.com/produtos/bandeiras",
+      "permanent": true
+    },
+    {
+      "source": "/produto/bandeiras-verticais-medida-personalizada",
+      "destination": "https://iberflag.com/produtos/bandeiras",
       "permanent": true
     },
     {
@@ -222,7 +232,12 @@
     },
     {
       "source": "/produto/photocall-tamanho-unico",
-      "destination": "https://iberflag.com/produto/photocall-extensivel-1-40-a-2-40-m",
+      "destination": "https://iberflag.com/produtos/photocall",
+      "permanent": true
+    },
+    {
+      "source": "/produto/photocall-extensivel-1-40-a-2-40-m",
+      "destination": "https://iberflag.com/produtos/photocall",
       "permanent": true
     },
     {
@@ -232,12 +247,22 @@
     },
     {
       "source": "/es/produto/bandeiras-horizontais-tamanho-unico",
-      "destination": "https://iberflag.com/es/produto/bandeiras-horizontais-medida-personalizada",
+      "destination": "https://iberflag.com/es/produtos/bandeiras",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/bandeiras-horizontais-medida-personalizada",
+      "destination": "https://iberflag.com/es/produtos/bandeiras",
       "permanent": true
     },
     {
       "source": "/es/produto/bandeiras-verticais-tamanho-unico",
-      "destination": "https://iberflag.com/es/produto/bandeiras-verticais-medida-personalizada",
+      "destination": "https://iberflag.com/es/produtos/bandeiras",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/bandeiras-verticais-medida-personalizada",
+      "destination": "https://iberflag.com/es/produtos/bandeiras",
       "permanent": true
     },
     {
@@ -252,7 +277,12 @@
     },
     {
       "source": "/es/produto/photocall-tamanho-unico",
-      "destination": "https://iberflag.com/es/produto/photocall-extensivel-1-40-a-2-40-m",
+      "destination": "https://iberflag.com/es/produtos/photocall",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/photocall-extensivel-1-40-a-2-40-m",
+      "destination": "https://iberflag.com/es/produtos/photocall",
       "permanent": true
     },
     {

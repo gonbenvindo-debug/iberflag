@@ -25,22 +25,6 @@
       "displayDescription": "Bandeiras de mesa personalizadas para escritorios, rececoes, feiras e espacos institucionais, com presenca formal e acabamento profissional."
     },
     {
-      "id": 112,
-      "slug": "bandeiras-horizontais-medida-personalizada",
-      "nome": "Bandeiras Horizontais (medida personalizada)",
-      "categoria": "bandeiras",
-      "categorySlug": "bandeiras",
-      "canonicalPath": "/produto/bandeiras-horizontais-medida-personalizada",
-      "personalizePath": "/produto/bandeiras-horizontais-medida-personalizada/personalizar",
-      "preco": 19.9,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-horizontais-f4aa29690d.webp",
-      "nomeEs": "Banderas horizontales (medida personalizada)",
-      "descricaoEs": "Banderas horizontales personalizadas para exterior, empresas e instituciones, con medidas y diseños personalizables.",
-      "seoTitle": "Bandeiras Horizontais (medida personalizada) | Bandeiras | IberFlag",
-      "seoDescription": "Bandeiras horizontais personalizadas para exterior, empresas e instituicoes, com medidas e designs personalizaveis.",
-      "displayDescription": "Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos, com medidas e designs personalizaveis."
-    },
-    {
       "id": 113,
       "slug": "bandeiras-para-despacho-150-x-100-cm",
       "nome": "Bandeiras para despacho (150 x 100 cm)",
@@ -151,22 +135,6 @@
       "seoTitle": "Bandeiras de parede (150 x 100 cm) | Bandeiras | IberFlag",
       "seoDescription": "Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais.",
       "displayDescription": "Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais, ideais para reforcar identidade visual."
-    },
-    {
-      "id": 120,
-      "slug": "bandeiras-verticais-medida-personalizada",
-      "nome": "Bandeiras Verticais (medida personalizada)",
-      "categoria": "bandeiras",
-      "categorySlug": "bandeiras",
-      "canonicalPath": "/produto/bandeiras-verticais-medida-personalizada",
-      "personalizePath": "/produto/bandeiras-verticais-medida-personalizada/personalizar",
-      "preco": 22.4,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/bandeiras/bandeiras-verticais-0758ff2c44.webp",
-      "nomeEs": "Banderas verticales (medida personalizada)",
-      "descricaoEs": "Banderas verticales personalizadas para comunicación exterior, puntos de venta y acciones promocionales, con medidas y diseños personalizables.",
-      "seoTitle": "Bandeiras Verticais (medida personalizada) | Bandeiras | IberFlag",
-      "seoDescription": "Bandeiras verticais personalizadas para comunicacao exterior, pontos de venda e acoes promocionais.",
-      "displayDescription": "Bandeiras verticais personalizadas para comunicacao exterior, pontos de venda e acoes promocionais, com medidas e designs personalizaveis."
     },
     {
       "id": 121,
@@ -471,22 +439,6 @@
       "seoTitle": "Mastro de Aluminio 6 m | Mastros | IberFlag",
       "seoDescription": "Mastro de aluminio 6 m para bandeiras exteriores, comunicacao institucional e promocional.",
       "displayDescription": "Mastro de aluminio de 6 metros para bandeiras exteriores, resistente e indicado para comunicacao institucional ou promocional."
-    },
-    {
-      "id": 140,
-      "slug": "photocall-extensivel-1-40-a-2-40-m",
-      "nome": "Photocall Extensível (1,40 a 2,40 m)",
-      "categoria": "photocall",
-      "categorySlug": "photocall",
-      "canonicalPath": "/produto/photocall-extensivel-1-40-a-2-40-m",
-      "personalizePath": "/produto/photocall-extensivel-1-40-a-2-40-m/personalizar",
-      "preco": 50,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/photocall/photocall-469c5105b9.webp",
-      "nomeEs": "Photocall extensible (1,40 a 2,40 m)",
-      "descricaoEs": "Photocall extensible personalizado con todo lo necesario para instalación y montaje, ideal para eventos, conferencias, marcas y zonas de fotografía. Tamaño del tejido: altura y anchura personalizables de 1,40 m a 2,40 m.",
-      "seoTitle": "Photocall Extensível (1,40 a 2,40 m) | Photocalls | IberFlag",
-      "seoDescription": "Photocall extensivel personalizado com tecido de 1,40 m a 2,40 m para eventos, marcas e zonas de fotografia.",
-      "displayDescription": "Photocall extensivel personalizado com tecido ajustavel de 1,40 m a 2,40 m, ideal para eventos, stands, conferencias e zonas de fotografia."
     },
     {
       "id": 141,
