@@ -472,8 +472,8 @@ function resolveSpanishCopy(productName) {
         ? 'tenda-personalizada-5-x-1-m'
         : rawSlug === 'tenda-personalizada-3-x-4-cm'
             ? 'tenda-personalizada-3-x-4-m'
-            : rawSlug === 'cubo-publcitario-tamanho-unico'
-                ? 'cubo-publicitario-tamanho-unico'
+            : rawSlug === 'cubo-publcitario-tamanho-unico' || rawSlug === 'cubo-publicitario-tamanho-unico'
+                ? 'cubo-publicitario-40-x-40-x-40-8-cm'
                 : rawSlug;
 
     const translation = ES_CATALOG?.products?.[normalizedSlug] || null;

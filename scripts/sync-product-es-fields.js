@@ -39,7 +39,7 @@ function normalizeProductSlug(value) {
     const baseSlug = slugify(value);
     if (baseSlug === 'tenda-personalizada-5-x-1-cm') return 'tenda-personalizada-5-x-1-m';
     if (baseSlug === 'tenda-personalizada-3-x-4-cm') return 'tenda-personalizada-3-x-4-m';
-    if (baseSlug === 'cubo-publcitario-tamanho-unico') return 'cubo-publicitario-tamanho-unico';
+    if (baseSlug === 'cubo-publcitario-tamanho-unico' || baseSlug === 'cubo-publicitario-tamanho-unico') return 'cubo-publicitario-40-x-40-x-40-8-cm';
     return baseSlug;
 }
 

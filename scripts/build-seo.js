@@ -31,9 +31,9 @@ const PRODUCT_SEO_OVERRIDES = {
         description: 'Bandeiras de mesa personalizadas para escritorios, rececoes, feiras e espacos institucionais, com presenca formal e acabamento profissional.',
         seoDescription: 'Bandeiras de mesa personalizadas para escritorios, rececoes, feiras e espacos institucionais com acabamento profissional.'
     },
-    'bandeiras-horizontais-tamanho-unico': {
-        description: 'Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos, ideais para reforcar identidade visual em fachadas e espacos promocionais.',
-        seoDescription: 'Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos com impressao profissional.'
+    'bandeiras-horizontais-medida-personalizada': {
+        description: 'Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos, com medidas e designs personalizaveis.',
+        seoDescription: 'Bandeiras horizontais personalizadas para exterior, empresas e instituicoes, com medidas e designs personalizaveis.'
     },
     'bandeiras-para-despacho-150-x-100-cm': {
         description: 'Bandeiras para despacho e salas institucionais com impressao personalizada, pensadas para ambientes corporativos, escritorios e apresentacoes formais.',
@@ -64,9 +64,9 @@ const PRODUCT_SEO_OVERRIDES = {
         description: 'Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais, ideais para reforcar identidade visual.',
         seoDescription: 'Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais.'
     },
-    'bandeiras-verticais-tamanho-unico': {
-        description: 'Bandeiras verticais personalizadas para comunicacao exterior, acoes comerciais e reforco de imagem corporativa com leitura clara.',
-        seoDescription: 'Bandeiras verticais personalizadas para comunicacao exterior, eventos e imagem corporativa.'
+    'bandeiras-verticais-medida-personalizada': {
+        description: 'Bandeiras verticais personalizadas para comunicacao exterior, pontos de venda e acoes promocionais, com medidas e designs personalizaveis.',
+        seoDescription: 'Bandeiras verticais personalizadas para comunicacao exterior, pontos de venda e acoes promocionais.'
     },
     'bandeirolas-esportivas-20-x-27-cm': {
         description: 'Bandeirolas desportivas personalizadas para clubes, eventos, premios e merchandising, com formato classico para escudos e mensagens institucionais.',
@@ -136,22 +136,22 @@ const PRODUCT_SEO_OVERRIDES = {
         description: 'Fly Banner Surf personalizado 90 x 516 cm de formato maximo para campanhas exteriores, acessos, eventos e ativacoes de grande impacto.',
         seoDescription: 'Fly Banner Surf 90 x 516 cm personalizado para campanhas exteriores e eventos de grande impacto.'
     },
-    'cubo-publicitario-tamanho-unico': {
-        description: 'Cubo publicitario personalizado, leve e facil de montar, para pontos de venda, eventos, promocoes e zonas de ativacao de marca.',
-        seoDescription: 'Cubo publicitario personalizado para pontos de venda, eventos, promocoes e ativacoes de marca.'
+    'cubo-publicitario-40-x-40-x-40-8-cm': {
+        description: 'Cubo publicitario personalizado 40 x 40 x 40,8 cm, leve e facil de montar, para pontos de venda, eventos, promocoes e zonas de ativacao de marca.',
+        seoDescription: 'Cubo publicitario personalizado 40 x 40 x 40,8 cm para pontos de venda, eventos, promocoes e ativacoes de marca.'
     },
-    'mastro-de-aluminio-6-metros-tamanho-unico': {
+    'mastro-de-aluminio-6-metros': {
         seoTitle: 'Mastro de Aluminio 6 m | Mastros | IberFlag',
         description: 'Mastro de aluminio de 6 metros para bandeiras exteriores, resistente e indicado para comunicacao institucional ou promocional.',
         seoDescription: 'Mastro de aluminio 6 m para bandeiras exteriores, comunicacao institucional e promocional.'
     },
-    'photocall-tamanho-unico': {
-        description: 'Photocall personalizado extensivel para eventos, stands, conferencias e zonas de fotografia com imagem de marca em destaque.',
-        seoDescription: 'Photocall personalizado extensivel para eventos, stands, conferencias e zonas de fotografia.'
+    'photocall-extensivel-1-40-a-2-40-m': {
+        description: 'Photocall extensivel personalizado com tecido ajustavel de 1,40 m a 2,40 m, ideal para eventos, stands, conferencias e zonas de fotografia.',
+        seoDescription: 'Photocall extensivel personalizado com tecido de 1,40 m a 2,40 m para eventos, marcas e zonas de fotografia.'
     },
-    'mini-fly-banner-tamanho-unico': {
-        description: 'Mini Fly Banner personalizado para balcoes, rececoes e acoes promocionais compactas, com formato original e facil de transportar.',
-        seoDescription: 'Mini Fly Banner personalizado para balcoes, rececoes, eventos e acoes promocionais compactas.'
+    'mini-fly-banner-drop-60-cm-surf-73-cm': {
+        description: 'Mini Fly Banner personalizado em formatos Drop 60 cm e Surf 73 cm para balcoes, rececoes e acoes promocionais compactas.',
+        seoDescription: 'Mini Fly Banner personalizado em formatos Drop 60 cm e Surf 73 cm para balcoes, rececoes e acoes promocionais.'
     },
     'x-banner-80-x-180-cm': {
         description: 'X-Banner personalizado 80 x 180 cm, leve e portatil, para campanhas de interior, lojas, montras, feiras e comunicacao promocional.',
@@ -356,10 +356,10 @@ function assignUniqueProductSlugs(products) {
             correctedSlug = 'tenda-personalizada-3-x-4-m';
             correctedName = 'Tenda personalizada (3 x 4 m)';
             if (!correctedNameEs) correctedNameEs = 'Carpa personalizada (3 x 4 m)';
-        } else if (sourceSlug === 'cubo-publcitario-tamanho-unico' || /cubo publcit/i.test(sourceName)) {
-            correctedSlug = 'cubo-publicitario-tamanho-unico';
-            correctedName = 'Cubo publicitário (Tamanho único)';
-            if (!correctedNameEs) correctedNameEs = 'Cubo publicitario (tamaño único)';
+        } else if (sourceSlug === 'cubo-publcitario-tamanho-unico' || sourceSlug === 'cubo-publicitario-tamanho-unico' || /cubo publcit/i.test(sourceName)) {
+            correctedSlug = 'cubo-publicitario-40-x-40-x-40-8-cm';
+            correctedName = 'Cubo publicitario (40 x 40 x 40,8 cm)';
+            if (!correctedNameEs) correctedNameEs = 'Cubo publicitario (40 x 40 x 40,8 cm)';
         }
 
         const correctedProduct = {
