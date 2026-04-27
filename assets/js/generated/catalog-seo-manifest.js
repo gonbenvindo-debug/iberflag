@@ -153,70 +153,6 @@
       "displayDescription": "Bandeirolas desportivas personalizadas para clubes, eventos, premios e merchandising, com formato classico para escudos e mensagens institucionais."
     },
     {
-      "id": 122,
-      "slug": "tenda-personalizada-5-x-1-m",
-      "nome": "Tenda personalizada (5 x 1 m)",
-      "categoria": "tenda-publicitaria",
-      "categorySlug": "tenda-publicitaria",
-      "canonicalPath": "/produto/tenda-personalizada-5-x-1-m",
-      "personalizePath": "/produto/tenda-personalizada-5-x-1-m/personalizar",
-      "preco": 257.4,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
-      "nomeEs": "Carpa personalizada (5 x 1 m)",
-      "descricaoEs": "Carpa publicitaria personalizada para ferias, eventos y activaciones de marca. Una solución visible y funcional para presencia exterior.",
-      "seoTitle": "Tenda personalizada (5 x 1 m) | Tendas | IberFlag",
-      "seoDescription": "Tenda publicitaria personalizada 5 x 1 m para feiras, eventos e ativacoes de marca.",
-      "displayDescription": "Tenda publicitaria personalizada 5 x 1 m para feiras, eventos e ativacoes de marca, com presenca exterior visivel e funcional."
-    },
-    {
-      "id": 123,
-      "slug": "tenda-personalizada-3-x-3-m",
-      "nome": "Tenda personalizada (3 x 3 m)",
-      "categoria": "tenda-publicitaria",
-      "categorySlug": "tenda-publicitaria",
-      "canonicalPath": "/produto/tenda-personalizada-3-x-3-m",
-      "personalizePath": "/produto/tenda-personalizada-3-x-3-m/personalizar",
-      "preco": 259.9,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
-      "nomeEs": "Carpa personalizada (3 x 3 m)",
-      "descricaoEs": "Carpa publicitaria personalizada para stands, ferias y eventos, con formato versátil para crear una zona de marca visible y protegida.",
-      "seoTitle": "Tenda personalizada (3 x 3 m) | Tendas | IberFlag",
-      "seoDescription": "Tenda personalizada 3 x 3 m para stands, feiras, eventos e ativacoes de marca.",
-      "displayDescription": "Tenda publicitaria personalizada 3 x 3 m para stands, feiras e eventos, versatil para criar uma zona de marca visivel e protegida."
-    },
-    {
-      "id": 124,
-      "slug": "tenda-personalizada-3-x-4-m",
-      "nome": "Tenda personalizada (3 x 4 m)",
-      "categoria": "tenda-publicitaria",
-      "categorySlug": "tenda-publicitaria",
-      "canonicalPath": "/produto/tenda-personalizada-3-x-4-m",
-      "personalizePath": "/produto/tenda-personalizada-3-x-4-m/personalizar",
-      "preco": 262.4,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
-      "nomeEs": "Carpa personalizada (3 x 4 m)",
-      "descricaoEs": "Carpa publicitaria personalizada para eventos y acciones promocionales que requieren más presencia visual y espacio operativo.",
-      "seoTitle": "Tenda personalizada (3 x 4 m) | Tendas | IberFlag",
-      "seoDescription": "Tenda publicitaria personalizada 3 x 4 m para eventos, feiras e acoes promocionais.",
-      "displayDescription": "Tenda publicitaria personalizada 3 x 4 m para eventos e acoes promocionais que precisam de mais espaco operativo e presenca visual."
-    },
-    {
-      "id": 125,
-      "slug": "tenda-personalizada-3-x-6-m",
-      "nome": "Tenda personalizada (3 x 6 m)",
-      "categoria": "tenda-publicitaria",
-      "categorySlug": "tenda-publicitaria",
-      "canonicalPath": "/produto/tenda-personalizada-3-x-6-m",
-      "personalizePath": "/produto/tenda-personalizada-3-x-6-m/personalizar",
-      "preco": 264.9,
-      "imagem": "https://nzwfquivulxkmxrwqalz.supabase.co/storage/v1/object/public/catalog-products/supplier-pt/tenda-publicitaria/tenda-personalizada-731465e0a2.webp",
-      "nomeEs": "Carpa personalizada (3 x 6 m)",
-      "descricaoEs": "Carpa publicitaria personalizada de gran formato para eventos, ferias y activaciones donde se necesita cobertura amplia y máxima visibilidad.",
-      "seoTitle": "Tenda personalizada (3 x 6 m) | Tendas | IberFlag",
-      "seoDescription": "Tenda personalizada 3 x 6 m para eventos, feiras e ativacoes de marca de grande formato.",
-      "displayDescription": "Tenda publicitaria personalizada 3 x 6 m de grande formato para eventos, feiras e ativacoes com cobertura ampla e maxima visibilidade."
-    },
-    {
       "id": 126,
       "slug": "fly-banner-drop-75-x-194-cm",
       "nome": "Fly Banner Drop (75 x 194 cm)",
@@ -611,12 +547,6 @@
       "label": "Roll Up",
       "canonicalPath": "/produtos/roll-up",
       "description": "Roll ups personalizados para feiras, lojas e apresentações com estrutura compacta e instalação simples."
-    },
-    {
-      "slug": "tenda-publicitaria",
-      "label": "Tenda Publicitária",
-      "canonicalPath": "/produtos/tenda-publicitaria",
-      "description": "Tendas publicitárias personalizadas para eventos, ativações de marca e presença exterior de grande formato."
     },
     {
       "slug": "wall-banner",

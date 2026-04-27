@@ -246,6 +246,41 @@
       "permanent": true
     },
     {
+      "source": "/produtos/tenda-publicitaria",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-5-x-1-m",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-5-x-1-cm",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-3-x-3-m",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-3-x-4-m",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-3-x-4-cm",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/produto/tenda-personalizada-3-x-6-m",
+      "destination": "https://iberflag.com/produtos",
+      "permanent": true
+    },
+    {
       "source": "/es/produto/bandeiras-horizontais-tamanho-unico",
       "destination": "https://iberflag.com/es/produtos/bandeiras",
       "permanent": true
@@ -288,6 +323,41 @@
     {
       "source": "/es/produto/mini-fly-banner-tamanho-unico",
       "destination": "https://iberflag.com/es/produto/mini-fly-banner-drop-60-cm-surf-73-cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produtos/tenda-publicitaria",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-5-x-1-m",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-5-x-1-cm",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-3-x-3-m",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-3-x-4-m",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-3-x-4-cm",
+      "destination": "https://iberflag.com/es/produtos",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/tenda-personalizada-3-x-6-m",
+      "destination": "https://iberflag.com/es/produtos",
       "permanent": true
     },
     {
