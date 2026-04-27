@@ -26,6 +26,163 @@ const STATIC_INDEXABLE_PAGES = [
     { path: SiteRoutes.STATIC_PATHS.sitemap, title: 'Mapa do Site | IberFlag', description: 'Mapa do site IberFlag com ligações rápidas para categorias, produtos e páginas institucionais.' }
 ];
 
+const PRODUCT_SEO_OVERRIDES = {
+    'bandeiras-de-mesa-15-x-25-cm': {
+        description: 'Bandeiras de mesa personalizadas para escritorios, rececoes, feiras e espacos institucionais, com presenca formal e acabamento profissional.',
+        seoDescription: 'Bandeiras de mesa personalizadas para escritorios, rececoes, feiras e espacos institucionais com acabamento profissional.'
+    },
+    'bandeiras-horizontais-tamanho-unico': {
+        description: 'Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos, ideais para reforcar identidade visual em fachadas e espacos promocionais.',
+        seoDescription: 'Bandeiras horizontais personalizadas para exterior, empresas, instituicoes e eventos com impressao profissional.'
+    },
+    'bandeiras-para-despacho-150-x-100-cm': {
+        description: 'Bandeiras para despacho e salas institucionais com impressao personalizada, pensadas para ambientes corporativos, escritorios e apresentacoes formais.',
+        seoDescription: 'Bandeiras personalizadas para despachos, escritorios e salas institucionais com imagem corporativa profissional.'
+    },
+    'bandeiras-para-manifestacoes-20-x-30-cm': {
+        description: 'Bandeiras de mao personalizadas em formato compacto para manifestacoes, campanhas, eventos e acoes coletivas com distribuicao simples.',
+        seoDescription: 'Bandeiras de mao personalizadas 20 x 30 cm para manifestacoes, campanhas e eventos coletivos.'
+    },
+    'bandeiras-para-manifestacoes-30-x-45-cm': {
+        description: 'Bandeiras personalizadas para manifestacoes, campanhas e eventos coletivos, com formato pratico e boa leitura em movimento.',
+        seoDescription: 'Bandeiras personalizadas 30 x 45 cm para manifestacoes, campanhas, eventos e acoes coletivas.'
+    },
+    'bandeiras-para-manifestacoes-45-x-70-cm': {
+        description: 'Bandeiras personalizadas para manifestacoes e eventos com maior presenca visual, pensadas para comunicar mensagens em espacos publicos.',
+        seoDescription: 'Bandeiras personalizadas 45 x 70 cm para manifestacoes e eventos com boa visibilidade.'
+    },
+    'bandeiras-para-manifestacoes-70-x-100-cm': {
+        description: 'Bandeiras de grande visibilidade para manifestacoes, campanhas e atos publicos, preparadas para destacar mensagens, simbolos ou identidade visual.',
+        seoDescription: 'Bandeiras personalizadas 70 x 100 cm para manifestacoes, campanhas e atos publicos.'
+    },
+    'bandeiras-para-manifestacoes-100-x-150-cm': {
+        seoTitle: 'Bandeiras para manifestacoes 100 x 150 cm | IberFlag',
+        description: 'Bandeiras personalizadas de grande formato para manifestacoes, campanhas e eventos onde a mensagem precisa de impacto e leitura a distancia.',
+        seoDescription: 'Bandeiras 100 x 150 cm para manifestacoes, campanhas e eventos com impressao personalizada.'
+    },
+    'bandeiras-de-parede-150-x-100-cm': {
+        description: 'Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais, ideais para reforcar identidade visual.',
+        seoDescription: 'Bandeiras de parede personalizadas para fachadas, interiores corporativos e espacos institucionais.'
+    },
+    'bandeiras-verticais-tamanho-unico': {
+        description: 'Bandeiras verticais personalizadas para comunicacao exterior, acoes comerciais e reforco de imagem corporativa com leitura clara.',
+        seoDescription: 'Bandeiras verticais personalizadas para comunicacao exterior, eventos e imagem corporativa.'
+    },
+    'bandeirolas-esportivas-20-x-27-cm': {
+        description: 'Bandeirolas desportivas personalizadas para clubes, eventos, premios e merchandising, com formato classico para escudos e mensagens institucionais.',
+        seoDescription: 'Bandeirolas desportivas personalizadas para clubes, eventos, premios e merchandising institucional.'
+    },
+    'tenda-personalizada-5-x-1-m': {
+        description: 'Tenda publicitaria personalizada 5 x 1 m para feiras, eventos e ativacoes de marca, com presenca exterior visivel e funcional.',
+        seoDescription: 'Tenda publicitaria personalizada 5 x 1 m para feiras, eventos e ativacoes de marca.'
+    },
+    'tenda-personalizada-3-x-3-m': {
+        description: 'Tenda publicitaria personalizada 3 x 3 m para stands, feiras e eventos, versatil para criar uma zona de marca visivel e protegida.',
+        seoDescription: 'Tenda personalizada 3 x 3 m para stands, feiras, eventos e ativacoes de marca.'
+    },
+    'tenda-personalizada-3-x-4-m': {
+        description: 'Tenda publicitaria personalizada 3 x 4 m para eventos e acoes promocionais que precisam de mais espaco operativo e presenca visual.',
+        seoDescription: 'Tenda publicitaria personalizada 3 x 4 m para eventos, feiras e acoes promocionais.'
+    },
+    'tenda-personalizada-3-x-6-m': {
+        description: 'Tenda publicitaria personalizada 3 x 6 m de grande formato para eventos, feiras e ativacoes com cobertura ampla e maxima visibilidade.',
+        seoDescription: 'Tenda personalizada 3 x 6 m para eventos, feiras e ativacoes de marca de grande formato.'
+    },
+    'fly-banner-drop-75-x-194-cm': {
+        description: 'Fly Banner Drop personalizado 75 x 194 cm com forma de gota, ideal para promocoes, pontos de venda e eventos com presenca dinamica.',
+        seoDescription: 'Fly Banner Drop 75 x 194 cm personalizado para eventos, exterior, promocoes e pontos de venda.'
+    },
+    'fly-banner-drop-92-x-228-cm': {
+        description: 'Fly Banner Drop personalizado 92 x 228 cm com maior altura, pensado para destacar mensagens de marca em exterior, eventos e acessos.',
+        seoDescription: 'Fly Banner Drop 92 x 228 cm personalizado para exterior e eventos com impressao profissional.'
+    },
+    'fly-banner-drop-103-x-298-cm': {
+        description: 'Fly Banner Drop personalizado 103 x 298 cm de grande visibilidade para campanhas, ativacoes e espacos exteriores com trafego de pessoas.',
+        seoDescription: 'Fly Banner Drop 103 x 298 cm personalizado para campanhas, eventos e comunicacao exterior.'
+    },
+    'fly-banner-drop-132-x-352-cm': {
+        description: 'Fly Banner Drop personalizado 132 x 352 cm de grande formato para reforcar presenca de marca em eventos, acessos e zonas exteriores.',
+        seoDescription: 'Fly Banner Drop 132 x 352 cm de grande formato para eventos, promocoes e exterior.'
+    },
+    'fly-banner-drop-145-x-446-cm': {
+        description: 'Fly Banner Drop personalizado 145 x 446 cm extra alto para maxima presenca visual em exterior, campanhas, eventos e acessos principais.',
+        seoDescription: 'Fly Banner Drop 145 x 446 cm extra alto para maxima visibilidade em exterior e eventos.'
+    },
+    'fly-banner-retangular-70-x-180-cm': {
+        description: 'Fly Banner retangular personalizado 70 x 180 cm com superficie visual ampla para mensagens promocionais claras em exterior e feiras.',
+        seoDescription: 'Fly Banner retangular 70 x 180 cm personalizado para mensagens promocionais em exterior e eventos.'
+    },
+    'fly-banner-retangular-70-x-280-cm': {
+        description: 'Fly Banner retangular personalizado 70 x 280 cm de maior altura para campanhas que precisam de leitura vertical e presenca de marca.',
+        seoDescription: 'Fly Banner retangular 70 x 280 cm personalizado para exterior, feiras e eventos.'
+    },
+    'fly-banner-surf-55-x-226-cm': {
+        description: 'Fly Banner Surf personalizado 55 x 226 cm com forma de vela, leve e chamativo para campanhas, eventos e comunicacao exterior.',
+        seoDescription: 'Fly Banner Surf 55 x 226 cm personalizado com forma de vela para campanhas e eventos.'
+    },
+    'fly-banner-surf-65-x-272-cm': {
+        description: 'Fly Banner Surf personalizado 65 x 272 cm com presenca vertical e desenho dinamico para eventos, promocoes e sinalizacao exterior.',
+        seoDescription: 'Fly Banner Surf 65 x 272 cm personalizado para eventos, promocoes e sinalizacao exterior.'
+    },
+    'fly-banner-surf-75-5-x-351-cm': {
+        description: 'Fly Banner Surf personalizado 75,5 x 351 cm de grande altura para campanhas com forte presenca visual em exterior e feiras.',
+        seoDescription: 'Fly Banner Surf 75,5 x 351 cm personalizado para exterior, feiras e ativacoes de marca.'
+    },
+    'fly-banner-surf-75-5-x-417-cm': {
+        description: 'Fly Banner Surf personalizado 75,5 x 417 cm extra visivel para eventos e espacos exteriores onde a marca precisa de destaque a distancia.',
+        seoDescription: 'Fly Banner Surf 75,5 x 417 cm personalizado para eventos e espacos exteriores.'
+    },
+    'fly-banner-surf-90-x-516-cm': {
+        description: 'Fly Banner Surf personalizado 90 x 516 cm de formato maximo para campanhas exteriores, acessos, eventos e ativacoes de grande impacto.',
+        seoDescription: 'Fly Banner Surf 90 x 516 cm personalizado para campanhas exteriores e eventos de grande impacto.'
+    },
+    'cubo-publicitario-tamanho-unico': {
+        description: 'Cubo publicitario personalizado, leve e facil de montar, para pontos de venda, eventos, promocoes e zonas de ativacao de marca.',
+        seoDescription: 'Cubo publicitario personalizado para pontos de venda, eventos, promocoes e ativacoes de marca.'
+    },
+    'mastro-de-aluminio-6-metros-tamanho-unico': {
+        seoTitle: 'Mastro de Aluminio 6 m | Mastros | IberFlag',
+        description: 'Mastro de aluminio de 6 metros para bandeiras exteriores, resistente e indicado para comunicacao institucional ou promocional.',
+        seoDescription: 'Mastro de aluminio 6 m para bandeiras exteriores, comunicacao institucional e promocional.'
+    },
+    'photocall-tamanho-unico': {
+        description: 'Photocall personalizado extensivel para eventos, stands, conferencias e zonas de fotografia com imagem de marca em destaque.',
+        seoDescription: 'Photocall personalizado extensivel para eventos, stands, conferencias e zonas de fotografia.'
+    },
+    'mini-fly-banner-tamanho-unico': {
+        description: 'Mini Fly Banner personalizado para balcoes, rececoes e acoes promocionais compactas, com formato original e facil de transportar.',
+        seoDescription: 'Mini Fly Banner personalizado para balcoes, rececoes, eventos e acoes promocionais compactas.'
+    },
+    'x-banner-80-x-180-cm': {
+        description: 'X-Banner personalizado 80 x 180 cm, leve e portatil, para campanhas de interior, lojas, montras, feiras e comunicacao promocional.',
+        seoDescription: 'X-Banner 80 x 180 cm personalizado para campanhas de interior, lojas, feiras e montras.'
+    },
+    'roll-up-85-x-200-cm': {
+        description: 'Roll Up personalizado 85 x 200 cm com estrutura enrolavel e montagem simples, ideal para feiras, lojas, apresentacoes e comunicacao interior.',
+        seoDescription: 'Roll Up 85 x 200 cm personalizado para feiras, lojas, apresentacoes e comunicacao interior.'
+    },
+    'photocall-286-x-217-cm': {
+        description: 'Photocall personalizado 286 x 217 cm em lona frontlit, indicado para eventos, stands, apresentacoes, fotografias e fundos promocionais.',
+        seoDescription: 'Photocall 286 x 217 cm personalizado para eventos, stands, apresentacoes e fundos promocionais.'
+    },
+    'wall-banner-60-x-230-cm': {
+        description: 'Wall Banner 60 x 230 cm personalizado, leve e desmontavel, para eventos, exposicoes, pontos de venda e comunicacao vertical.',
+        seoDescription: 'Wall Banner 60 x 230 cm personalizado para eventos, exposicoes e pontos de venda.'
+    },
+    'wall-banner-90-x-230-cm': {
+        description: 'Wall Banner 90 x 230 cm personalizado para comunicacao vertical em eventos, lojas, exposicoes e zonas promocionais.',
+        seoDescription: 'Wall Banner 90 x 230 cm personalizado para eventos, lojas, exposicoes e promocoes.'
+    },
+    'wall-banner-120-x-230-cm': {
+        description: 'Wall Banner 120 x 230 cm personalizado com maior area visual para stands, eventos, exposicoes e comunicacao de marca.',
+        seoDescription: 'Wall Banner 120 x 230 cm personalizado para stands, eventos, exposicoes e comunicacao de marca.'
+    },
+    'wall-banner-150-x-230-cm': {
+        description: 'Wall Banner 150 x 230 cm personalizado de grande largura para fundos promocionais, eventos, exposicoes e comunicacao de impacto.',
+        seoDescription: 'Wall Banner 150 x 230 cm personalizado para eventos, exposicoes e comunicacao promocional.'
+    }
+};
+
 function escapeHtml(value) {
     return String(value || '')
         .replace(/&/g, '&amp;')
@@ -59,7 +216,11 @@ function includesNormalized(haystack, needle) {
     return normalizedHaystack.includes(normalizedNeedle);
 }
 
-function buildProductSeoTitle(product, category) {
+function buildProductSeoTitle(product, category, override = {}) {
+    if (override.seoTitle) {
+        return normalizeText(override.seoTitle);
+    }
+
     const fallbackTitle = `${product.nome} | ${category.shortLabel} | IberFlag`;
     const providedTitle = normalizeText(product.seo_title);
     if (!providedTitle) return fallbackTitle;
@@ -79,7 +240,11 @@ function buildProductSeoTitle(product, category) {
     return fallbackTitle;
 }
 
-function buildProductSeoDescription(product, category) {
+function buildProductSeoDescription(product, category, override = {}) {
+    if (override.seoDescription) {
+        return summarize(override.seoDescription, 155);
+    }
+
     const productDescription = normalizeText(product.descricao);
     if (productDescription) {
         return summarize(productDescription, 155);
@@ -91,6 +256,10 @@ function buildProductSeoDescription(product, category) {
     }
 
     return summarize(`${product.nome} personalizado da categoria ${category.label}.`, 155);
+}
+
+function buildProductDisplayDescription(product, override = {}) {
+    return normalizeText(override.description || product.descricao || product.seo_description);
 }
 
 function formatCurrency(value) {
@@ -206,14 +375,16 @@ function assignUniqueProductSlugs(products) {
         seen.add(finalSlug);
 
         const category = SiteRoutes.getCategoryMeta(correctedProduct.categoria);
+        const seoOverride = PRODUCT_SEO_OVERRIDES[finalSlug] || {};
         return {
             ...correctedProduct,
             slug: finalSlug,
             categorySlug: category.slug,
             categoryLabel: category.label,
             categoryDescription: category.description,
-            seo_title: buildProductSeoTitle(correctedProduct, category),
-            seo_description: buildProductSeoDescription(correctedProduct, category),
+            seo_title: buildProductSeoTitle(correctedProduct, category, seoOverride),
+            seo_description: buildProductSeoDescription(correctedProduct, category, seoOverride),
+            display_description: buildProductDisplayDescription(correctedProduct, seoOverride),
             canonicalPath: SiteRoutes.buildProductPath(finalSlug),
             personalizePath: SiteRoutes.buildProductPersonalizerPath(finalSlug),
             imageUrl: safeImageUrl(correctedProduct.imagem)
@@ -258,6 +429,7 @@ function buildStructuredDataJson(data) {
 
 function renderHead({ title, description, canonicalPath, imageUrl, robots = 'index,follow', structuredData = [] }) {
     const canonicalUrl = SiteRoutes.buildPublicUrl(canonicalPath);
+    const localizedUrl = SiteRoutes.buildPublicUrl(SiteRoutes.getLocalizedPath(canonicalPath, 'es'));
     const ogImage = safeImageUrl(imageUrl);
     const schemas = Array.isArray(structuredData) ? structuredData : [structuredData];
 
@@ -270,6 +442,9 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="description" content="${escapeHtml(description)}">
   <meta name="robots" content="${escapeHtml(robots)}">
   <link rel="canonical" href="${escapeHtml(canonicalUrl)}">
+  <link rel="alternate" hreflang="pt-PT" href="${escapeHtml(canonicalUrl)}">
+  <link rel="alternate" hreflang="es-ES" href="${escapeHtml(localizedUrl)}">
+  <link rel="alternate" hreflang="x-default" href="${escapeHtml(canonicalUrl)}">
   <meta property="og:type" content="website">
   <meta property="og:locale" content="pt_PT">
   <meta property="og:site_name" content="IberFlag">
@@ -622,7 +797,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               </a>
             </div>
           </div>
-          <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(normalizeText(product.descricao || product.seo_description))}</p>
+          <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(product.display_description || product.seo_description)}</p>
         </div>
       </div>
     </section>
@@ -800,7 +975,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
               <div class="flex flex-1 flex-col">
                 <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
                 <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
-                <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 160))}</p>
+                <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.display_description || product.seo_description, 160))}</p>
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
@@ -855,8 +1030,8 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
     ];
 
     return `${renderHead({
-        title: 'Catálogo de Produtos Publicitarios | IberFlag',
-        description: 'Explore o catalogo IberFlag com fly banners, roll ups, bandeiras, photocalls, tendas e suportes promocionais personalizados.',
+        title: 'Catálogo de Produtos Publicitários | IberFlag',
+        description: 'Explore o catálogo IberFlag com fly banners, roll ups, bandeiras, photocalls, tendas e suportes promocionais personalizados.',
         canonicalPath: SiteRoutes.STATIC_PATHS.products,
         imageUrl: primaryImage,
         structuredData
@@ -873,7 +1048,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
         </nav>
         <div class="max-w-3xl">
           <h1 class="text-2xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl">Catálogo de produtos publicitários</h1>
-          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.</p>
+          <p class="mt-3 max-w-2xl text-sm leading-6 text-slate-600 sm:mt-4 sm:text-base sm:leading-7">Escolha a categoria certa, compare os modelos e avance para a personalização quando já souber o formato ideal.</p>
         </div>
         ${renderCatalogToolbar(categoryEntries, { selectedCategory: 'all', productCount: catalogProducts.length })}
       </div>
@@ -889,7 +1064,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
               <div class="flex flex-1 flex-col">
                 <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
                 <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
-                <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.descricao || product.seo_description, 145))}</p>
+                <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.display_description || product.seo_description, 145))}</p>
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
                 <span class="text-[0.85rem] font-semibold text-slate-900 sm:text-base">${escapeHtml(formatCurrency(product.preco))}</span>
@@ -908,7 +1083,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
 
 function renderHtmlSitemap(categoryEntries, productEntries) {
     return `${renderHead({
-        title: 'Mapa do Site | IberFlag',
+        title: 'Mapa do Site IberFlag | Categorias e Produtos',
         description: 'Encontre rapidamente categorias, produtos e p?ginas principais da IberFlag.',
         canonicalPath: SiteRoutes.STATIC_PATHS.sitemap,
         imageUrl: `${CANONICAL_ORIGIN}/assets/logos/logo-completo.svg`,
@@ -1000,7 +1175,8 @@ function renderCatalogManifest(products, categories) {
             nomeEs: product.nome_es || null,
             descricaoEs: product.descricao_es || null,
             seoTitle: product.seo_title,
-            seoDescription: product.seo_description
+            seoDescription: product.seo_description,
+            displayDescription: product.display_description
         })),
         categories: categories.map((category) => ({
             slug: category.slug,

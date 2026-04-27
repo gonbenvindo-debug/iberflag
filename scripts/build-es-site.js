@@ -40,6 +40,66 @@ const STATIC_PAGE_ROUTES = {
     'templates-gallery.html': 'modelos'
 };
 
+const EXTRA_TEXT_REPLACEMENTS = [
+    ['Todas as categorias', 'Todas las categorías'],
+    ['Catálogo de produtos publicitários', 'Catálogo de productos publicitarios'],
+    ['Escolha a categoria certa, compare os modelos e avance para a personalização quando já souber o formato ideal.', 'Elija la categoría adecuada, compare los modelos y avance a la personalización cuando sepa el formato ideal.'],
+    ['Escolha a categoria certa, compare os modelos e avance para a personalizacao quando ja souber o formato ideal.', 'Elija la categoría adecuada, compare los modelos y avance a la personalización cuando sepa el formato ideal.'],
+    ['Fly banners personalizados para exterior e eventos com forte impacto visual, várias bases e formatos profissionais.', 'Fly banners personalizados para exterior y eventos con gran impacto visual, varias bases y formatos profesionales.'],
+    ['Categoria', 'Categoría'],
+    ['Ordenar', 'Ordenar'],
+    ['Destaques', 'Destacados'],
+    ['Preço: menor primeiro', 'Precio: menor primero'],
+    ['Preço: maior primeiro', 'Precio: mayor primero'],
+    ['Nome: A-Z', 'Nombre: A-Z'],
+    ['Nome: Z-A', 'Nombre: Z-A'],
+    ['Envios e prazos', 'Envíos y plazos'],
+    ['Envios e Entregas', 'Envíos y entregas'],
+    ['Ver mais', 'Ver más'],
+    ['Tente ajustar os filtros ou mudar a categoria.', 'Intente ajustar los filtros o cambiar la categoría.'],
+    ['Nenhum produto encontrado', 'No se ha encontrado ningún producto'],
+    ['Pedir apoio', 'Solicitar ayuda']
+];
+
+const STATIC_SEO_OVERRIDES_ES = {
+    '/sobre': {
+        title: 'Sobre IberFlag | Producción publicitaria',
+        description: 'Conozca IberFlag, su operación, su enfoque de producción y su atención a productos publicitarios personalizados.'
+    },
+    '/contacto': {
+        title: 'Contacto IberFlag | Presupuestos y atención',
+        description: 'Hable con el equipo IberFlag para solicitar presupuesto, apoyo de diseño, estado de pedidos e información comercial.'
+    },
+    '/envios': {
+        title: 'Envíos y entregas | IberFlag',
+        description: 'Información sobre producción, expedición, plazos y entregas de productos personalizados IberFlag.'
+    },
+    '/devolucoes': {
+        title: 'Devoluciones y reclamaciones | IberFlag',
+        description: 'Política de devoluciones IberFlag para productos personalizados, cancelaciones, defectos y análisis de incidencias.'
+    },
+    '/privacidade': {
+        title: 'Política de privacidad | IberFlag',
+        description: 'Sepa cómo IberFlag trata datos personales, solicitudes de contacto, pedidos y comunicaciones comerciales.'
+    },
+    '/termos': {
+        title: 'Términos y condiciones | IberFlag',
+        description: 'Consulte las condiciones de venta, producción, facturación, pagos, entregas y responsabilidad de IberFlag.'
+    },
+    '/faq': {
+        title: 'FAQ IberFlag | Preguntas frecuentes',
+        description: 'Respuestas sobre plazos, personalización, pago, envío y funcionamiento de los pedidos en IberFlag.'
+    },
+    '/encomendas': {
+        title: 'Mis pedidos IberFlag | Seguimiento online',
+        description: 'Busque y siga sus pedidos IberFlag con código y email para consultar el estado actualizado.'
+    },
+    '/encomenda': {
+        title: 'Seguimiento de pedido | IberFlag',
+        description: 'Acompañe el estado detallado de su pedido IberFlag y consulte la información actualizada online.'
+    }
+};
+
 const TEXT_REPLACEMENTS = (Array.isArray(ES_STATIC.replacements) ? ES_STATIC.replacements : [
     ['IberFlag - Flybanners e Publicidade Física Personalizada', 'IberFlag - Fly banners y publicidad física personalizada'],
     ['Especialistas em flybanners, roll-ups e produtos publicitários com operação principal em Portugal, produção rápida e apoio dedicado.', 'Especialistas en fly banners, roll ups y productos publicitarios con operación principal en Portugal, producción rápida y apoyo dedicado.'],
@@ -142,7 +202,7 @@ const TEXT_REPLACEMENTS = (Array.isArray(ES_STATIC.replacements) ? ES_STATIC.rep
     ['já esteja aqui', 'ya esté aquí'],
     ['para ajudar', 'para ayudar'],
     ['perguntas frequentes', 'preguntas frecuentes']
-]).slice().sort((left, right) => String(right[0] || '').length - String(left[0] || '').length);
+]).concat(EXTRA_TEXT_REPLACEMENTS).slice().sort((left, right) => String(right[0] || '').length - String(left[0] || '').length);
 const PRODUCT_TRANSLATIONS = (() => {
     const merged = { ...(ES_CATALOG.products || {}) };
     (Array.isArray(GENERATED_MANIFEST.products) ? GENERATED_MANIFEST.products : []).forEach((product) => {
@@ -232,6 +292,10 @@ function localizeUrlValue(value) {
 }
 
 function localizeTextContent(value) {
+    if (String(value || '').trim() === '/') {
+        return value;
+    }
+
     const localizedUrl = localizeUrlValue(value);
     if (localizedUrl !== value) {
         return localizedUrl;
@@ -282,14 +346,15 @@ function addAlternateLinks($, canonicalPath) {
     $('link[rel="alternate"]').remove();
     const alternatePt = `<link rel="alternate" hreflang="pt-PT" href="${canonical}">`;
     const alternateEs = `<link rel="alternate" hreflang="es-ES" href="${localized}">`;
+    const alternateDefault = `<link rel="alternate" hreflang="x-default" href="${canonical}">`;
 
     const canonicalLink = $('link[rel="canonical"]').first();
     if (canonicalLink.length > 0) {
-        canonicalLink.after(`\n  ${alternatePt}\n  ${alternateEs}`);
+        canonicalLink.after(`\n  ${alternatePt}\n  ${alternateEs}\n  ${alternateDefault}`);
         return;
     }
 
-    $('head').append(`\n  ${alternatePt}\n  ${alternateEs}`);
+    $('head').append(`\n  ${alternatePt}\n  ${alternateEs}\n  ${alternateDefault}`);
 }
 
 function catalogSlugFromCanonical(canonicalPath, prefix) {
@@ -319,6 +384,35 @@ function updateMeta($, selector, value) {
     if (node.length > 0) {
         node.attr('content', value);
     }
+}
+
+function applyStaticSeoOverride($, canonicalPath) {
+    const override = STATIC_SEO_OVERRIDES_ES[canonicalPath];
+    if (!override) return;
+
+    $('title').text(override.title);
+    updateMeta($, 'meta[name="description"]', override.description);
+    updateMeta($, 'meta[property="og:title"]', override.title);
+    updateMeta($, 'meta[property="og:description"]', override.description);
+    updateMeta($, 'meta[name="twitter:title"]', override.title);
+    updateMeta($, 'meta[name="twitter:description"]', override.description);
+
+    $('script[type="application/ld+json"]').each((_, element) => {
+        const node = $(element);
+        const raw = String(node.text() || '').trim();
+        if (!raw) return;
+
+        try {
+            const data = JSON.parse(raw);
+            if (data && typeof data === 'object') {
+                data.name = override.title;
+                data.description = override.description;
+                node.text(JSON.stringify(data, null, 2));
+            }
+        } catch {
+            // Leave invalid or non-object JSON-LD untouched.
+        }
+    });
 }
 
 function updateJsonLdForCatalog($, productTranslation, categoryTranslation) {
@@ -447,11 +541,17 @@ function applyCatalogTranslations($, canonicalPath) {
         if (relatedHeading.length > 0) {
             const relatedEyebrow = relatedHeading.prevAll('p').first();
             const relatedSummary = relatedHeading.nextAll('p').first();
+            const categoryLabel = $('.product-breadcrumb a[href*="/produtos/"]').last().text().trim()
+                || categoryTranslation?.label
+                || 'producto';
             if (relatedEyebrow.length > 0) {
                 relatedEyebrow.text('Siga explorando');
             }
             if (relatedSummary.length > 0) {
                 relatedSummary.text(`Vea más modelos de la categoría ${(categoryTranslation?.label || translateText('Bandeiras')).trim()} y compare formatos, tamaños y precios.`);
+            }
+            if (relatedSummary.length > 0) {
+                relatedSummary.text(`Vea más modelos de la categoría ${categoryLabel} y compare formatos, tamaños y precios.`);
             }
         }
 
@@ -474,6 +574,11 @@ function applyCatalogTranslations($, canonicalPath) {
         updateMeta($, 'meta[name="twitter:title"]', categoryTitle);
         updateMeta($, 'meta[name="twitter:description"]', description);
         $('h1').first().text(categoryTranslation.label);
+
+        const leadParagraph = $('h1').first().nextAll('p').first();
+        if (leadParagraph.length > 0 && description) {
+            leadParagraph.text(description);
+        }
     }
 
     localizeProductCards($);
@@ -746,6 +851,8 @@ function translateHtmlFile(html, sourceFileName) {
         $('meta[name="twitter:description"]').attr('content', 'Explora el catálogo IberFlag con fly banners, roll ups, banderas, photocalls, carpas y soportes promocionales personalizados.');
         $('h1').first().text('Catálogo de productos publicitarios');
     }
+
+    applyStaticSeoOverride($, sourceCanonical);
 
     return applyHtmlFallbackTranslations($.html());
 }
