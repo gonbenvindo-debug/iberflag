@@ -702,67 +702,67 @@ const PRODUCT_DECISION_CONTENT = {
     'fly-banner': {
         lead: 'Pensado para criar presença vertical em eventos, entradas e pontos de passagem, com montagem simples, transporte fácil e boa leitura à distância.',
         useCases: ['Feiras e eventos', 'Montras e entradas', 'Pontos de venda', 'Ações de rua'],
-        included: ['Produto impresso personalizado', 'Escolha da base compatível no passo seguinte', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Produto impresso personalizado', 'Escolha da base compatível no passo seguinte', 'Pronto para encomendar depois de validar opções'],
         format: 'Suporte vertical portátil'
     },
     'wall-banner': {
         lead: 'Indicado para fundos de marca, montras e espaços promocionais onde a comunicação precisa de escala e leitura limpa.',
         useCases: ['Stands e exposições', 'Fundos de palco', 'Montras', 'Campanhas de grande formato'],
-        included: ['Impressão personalizada para fundo ou parede', 'Formato preparado para comunicação de impacto', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Impressão personalizada para fundo ou parede', 'Formato preparado para comunicação de impacto', 'Pronto para encomendar depois de validar opções'],
         format: 'Fundo promocional vertical'
     },
     'roll-up': {
         lead: 'Uma solução compacta para comunicação profissional em feiras, receções e apresentações, pronta para montar e transportar com facilidade.',
         useCases: ['Feiras', 'Receções', 'Apresentações', 'Pontos de venda'],
-        included: ['Impressão personalizada do roll up', 'Formato pensado para transporte e montagem rápida', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Impressão personalizada do roll up', 'Formato pensado para transporte e montagem rápida', 'Pronto para encomendar depois de validar opções'],
         format: 'Sistema retrátil'
     },
     'x-banner': {
         lead: 'Leve, direto e fácil de instalar, funciona bem em campanhas temporárias, ações interiores e espaços comerciais com rotação frequente.',
         useCases: ['Promoções interiores', 'Campanhas temporárias', 'Feiras', 'Lojas'],
-        included: ['Impressão personalizada do X-Banner', 'Formato leve para montagem rápida', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Impressão personalizada do X-Banner', 'Formato leve para montagem rápida', 'Pronto para encomendar depois de validar opções'],
         format: 'Estrutura leve em X'
     },
     'bandeiras': {
         lead: 'Feita para dar visibilidade a marcas, instituições e mensagens em contexto formal, promocional ou coletivo.',
         useCases: ['Eventos e campanhas', 'Institucional', 'Desporto e escolas', 'Manifestações'],
-        included: ['Bandeira personalizada no formato escolhido', 'Impressão orientada para boa leitura', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Bandeira personalizada no formato escolhido', 'Impressão orientada para boa leitura', 'Pronto para encomendar depois de validar opções'],
         format: 'Bandeira personalizada'
     },
     'bandeirolas-esportivas': {
         lead: 'Formato prático para clubes, torneios e momentos de prémio, com leitura clara e presença visual em ambientes desportivos.',
         useCases: ['Clubes e torneios', 'Bancadas', 'Entregas de prémios', 'Merchandising'],
-        included: ['Bandeirola personalizada', 'Formato adequado para contexto desportivo', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Bandeirola personalizada', 'Formato adequado para contexto desportivo', 'Pronto para encomendar depois de validar opções'],
         format: 'Bandeirola desportiva'
     },
     'photocall': {
         lead: 'Cria um fundo de marca para fotografia, imprensa e ativações, ajudando o espaço do evento a parecer mais profissional.',
         useCases: ['Eventos corporativos', 'Conferências', 'Zonas de fotografia', 'Lançamentos de marca'],
-        included: ['Photocall personalizado', 'Formato preparado para imagem de marca', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Photocall personalizado', 'Formato preparado para imagem de marca', 'Pronto para encomendar depois de validar opções'],
         format: 'Backdrop de evento'
     },
     'cubo-publicitario': {
         lead: 'Uma peça compacta para destacar marca, campanha ou mensagem em balcões, montras e pontos de contacto com o cliente.',
         useCases: ['Ativações de marca', 'Montras', 'Pontos de venda', 'Exposições'],
-        included: ['Cubo publicitário personalizado', 'Comunicação visível em várias faces', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Cubo publicitário personalizado', 'Comunicação visível em várias faces', 'Pronto para encomendar depois de validar opções'],
         format: 'Peça promocional 360 graus'
     },
     'mastros': {
         lead: 'Solução para elevar bandeiras em espaços exteriores, fachadas e zonas institucionais com presença clara e duradoura.',
         useCases: ['Exterior institucional', 'Fachadas', 'Recintos', 'Sinalização de bandeiras'],
-        included: ['Mastro indicado para suporte de bandeira', 'Formato preparado para presença exterior', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Mastro indicado para suporte de bandeira', 'Formato preparado para presença exterior', 'Pronto para encomendar depois de validar opções'],
         format: 'Suporte exterior para bandeira'
     },
     'tenda-publicitaria': {
         lead: 'Indicada para eventos exteriores e ativações onde a marca precisa de cobertura, presença e identificação imediata.',
         useCases: ['Eventos exteriores', 'Feiras', 'Ações de marca', 'Zonas promocionais'],
-        included: ['Tenda personalizada no formato escolhido', 'Comunicação preparada para exterior', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Tenda personalizada no formato escolhido', 'Comunicação preparada para exterior', 'Pronto para encomendar depois de validar opções'],
         format: 'Estrutura promocional exterior'
     },
     default: {
         lead: 'Produto personalizável para comunicação física, pensado para tornar a marca mais visível no ponto certo.',
         useCases: ['Eventos', 'Lojas', 'Campanhas', 'Feiras'],
-        included: ['Produto impresso personalizado', 'Formato configurado para encomenda online', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        included: ['Produto impresso personalizado', 'Formato configurado para encomenda online', 'Pronto para encomendar depois de validar opções'],
         format: 'Produto publicitário personalizado'
     }
 };
@@ -781,10 +781,9 @@ function getProductIncludedItems(product) {
 
 function getProductBuyingNotes() {
     return [
-        { title: 'Produção rápida', text: 'Fluxo preparado para avançar sem troca de emails.' },
-        { title: 'Personalização online', text: 'Edite o design e confirme o resultado antes de encomendar.' },
-        { title: 'Apoio na arte-final', text: 'A equipa ajuda quando o ficheiro precisa de ajustes.' },
-        { title: 'Entrega em Portugal e Espanha', text: 'Envio preparado para o destino indicado no checkout.' }
+        { title: 'Produção rápida', icon: 'clock' },
+        { title: 'Personalização online', icon: 'pencil' },
+        { title: 'Entrega em Portugal e Espanha', icon: 'truck' }
     ];
 }
 
@@ -798,20 +797,16 @@ function getProductTechnicalRows(product) {
         { label: 'Dimensão', value: extractProductDimension(product) },
         { label: 'Categoria', value: product.categoryLabel },
         { label: 'Formato', value: getProductDecisionContent(product).format },
-        { label: 'Preço base', value: formatCurrency(product.preco) },
-        { label: 'Arte-final', value: 'Personalize online ou avance com o seu ficheiro.' }
+        { label: 'Preço base', value: formatCurrency(product.preco) }
     ];
 }
 
 function renderProductBuyingNotes(product) {
-    return `<div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+    return `<div class="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-700">
               ${getProductBuyingNotes(product).map((note) => `
-                <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
-                  <div class="flex items-center gap-2 text-sm font-semibold text-slate-900">
-                    <i data-lucide="check" class="h-4 w-4 text-blue-600"></i>
-                    <span>${escapeHtml(note.title)}</span>
-                  </div>
-                  <p class="mt-1 text-xs leading-5 text-slate-600">${escapeHtml(note.text)}</p>
+                <div class="inline-flex items-center gap-2">
+                  <i data-lucide="${escapeHtml(note.icon)}" class="h-4 w-4 text-blue-600"></i>
+                  <span class="font-medium">${escapeHtml(note.title)}</span>
                 </div>
               `).join('')}
             </div>`;
@@ -835,7 +830,7 @@ function renderProductDecisionBlocks(product) {
           <section class="rounded-2xl border border-slate-200 bg-white p-5">
             <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Como funciona</p>
             <ol class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
-              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span>Personalize o design ou avance com a sua arte-final.</span></li>
+              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span>Personalize online ou envie o design.</span></li>
               <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span>Confirme opções, preço e pré-visualização.</span></li>
               <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span>Finalize a encomenda e a produção fica encaminhada.</span></li>
             </ol>
@@ -960,7 +955,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         </div>
       </div>
     </section>
-    <section class="border-t border-slate-200 bg-gradient-to-b from-slate-50 to-white">
+    <section class="border-t border-slate-200 bg-slate-50">
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
@@ -975,7 +970,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
         </div>
         <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
           ${fallbackProducts.map((candidate) => `
-            <article class="overflow-hidden rounded-[1.75rem] border border-slate-200 bg-white shadow-[0_14px_35px_rgba(15,23,42,0.05)] transition hover:-translate-y-1 hover:shadow-[0_20px_50px_rgba(15,23,42,0.08)]">
+            <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
               <a href="${candidate.canonicalPath}" class="block">
                 <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
               </a>
@@ -1007,7 +1002,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
           </div>
           <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
             ${shuffledSuggestions.map((candidate) => `
-              <article class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white shadow-[0_10px_28px_rgba(15,23,42,0.04)] transition hover:-translate-y-1 hover:shadow-[0_18px_40px_rgba(15,23,42,0.08)]">
+              <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
                 <a href="${candidate.canonicalPath}" class="block">
                   <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
                 </a>
