@@ -875,7 +875,9 @@ async function ensureDir(dirPath) {
 
 async function writeFile(targetPath, content) {
     await ensureDir(path.dirname(targetPath));
-    const normalizedContent = String(content || '').replace(/[ \t]+$/gm, '');
+    const normalizedContent = String(content || '')
+        .replace(/[ \t]+$/gm, '')
+        .replace(/\n{3,}/g, '\n\n');
     const maxAttempts = 5;
     for (let attempt = 1; attempt <= maxAttempts; attempt += 1) {
         try {

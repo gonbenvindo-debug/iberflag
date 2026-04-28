@@ -45,10 +45,7 @@ const ES_TEXT = {
     'Código da encomenda copiado.': 'Código del pedido copiado.',
     'Código de tracking copiado.': 'Código de seguimiento copiado.',
     'Apoio à encomenda': 'Ayuda con el pedido',
-    'Ligação ao backend indisponível. Verifique a configuração do Supabase.': 'Conexión con el backend no disponible. Verifique la configuración de Supabase.',
     'Não foi possível consultar o estado da encomenda neste momento.': 'No fue posible consultar el estado del pedido en este momento.',
-    'O contrato público de tracking do Supabase não está ativo (`get_order_tracking`).': 'El contrato público de seguimiento de Supabase no está activo (`get_order_tracking`).',
-    'O tracking público foi bloqueado por permissões do Supabase.': 'El seguimiento público fue bloqueado por permisos de Supabase.',
     'Ocorreu um problema técnico ao consultar esta encomenda. Tente novamente dentro de momentos.': 'Se produjo un problema técnico al consultar este pedido. Inténtelo de nuevo dentro de unos instantes.'
 };
 
@@ -865,31 +862,15 @@ async function loadOrderByCode(orderCode) {
                     items: Array.isArray(payload.items) ? payload.items : []
                 };
             }
+
+            return null;
         }
+
+        throw new Error(`ORDER_STATUS_API_${response.status}`);
     } catch (apiError) {
         console.warn('Falha ao carregar encomenda via API de sessao:', apiError);
+        throw apiError;
     }
-
-    if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
-        throw new Error('SUPABASE_NOT_READY');
-    }
-
-    // Uses SECURITY DEFINER RPC – anon cannot query encomendas/itens_encomenda directly (RLS)
-    const { data, error } = await supabaseClient
-        .rpc('get_order_tracking', { p_code: orderCode });
-
-    if (error) {
-        throw error;
-    }
-
-    if (!data) {
-        return null;
-    }
-
-    return {
-        order: data,
-        items: Array.isArray(data.items) ? data.items : []
-    };
 }
 
 function showNotFound() {
@@ -920,20 +901,8 @@ function showOrderError(message) {
 function getOrderLoadErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
-    if (!supabaseClient || typeof supabaseClient.rpc !== 'function') {
-        return i18nText('Ligação ao backend indisponível. Verifique a configuração do Supabase.');
-    }
-
     if (rawMessage.includes('session-status') || rawMessage.includes('checkout/session-status')) {
         return i18nText('Não foi possível consultar o estado da encomenda neste momento.');
-    }
-
-    if (rawMessage.includes('get_order_tracking')) {
-        return i18nText('O contrato público de tracking do Supabase não está ativo (`get_order_tracking`).');
-    }
-
-    if (rawMessage.includes('permission denied') || rawMessage.includes('row-level security') || rawMessage.includes('rls')) {
-        return i18nText('O tracking público foi bloqueado por permissões do Supabase.');
     }
 
     return i18nText('Ocorreu um problema técnico ao consultar esta encomenda. Tente novamente dentro de momentos.');
