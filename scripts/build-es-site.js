@@ -393,7 +393,7 @@ function localizeUrlValue(value) {
     if (/^https?:\/\//i.test(raw) && !raw.startsWith(CANONICAL_ORIGIN)) return raw;
     const { path: pathname, suffix, isAbsolute } = splitUrl(raw);
     if (!pathname) return raw;
-    if (/^\/assets\//i.test(pathname) || /^\/favicon/i.test(pathname) || /^\/api\//i.test(pathname) || /^\/sitemaps\//i.test(pathname) || /^\/robots\.txt$/i.test(pathname) || /^\/sitemap\.xml$/i.test(pathname)) {
+    if (/^\/assets\//i.test(pathname) || /^\/favicon/i.test(pathname) || /^\/apple-touch-icon/i.test(pathname) || /^\/api\//i.test(pathname) || /^\/sitemaps\//i.test(pathname) || /^\/robots\.txt$/i.test(pathname) || /^\/sitemap\.xml$/i.test(pathname)) {
         return raw;
     }
     const localizedPath = SiteRoutes.getLocalizedPath(pathname, 'es');
