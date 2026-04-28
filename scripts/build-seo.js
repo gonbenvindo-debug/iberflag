@@ -802,11 +802,11 @@ function getProductTechnicalRows(product) {
 }
 
 function renderProductBuyingNotes(product) {
-    return `<div class="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-sm text-slate-700">
+    return `<div class="mt-4 grid grid-cols-1 gap-2 text-sm text-slate-700 sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
               ${getProductBuyingNotes(product).map((note) => `
-                <div class="inline-flex items-center gap-2">
-                  <i data-lucide="${escapeHtml(note.icon)}" class="h-4 w-4 text-blue-600"></i>
-                  <span class="font-medium">${escapeHtml(note.title)}</span>
+                <div class="flex min-w-0 items-start gap-2 sm:inline-flex sm:items-center">
+                  <i data-lucide="${escapeHtml(note.icon)}" class="mt-0.5 h-4 w-4 flex-none text-blue-600 sm:mt-0"></i>
+                  <span class="min-w-0 font-medium leading-5">${escapeHtml(note.title)}</span>
                 </div>
               `).join('')}
             </div>`;
@@ -815,33 +815,33 @@ function renderProductBuyingNotes(product) {
 function renderProductDecisionBlocks(product) {
     const includedItems = getProductIncludedItems(product);
     const technicalRows = getProductTechnicalRows(product);
-    return `<div class="grid gap-4 lg:grid-cols-3">
-          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+    return `<div class="grid gap-3 sm:gap-4 lg:grid-cols-3">
+          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
             <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">O que recebe</p>
-            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+            <ul class="mt-3 space-y-2.5 text-sm leading-6 text-slate-700 sm:mt-4 sm:space-y-3">
               ${includedItems.map((item) => `
-                <li class="flex gap-3">
+                <li class="flex min-w-0 gap-2.5 sm:gap-3">
                   <i data-lucide="check" class="mt-1 h-4 w-4 flex-none text-blue-600"></i>
-                  <span>${escapeHtml(item)}</span>
+                  <span class="min-w-0">${escapeHtml(item)}</span>
                 </li>
               `).join('')}
             </ul>
           </section>
-          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
             <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Como funciona</p>
-            <ol class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
-              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span>Personalize online ou envie o design.</span></li>
-              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span>Confirme opções, preço e pré-visualização.</span></li>
-              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span>Finalize a encomenda e a produção fica encaminhada.</span></li>
+            <ol class="mt-3 space-y-2.5 text-sm leading-6 text-slate-700 sm:mt-4 sm:space-y-3">
+              <li class="flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span class="min-w-0">Personalize online ou envie o design.</span></li>
+              <li class="flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span class="min-w-0">Confirme opções, preço e pré-visualização.</span></li>
+              <li class="flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span class="min-w-0">Finalize a encomenda e a produção fica encaminhada.</span></li>
             </ol>
           </section>
-          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
             <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Detalhes técnicos</p>
-            <dl class="mt-4 divide-y divide-slate-100 text-sm">
+            <dl class="mt-3 divide-y divide-slate-100 text-sm sm:mt-4">
               ${technicalRows.map((row) => `
-                <div class="flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                <div class="grid grid-cols-1 gap-1 py-2.5 first:pt-0 last:pb-0 sm:flex sm:items-start sm:justify-between sm:gap-4">
                   <dt class="text-slate-500">${escapeHtml(row.label)}</dt>
-                  <dd class="max-w-[58%] text-right font-medium text-slate-900">${escapeHtml(row.value)}</dd>
+                  <dd class="min-w-0 text-left font-medium text-slate-900 sm:max-w-[58%] sm:text-right">${escapeHtml(row.value)}</dd>
                 </div>
               `).join('')}
             </dl>
@@ -917,25 +917,25 @@ function renderProductPage(product, categoryEntries, productEntries) {
     </div>
     <section class="bg-white">
       <div class="mx-auto max-w-7xl px-4 pb-8 pt-0 sm:px-6 sm:pt-3 lg:px-8 lg:py-14">
-        <div class="grid gap-8 lg:grid-cols-[minmax(0,1.04fr),minmax(360px,0.96fr)]">
-          <div class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white p-3 sm:p-4">
-            <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-2xl bg-white object-contain p-4 sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
+        <div class="grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1.04fr),minmax(360px,0.96fr)]">
+          <div class="overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 sm:rounded-[1.5rem] sm:p-4">
+            <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-xl bg-white object-contain p-3 sm:rounded-2xl sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
           </div>
           <div class="flex flex-col gap-5 sm:gap-6">
             <div>
               <p class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-blue-600">${escapeHtml(product.categoryLabel)}</p>
-              <h1 class="mt-3 max-w-[14ch] text-[clamp(1.9rem,7vw,3.4rem)] font-semibold leading-[0.95] tracking-tight text-slate-900 sm:max-w-none sm:text-4xl">${escapeHtml(product.nome)}</h1>
+              <h1 class="mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">${escapeHtml(product.nome)}</h1>
               <p class="mt-4 text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(decisionContent.lead || product.display_description || product.seo_description)}</p>
             </div>
-            <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+            <div class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-6">
               <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
                 <div>
                   <div class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">Preço base</div>
                   <div class="mt-2 flex flex-wrap items-end gap-3">
-                    <div class="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
+                    <div class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
                   </div>
                 </div>
-                <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
+                <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
                   <span>Personalizar produto</span>
                   <span aria-hidden="true">&rarr;</span>
                 </a>
@@ -944,7 +944,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               <div class="mt-5 border-t border-slate-100 pt-5">
                 <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Ideal para</p>
                 <ul class="mt-3 flex flex-wrap gap-2">
-                  ${getProductUseCases(product).map((useCase) => `<li class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
+                  ${getProductUseCases(product).map((useCase) => `<li class="max-w-full break-words rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[0.72rem] font-semibold leading-5 text-slate-700 sm:text-xs">${escapeHtml(useCase)}</li>`).join('')}
                 </ul>
               </div>
             </div>
@@ -968,7 +968,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
             <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
-        <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+        <div class="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
           ${fallbackProducts.map((candidate) => `
             <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
               <a href="${candidate.canonicalPath}" class="block">
@@ -977,7 +977,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               <div class="p-4 sm:p-5">
                 <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
                 <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
-                <div class="mt-4 flex items-center justify-between gap-3">
+                <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                   <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
                   <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 sm:text-sm">
                     <span>Ver produto</span>
@@ -1000,7 +1000,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
               <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
-          <div class="catalog-grid-two mt-8 grid grid-cols-2 gap-4 sm:gap-6 md:grid-cols-2 xl:grid-cols-4">
+          <div class="mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
             ${shuffledSuggestions.map((candidate) => `
               <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
                 <a href="${candidate.canonicalPath}" class="block">
@@ -1009,7 +1009,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 <div class="p-4 sm:p-5">
                   <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
                   <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
-                  <div class="mt-4 flex items-center justify-between gap-3">
+                  <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
                     <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
                     <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 sm:text-sm">
                       <span>Ver produto</span>
