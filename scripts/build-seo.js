@@ -698,6 +698,162 @@ function renderFooter() {
 </footer>`;
 }
 
+const PRODUCT_DECISION_CONTENT = {
+    'fly-banner': {
+        lead: 'Pensado para criar presença vertical em eventos, entradas e pontos de passagem, com montagem simples, transporte fácil e boa leitura à distância.',
+        useCases: ['Feiras e eventos', 'Montras e entradas', 'Pontos de venda', 'Ações de rua'],
+        included: ['Produto impresso personalizado', 'Escolha da base compatível no passo seguinte', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Suporte vertical portátil'
+    },
+    'wall-banner': {
+        lead: 'Indicado para fundos de marca, montras e espaços promocionais onde a comunicação precisa de escala e leitura limpa.',
+        useCases: ['Stands e exposições', 'Fundos de palco', 'Montras', 'Campanhas de grande formato'],
+        included: ['Impressão personalizada para fundo ou parede', 'Formato preparado para comunicação de impacto', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Fundo promocional vertical'
+    },
+    'roll-up': {
+        lead: 'Uma solução compacta para comunicação profissional em feiras, receções e apresentações, pronta para montar e transportar com facilidade.',
+        useCases: ['Feiras', 'Receções', 'Apresentações', 'Pontos de venda'],
+        included: ['Impressão personalizada do roll up', 'Formato pensado para transporte e montagem rápida', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Sistema retrátil'
+    },
+    'x-banner': {
+        lead: 'Leve, direto e fácil de instalar, funciona bem em campanhas temporárias, ações interiores e espaços comerciais com rotação frequente.',
+        useCases: ['Promoções interiores', 'Campanhas temporárias', 'Feiras', 'Lojas'],
+        included: ['Impressão personalizada do X-Banner', 'Formato leve para montagem rápida', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Estrutura leve em X'
+    },
+    'bandeiras': {
+        lead: 'Feita para dar visibilidade a marcas, instituições e mensagens em contexto formal, promocional ou coletivo.',
+        useCases: ['Eventos e campanhas', 'Institucional', 'Desporto e escolas', 'Manifestações'],
+        included: ['Bandeira personalizada no formato escolhido', 'Impressão orientada para boa leitura', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Bandeira personalizada'
+    },
+    'bandeirolas-esportivas': {
+        lead: 'Formato prático para clubes, torneios e momentos de prémio, com leitura clara e presença visual em ambientes desportivos.',
+        useCases: ['Clubes e torneios', 'Bancadas', 'Entregas de prémios', 'Merchandising'],
+        included: ['Bandeirola personalizada', 'Formato adequado para contexto desportivo', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Bandeirola desportiva'
+    },
+    'photocall': {
+        lead: 'Cria um fundo de marca para fotografia, imprensa e ativações, ajudando o espaço do evento a parecer mais profissional.',
+        useCases: ['Eventos corporativos', 'Conferências', 'Zonas de fotografia', 'Lançamentos de marca'],
+        included: ['Photocall personalizado', 'Formato preparado para imagem de marca', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Backdrop de evento'
+    },
+    'cubo-publicitario': {
+        lead: 'Uma peça compacta para destacar marca, campanha ou mensagem em balcões, montras e pontos de contacto com o cliente.',
+        useCases: ['Ativações de marca', 'Montras', 'Pontos de venda', 'Exposições'],
+        included: ['Cubo publicitário personalizado', 'Comunicação visível em várias faces', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Peça promocional 360 graus'
+    },
+    'mastros': {
+        lead: 'Solução para elevar bandeiras em espaços exteriores, fachadas e zonas institucionais com presença clara e duradoura.',
+        useCases: ['Exterior institucional', 'Fachadas', 'Recintos', 'Sinalização de bandeiras'],
+        included: ['Mastro indicado para suporte de bandeira', 'Formato preparado para presença exterior', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Suporte exterior para bandeira'
+    },
+    'tenda-publicitaria': {
+        lead: 'Indicada para eventos exteriores e ativações onde a marca precisa de cobertura, presença e identificação imediata.',
+        useCases: ['Eventos exteriores', 'Feiras', 'Ações de marca', 'Zonas promocionais'],
+        included: ['Tenda personalizada no formato escolhido', 'Comunicação preparada para exterior', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Estrutura promocional exterior'
+    },
+    default: {
+        lead: 'Produto personalizável para comunicação física, pensado para tornar a marca mais visível no ponto certo.',
+        useCases: ['Eventos', 'Lojas', 'Campanhas', 'Feiras'],
+        included: ['Produto impresso personalizado', 'Formato configurado para encomenda online', 'Pré-visualização antes de encomendar', 'Apoio se for preciso ajustar a arte-final'],
+        format: 'Produto publicitário personalizado'
+    }
+};
+
+function getProductDecisionContent(product) {
+    return PRODUCT_DECISION_CONTENT[product.categorySlug] || PRODUCT_DECISION_CONTENT.default;
+}
+
+function getProductUseCases(product) {
+    return getProductDecisionContent(product).useCases;
+}
+
+function getProductIncludedItems(product) {
+    return getProductDecisionContent(product).included;
+}
+
+function getProductBuyingNotes() {
+    return [
+        { title: 'Produção rápida', text: 'Fluxo preparado para avançar sem troca de emails.' },
+        { title: 'Personalização online', text: 'Edite o design e confirme o resultado antes de encomendar.' },
+        { title: 'Apoio na arte-final', text: 'A equipa ajuda quando o ficheiro precisa de ajustes.' },
+        { title: 'Entrega em Portugal e Espanha', text: 'Envio preparado para o destino indicado no checkout.' }
+    ];
+}
+
+function extractProductDimension(product) {
+    const match = String(product.nome || '').match(/\(([^)]*\d[^)]*)\)/);
+    return match ? normalizeText(match[1]) : 'Formato indicado no produto';
+}
+
+function getProductTechnicalRows(product) {
+    return [
+        { label: 'Dimensão', value: extractProductDimension(product) },
+        { label: 'Categoria', value: product.categoryLabel },
+        { label: 'Formato', value: getProductDecisionContent(product).format },
+        { label: 'Preço base', value: formatCurrency(product.preco) },
+        { label: 'Arte-final', value: 'Personalize online ou avance com o seu ficheiro.' }
+    ];
+}
+
+function renderProductBuyingNotes(product) {
+    return `<div class="mt-5 grid grid-cols-1 gap-2 sm:grid-cols-2">
+              ${getProductBuyingNotes(product).map((note) => `
+                <div class="rounded-xl border border-slate-200 bg-slate-50 px-3 py-3">
+                  <div class="flex items-center gap-2 text-sm font-semibold text-slate-900">
+                    <i data-lucide="check" class="h-4 w-4 text-blue-600"></i>
+                    <span>${escapeHtml(note.title)}</span>
+                  </div>
+                  <p class="mt-1 text-xs leading-5 text-slate-600">${escapeHtml(note.text)}</p>
+                </div>
+              `).join('')}
+            </div>`;
+}
+
+function renderProductDecisionBlocks(product) {
+    const includedItems = getProductIncludedItems(product);
+    const technicalRows = getProductTechnicalRows(product);
+    return `<div class="grid gap-4 lg:grid-cols-3">
+          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">O que recebe</p>
+            <ul class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              ${includedItems.map((item) => `
+                <li class="flex gap-3">
+                  <i data-lucide="check" class="mt-1 h-4 w-4 flex-none text-blue-600"></i>
+                  <span>${escapeHtml(item)}</span>
+                </li>
+              `).join('')}
+            </ul>
+          </section>
+          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Como funciona</p>
+            <ol class="mt-4 space-y-3 text-sm leading-6 text-slate-700">
+              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span>Personalize o design ou avance com a sua arte-final.</span></li>
+              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span>Confirme opções, preço e pré-visualização.</span></li>
+              <li class="flex gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span>Finalize a encomenda e a produção fica encaminhada.</span></li>
+            </ol>
+          </section>
+          <section class="rounded-2xl border border-slate-200 bg-white p-5">
+            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Detalhes técnicos</p>
+            <dl class="mt-4 divide-y divide-slate-100 text-sm">
+              ${technicalRows.map((row) => `
+                <div class="flex items-start justify-between gap-4 py-2.5 first:pt-0 last:pb-0">
+                  <dt class="text-slate-500">${escapeHtml(row.label)}</dt>
+                  <dd class="max-w-[58%] text-right font-medium text-slate-900">${escapeHtml(row.value)}</dd>
+                </div>
+              `).join('')}
+            </dl>
+          </section>
+        </div>`;
+}
+
 function renderProductPage(product, categoryEntries, productEntries) {
     const related = productEntries
         .filter((candidate) => candidate.slug !== product.slug && candidate.categorySlug === product.categorySlug)
@@ -707,6 +863,11 @@ function renderProductPage(product, categoryEntries, productEntries) {
         .filter((candidate) => candidate.slug !== product.slug && !fallbackProducts.some((item) => item.slug === candidate.slug))
         .sort((left, right) => String(left.slug || '').localeCompare(String(right.slug || ''), 'pt-PT'))
         .slice(0, 4);
+    const decisionContent = getProductDecisionContent(product);
+    const relatedHeading = related.length > 0 ? 'Outros tamanhos deste formato' : 'Produtos relacionados';
+    const relatedSummary = related.length > 0
+        ? `Compare alternativas da categoria ${product.categoryLabel} para escolher o tamanho e formato certo.`
+        : `Veja mais modelos da categoria ${product.categoryLabel} e compare formatos, tamanhos e preços.`;
     const structuredData = [
         {
             '@context': 'https://schema.org',
@@ -760,44 +921,42 @@ function renderProductPage(product, categoryEntries, productEntries) {
       </div>
     </div>
     <section class="bg-white">
-      <div class="mx-auto grid max-w-7xl gap-8 px-4 pb-8 pt-0 sm:px-6 sm:pt-3 lg:grid-cols-[minmax(0,1.08fr),minmax(340px,0.92fr)] lg:px-8 lg:py-14">
-        <div class="overflow-hidden rounded-[2rem] border border-slate-200 bg-gradient-to-b from-white via-white to-slate-50 p-3 shadow-[0_24px_70px_rgba(15,23,42,0.08)] sm:p-4">
-          <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-[1.5rem] bg-white object-contain p-4 sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
-        </div>
-        <div class="flex flex-col gap-5 sm:gap-6">
-          <div>
-            <h1 class="max-w-[14ch] text-[clamp(1.9rem,7vw,3.4rem)] font-semibold leading-[0.95] tracking-tight text-slate-900 sm:max-w-none sm:text-4xl">${escapeHtml(product.nome)}</h1>
+      <div class="mx-auto max-w-7xl px-4 pb-8 pt-0 sm:px-6 sm:pt-3 lg:px-8 lg:py-14">
+        <div class="grid gap-8 lg:grid-cols-[minmax(0,1.04fr),minmax(360px,0.96fr)]">
+          <div class="overflow-hidden rounded-[1.5rem] border border-slate-200 bg-white p-3 sm:p-4">
+            <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-2xl bg-white object-contain p-4 sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
           </div>
-          <div class="rounded-[2rem] border border-slate-200 bg-white/95 p-5 shadow-[0_22px_60px_rgba(15,23,42,0.08)] backdrop-blur-sm sm:p-6">
-            <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
-              <div>
-                <div class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">Preço base</div>
-                <div class="mt-2 flex flex-wrap items-end gap-3">
-                  <div class="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
+          <div class="flex flex-col gap-5 sm:gap-6">
+            <div>
+              <p class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-blue-600">${escapeHtml(product.categoryLabel)}</p>
+              <h1 class="mt-3 max-w-[14ch] text-[clamp(1.9rem,7vw,3.4rem)] font-semibold leading-[0.95] tracking-tight text-slate-900 sm:max-w-none sm:text-4xl">${escapeHtml(product.nome)}</h1>
+              <p class="mt-4 text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(decisionContent.lead || product.display_description || product.seo_description)}</p>
+            </div>
+            <div class="rounded-2xl border border-slate-200 bg-white p-5 sm:p-6">
+              <div class="flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
+                <div>
+                  <div class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">Preço base</div>
+                  <div class="mt-2 flex flex-wrap items-end gap-3">
+                    <div class="text-4xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
+                  </div>
                 </div>
+                <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
+                  <span>Personalizar produto</span>
+                  <span aria-hidden="true">&rarr;</span>
+                </a>
               </div>
-              <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white shadow-[0_14px_30px_rgba(15,23,42,0.18)] transition hover:-translate-y-0.5 hover:bg-slate-800 sm:w-auto">
-                <span>Personalizar produto</span>
-                <span aria-hidden="true">&rarr;</span>
-              </a>
-            </div>
-            <p class="mt-4 text-sm leading-6 text-slate-500">Escolha as opções, envie o design e finalize a encomenda no passo seguinte.</p>
-            <div class="product-quick-links mt-5 grid grid-cols-3 gap-2">
-              <a href="${SiteRoutes.STATIC_PATHS.shipping}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
-                <span>Envios</span>
-                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
-              </a>
-              <a href="${SiteRoutes.STATIC_PATHS.faq}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
-                <span>FAQ</span>
-                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
-              </a>
-              <a href="${SiteRoutes.buildContactPath({ assunto: product.nome })}" class="group inline-flex items-center justify-between gap-3 rounded-2xl border border-slate-200 bg-slate-50/70 px-3 py-3 text-xs font-semibold text-slate-800 transition hover:border-slate-300 hover:bg-white hover:text-slate-950 sm:px-4 sm:text-sm">
-                <span>Pedir apoio</span>
-                <span aria-hidden="true" class="text-slate-400 transition group-hover:translate-x-0.5 group-hover:text-slate-900">&rarr;</span>
-              </a>
+              ${renderProductBuyingNotes(product)}
+              <div class="mt-5 border-t border-slate-100 pt-5">
+                <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Ideal para</p>
+                <ul class="mt-3 flex flex-wrap gap-2">
+                  ${getProductUseCases(product).map((useCase) => `<li class="rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-xs font-semibold text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
+                </ul>
+              </div>
             </div>
           </div>
-          <p class="text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(product.display_description || product.seo_description)}</p>
+        </div>
+        <div class="mt-6 sm:mt-8">
+          ${renderProductDecisionBlocks(product)}
         </div>
       </div>
     </section>
@@ -805,9 +964,9 @@ function renderProductPage(product, categoryEntries, productEntries) {
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Continue a explorar</p>
-            <h2 class="mt-2 text-2xl font-semibold text-slate-900">Produtos relacionados</h2>
-            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Veja mais modelos da categoria ${escapeHtml(product.categoryLabel)} e compare formatos, tamanhos e preços.</p>
+            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Compare antes de decidir</p>
+            <h2 class="mt-2 text-2xl font-semibold text-slate-900">${escapeHtml(relatedHeading)}</h2>
+            <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">${escapeHtml(relatedSummary)}</p>
           </div>
           <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="inline-flex items-center gap-2 text-sm font-medium text-slate-700 hover:text-slate-900">
             <span>Ver categoria completa</span>
