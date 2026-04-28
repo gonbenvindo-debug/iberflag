@@ -393,6 +393,7 @@ function handleCartItemsClick(event) {
 function initPageUiInteractions() {
     refreshCartDomReferences();
     bindCartItemsContainerEvents();
+    initProductQuantityControls();
 
     if (!cartUiListenersReady) {
         if (cartBtn) {
@@ -420,6 +421,79 @@ function initPageUiInteractions() {
     injectOrdersTrackingLink();
     injectLanguageSwitcher();
 }
+
+function normalizeProductQuantity(value) {
+    const parsed = Number.parseInt(value, 10);
+    if (!Number.isFinite(parsed)) {
+        return 1;
+    }
+
+    return Math.min(999, Math.max(1, parsed));
+}
+
+function findProductQuantityInput(key) {
+    const targetKey = String(key || '').trim();
+    if (!targetKey) return null;
+
+    return Array.from(document.querySelectorAll('[data-product-quantity-input]'))
+        .find((input) => input.getAttribute('data-product-quantity-input') === targetKey) || null;
+}
+
+function syncProductQuantityLink(input) {
+    if (!(input instanceof HTMLInputElement)) {
+        return;
+    }
+
+    const quantity = normalizeProductQuantity(input.value);
+    input.value = String(quantity);
+    const key = String(input.getAttribute('data-product-quantity-input') || '').trim();
+    if (!key) {
+        return;
+    }
+
+    const links = Array.from(document.querySelectorAll('[data-product-quantity-link]'))
+        .filter((link) => link.getAttribute('data-product-quantity-link') === key);
+
+    links.forEach((link) => {
+        const currentHref = link.getAttribute('href') || link.getAttribute('data-next-url') || '';
+        if (!currentHref) {
+            return;
+        }
+
+        const url = new URL(currentHref, window.location.origin);
+        url.searchParams.set('quantity', String(quantity));
+        const nextHref = `${url.pathname}${url.search}${url.hash}`;
+        link.setAttribute('href', nextHref);
+        link.setAttribute('data-next-url', nextHref);
+    });
+}
+
+function initProductQuantityControls() {
+    document.querySelectorAll('[data-product-quantity-input]').forEach((input) => {
+        if (!(input instanceof HTMLInputElement) || input.dataset.quantityBound === '1') {
+            return;
+        }
+
+        input.dataset.quantityBound = '1';
+        input.addEventListener('input', () => syncProductQuantityLink(input));
+        input.addEventListener('change', () => syncProductQuantityLink(input));
+        syncProductQuantityLink(input);
+    });
+}
+
+document.addEventListener('click', (event) => {
+    const trigger = event.target instanceof Element
+        ? event.target.closest('[data-product-quantity-link]')
+        : null;
+    if (!trigger) {
+        return;
+    }
+
+    const input = findProductQuantityInput(trigger.getAttribute('data-product-quantity-link'));
+    if (input) {
+        syncProductQuantityLink(input);
+    }
+}, true);
 
 function buildLocaleSwitcherMarkup(targetLocale, currentLocale, currentPath, variant = 'desktop') {
     if (typeof SiteRoutes === 'undefined') {

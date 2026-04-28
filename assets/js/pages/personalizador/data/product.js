@@ -28,6 +28,7 @@ Object.assign(DesignEditor.prototype, {
             : { productSlug: '', isProductPersonalizer: false };
         const productSlug = String(urlParams.get('slug') || locationState.productSlug || '').trim();
         let productId = urlParams.get('produto');
+        const requestedQuantity = Math.min(999, Math.max(1, Number.parseInt(urlParams.get('quantity') || '1', 10) || 1));
         const preselectedBaseId = Number(urlParams.get('base') || 0);
         const selectedReinforcement = String(urlParams.get('reinforcement') || '').trim().toLowerCase();
         const manifestProduct = typeof SiteRoutes !== 'undefined' && productSlug
@@ -39,6 +40,7 @@ Object.assign(DesignEditor.prototype, {
         this.editIndex = urlParams.get('edit');
         this.editDesignId = urlParams.get('design');
         this.productId = productId;
+        this.initialQuantity = requestedQuantity;
         this.productSlug = productSlug || String(manifestProduct?.slug || '').trim();
         this.initialSelectedBaseId = Number.isFinite(preselectedBaseId) && preselectedBaseId > 0
             ? preselectedBaseId
@@ -122,6 +124,7 @@ Object.assign(DesignEditor.prototype, {
             const nextPath = SiteRoutes.buildProductPersonalizerPath(this.currentProduct, {
                 base: this.initialSelectedBaseId || undefined,
                 template: urlParams.get('template') || undefined,
+                quantity: requestedQuantity > 1 ? requestedQuantity : undefined,
                 edit: this.editIndex || undefined,
                 design: this.editDesignId || undefined,
                 editTemplate: this.editingTemplateId || undefined
@@ -148,7 +151,7 @@ Object.assign(DesignEditor.prototype, {
         } else if (this.editIndex !== null || this.editDesignId) {
             await this.loadExistingDesign(parseInt(this.editIndex, 10));
         } else {
-            this.loadAutosaveDesign();
+            await this.promptAutosaveRecovery?.();
         }
 
         this.restoreSelectedBaseFromCart();

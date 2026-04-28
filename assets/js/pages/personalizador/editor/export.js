@@ -398,13 +398,14 @@ Object.assign(DesignEditor.prototype, {
 
         const selectedBaseExtra = Number(selectedBase?.preco_extra_aplicado || 0);
         const finalPrice = Number(this.currentProduct.preco || 0) + selectedBaseExtra;
+        const initialQuantity = Math.min(999, Math.max(1, Number.parseInt(this.initialQuantity ?? 1, 10) || 1));
 
         const cartItem = {
             id: this.currentProduct.id,
             nome: this.currentProduct.nome,
             preco: Number(finalPrice.toFixed(2)),
             imagem: this.currentProduct.imagem,
-            quantity: Math.max(1, Number.parseInt(existingCartItem?.quantity ?? 1, 10) || 1),
+            quantity: Math.min(999, Math.max(1, Number.parseInt(existingCartItem?.quantity ?? initialQuantity, 10) || 1)),
             customized: true,
             designId,
             design: design,

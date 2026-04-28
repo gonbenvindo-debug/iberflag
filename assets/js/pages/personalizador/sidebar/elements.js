@@ -641,11 +641,211 @@ Object.assign(DesignEditor.prototype, {
         elementData.element.setAttribute('preserveAspectRatio', nextPreserveAspectRatio);
     },
 
-    loadAutosaveDesign() {
-        const autosave = localStorage.getItem(this.getAutosaveKey()) || this.getLegacyAutosaveKeys()
+    getAutosaveRecord() {
+        const keys = [this.getAutosaveKey?.(), ...(this.getLegacyAutosaveKeys?.() || [])]
+            .filter(Boolean);
+
+        for (const key of keys) {
+            const raw = localStorage.getItem(key);
+            const record = this.parseAutosaveRecord(raw, key);
+            if (record) {
+                return record;
+            }
+        }
+
+        return null;
+    },
+
+    parseAutosaveRecord(rawValue, key = '') {
+        const raw = String(rawValue || '').trim();
+        if (!raw) return null;
+
+        try {
+            if (raw.startsWith('{')) {
+                const parsed = JSON.parse(raw);
+                const elements = Array.isArray(parsed?.elements)
+                    ? parsed.elements.filter(Boolean)
+                    : [];
+
+                if (parsed?.format === 'elements-v1' && elements.length > 0) {
+                    return {
+                        key,
+                        raw,
+                        parsed,
+                        format: 'elements-v1',
+                        elementCount: elements.length
+                    };
+                }
+
+                return null;
+            }
+
+            if (raw.includes('<svg')) {
+                const parser = new DOMParser();
+                const svgDoc = parser.parseFromString(raw, 'image/svg+xml');
+                const editableCount = svgDoc.documentElement?.querySelectorAll?.('[data-editable="true"]').length || 0;
+                if (editableCount > 0) {
+                    return {
+                        key,
+                        raw,
+                        parsed: null,
+                        format: 'svg',
+                        elementCount: editableCount
+                    };
+                }
+            }
+        } catch (error) {
+            console.warn('Falha ao ler autosave:', error);
+        }
+
+        return null;
+    },
+
+    clearAutosaveDesign() {
+        const saveKeys = [this.getAutosaveKey?.(), ...(this.getLegacyAutosaveKeys?.() || [])]
+            .filter(Boolean);
+        saveKeys.forEach((key) => localStorage.removeItem(key));
+    },
+
+    svgToPreviewDataUrl(svgMarkup) {
+        const svg = String(svgMarkup || '').trim();
+        if (!svg) return '';
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+    },
+
+    buildBlankDesignPreviewSvg() {
+        const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
+        const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
+        const outline = this.canvas?.querySelector?.('#print-area-shape-outline')
+            || this.canvas?.querySelector?.('#print-area-outline');
+        let shapeMarkup = `<rect x="24" y="24" width="${Math.max(1, width - 48)}" height="${Math.max(1, height - 48)}" rx="14" fill="#ffffff" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="10 10"/>`;
+
+        if (outline) {
+            const clone = outline.cloneNode(true);
+            clone.removeAttribute('id');
+            clone.removeAttribute('class');
+            clone.removeAttribute('opacity');
+            clone.removeAttribute('stroke-dasharray');
+            clone.setAttribute('fill', '#ffffff');
+            clone.setAttribute('stroke', '#cbd5e1');
+            clone.setAttribute('stroke-width', '2');
+            shapeMarkup = new XMLSerializer().serializeToString(clone);
+        }
+
+        return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 ${width} ${height}" width="${width}" height="${height}" preserveAspectRatio="xMidYMid meet"><rect width="100%" height="100%" fill="#f8fafc"/>${shapeMarkup}</svg>`;
+    },
+
+    buildAutosavePreviewSvg(record) {
+        const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
+        const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
+
+        if (record?.parsed?.format === 'elements-v1' && Array.isArray(record.parsed.elements)) {
+            const svg = window.DesignSvgStore?.extractTemplateSvg?.(record.parsed.elements, {
+                width,
+                height,
+                backgroundColor: '#ffffff'
+            });
+            if (svg) return svg;
+        }
+
+        if (record?.raw && String(record.raw).includes('<svg')) {
+            return record.raw;
+        }
+
+        return this.buildBlankDesignPreviewSvg();
+    },
+
+    promptAutosaveRecovery() {
+        const record = this.getAutosaveRecord();
+        if (!record) {
+            return Promise.resolve(false);
+        }
+
+        return this.openAutosaveRecoveryModal(record).then((action) => {
+            if (action === 'resume') {
+                return this.loadAutosaveDesign(record.raw);
+            }
+
+            this.clearAutosaveDesign();
+            this.clearCanvas?.();
+            this.saveHistory?.();
+            return false;
+        });
+    },
+
+    openAutosaveRecoveryModal(record) {
+        const translate = window.personalizerI18nText || ((value) => value);
+        const existingModal = document.getElementById('autosave-recovery-modal');
+        if (existingModal) {
+            existingModal.remove();
+        }
+
+        const savedPreview = this.svgToPreviewDataUrl(this.buildAutosavePreviewSvg(record));
+        const blankPreview = this.svgToPreviewDataUrl(this.buildBlankDesignPreviewSvg());
+        const productName = this.currentProduct?.nome ? ` ${this.currentProduct.nome}` : '';
+        const modal = document.createElement('div');
+        modal.id = 'autosave-recovery-modal';
+        modal.className = 'autosave-recovery-modal';
+        modal.setAttribute('aria-hidden', 'false');
+        modal.innerHTML = `
+            <div class="autosave-recovery-dialog" role="dialog" aria-modal="true" aria-labelledby="autosave-recovery-title" aria-describedby="autosave-recovery-desc">
+                <div class="autosave-recovery-header">
+                    <p>${escapeHtml(translate('Rascunho encontrado'))}</p>
+                    <h2 id="autosave-recovery-title">${escapeHtml(translate('Continuar o design?'))}</h2>
+                    <span id="autosave-recovery-desc">${escapeHtml(translate('Encontrámos um design guardado automaticamente para este produto.'))}${escapeHtml(productName)}</span>
+                </div>
+                <div class="autosave-recovery-grid">
+                    <button type="button" id="autosave-recovery-resume" class="autosave-recovery-card autosave-recovery-card--primary">
+                        <span class="autosave-recovery-preview">
+                            <img src="${savedPreview}" alt="${escapeHtml(translate('Preview do design guardado'))}">
+                        </span>
+                        <span class="autosave-recovery-card-body">
+                            <span class="autosave-recovery-card-title">${escapeHtml(translate('Continuar edição'))}</span>
+                            <span class="autosave-recovery-card-copy">${escapeHtml(translate('Retomar o rascunho guardado automaticamente.'))}</span>
+                        </span>
+                    </button>
+                    <button type="button" id="autosave-recovery-blank" class="autosave-recovery-card">
+                        <span class="autosave-recovery-preview">
+                            <img src="${blankPreview}" alt="${escapeHtml(translate('Preview do design em branco'))}">
+                        </span>
+                        <span class="autosave-recovery-card-body">
+                            <span class="autosave-recovery-card-title">${escapeHtml(translate('Começar em branco'))}</span>
+                            <span class="autosave-recovery-card-copy">${escapeHtml(translate('Apagar este rascunho e criar um novo design.'))}</span>
+                        </span>
+                    </button>
+                </div>
+            </div>
+        `;
+
+        document.body.appendChild(modal);
+        document.body.style.overflow = 'hidden';
+
+        return new Promise((resolve) => {
+            const resumeBtn = modal.querySelector('#autosave-recovery-resume');
+            const blankBtn = modal.querySelector('#autosave-recovery-blank');
+
+            const finish = (action) => {
+                modal.remove();
+                document.body.style.overflow = '';
+                resolve(action);
+            };
+
+            resumeBtn?.addEventListener('click', () => finish('resume'));
+            blankBtn?.addEventListener('click', () => finish('blank'));
+
+            requestAnimationFrame(() => {
+                if (resumeBtn instanceof HTMLElement) {
+                    resumeBtn.focus({ preventScroll: true });
+                }
+            });
+        });
+    },
+
+    loadAutosaveDesign(autosaveOverride = null) {
+        const autosave = autosaveOverride || localStorage.getItem(this.getAutosaveKey()) || this.getLegacyAutosaveKeys()
             .map((key) => localStorage.getItem(key))
             .find(Boolean);
-        if (!autosave) return;
+        if (!autosave) return false;
 
         try {
             const trimmed = String(autosave).trim();
@@ -671,7 +871,7 @@ Object.assign(DesignEditor.prototype, {
                         );
                         this.saveHistory();
                     }
-                    return;
+                    return this.elements.length > 0;
                 }
             }
 
@@ -679,6 +879,7 @@ Object.assign(DesignEditor.prototype, {
             const svgDoc = parser.parseFromString(trimmed, 'image/svg+xml');
             const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
 
+            this.clearCanvas?.();
             designElements.forEach(el => {
                 const imported = document.importNode(el, true);
                 this.canvas.appendChild(imported);
@@ -699,9 +900,11 @@ Object.assign(DesignEditor.prototype, {
                 );
                 this.saveHistory();
             }
+            return this.elements.length > 0;
         } catch (error) {
             console.warn('Falha ao recuperar autosave:', error);
         }
+        return false;
     },
 
     // ===== EVENT LISTENERS =====

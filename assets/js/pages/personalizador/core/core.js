@@ -48,10 +48,13 @@ class DesignEditor {
         this.editIndex = null;
         this.editDesignId = null;
         this.productId = null;
+        this.initialQuantity = 1;
         this.availableBases = [];
         this.selectedBaseId = null;
         this.cartStorageKey = 'iberflag_cart';
         this.legacyCartStorageKeys = ['iberflag_cart', 'cart'];
+        this.autoSaveTimer = null;
+        this.autoSavePagehideBound = false;
         this.editorState = {
             mode: window.matchMedia('(max-width: 767px)').matches ? 'mobile' : 'desktop',
             activeMobilePanel: null,

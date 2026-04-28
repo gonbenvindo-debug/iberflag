@@ -935,10 +935,16 @@ function renderProductPage(product, categoryEntries, productEntries) {
                     <div class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
                   </div>
                 </div>
-                <a href="${product.personalizePath}" data-personalize-link="true" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex min-h-11 w-full items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:w-auto">
-                  <span>Personalizar produto</span>
-                  <span aria-hidden="true">&rarr;</span>
-                </a>
+                <div class="w-full sm:w-auto">
+                  <label for="product-quantity-${escapeHtml(product.id)}" class="mb-1.5 block text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Quantidade</label>
+                  <div class="flex w-full items-stretch gap-2 sm:w-auto">
+                    <input id="product-quantity-${escapeHtml(product.id)}" type="number" min="1" max="999" step="1" value="1" inputmode="numeric" data-product-quantity-input="${escapeHtml(product.id)}" class="h-11 w-24 rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" aria-label="Quantidade">
+                    <a href="${product.personalizePath}" data-personalize-link="true" data-product-quantity-link="${escapeHtml(product.id)}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:flex-none">
+                      <span>Personalizar produto</span>
+                      <span aria-hidden="true">&rarr;</span>
+                    </a>
+                  </div>
+                </div>
               </div>
               ${renderProductBuyingNotes(product)}
               <div class="mt-5 border-t border-slate-100 pt-5">

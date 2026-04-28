@@ -1770,11 +1770,24 @@ Object.assign(DesignEditor.prototype, {
     
     // ===== AUTO SAVE =====
     setupAutoSave() {
-        setInterval(() => {
+        if (this.autoSaveTimer) {
+            return;
+        }
+
+        this.autoSaveTimer = setInterval(() => {
             if (this.elements.length > 0) {
                 this.autoSave();
             }
         }, 5000);
+
+        if (!this.autoSavePagehideBound) {
+            this.autoSavePagehideBound = true;
+            window.addEventListener('pagehide', () => {
+                if (this.elements.length > 0) {
+                    this.autoSave();
+                }
+            });
+        }
     },
     
     autoSave() {
