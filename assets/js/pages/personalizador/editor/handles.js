@@ -1295,25 +1295,27 @@ Object.assign(DesignEditor.prototype, {
             height: newHeight
         };
 
-        const constrainedRect = shouldKeepRatio
-            ? this.constrainResizeRectWithRatio(
-                startBox,
-                proposedBox,
-                this.resizeHandle,
-                canvasBounds,
-                bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
-            )
-            : this.constrainResizeRect(
-                startBox,
-                proposedBox,
-                this.resizeHandle,
-                canvasBounds
-            );
+        if (this.selectedElement.type !== 'text') {
+            const constrainedRect = shouldKeepRatio
+                ? this.constrainResizeRectWithRatio(
+                    startBox,
+                    proposedBox,
+                    this.resizeHandle,
+                    canvasBounds,
+                    bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
+                )
+                : this.constrainResizeRect(
+                    startBox,
+                    proposedBox,
+                    this.resizeHandle,
+                    canvasBounds
+                );
 
-        newX = constrainedRect.x;
-        newY = constrainedRect.y;
-        newWidth = constrainedRect.width;
-        newHeight = constrainedRect.height;
+            newX = constrainedRect.x;
+            newY = constrainedRect.y;
+            newWidth = constrainedRect.width;
+            newHeight = constrainedRect.height;
+        }
 
         // Subpixel jitter during locked-ratio resize can create visual hairlines
         // on some SVG renderers. Snap to half-pixels for stable rendering.
@@ -1373,7 +1375,12 @@ Object.assign(DesignEditor.prototype, {
             const baseTextHeight = this.dragStart.textHeight || this.selectedElement.height || bbox.height;
             const scaleX = baseTextWidth > 0 ? (newWidth / baseTextWidth) : 1;
             const scaleY = baseTextHeight > 0 ? (newHeight / baseTextHeight) : 1;
-            const scale = Math.max(0.15, Math.min(scaleX, scaleY));
+            const rawScale = (() => {
+                if (this.resizeHandle === 'e' || this.resizeHandle === 'w') return scaleX;
+                if (this.resizeHandle === 'n' || this.resizeHandle === 's') return scaleY;
+                return Math.abs(scaleY - 1) > Math.abs(scaleX - 1) ? scaleY : scaleX;
+            })();
+            const scale = Math.max(0.15, rawScale);
 
             const oldFontSize = this.dragStart.fontSize || this.selectedElement.size || parseFloat(this.selectedElement.element.getAttribute('font-size') || '24');
             const rawFontSize = oldFontSize * scale;
@@ -1416,7 +1423,7 @@ Object.assign(DesignEditor.prototype, {
         // Never allow rotated elements to grow outside the design canvas.
         // If a resize step crosses the wall, reject that step instead of
         // translating the element, which can look like growth on the opposite side.
-        if (rotation !== 0 && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
+        if (rotation !== 0 && this.selectedElement.type !== 'text' && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
             this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
             return;
         }

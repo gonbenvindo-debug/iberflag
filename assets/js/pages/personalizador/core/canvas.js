@@ -435,7 +435,7 @@ Object.assign(DesignEditor.prototype, {
         const scale = this.getEditorScaleMetrics();
         return {
             min: Math.max(2, Math.min(14, scale.shortSide * 0.012)),
-            max: Math.max(120, Math.ceil(scale.longSide * 1.25))
+            max: Math.max(5000, Math.ceil(scale.longSide * 12))
         };
     },
 

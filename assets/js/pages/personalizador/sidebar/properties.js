@@ -419,7 +419,7 @@ Object.assign(DesignEditor.prototype, {
 
         const textSize = document.getElementById('prop-text-size');
         const currentSize = Number(this.selectedElement.size || textSize?.value || 24);
-        const step = this.getTextSizeStep?.() || 1;
+        const step = Math.max(this.getTextSizeStep?.() || 1, Math.round(Math.max(1, currentSize) * 0.12));
         const direction = Number(delta) < 0 ? -1 : 1;
         const nextSize = Math.round(this.clampTextSize?.(currentSize + (direction * step)) || (currentSize + (direction * step)));
 
