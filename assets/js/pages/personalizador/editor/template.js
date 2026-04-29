@@ -70,16 +70,68 @@ Object.assign(DesignEditor.prototype, {
         this.bringPrintAreaOverlaysToFront();
     },
 
+    getInitialCanvasWrapperBounds(sourceBounds) {
+        const sourceWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
+        const sourceHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
+        const candidates = [];
+
+        const stageRect = this.canvasStage?.getBoundingClientRect?.();
+        if (stageRect) {
+            let availableWidth = Number(stageRect.width) || 0;
+            let availableHeight = Number(stageRect.height) || 0;
+
+            if (this.canvasStage && window.getComputedStyle) {
+                const stageStyle = window.getComputedStyle(this.canvasStage);
+                const paddingX = (parseFloat(stageStyle.paddingLeft) || 0) + (parseFloat(stageStyle.paddingRight) || 0);
+                const paddingY = (parseFloat(stageStyle.paddingTop) || 0) + (parseFloat(stageStyle.paddingBottom) || 0);
+                availableWidth = Math.max(0, availableWidth - paddingX);
+                availableHeight = Math.max(0, availableHeight - paddingY);
+            }
+
+            candidates.push({ width: availableWidth, height: availableHeight });
+        }
+
+        candidates.push({
+            width: Number(this.initialCanvasSize?.width) || 0,
+            height: Number(this.initialCanvasSize?.height) || 0
+        });
+
+        candidates.push({
+            width: parseFloat(this.canvasWrapper?.style?.width || '') || Number(this.canvasWrapper?.clientWidth) || 0,
+            height: parseFloat(this.canvasWrapper?.style?.height || '') || Number(this.canvasWrapper?.clientHeight) || 0
+        });
+
+        const wrapperSize = candidates.find((candidate) => (
+            Number.isFinite(candidate.width) &&
+            Number.isFinite(candidate.height) &&
+            candidate.width > 0 &&
+            candidate.height > 0
+        ));
+
+        return {
+            x: 0,
+            y: 0,
+            width: Math.max(sourceWidth, Math.round(Number(wrapperSize?.width) || sourceWidth)),
+            height: Math.max(sourceHeight, Math.round(Number(wrapperSize?.height) || sourceHeight))
+        };
+    },
+
     configureCanvasFromSourceBounds(sourceBounds) {
         const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
-
-        this.setCanvasViewBoxFromBounds?.({
-            x: Number(sourceBounds?.x) || 0,
-            y: Number(sourceBounds?.y) || 0,
+        const workspaceBounds = this.getInitialCanvasWrapperBounds?.({
+            x: 0,
+            y: 0,
             width: canvasWidth,
             height: canvasHeight
-        });
+        }) || {
+            x: 0,
+            y: 0,
+            width: canvasWidth,
+            height: canvasHeight
+        };
+
+        this.setCanvasViewBoxFromBounds?.(workspaceBounds);
 
         this.templateSourceBounds = {
             x: 0,
