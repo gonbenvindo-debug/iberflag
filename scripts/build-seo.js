@@ -459,7 +459,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260428logo">
   <link rel="shortcut icon" href="/favicon.svg?v=20260428logo">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429product-shop2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429product-shop3">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -988,8 +988,8 @@ function renderProductPage(product, categoryEntries, productEntries) {
             </div>
             <div class="mt-5">
               <p class="text-xs font-semibold uppercase text-slate-500">Ideal para</p>
-              <ul class="product-use-cases mt-2 flex flex-wrap gap-2">
-                ${getProductUseCases(product).map((useCase) => `<li class="product-use-case max-w-full rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold leading-5 text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
+              <ul class="product-use-cases mt-2 flex flex-nowrap gap-2 overflow-x-auto pb-1">
+                ${getProductUseCases(product).map((useCase) => `<li class="product-use-case flex-none whitespace-nowrap rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold leading-5 text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
               </ul>
             </div>
             <div class="mt-5">
