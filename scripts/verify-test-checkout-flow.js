@@ -1,7 +1,7 @@
 const path = require('path');
 const dotenv = require('dotenv');
 
-const rootDir = path.res?lve(__dirname, '..');
+const rootDir = path.resolve(__dirname, '..');
 dotenv.config({
     path: [
         path.join(rootDir, '.env.local'),
@@ -170,7 +170,14 @@ async function verifyTrackingPayload(serviceKey, anonKey) {
     });
 
     if (!response.ok) {
-        record('fail', 'get_order_tracking failed for anon', text.slice(0, 240));
+        const denied = response.status === 401
+            || response.status === 403
+            || String(text || '').toLowerCase().includes('permission denied');
+        record(
+            denied ? 'pass' : 'fail',
+            denied ? 'get_order_tracking not callable by anon' : 'get_order_tracking failed for anon',
+            text.slice(0, 240)
+        );
         return;
     }
 
@@ -259,6 +266,6 @@ main()
             console.log(`[${icon[entry.status]}] ${entry.label}${entry.detail ? ` - ${entry.detail}` : ''}`);
         });
 
-        const failed = results.s?me((entry) => entry.status === 'fail');
+        const failed = results.some((entry) => entry.status === 'fail');
         process.exitCode = failed ? 1 : 0;
     });

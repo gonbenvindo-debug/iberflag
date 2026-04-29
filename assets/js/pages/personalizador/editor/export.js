@@ -386,7 +386,7 @@ Object.assign(DesignEditor.prototype, {
         const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         const selectedBase = this.getSelectedBaseOption();
 
-        if (Array.isArray(this.availableBases) && this.availableBases.length > 0 && !selectedBase) {
+        if (this.hasBaseSelectionStep?.() && !selectedBase) {
             showToast(
                 this.isReinforcementOptionFlow?.()
                 ? (window.personalizerI18nText ? window.personalizerI18nText('Sem reforço indisponível. Escolha a opção com reforço.') : 'Sem reforço indisponível. Escolha a opção com reforço.')

@@ -948,7 +948,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
     <section class="bg-white">
       <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
         <div class="product-detail-hero grid gap-6 lg:grid-cols-[minmax(0,1fr),minmax(400px,480px)] lg:items-start lg:gap-10">
-          <div class="product-hero-media min-w-0 lg:sticky lg:top-24">
+          <div class="product-hero-media min-w-0">
             <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-5">
               <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="product-main-image mx-auto aspect-[4/3] w-full rounded-md bg-white object-contain p-4 sm:p-8" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
             </div>
@@ -985,12 +985,6 @@ function renderProductPage(product, categoryEntries, productEntries) {
                 ${renderProductBuyingNotes(product)}
               </div>
             </div>
-            </div>
-            <div class="mt-5">
-              <p class="text-xs font-semibold uppercase text-slate-500">Ideal para</p>
-              <ul class="product-use-cases mt-2 flex flex-nowrap gap-2 overflow-x-auto pb-1">
-                ${getProductUseCases(product).map((useCase) => `<li class="product-use-case flex-none whitespace-nowrap rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold leading-5 text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
-              </ul>
             </div>
             <div class="mt-5">
               ${renderProductDecisionBlocks(product)}

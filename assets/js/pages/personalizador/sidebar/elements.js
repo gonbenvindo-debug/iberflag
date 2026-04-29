@@ -761,6 +761,7 @@ Object.assign(DesignEditor.prototype, {
             return Promise.resolve(false);
         }
 
+        this.hideLoadingState?.();
         return this.openAutosaveRecoveryModal(record).then((action) => {
             if (action === 'resume') {
                 return this.loadAutosaveDesign(record.raw);

@@ -4,11 +4,10 @@ const {
     buildStripeLineItem,
     generateOrderNumber,
     normalizeCheckoutServiceOptions,
-    normalizePaymentMethodType,
-    resolveStripePaymentMethodTypes
+    normalizePaymentMethodType
 } = require('../../lib/server/checkout');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
-const { getStripeClient } = require('../../lib/server/stripe');
+const { getStripeClient, getStripePublishableKey } = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
 const {
     applyRateLimit,
@@ -155,6 +154,10 @@ function getCheckoutErrorMessage(error) {
         return 'O Stripe nao conseguiu criar a sessao de pagamento.';
     }
 
+    if (errorCode === 'STRIPE_EMBEDDED_CLIENT_SECRET_MISSING') {
+        return 'O Stripe nao conseguiu preparar o checkout embebido.';
+    }
+
     return 'Nao foi possivel iniciar o checkout.';
 }
 
@@ -246,7 +249,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const body = await readJsonBody(req);
         const customer = body?.customer || {};
         const rawCart = Array.isArray(body?.cart) ? body.cart : [];
-        const selectedPaymentMethod = normalizePaymentMethodType(body?.paymentMethod);
+        const selectedPaymentMethod = String(body?.paymentMethod || '').trim()
+            ? normalizePaymentMethodType(body?.paymentMethod)
+            : 'dynamic';
         const notes = String(body?.notes || '').trim();
         const serviceOptions = normalizeCheckoutServiceOptions({
             ...(body?.serviceOptions || {}),
@@ -418,6 +423,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
 
         const supabase = getSupabaseAdmin();
         const stripe = getStripeClient();
+        const publishableKey = getStripePublishableKey();
         const baseUrl = getPublicBaseUrl(req);
         const cart = await resolveCheckoutCart(supabase, rawCart);
         const chargeableItems = [...cart, ...buildServiceOptionItems(serviceOptions)];
@@ -543,18 +549,16 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             }
         }));
 
-        const paymentMethodTypes = resolveStripePaymentMethodTypes(selectedPaymentMethod);
-        const successUrl = `${baseUrl}${SiteRoutes.buildCheckoutSuccessPath({
+        const returnUrl = `${baseUrl}${SiteRoutes.buildCheckoutSuccessPath({
             session_id: '{CHECKOUT_SESSION_ID}',
             codigo: orderNumber
         })}`;
-        const cancelUrl = `${baseUrl}${SiteRoutes.withQuery(SiteRoutes.STATIC_PATHS.checkout, { cancelled: 1 })}`;
 
         const session = await stripe.checkout.sessions.create({
             mode: 'payment',
-            payment_method_types: paymentMethodTypes,
-            success_url: successUrl,
-            cancel_url: cancelUrl,
+            ui_mode: 'embedded',
+            redirect_on_completion: 'if_required',
+            return_url: returnUrl,
             client_reference_id: orderNumber,
             customer_email: customerSnapshot.email,
             metadata: {
@@ -567,6 +571,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             line_items: chargeableItems.map(buildStripeLineItem),
             billing_address_collection: 'required'
         });
+
+        if (!String(session?.client_secret || '').trim()) {
+            const embeddedError = new Error('Stripe did not return an embedded checkout client secret.');
+            embeddedError.code = 'STRIPE_EMBEDDED_CLIENT_SECRET_MISSING';
+            throw embeddedError;
+        }
 
         const orderNotesWithSession = buildOrderNotesWithMeta(notes, {
             ...orderMeta,
@@ -588,7 +598,9 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                     status: session.status || '',
                     payment_status: session.payment_status || '',
                     client_reference_id: session.client_reference_id || '',
-                    payment_method_types: paymentMethodTypes,
+                    payment_method_types: Array.isArray(session.payment_method_types) ? session.payment_method_types : [],
+                    checkout_ui_mode: session.ui_mode || 'embedded',
+                    redirect_on_completion: session.redirect_on_completion || 'if_required',
                     design_review: serviceOptions.designReview
                 }
             }
@@ -599,9 +611,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         }
 
         sendJson(res, 200, {
-            url: session.url,
             sessionId: session.id,
+            clientSecret: session.client_secret,
+            publishableKey,
             orderCode: orderNumber,
+            checkoutMode: 'embedded',
             fiscalSummary: {
                 scenario: fiscalSnapshot.fiscal_scenario,
                 invoiceState: fiscalSnapshot.invoice_state,

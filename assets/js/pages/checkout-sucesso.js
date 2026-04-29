@@ -47,6 +47,17 @@ function updateState(title, message) {
     }
 }
 
+function clearConfirmedCheckoutCart() {
+    localStorage.removeItem('iberflag_cart');
+    localStorage.removeItem('cart');
+
+    if (window.CartAssetStore?.cleanupUnusedDesigns) {
+        window.CartAssetStore.cleanupUnusedDesigns([]).catch((cleanupError) => {
+            console.warn('Falha ao limpar designs do carrinho após pagamento confirmado:', cleanupError);
+        });
+    }
+}
+
 async function fetchCheckoutStatus(sessionId, orderCode) {
     const url = new URL('/api/checkout/session-status', window.location.origin);
     if (sessionId) {
@@ -81,6 +92,7 @@ async function pollUntilReady(sessionId, orderCode) {
             const paymentStatus = String(payload?.session?.payment_status || payload?.order?.payment_status || '').toLowerCase();
 
             if (paymentStatus === 'paid') {
+                clearConfirmedCheckoutCart();
                 updateState(i18nText('Pagamento confirmado'), i18nText('A abrir o tracking da encomenda...'));
                 const nextPath = typeof SiteRoutes !== 'undefined'
                     ? SiteRoutes.buildOrderPath(resolvedOrderCode)

@@ -335,6 +335,10 @@ Object.assign(DesignEditor.prototype, {
             : [];
     },
 
+    hasBaseSelectionStep() {
+        return this.getAvailableBaseOptions().length > 0;
+    },
+
     ensureSelectedBase() {
         if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
             this.selectedBaseId = null;
@@ -387,7 +391,7 @@ Object.assign(DesignEditor.prototype, {
         const confirmBtn = document.getElementById('cart-steps-confirm');
         if (!confirmBtn) return;
 
-        const hasOptions = Array.isArray(this.availableBases) && this.availableBases.length > 0;
+        const hasOptions = this.hasBaseSelectionStep();
         const hasAvailableSelection = Boolean(this.getSelectedBaseOption());
         const canConfirm = !hasOptions || hasAvailableSelection;
 
@@ -443,7 +447,14 @@ Object.assign(DesignEditor.prototype, {
 
         closeBtn.addEventListener('click', closeModal);
         backBtn.addEventListener('click', () => this.setCartStepsCurrent(1));
-        nextBtn.addEventListener('click', () => this.setCartStepsCurrent(2));
+        nextBtn.addEventListener('click', () => {
+            if (this.hasBaseSelectionStep()) {
+                this.setCartStepsCurrent(2);
+                return;
+            }
+
+            this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG());
+        });
         confirmBtn.addEventListener('click', () => {
             this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG());
         });
@@ -464,10 +475,12 @@ Object.assign(DesignEditor.prototype, {
     },
 
     setCartStepsCurrent(stepNumber) {
-        this.cartStepsCurrent = stepNumber === 2 ? 2 : 1;
+        const hasBaseStep = this.hasBaseSelectionStep();
+        this.cartStepsCurrent = hasBaseStep && stepNumber === 2 ? 2 : 1;
 
         const step1 = document.getElementById('checkout-step-1');
         const step2 = document.getElementById('checkout-step-2');
+        const stepSeparator = step2?.previousElementSibling;
         const pane1 = document.getElementById('cart-step-pane-1');
         const pane2 = document.getElementById('cart-step-pane-2');
         const backBtn = document.getElementById('cart-steps-back');
@@ -479,6 +492,11 @@ Object.assign(DesignEditor.prototype, {
             step1.classList.toggle('done', this.cartStepsCurrent === 2);
             step2.classList.toggle('active', this.cartStepsCurrent === 2);
             step2.classList.toggle('done', false);
+            step2.classList.toggle('hidden', !hasBaseStep);
+        }
+
+        if (stepSeparator instanceof HTMLElement) {
+            stepSeparator.classList.toggle('hidden', !hasBaseStep);
         }
 
         if (pane1 && pane2) {
@@ -490,6 +508,7 @@ Object.assign(DesignEditor.prototype, {
             backBtn.classList.toggle('hidden', this.cartStepsCurrent !== 2);
             nextBtn.classList.toggle('hidden', this.cartStepsCurrent !== 1);
             confirmBtn.classList.toggle('hidden', this.cartStepsCurrent !== 2);
+            nextBtn.textContent = hasBaseStep ? i18nText('Continuar') : i18nText('Confirmar Design');
         }
 
         this.updateCartStepActionState();
@@ -506,9 +525,9 @@ Object.assign(DesignEditor.prototype, {
 
         this.updateCartBaseStepCopy();
 
-        if (!Array.isArray(this.availableBases) || this.availableBases.length === 0) {
+        if (!this.hasBaseSelectionStep()) {
             optionsWrap.innerHTML = '';
-            emptyState.classList.remove('hidden');
+            emptyState.classList.add('hidden');
             this.updateCartStepsTotalDisplay();
             this.updateCartStepActionState();
             return;

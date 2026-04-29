@@ -81,10 +81,23 @@ const EXTRA_TEXT_REPLACEMENTS = [
     ['A equipa ajuda quando o ficheiro precisa de ajustes.', 'El equipo ayuda cuando el archivo necesita ajustes.'],
     ['Entrega em Portugal e Espanha', 'Entrega en Portugal y España'],
     ['Envio preparado para o destino indicado no checkout.', 'Envío preparado para el destino indicado en el checkout.'],
+    ['Informacoes', 'Información'],
     ['Ideal para', 'Ideal para'],
     ['O que recebe', 'Lo que recibe'],
     ['Como funciona', 'Cómo funciona'],
     ['Detalhes técnicos', 'Detalles técnicos'],
+    ['Ao continuar, o checkout seguro aparece abaixo, sem sair da IberFlag.', 'Al continuar, el checkout seguro aparece abajo, sin salir de IberFlag.'],
+    ['Métodos mostrados no passo seguinte', 'Métodos mostrados en el siguiente paso'],
+    ['Cartão, MB Way, Multibanco e outros métodos compatíveis surgem automaticamente conforme o cliente e a encomenda.', 'Tarjeta, MB Way, Multibanco y otros métodos compatibles aparecen automáticamente según el cliente y el pedido.'],
+    ['O pagamento fica dentro da IberFlag. Só sai deste fluxo se o próprio método pedir autenticação externa.', 'El pago permanece dentro de IberFlag. Solo sale de este flujo si el propio método pide autenticación externa.'],
+    ['Quando abrir o pagamento, bloqueamos estes dados para evitar diferenças entre a encomenda e a cobrança.', 'Cuando se abra el pago, bloqueamos estos datos para evitar diferencias entre el pedido y el cobro.'],
+    ['Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.', 'Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.'],
+    ['Pagamento seguro', 'Pago seguro'],
+    ['Complete o pagamento abaixo. A confirmação da encomenda acontece no final do processo.', 'Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.'],
+    ['A preparar o pagamento seguro...', 'Preparando el pago seguro...'],
+    ['Abrir pagamento seguro', 'Abrir pago seguro'],
+    ['Telemóvel / telefone', 'Móvil / teléfono'],
+    ['Grátis', 'Gratis'],
     ['IVA calculado no checkout', 'IVA calculado en el checkout'],
     ['Personalização incluída', 'Personalización incluida'],
     ['itens incluídos', 'artículos incluidos'],
@@ -958,6 +971,68 @@ function sourceCanonicalPath(relativePath) {
     return null;
 }
 
+function applyCheckoutOverrides($) {
+    const setText = (selector, text) => {
+        const element = $(selector).first();
+        if (element.length > 0) {
+            element.text(text);
+        }
+    };
+
+    $('title').text('Finalizar pedido | IberFlag');
+    $('meta[name="description"]').attr('content', 'Finaliza tu pedido IberFlag con pago online mediante Stripe, facturación validada y envío a la dirección indicada.');
+    $('meta[property="og:title"], meta[name="twitter:title"]').attr('content', 'Finalizar pedido | IberFlag');
+    $('meta[property="og:description"], meta[name="twitter:description"]').attr('content', 'Finaliza tu pedido IberFlag con pago online mediante Stripe, facturación validada y envío a la dirección indicada.');
+
+    setText('h1', 'Finalizar pedido');
+    $('.checkout-step span').eq(0).text('Carrito');
+    $('.checkout-step span').eq(1).text('Datos');
+    $('.checkout-step span').eq(2).text('Pago');
+
+    $('#customer-type-select option[value="particular"]').text('Particular');
+    $('#customer-type-select option[value="empresa"]').text('Empresa');
+    $('#country-select option[value="PT"], #address-country-select option[value="PT"]').text('Portugal');
+    $('#country-select option[value="ES"], #address-country-select option[value="ES"]').text('España');
+    $('#company-field-row input[name="empresa"]').attr('placeholder', 'Nombre fiscal de la empresa');
+    $('#contact-name-label').text('Nombre completo *');
+    $('#company-label').text('Empresa *');
+
+    $('input[name="telefone"]').closest('div').find('label').first().text('Móvil / teléfono *');
+    $('select[name="pais_entrega"]').closest('div').find('label').first().text('País de entrega *');
+    $('input[name="codigo_postal"]').closest('div').find('label').first().text('Código postal *');
+    $('input[name="morada"]').closest('div').find('label').first().text('Dirección *');
+    $('input[name="cidade"]').closest('div').find('label').first().text('Ciudad *');
+    $('#toggle-order-notes').text('Añadir nota al pedido');
+    $('#order-notes-field label').text('Notas del pedido (opcional)');
+    $('#order-notes-field textarea').attr('placeholder', 'Información adicional para el equipo.');
+
+    $('.checkout-surface-card').has('#checkout-payment-intro').find('.app-section-title').first().text('Pago online');
+    $('.checkout-surface-card').has('#checkout-payment-intro').find('.app-section-subtitle').first().text('Al continuar, el checkout seguro aparece abajo, sin salir de IberFlag.');
+    $('#checkout-payment-intro > div').eq(0).find('p.font-semibold').first().text('Métodos mostrados en el siguiente paso');
+    $('#checkout-payment-intro > div').eq(0).find('p.text-slate-600').first().text('Tarjeta, MB Way, Multibanco y otros métodos compatibles aparecen automáticamente según el cliente y el pedido.');
+    $('#checkout-payment-intro > div').eq(1).text('El pago permanece dentro de IberFlag. Solo sale de este flujo si el propio método pide autenticación externa.');
+    $('#checkout-payment-intro > div').eq(2).text('Cuando se abra el pago, bloqueamos estos datos para evitar diferencias entre el pedido y el cobro.');
+    $('#checkout-locked-note').text('Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.');
+    $('#checkout-embed-shell h3').text('Pago seguro');
+    $('#checkout-embed-shell p.text-slate-600').first().text('Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.');
+    $('#checkout-embed-loader span').text('Preparando el pago seguro...');
+
+    const supportItems = $('.checkout-support-list .checkout-support-item span');
+    supportItems.eq(0).text('Pago seguro con Stripe');
+    supportItems.eq(1).text('Documento fiscal emitido tras el pago');
+    supportItems.eq(2).text('Seguimiento disponible en la página del pedido y en el email');
+
+    $('#design-review-checkbox').closest('label').find('span').first().html('Añadir revisión de diseño por <strong>5€</strong> antes de la producción. <a href="/es/termos#responsabilidade-design" class="text-blue-600 hover:underline">Consulta los términos de responsabilidad del diseño</a>.');
+    $('#terms-checkbox').closest('label').find('span').first().html('He leído y acepto los <a href="/es/termos" class="text-blue-600 hover:underline">Términos y condiciones</a> y la <a href="/es/privacidade" class="text-blue-600 hover:underline">Política de privacidad</a>.');
+    $('#place-order-btn').html('<i data-lucide="lock" class="w-5 h-5"></i> Abrir pago seguro');
+
+    setText('.checkout-summary h2', 'Resumen del pedido');
+    $('.checkout-summary .app-section-subtitle').first().text('Plazo comunicado tras pago confirmado y validación del pedido.');
+    $('#design-review-row span').first().text('Revisión de diseño');
+    $('#shipping').prev('span').text('Envío');
+    $('#shipping').text('Gratis');
+}
+
 function translateHtmlFile(html, sourceFileName) {
     const $ = cheerio.load(html, { decodeEntities: false });
     const sourceCanonical = currentCanonicalPath($);
@@ -975,6 +1050,10 @@ function translateHtmlFile(html, sourceFileName) {
         $('meta[name="twitter:title"]').attr('content', 'Catálogo de productos publicitarios | IberFlag');
         $('meta[name="twitter:description"]').attr('content', 'Explora el catálogo IberFlag con fly banners, roll ups, banderas, photocalls, carpas y soportes promocionales personalizados.');
         $('h1').first().text('Catálogo de productos publicitarios');
+    }
+
+    if (sourceCanonical === '/checkout') {
+        applyCheckoutOverrides($);
     }
 
     applyStaticSeoOverride($, sourceCanonical);

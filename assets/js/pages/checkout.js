@@ -48,6 +48,11 @@ const fiscalSummaryRegime = document.getElementById('fiscal-summary-regime');
 const fiscalSummaryCountry = document.getElementById('fiscal-summary-country');
 const fiscalSummaryTreatment = document.getElementById('fiscal-summary-treatment');
 const fiscalSummaryWarning = document.getElementById('fiscal-summary-warning');
+const checkoutPaymentIntro = document.getElementById('checkout-payment-intro');
+const checkoutLockedNote = document.getElementById('checkout-locked-note');
+const checkoutEmbedShell = document.getElementById('checkout-embed-shell');
+const checkoutEmbedLoader = document.getElementById('checkout-embed-loader');
+const checkoutEmbedContainer = document.getElementById('checkout-embed-container');
 
 const COMMON_EMAIL_DOMAIN_FIXES = {
     'gmail.com.pt': 'gmail.com',
@@ -67,6 +72,18 @@ const COUNTRY_LABELS = {
     PT: 'Portugal',
     ES: 'Espanha'
 };
+const ES_TEXT = {
+    'Abrir pagamento seguro': 'Abrir pago seguro',
+    'Pagamento carregado': 'Pago cargado',
+    'Pagamento carregado abaixo. Complete o processo para confirmar a encomenda.': 'Pago cargado abajo. Complete el proceso para confirmar el pedido.',
+    'A preparar o pagamento seguro...': 'Preparando el pago seguro...',
+    'O checkout seguro não está disponível neste momento.': 'El checkout seguro no está disponible en este momento.',
+    'Não foi possível carregar o checkout seguro. Atualize a página e tente novamente.': 'No fue posible cargar el checkout seguro. Actualice la página e inténtelo de nuevo.',
+    'Estamos a abrir o pagamento seguro dentro da IberFlag.': 'Estamos abriendo el pago seguro dentro de IberFlag.',
+    'O pagamento vai ser confirmado no passo seguinte.': 'El pago se confirmará en el siguiente paso.',
+    'Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.': 'Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.',
+    'Grátis': 'Gratis'
+};
 const EU_COUNTRIES = new Set(['PT', 'ES']);
 let companyLookupInFlight = false;
 let companyLookupDebounceTimer = null;
@@ -77,6 +94,10 @@ let postalLookupController = null;
 let latestPostalLookupKey = '';
 let addressCountryTouched = false;
 let lastAutoCityValue = '';
+let stripePublishableKeyInUse = '';
+let stripeBrowserClient = null;
+let embeddedCheckoutInstance = null;
+let activeCheckoutSession = null;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -87,7 +108,19 @@ function escapeHtml(value) {
         .replace(/'/g, '&#39;');
 }
 
+function getCurrentLocale() {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocaleFromPathname === 'function') {
+        return SiteRoutes.getLocaleFromPathname(window.location.pathname);
+    }
+
+    return window.location.pathname === '/es' || window.location.pathname.startsWith('/es/') ? 'es' : 'pt';
+}
+
 function i18nText(value) {
+    if (getCurrentLocale() === 'es' && Object.prototype.hasOwnProperty.call(ES_TEXT, value)) {
+        return ES_TEXT[value];
+    }
+
     return window.IberFlagI18n?.translateText
         ? window.IberFlagI18n.translateText(value)
         : value;
@@ -102,7 +135,27 @@ function getLocalizedStaticPath(pathname, fallback) {
 }
 
 function getPlaceOrderDefaultLabel() {
-    return `<i data-lucide="lock" class="w-5 h-5"></i> ${i18nText('Finalizar Encomenda')}`;
+    return `<i data-lucide="lock" class="w-5 h-5"></i> ${i18nText('Abrir pagamento seguro')}`;
+}
+
+function getPlaceOrderLoadedLabel() {
+    return `<i data-lucide="shield-check" class="w-5 h-5"></i> ${i18nText('Pagamento carregado')}`;
+}
+
+function buildCheckoutSuccessPath(params = {}) {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildCheckoutSuccessPath === 'function') {
+        return SiteRoutes.buildCheckoutSuccessPath(params);
+    }
+
+    const search = new URLSearchParams();
+    Object.entries(params || {}).forEach(([key, value]) => {
+        if (value !== null && value !== undefined && String(value).trim() !== '') {
+            search.set(key, String(value));
+        }
+    });
+
+    const query = search.toString();
+    return `/checkout/sucesso${query ? `?${query}` : ''}`;
 }
 
 function setElementHidden(element, hidden) {
@@ -112,6 +165,63 @@ function setElementHidden(element, hidden) {
 
     element.classList.toggle('hidden', hidden);
     element.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+}
+
+function localizeEmbeddedCheckoutStaticContent() {
+    if (getCurrentLocale() !== 'es') {
+        return;
+    }
+
+    const paymentSection = checkoutPaymentIntro?.closest('.app-surface');
+    const paymentSubtitle = paymentSection?.querySelector('.app-section-subtitle');
+    if (paymentSubtitle) {
+        paymentSubtitle.textContent = i18nText('Ao continuar, o checkout seguro aparece abaixo, sem sair da IberFlag.');
+    }
+
+    const introCards = checkoutPaymentIntro ? Array.from(checkoutPaymentIntro.children) : [];
+    const [methodsCard, inlineCard, lockCard] = introCards;
+    const methodsTitle = methodsCard?.querySelector('p.font-semibold');
+    const methodsText = methodsCard?.querySelector('p.text-slate-600');
+    if (methodsTitle) {
+        methodsTitle.textContent = 'Métodos mostrados en el siguiente paso';
+    }
+    if (methodsText) {
+        methodsText.textContent = 'Tarjeta, MB Way, Multibanco y otros métodos compatibles aparecen automáticamente según el cliente y el pedido.';
+    }
+    if (inlineCard) {
+        inlineCard.textContent = 'El pago permanece dentro de IberFlag. Solo sale de este flujo si el propio método pide autenticación externa.';
+    }
+    if (lockCard) {
+        lockCard.textContent = 'Cuando se abra el pago, bloqueamos estos datos para evitar diferencias entre el pedido y el cobro.';
+    }
+    if (checkoutLockedNote) {
+        checkoutLockedNote.textContent = i18nText('Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.');
+    }
+
+    const embedTitle = checkoutEmbedShell?.querySelector('h3');
+    const embedSubtitle = checkoutEmbedShell?.querySelector('p.text-slate-600');
+    const embedLoaderText = checkoutEmbedLoader?.querySelector('span');
+    if (embedTitle) {
+        embedTitle.textContent = 'Pago seguro';
+    }
+    if (embedSubtitle) {
+        embedSubtitle.textContent = 'Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.';
+    }
+    if (embedLoaderText) {
+        embedLoaderText.textContent = i18nText('A preparar o pagamento seguro...');
+    }
+
+    const checkoutSteps = document.querySelectorAll('.checkout-step span');
+    if (checkoutSteps[1]) {
+        checkoutSteps[1].textContent = 'Datos';
+    }
+    if (checkoutSteps[2]) {
+        checkoutSteps[2].textContent = 'Pago';
+    }
+
+    if (placeOrderBtn && !document.body.classList.contains('checkout-payment-active')) {
+        placeOrderBtn.innerHTML = getPlaceOrderDefaultLabel();
+    }
 }
 
 function normalizeTaxId(value) {
@@ -1161,6 +1271,177 @@ function setPlaceOrderLoading(isLoading) {
     }
 }
 
+function setPlaceOrderLoadedState() {
+    if (!placeOrderBtn) {
+        return;
+    }
+
+    placeOrderBtn.disabled = true;
+    placeOrderBtn.innerHTML = getPlaceOrderLoadedLabel();
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function setCheckoutInputsLocked(locked) {
+    document.body?.classList.toggle('checkout-payment-active', locked);
+
+    if (checkoutForm) {
+        checkoutForm.querySelectorAll('input, select, textarea, button').forEach((field) => {
+            field.disabled = locked;
+        });
+    }
+
+    if (designReviewCheckbox) {
+        designReviewCheckbox.disabled = locked;
+    }
+
+    if (termsCheckbox) {
+        termsCheckbox.disabled = locked;
+    }
+
+    if (toggleOrderNotesBtn) {
+        toggleOrderNotesBtn.disabled = locked;
+    }
+
+    if (placeOrderBtn && !locked) {
+        placeOrderBtn.disabled = false;
+    }
+
+    if (checkoutPaymentIntro) {
+        checkoutPaymentIntro.classList.toggle('opacity-60', locked);
+    }
+
+    setElementHidden(checkoutLockedNote, !locked);
+}
+
+function setCheckoutEmbedLoading(isLoading) {
+    setElementHidden(checkoutEmbedLoader, !isLoading);
+    if (checkoutEmbedContainer) {
+        checkoutEmbedContainer.classList.toggle('checkout-embed-container-ready', !isLoading);
+    }
+}
+
+async function destroyEmbeddedCheckout() {
+    if (embeddedCheckoutInstance) {
+        try {
+            if (typeof embeddedCheckoutInstance.destroy === 'function') {
+                embeddedCheckoutInstance.destroy();
+            } else if (typeof embeddedCheckoutInstance.unmount === 'function') {
+                embeddedCheckoutInstance.unmount();
+            }
+        } catch (error) {
+            console.warn('Falha ao desmontar o checkout embebido:', error);
+        }
+    }
+
+    embeddedCheckoutInstance = null;
+    activeCheckoutSession = null;
+    setCheckoutEmbedLoading(true);
+    setElementHidden(checkoutEmbedShell, true);
+
+    if (checkoutEmbedContainer) {
+        checkoutEmbedContainer.innerHTML = '';
+        checkoutEmbedContainer.classList.remove('checkout-embed-container-ready');
+    }
+
+    setCheckoutInputsLocked(false);
+
+    if (placeOrderBtn) {
+        placeOrderBtn.disabled = false;
+        placeOrderBtn.innerHTML = getPlaceOrderDefaultLabel();
+    }
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function scrollToEmbeddedCheckout() {
+    if (!checkoutEmbedShell || typeof checkoutEmbedShell.getBoundingClientRect !== 'function') {
+        return;
+    }
+
+    const rect = checkoutEmbedShell.getBoundingClientRect();
+    const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
+    window.scrollTo({ top: nextTop, behavior: 'smooth' });
+}
+
+function getStripeBrowserClient(publishableKey) {
+    const normalizedKey = String(publishableKey || '').trim();
+    if (!normalizedKey || typeof window.Stripe !== 'function') {
+        return null;
+    }
+
+    if (!stripeBrowserClient || stripePublishableKeyInUse !== normalizedKey) {
+        stripeBrowserClient = window.Stripe(normalizedKey);
+        stripePublishableKeyInUse = normalizedKey;
+    }
+
+    return stripeBrowserClient;
+}
+
+async function handleEmbeddedCheckoutComplete(sessionPayload = activeCheckoutSession) {
+    const sessionId = String(sessionPayload?.sessionId || '').trim();
+    const orderCode = String(sessionPayload?.orderCode || '').trim();
+    const nextPath = buildCheckoutSuccessPath({
+        session_id: sessionId,
+        codigo: orderCode
+    });
+
+    window.location.href = nextPath;
+}
+
+async function mountEmbeddedCheckout(sessionPayload) {
+    if (!checkoutEmbedContainer || !checkoutEmbedShell) {
+        throw new Error(i18nText('O checkout seguro não está disponível neste momento.'));
+    }
+
+    const clientSecret = String(sessionPayload?.clientSecret || '').trim();
+    const publishableKey = String(sessionPayload?.publishableKey || '').trim();
+    if (!clientSecret || !publishableKey) {
+        throw new Error(i18nText('Não foi possível carregar o checkout seguro. Atualize a página e tente novamente.'));
+    }
+
+    const stripe = getStripeBrowserClient(publishableKey);
+    if (!stripe || typeof stripe.initEmbeddedCheckout !== 'function') {
+        throw new Error(i18nText('O checkout seguro não está disponível neste momento.'));
+    }
+
+    await destroyEmbeddedCheckout();
+
+    activeCheckoutSession = {
+        sessionId: String(sessionPayload.sessionId || '').trim(),
+        orderCode: String(sessionPayload.orderCode || '').trim(),
+        clientSecret,
+        publishableKey
+    };
+
+    setCheckoutInputsLocked(true);
+    setElementHidden(checkoutEmbedShell, false);
+    setCheckoutEmbedLoading(true);
+    scrollToEmbeddedCheckout();
+
+    try {
+        embeddedCheckoutInstance = await stripe.initEmbeddedCheckout({
+            fetchClientSecret: async () => clientSecret,
+            onComplete: () => {
+                void handleEmbeddedCheckoutComplete(activeCheckoutSession);
+            }
+        });
+
+        embeddedCheckoutInstance.mount('#checkout-embed-container');
+        setCheckoutEmbedLoading(false);
+        setPlaceOrderLoadedState();
+        setCheckoutFeedback(i18nText('Pagamento carregado abaixo. Complete o processo para confirmar a encomenda.'), 'success');
+        scrollToEmbeddedCheckout();
+    } catch (error) {
+        await destroyEmbeddedCheckout();
+        throw error;
+    }
+}
+
 function getCheckoutErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
@@ -1244,6 +1525,10 @@ function getCheckoutErrorMessage(error) {
         return i18nText('Não foi possível comunicar com o Facturalusa.');
     }
 
+    if (rawMessage.includes('checkout seguro')) {
+        return error?.message || i18nText('Não foi possível carregar o checkout seguro. Atualize a página e tente novamente.');
+    }
+
     return 'Erro ao iniciar o checkout. Por favor, tente novamente.';
 }
 
@@ -1301,7 +1586,7 @@ function renderCheckoutSummary(items = []) {
     if (shippingEl) {
         shippingEl.textContent = summary.shipping > 0
             ? `${summary.shipping.toFixed(2)}€`
-            : 'Gratis';
+            : i18nText('Grátis');
     }
 
     if (totalEl) {
@@ -1459,7 +1744,6 @@ if (placeOrderBtn) {
 
         // Get form data
         const formData = new FormData(checkoutForm);
-        const selectedPaymentMethod = document.querySelector('input[name="payment"]:checked')?.value || 'card';
         const customerData = {
             nome: formData.get('nome'),
             email: formData.get('email'),
@@ -1491,7 +1775,6 @@ if (placeOrderBtn) {
                     customer: customerData,
                     cart: buildCheckoutRequestCart(cart),
                     designReviewSelected: isDesignReviewSelected(),
-                    paymentMethod: selectedPaymentMethod,
                     notes: orderNotes
                 })
             });
@@ -1513,29 +1796,10 @@ if (placeOrderBtn) {
                 setCheckoutFeedback(payload.fiscalSummary.warning, 'info');
             }
 
-            setCheckoutFeedback(i18nText('Pagamento iniciado. Vamos abrir o checkout seguro.'), 'success');
+            setCheckoutFeedback(i18nText('Estamos a abrir o pagamento seguro dentro da IberFlag.'), 'success');
             showToast(i18nText('Pagamento iniciado com sucesso!'), 'success');
 
-            cart = [];
-            localStorage.removeItem('iberflag_cart');
-            localStorage.removeItem('cart');
-            if (window.CartAssetStore?.cleanupUnusedDesigns) {
-                window.CartAssetStore.cleanupUnusedDesigns([]).catch((cleanupError) => {
-                    console.warn('Falha ao limpar designs do carrinho após checkout:', cleanupError);
-                });
-            }
-
-            setTimeout(() => {
-                if (payload?.url) {
-                    window.location.href = payload.url;
-                    return;
-                }
-
-                const fallbackSuccessPath = typeof SiteRoutes !== 'undefined'
-                    ? SiteRoutes.buildCheckoutSuccessPath({ codigo: payload?.orderCode || '' })
-                    : `/checkout/sucesso?codigo=${encodeURIComponent(payload?.orderCode || '')}`;
-                window.location.href = fallbackSuccessPath;
-            }, 1000);
+            await mountEmbeddedCheckout(payload);
 
         } catch (error) {
             console.error('Erro ao criar encomenda:', error);
@@ -1551,6 +1815,8 @@ if (placeOrderBtn) {
 
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
+    localizeEmbeddedCheckoutStaticContent();
+
     if (emailInput) {
         emailInput.addEventListener('input', () => {
             updateEmailValidity();

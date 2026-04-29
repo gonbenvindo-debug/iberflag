@@ -234,19 +234,32 @@ class DesignEditor {
         this.showLoadingState();
 
         // Carregar produto e demais inicializações em paralelo
-        const [product] = await Promise.all([
-            this.loadProduct(),
-            this.setupEventListeners(),
-            this.setupMobileUI()
-        ]);
+        let initialized = false;
 
-        this.setupAutoSave();
-        this.saveHistory();
-        this.updateSidebarMode();
-        this.hideLoadingState();
+        try {
+            await Promise.all([
+                this.loadProduct(),
+                this.setupEventListeners(),
+                this.setupMobileUI()
+            ]);
+
+            this.setupAutoSave();
+            this.saveHistory();
+            this.updateSidebarMode();
+            initialized = true;
+        } catch (error) {
+            console.error('Erro ao carregar editor:', error);
+            if (typeof showToast === 'function') {
+                showToast('Não foi possível carregar o editor. Atualize a página e tente novamente.', 'error');
+            }
+        } finally {
+            this.hideLoadingState();
+        }
 
         // Garantir que o layout está calculado antes de medir o stage
-        requestAnimationFrame(() => this.syncCanvasViewport());
+        if (initialized) {
+            requestAnimationFrame(() => this.syncCanvasViewport());
+        }
     }
 
     showLoadingState() {
