@@ -135,14 +135,19 @@ Object.assign(DesignEditor.prototype, {
             x: Number(data.x || 0) + (Number(data.width || 0) / 2),
             y: Number(data.y || 0) + (Number(data.height || 0) / 2)
         };
-        const baseSize = Math.max(48, Math.min(180, Number(data.size || Math.max(Number(data.width || 0), Number(data.height || 0)) || 120)));
+        const fallbackSize = this.getDefaultSquareElementSize?.(0.28) || 120;
+        const minElementSize = this.getMinimumElementSize?.() || 1;
+        const baseSize = Math.max(
+            minElementSize,
+            Number(data.size || Math.max(Number(data.width || 0), Number(data.height || 0)) || fallbackSize)
+        );
         let shape;
 
         if (normalizedShapeType === 'circle') {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
             const radius = Number.isFinite(Number(data.r))
-                ? Math.max(20, Number(data.r))
-                : Math.max(24, baseSize / 2);
+                ? Math.max(minElementSize / 2, Number(data.r))
+                : Math.max(minElementSize / 2, baseSize / 2);
             shape.setAttribute('cx', String(Number(data.cx ?? center.x) || center.x));
             shape.setAttribute('cy', String(Number(data.cy ?? center.y) || center.y));
             shape.setAttribute('r', String(radius));
@@ -156,14 +161,16 @@ Object.assign(DesignEditor.prototype, {
             shape.setAttribute('points', points);
         } else {
             shape = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
-            const width = Math.max(20, Number(data.width) || (normalizedShapeType === 'line' ? baseSize * 1.7 : normalizedShapeType === 'pill' ? baseSize * 1.5 : baseSize * 1.25));
-            const height = Math.max(10, Number(data.height) || (normalizedShapeType === 'line' ? Math.max(8, baseSize * 0.13) : normalizedShapeType === 'pill' ? baseSize * 0.58 : baseSize * 0.84));
+            const width = Math.max(minElementSize, Number(data.width) || (normalizedShapeType === 'line' ? baseSize * 1.7 : normalizedShapeType === 'pill' ? baseSize * 1.5 : baseSize * 1.25));
+            const height = Math.max(minElementSize * 0.5, Number(data.height) || (normalizedShapeType === 'line' ? Math.max(minElementSize * 0.5, baseSize * 0.13) : normalizedShapeType === 'pill' ? baseSize * 0.58 : baseSize * 0.84));
             shape.setAttribute('x', String(Number(data.x ?? (center.x - (width / 2))) || 0));
             shape.setAttribute('y', String(Number(data.y ?? (center.y - (height / 2))) || 0));
             shape.setAttribute('width', String(width));
             shape.setAttribute('height', String(height));
             if (normalizedShapeType === 'pill' || normalizedShapeType === 'line' || normalizedShapeType === 'rounded') {
-                const rx = normalizedShapeType === 'line' ? Math.max(2, height / 2) : Math.max(8, Math.min(width, height) / 4);
+                const rx = normalizedShapeType === 'line'
+                    ? Math.max(minElementSize * 0.1, height / 2)
+                    : Math.max(minElementSize * 0.25, Math.min(width, height) / 4);
                 shape.setAttribute('rx', String(rx));
                 shape.setAttribute('ry', String(rx));
             }
@@ -255,8 +262,8 @@ Object.assign(DesignEditor.prototype, {
         this.preventSidebarClose();
         const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
-        const baseFontSize = Math.round(Math.max(14, Math.min(40, scale.shortSide * 0.09)));
-        const estimatedTextWidth = Math.max(80, baseFontSize * 5.2);
+        const baseFontSize = this.getDefaultTextSize?.() || Math.round(scale.shortSide * 0.09);
+        const estimatedTextWidth = Math.min(scale.bounds.width * 0.7, Math.max(baseFontSize * 5.2, scale.bounds.width * 0.08));
         const text = document.createElementNS('http://www.w3.org/2000/svg', 'text');
         const defaultLabel = window.personalizerI18nText
             ? window.personalizerI18nText('Clique para editar')
@@ -986,8 +993,7 @@ Object.assign(DesignEditor.prototype, {
     handleAddQRCode() {
         const content = 'https://site.pt';
         const color = '#111827';
-        const scale = this.getInsertionScale();
-        const qrSize = Math.round(Math.max(56, Math.min(180, scale.shortSide * 0.28)));
+        const qrSize = this.getDefaultSquareElementSize?.(0.28) || 120;
 
         try {
             const dataUrl = this.generateQRCodeDataUrl(content, color);
@@ -1166,9 +1172,8 @@ Object.assign(DesignEditor.prototype, {
 
     addShape(shapeType) {
         this.preventSidebarClose();
-        const scale = this.getInsertionScale();
         const center = this.getEditableCenter();
-        const baseSize = Math.max(48, Math.min(180, scale.shortSide * 0.28));
+        const baseSize = this.getDefaultSquareElementSize?.(0.28) || 120;
         const shape = this.createShapeElementFromDescriptor({
             shapeType,
             x: center.x - (baseSize / 2),

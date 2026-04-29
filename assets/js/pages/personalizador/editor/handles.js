@@ -649,8 +649,12 @@ Object.assign(DesignEditor.prototype, {
             document.getElementById('text-properties').classList.add('active');
             document.getElementById('prop-text-content').value = elementData.content;
             document.getElementById('prop-text-font').value = elementData.font;
-            document.getElementById('prop-text-size').value = elementData.size;
-            document.getElementById('prop-text-size-val').textContent = elementData.size;
+            if (typeof this.syncTextSizeControls === 'function') {
+                this.syncTextSizeControls(elementData.size);
+            } else {
+                document.getElementById('prop-text-size').value = elementData.size;
+                document.getElementById('prop-text-size-val').textContent = elementData.size;
+            }
             document.getElementById('prop-text-color').value = elementData.color;
             const desktopTextColor = document.getElementById('desktop-text-color');
             if (desktopTextColor) desktopTextColor.value = elementData.color;
@@ -1372,18 +1376,25 @@ Object.assign(DesignEditor.prototype, {
             const scale = Math.max(0.15, Math.min(scaleX, scaleY));
 
             const oldFontSize = this.dragStart.fontSize || this.selectedElement.size || parseFloat(this.selectedElement.element.getAttribute('font-size') || '24');
-            const nextFontSize = Math.max(8, Math.min(240, oldFontSize * scale));
+            const rawFontSize = oldFontSize * scale;
+            const nextFontSize = typeof this.clampTextSize === 'function'
+                ? this.clampTextSize(rawFontSize)
+                : Math.max(8, rawFontSize);
             this.selectedElement.element.setAttribute('font-size', String(nextFontSize));
             this.selectedElement.size = nextFontSize;
-            const roundedSize = Math.round(nextFontSize);
-            const propSize = document.getElementById('prop-text-size');
-            const propSizeVal = document.getElementById('prop-text-size-val');
-            const topSizeLabel = document.getElementById('top-text-size-label');
-            const desktopSizeLabel = document.getElementById('desktop-text-size-label');
-            if (propSize) propSize.value = String(roundedSize);
-            if (propSizeVal) propSizeVal.textContent = String(roundedSize);
-            if (topSizeLabel) topSizeLabel.textContent = String(roundedSize);
-            if (desktopSizeLabel) desktopSizeLabel.textContent = String(roundedSize);
+            if (typeof this.syncTextSizeControls === 'function') {
+                this.syncTextSizeControls(nextFontSize);
+            } else {
+                const roundedSize = Math.round(nextFontSize);
+                const propSize = document.getElementById('prop-text-size');
+                const propSizeVal = document.getElementById('prop-text-size-val');
+                const topSizeLabel = document.getElementById('top-text-size-label');
+                const desktopSizeLabel = document.getElementById('desktop-text-size-label');
+                if (propSize) propSize.value = String(roundedSize);
+                if (propSizeVal) propSizeVal.textContent = String(roundedSize);
+                if (topSizeLabel) topSizeLabel.textContent = String(roundedSize);
+                if (desktopSizeLabel) desktopSizeLabel.textContent = String(roundedSize);
+            }
             const measuredBox = this.syncTextMetrics?.(this.selectedElement) || this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
             const fixedCorner = (() => {
                 switch (this.resizeHandle) {

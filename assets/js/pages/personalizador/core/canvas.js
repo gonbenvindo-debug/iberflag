@@ -394,25 +394,116 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
-    getInsertionScale() {
-        const bounds = this.getEditableBounds();
-        const shortSide = Math.max(120, Math.min(bounds.width, bounds.height));
-        const longSide = Math.max(bounds.width, bounds.height);
-        return { bounds, shortSide, longSide };
-    },
-
-    fitSizeIntoEditableBounds(width, height, maxRatio = 0.42) {
-        const bounds = this.getEditableBounds();
-        const maxWidth = Math.max(32, bounds.width * maxRatio);
-        const maxHeight = Math.max(32, bounds.height * maxRatio);
-
-        const baseWidth = Math.max(1, Number(width) || maxWidth);
-        const baseHeight = Math.max(1, Number(height) || maxHeight);
-        const ratio = Math.min(maxWidth / baseWidth, maxHeight / baseHeight, 1);
+    getEditorScaleMetrics(bounds = null) {
+        const rawBounds = bounds || this.getCanvasBounds?.() || this.getEditableBounds?.() || {
+            x: 0,
+            y: 0,
+            width: 800,
+            height: 600
+        };
+        const width = Math.max(1, Number(rawBounds.width) || 800);
+        const height = Math.max(1, Number(rawBounds.height) || 600);
+        const safeBounds = {
+            x: Number(rawBounds.x) || 0,
+            y: Number(rawBounds.y) || 0,
+            width,
+            height
+        };
 
         return {
-            width: baseWidth * ratio,
-            height: baseHeight * ratio
+            bounds: safeBounds,
+            shortSide: Math.max(1, Math.min(width, height)),
+            longSide: Math.max(width, height)
+        };
+    },
+
+    getInsertionScale() {
+        return this.getEditorScaleMetrics();
+    },
+
+    getMinimumElementSize(ratio = 0.012) {
+        const scale = this.getEditorScaleMetrics();
+        return Math.max(1, Math.min(24, scale.shortSide * ratio));
+    },
+
+    getDefaultSquareElementSize(ratio = 0.28) {
+        const scale = this.getEditorScaleMetrics();
+        return Math.round(Math.max(this.getMinimumElementSize(), scale.shortSide * ratio));
+    },
+
+    getTextSizeLimits() {
+        const scale = this.getEditorScaleMetrics();
+        return {
+            min: Math.max(2, Math.min(14, scale.shortSide * 0.012)),
+            max: Math.max(120, Math.ceil(scale.longSide * 1.25))
+        };
+    },
+
+    getTextSizeStep() {
+        const scale = this.getEditorScaleMetrics();
+        return Math.max(1, Math.round(scale.shortSide * 0.005));
+    },
+
+    clampTextSize(value) {
+        const limits = this.getTextSizeLimits();
+        const numeric = Number(value);
+        const safeValue = Number.isFinite(numeric) ? numeric : limits.min;
+        return Math.min(limits.max, Math.max(limits.min, safeValue));
+    },
+
+    getDefaultTextSize() {
+        const scale = this.getEditorScaleMetrics();
+        return Math.round(this.clampTextSize(scale.shortSide * 0.09));
+    },
+
+    syncTextSizeControls(size) {
+        const limits = this.getTextSizeLimits();
+        const clampedSize = this.clampTextSize(size);
+        const roundedSize = Math.round(clampedSize);
+        const min = Math.max(1, Math.floor(limits.min));
+        const max = Math.max(roundedSize, Math.ceil(limits.max));
+        const step = this.getTextSizeStep();
+        const range = document.getElementById('prop-text-size');
+        const labels = [
+            document.getElementById('prop-text-size-val'),
+            document.getElementById('top-text-size-label'),
+            document.getElementById('desktop-text-size-label')
+        ];
+
+        if (range) {
+            range.min = String(min);
+            range.max = String(max);
+            range.step = String(step);
+            range.value = String(roundedSize);
+        }
+
+        labels.forEach((label) => {
+            if (label) {
+                label.textContent = String(roundedSize);
+            }
+        });
+
+        return clampedSize;
+    },
+
+    fitSizeIntoEditableBounds(width, height, maxRatio = 0.42, options = {}) {
+        const scale = this.getEditorScaleMetrics();
+        const bounds = scale.bounds;
+        const ratioLimit = Math.max(0.01, Math.min(1, Number(maxRatio) || 0.42));
+        const maxWidth = Math.max(0.0001, bounds.width * ratioLimit);
+        const maxHeight = Math.max(0.0001, bounds.height * ratioLimit);
+
+        const fallbackSize = Math.min(maxWidth, maxHeight);
+        const baseWidth = Math.max(0.0001, Number(width) || fallbackSize);
+        const baseHeight = Math.max(0.0001, Number(height) || fallbackSize);
+        const fitRatio = Math.min(maxWidth / baseWidth, maxHeight / baseHeight);
+        const appliedRatio = options.allowUpscale === false
+            ? Math.min(fitRatio, 1)
+            : fitRatio;
+
+        return {
+            width: baseWidth * appliedRatio,
+            height: baseHeight * appliedRatio
         };
     },
 

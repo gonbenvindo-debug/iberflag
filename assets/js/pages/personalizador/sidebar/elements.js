@@ -1366,8 +1366,8 @@ Object.assign(DesignEditor.prototype, {
         if (textContent) textContent.addEventListener('input', (e) => this.updateTextContent(e.target.value));
         if (textFont) textFont.addEventListener('change', (e) => this.updateTextFont(e.target.value));
         if (textSize) textSize.addEventListener('input', (e) => {
-            this.updateTextSize(e.target.value);
-            document.getElementById('prop-text-size-val').textContent = e.target.value;
+            const nextSize = this.updateTextSize(e.target.value);
+            this.syncTextSizeControls?.(nextSize || e.target.value);
         });
         if (textColor) textColor.addEventListener('input', (e) => this.updateTextColor(e.target.value));
         if (textBold) textBold.addEventListener('click', () => this.toggleTextBold());

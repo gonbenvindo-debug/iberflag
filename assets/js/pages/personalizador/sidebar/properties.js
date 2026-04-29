@@ -25,14 +25,18 @@ Object.assign(DesignEditor.prototype, {
     
     updateTextSize(value) {
         if (this.selectedElement && this.selectedElement.type === 'text') {
-            this.selectedElement.element.setAttribute('font-size', value);
-            this.selectedElement.size = value;
+            const nextSize = this.clampTextSize?.(value) || Number(value) || 24;
+            this.selectedElement.element.setAttribute('font-size', String(nextSize));
+            this.selectedElement.size = nextSize;
             this.syncTextMetrics?.(this.selectedElement);
+            this.syncTextSizeControls?.(nextSize);
             
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
             this.renderQuickFontPopover?.();
+            return nextSize;
         }
+        return null;
     },
     
     updateTextColor(value) {
@@ -240,6 +244,10 @@ Object.assign(DesignEditor.prototype, {
             ? String(this.selectedElement.rawContent || this.selectedElement.content || this.selectedElement.element.textContent || '')
             : '';
 
+        if (hasText && typeof this.syncTextSizeControls === 'function') {
+            this.syncTextSizeControls(sizeValue);
+        }
+
         if (textContentInput) {
             textContentInput.value = rawContent;
             textContentInput.disabled = !hasText;
@@ -411,24 +419,15 @@ Object.assign(DesignEditor.prototype, {
 
         const textSize = document.getElementById('prop-text-size');
         const currentSize = Number(this.selectedElement.size || textSize?.value || 24);
-        const nextSize = Math.max(12, Math.min(120, Math.round(currentSize + delta)));
+        const step = this.getTextSizeStep?.() || 1;
+        const direction = Number(delta) < 0 ? -1 : 1;
+        const nextSize = Math.round(this.clampTextSize?.(currentSize + (direction * step)) || (currentSize + (direction * step)));
 
         if (textSize) {
             textSize.value = String(nextSize);
         }
         this.updateTextSize(String(nextSize));
-        const sizeValue = document.getElementById('prop-text-size-val');
-        if (sizeValue) {
-            sizeValue.textContent = String(nextSize);
-        }
-        const topSizeValue = document.getElementById('top-text-size-label');
-        if (topSizeValue) {
-            topSizeValue.textContent = String(nextSize);
-        }
-        const desktopSizeValue = document.getElementById('desktop-text-size-label');
-        if (desktopSizeValue) {
-            desktopSizeValue.textContent = String(nextSize);
-        }
+        this.syncTextSizeControls?.(nextSize);
         this.renderQuickFontPopover();
         this.updateContextualToolbar(this.selectedElement);
     },
