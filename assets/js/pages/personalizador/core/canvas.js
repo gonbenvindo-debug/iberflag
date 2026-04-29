@@ -4,26 +4,9 @@
 Object.assign(DesignEditor.prototype, {
 
     getEditableBounds() {
-        // Limites de edição em tempo real baseados no canvas-wrapper atual.
-        // Isto evita depender da área inicial e acompanha mudanças de viewport/layout.
-        const metrics = this.getCanvasViewportMetrics?.();
-        const wrapperRect = this.canvasWrapper?.getBoundingClientRect?.();
-        const vb = this.getCanvasViewBoxSize?.();
-
-        if (!metrics || !wrapperRect || !vb || !metrics.scale) {
-            return this.getCanvasBounds();
-        }
-
-        const left = (wrapperRect.left - metrics.rect.left - metrics.offsetX) / metrics.scale + (Number(vb.x) || 0);
-        const top = (wrapperRect.top - metrics.rect.top - metrics.offsetY) / metrics.scale + (Number(vb.y) || 0);
-        const width = wrapperRect.width / metrics.scale;
-        const height = wrapperRect.height / metrics.scale;
-
-        if (![left, top, width, height].every(Number.isFinite) || width <= 0 || height <= 0) {
-            return this.getCanvasBounds();
-        }
-
-        return { x: left, y: top, width, height };
+        // Bounds stay in SVG coordinates. The visible limits then scale with
+        // the design canvas transform instead of the fixed viewport wrapper.
+        return this.getCanvasBounds();
     },
 
     getCanvasBounds() {
@@ -91,6 +74,12 @@ Object.assign(DesignEditor.prototype, {
             this.canvasWrapper.style.height = `${nextHeight}px`;
         }
         this.canvasWrapper.style.transform = '';
+        this.canvasWrapper.style.overflow = 'visible';
+
+        if (this.canvas?.style) {
+            this.canvas.style.overflow = 'visible';
+            this.canvas.setAttribute('overflow', 'visible');
+        }
 
         const checkerSize = 20;
         this.canvasWrapper.style.setProperty('--checker-size', `${checkerSize.toFixed(2)}px`);
@@ -138,8 +127,11 @@ Object.assign(DesignEditor.prototype, {
         const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
 
         this.canvasWrapper.style.transform = '';
+        this.canvasWrapper.style.overflow = 'visible';
 
         if (this.canvas?.style) {
+            this.canvas.style.overflow = 'visible';
+            this.canvas.setAttribute('overflow', 'visible');
             this.canvas.style.transformOrigin = 'center center';
             this.canvas.style.transformBox = 'fill-box';
             this.canvas.style.willChange = 'transform';

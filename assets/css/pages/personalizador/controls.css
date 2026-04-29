@@ -762,6 +762,16 @@ body.app-page {
     overflow: hidden !important;
 }
 
+#canvas-wrapper,
+#design-canvas {
+    overflow: visible !important;
+}
+
+#design-canvas {
+    transform-origin: center center;
+    transform-box: fill-box;
+}
+
 #canvas-stage.is-camera-panning,
 body.is-camera-panning #canvas-stage {
     cursor: grabbing !important;
@@ -2112,7 +2122,7 @@ body.is-camera-panning #canvas-stage {
         min-height: 0 !important;
         max-height: 100% !important;
         padding: 0 !important;
-        gap: 18px;
+        gap: 10px;
         border: 0 !important;
         border-radius: 0 !important;
         background: #ffffff !important;
@@ -2127,13 +2137,11 @@ body.is-camera-panning #canvas-stage {
     #editor-sidebar-left #elements-panel {
         gap: 12px;
         width: 100%;
-        min-height: 0 !important;
-        max-height: 100% !important;
-        overflow-x: hidden !important;
-        overflow-y: auto !important;
-        overscroll-behavior: contain;
+        flex: 0 0 auto !important;
+        min-height: auto !important;
+        max-height: none !important;
+        overflow: visible !important;
         padding: 0 !important;
-        scrollbar-gutter: stable;
         background: #ffffff !important;
     }
 
@@ -2164,6 +2172,10 @@ body.is-camera-panning #canvas-stage {
         border-radius: 0;
         background: #ffffff;
         box-shadow: none;
+    }
+
+    #editor-sidebar-left .elements-group--tools {
+        flex: 0 0 auto;
     }
 
     #editor-sidebar-left .elements-tools-grid {
@@ -2232,16 +2244,33 @@ body.is-camera-panning #canvas-stage {
     }
 
     #editor-sidebar-left .elements-group--layers {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
         min-height: 0;
-        padding-top: 14px;
+        padding-top: 0;
         border-top: 0;
     }
 
+    #editor-sidebar-left #layers-panel {
+        flex: 1 1 auto !important;
+        min-height: 0 !important;
+        overflow: hidden !important;
+        padding: 0 !important;
+        background: #ffffff !important;
+    }
+
     #editor-sidebar-left #layers-list {
+        flex: 1 1 auto;
         gap: 0.5rem;
         width: 100%;
         min-height: 0;
+        max-height: 100%;
         overflow-x: hidden;
+        overflow-y: auto !important;
+        padding-right: 0.35rem;
+        scrollbar-gutter: stable;
+        overscroll-behavior: contain;
     }
 
     #editor-sidebar-left .layer-item {
