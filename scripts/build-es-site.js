@@ -73,6 +73,8 @@ const EXTRA_TEXT_REPLACEMENTS = [
     ['Produção rápida', 'Producción rápida'],
     ['Fluxo preparado para avançar sem troca de emails.', 'Flujo preparado para avanzar sin intercambio de emails.'],
     ['Personalização online', 'Personalización online'],
+    ['Editor online', 'Editor online'],
+    ['Apoio antes de produzir', 'Apoyo antes de producir'],
     ['Edita o design e confirma o resultado antes de encomendar.', 'Edite el diseño y confirme el resultado antes de pedir.'],
     ['Edite o design e confirme o resultado antes de encomendar.', 'Edite el diseño y confirme el resultado antes de pedir.'],
     ['Apoio na arte-final', 'Apoyo en el arte final'],
@@ -83,6 +85,10 @@ const EXTRA_TEXT_REPLACEMENTS = [
     ['O que recebe', 'Lo que recibe'],
     ['Como funciona', 'Cómo funciona'],
     ['Detalhes técnicos', 'Detalles técnicos'],
+    ['IVA calculado no checkout', 'IVA calculado en el checkout'],
+    ['Personalização incluída', 'Personalización incluida'],
+    ['itens incluídos', 'artículos incluidos'],
+    ['3 passos', '3 pasos'],
     ['Dimensão', 'Dimensión'],
     ['Categoria', 'Categoría'],
     ['Formato', 'Formato'],
@@ -745,6 +751,10 @@ function applyHtmlFallbackTranslations(html) {
     return String(html || '')
         .replace(/(\d+)\s+produtos/g, '$1 productos')
         .replace(/(\d+)\s+produto(?!s)/g, '$1 producto')
+        .replace(/IVA calculado no checkout/g, 'IVA calculado en el checkout')
+        .replace(/Personalização incluída/g, 'Personalización incluida')
+        .replace(/(\d+)\s+itens incluídos/g, '$1 artículos incluidos')
+        .replace(/(\d+)\s+passos/g, '$1 pasos')
         .replace(/Publicidade física/g, 'Publicidad física')
         .replace(/tratada como marca\./g, 'tratada como marca.')
         .replace(/Flybanners, roll-ups e formatos promocionais com direção visual premium, operação rápida e\s+presença forte no momento em que o cliente entra no espaço\./g, 'Fly banners, roll ups y formatos promocionales con dirección visual premium, operación rápida y presencia fuerte cuando el cliente entra en el espacio.')

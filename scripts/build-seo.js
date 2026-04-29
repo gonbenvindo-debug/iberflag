@@ -459,7 +459,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260428logo">
   <link rel="shortcut icon" href="/favicon.svg?v=20260428logo">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260428product-mobile2">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429product-shop2">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -783,7 +783,8 @@ function getProductIncludedItems(product) {
 function getProductBuyingNotes() {
     return [
         { title: 'Produção rápida', icon: 'clock' },
-        { title: 'Personalização online', icon: 'pencil' },
+        { title: 'Editor online', icon: 'pencil-ruler' },
+        { title: 'Apoio antes de produzir', icon: 'message-circle' },
         { title: 'Entrega em Portugal e Espanha', icon: 'truck' }
     ];
 }
@@ -803,25 +804,24 @@ function getProductTechnicalRows(product) {
 }
 
 function renderProductBuyingNotes(product) {
-    return `<div class="product-buying-notes mt-4 grid grid-cols-1 gap-2 text-sm text-slate-700 sm:flex sm:flex-wrap sm:gap-x-4 sm:gap-y-2">
+    return `<div class="product-buying-notes grid grid-cols-1 gap-2 text-sm text-slate-700 sm:grid-cols-2">
               ${getProductBuyingNotes(product).map((note) => `
-                <div class="product-buying-note flex min-w-0 items-start gap-2 sm:inline-flex sm:items-center">
-                  <i data-lucide="${escapeHtml(note.icon)}" class="mt-0.5 h-4 w-4 flex-none text-blue-600 sm:mt-0"></i>
-                  <span class="min-w-0 font-medium leading-5">${escapeHtml(note.title)}</span>
+                <div class="product-buying-note flex min-w-0 items-center gap-2 rounded-md bg-slate-50 px-3 py-2">
+                  <i data-lucide="${escapeHtml(note.icon)}" class="h-4 w-4 flex-none text-slate-700"></i>
+                  <span class="min-w-0 text-sm font-medium leading-5 text-slate-700">${escapeHtml(note.title)}</span>
                 </div>
               `).join('')}
             </div>`;
 }
 
-function renderProductMobilePanel(title, meta, body, open = false) {
-    return `<details class="product-mobile-panel"${open ? ' open' : ''}>
-              <summary class="product-mobile-panel-summary">
-                <span class="product-mobile-panel-copy">
-                  <span class="product-mobile-panel-heading">${escapeHtml(title)}</span>
-                  <span class="product-mobile-panel-meta">${escapeHtml(meta)}</span>
-                </span>
+function renderProductInfoPanel(title, summary, body, open = false) {
+    return `<details class="product-info-panel border-t border-slate-200 py-4 first:border-t-0"${open ? ' open' : ''}>
+              <summary class="product-info-summary flex cursor-pointer list-none items-center justify-between gap-4 text-sm font-semibold text-slate-900">
+                <span class="min-w-0">${escapeHtml(title)}</span>
+                <span class="product-info-summary-meta ml-auto hidden min-w-0 text-right text-xs font-medium text-slate-500 sm:block">${escapeHtml(summary)}</span>
+                <i data-lucide="chevron-down" class="product-info-chevron h-4 w-4 flex-none text-slate-500"></i>
               </summary>
-              <div class="product-mobile-panel-body">
+              <div class="product-info-panel-body pt-4">
                 ${body}
               </div>
             </details>`;
@@ -831,48 +831,48 @@ function renderProductDecisionBlocks(product) {
     const includedItems = getProductIncludedItems(product);
     const technicalRows = getProductTechnicalRows(product);
     const includedMarkup = includedItems.map((item) => `
-                <li class="product-detail-list-row flex min-w-0 gap-2.5 sm:gap-3">
-                  <i data-lucide="check" class="mt-1 h-4 w-4 flex-none text-blue-600"></i>
-                  <span class="min-w-0">${escapeHtml(item)}</span>
+                <li class="product-detail-list-row flex min-w-0 gap-2.5">
+                  <i data-lucide="check" class="mt-0.5 h-4 w-4 flex-none text-slate-900"></i>
+                  <span class="min-w-0 text-sm leading-6 text-slate-700">${escapeHtml(item)}</span>
                 </li>
               `).join('');
     const processMarkup = `
-              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span class="min-w-0">Personalize online ou envie o design.</span></li>
-              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span class="min-w-0">Confirme opções, preço e pré-visualização.</span></li>
-              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span class="min-w-0">Finalize a encomenda e a produção fica encaminhada.</span></li>
+              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">1</span><span class="min-w-0 text-sm leading-6 text-slate-700">Personalize online ou envie o design.</span></li>
+              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">2</span><span class="min-w-0 text-sm leading-6 text-slate-700">Confirme opções, preço e pré-visualização.</span></li>
+              <li class="product-detail-list-row flex min-w-0 items-start gap-3"><span class="flex h-6 w-6 flex-none items-center justify-center rounded-full bg-slate-900 text-xs font-semibold text-white">3</span><span class="min-w-0 text-sm leading-6 text-slate-700">Finalize a encomenda e a produção fica encaminhada.</span></li>
             `;
     const technicalMarkup = technicalRows.map((row) => `
-                <div class="grid grid-cols-1 gap-1 py-2.5 first:pt-0 last:pb-0 sm:flex sm:items-start sm:justify-between sm:gap-4">
-                  <dt class="text-slate-500">${escapeHtml(row.label)}</dt>
-                  <dd class="min-w-0 text-left font-medium text-slate-900 sm:max-w-[58%] sm:text-right">${escapeHtml(row.value)}</dd>
+                <div class="grid grid-cols-[minmax(0,0.9fr),minmax(0,1.1fr)] gap-3 py-2.5 first:pt-0 last:pb-0">
+                  <dt class="text-sm text-slate-500">${escapeHtml(row.label)}</dt>
+                  <dd class="min-w-0 text-right text-sm font-medium text-slate-900">${escapeHtml(row.value)}</dd>
                 </div>
               `).join('');
 
-        return `<div class="product-mobile-decision md:hidden">
-          ${renderProductMobilePanel('O que recebe', `${includedItems.length} itens incluídos`, `<ul class="space-y-2.5 text-sm leading-6 text-slate-700">${includedMarkup}</ul>`)}
-          ${renderProductMobilePanel('Como funciona', '3 passos até encomendar', `<ol class="space-y-2.5 text-sm leading-6 text-slate-700">${processMarkup}</ol>`)}
-          ${renderProductMobilePanel('Detalhes técnicos', extractProductDimension(product), `<dl class="divide-y divide-slate-100 text-sm">${technicalMarkup}</dl>`)}
-        </div>
-        <div class="hidden md:grid gap-3 sm:gap-4 lg:grid-cols-3">
-          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
-            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">O que recebe</p>
-            <ul class="mt-3 space-y-2.5 text-sm leading-6 text-slate-700 sm:mt-4 sm:space-y-3">
-              ${includedMarkup}
-            </ul>
-          </section>
-          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
-            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Como funciona</p>
-            <ol class="mt-3 space-y-2.5 text-sm leading-6 text-slate-700 sm:mt-4 sm:space-y-3">
-              ${processMarkup}
-            </ol>
-          </section>
-          <section class="rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-5">
-            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Detalhes técnicos</p>
-            <dl class="mt-3 divide-y divide-slate-100 text-sm sm:mt-4">
-              ${technicalMarkup}
-            </dl>
-          </section>
+        return `<div class="product-info-panels rounded-lg border border-slate-200 bg-white px-4 sm:px-5">
+          ${renderProductInfoPanel('O que recebe', `${includedItems.length} itens incluídos`, `<ul class="space-y-2.5">${includedMarkup}</ul>`, true)}
+          ${renderProductInfoPanel('Como funciona', '3 passos', `<ol class="space-y-2.5">${processMarkup}</ol>`)}
+          ${renderProductInfoPanel('Detalhes técnicos', extractProductDimension(product), `<dl class="divide-y divide-slate-100">${technicalMarkup}</dl>`)}
         </div>`;
+}
+
+function renderRelatedProductCards(products) {
+    return products.map((candidate) => `
+            <article class="product-related-card min-w-0 overflow-hidden rounded-lg border border-slate-200 bg-white">
+              <a href="${candidate.canonicalPath}" class="block bg-slate-50">
+                <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] w-full object-contain p-4" loading="lazy" width="720" height="540" decoding="async">
+              </a>
+              <div class="p-4">
+                <p class="text-xs font-medium uppercase text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
+                <h3 class="mt-1.5 min-h-[2.5rem] text-sm font-semibold leading-5 text-slate-900"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
+                <div class="mt-4 flex items-center justify-between gap-3">
+                  <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
+                  <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex min-h-9 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-semibold text-white transition hover:bg-slate-800">
+                    Ver
+                  </a>
+                </div>
+              </div>
+            </article>
+          `).join('');
 }
 
 function renderProductPage(product, categoryEntries, productEntries) {
@@ -925,12 +925,12 @@ function renderProductPage(product, categoryEntries, productEntries) {
         imageUrl: product.imageUrl,
         structuredData
     })}
-<body class="bg-slate-50 text-slate-900" data-analytics-event="view_product" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category-slug="${escapeHtml(product.categorySlug)}">
+<body class="bg-white text-slate-900" data-analytics-event="view_product" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category-slug="${escapeHtml(product.categorySlug)}">
   ${renderHeader(product.canonicalPath)}
   <main>
     <div class="border-b border-slate-200 bg-white">
-      <div class="mx-auto max-w-7xl px-4 pb-2 pt-3 text-sm text-slate-500 sm:px-6 sm:py-4 lg:px-8">
-        <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="product-mobile-back inline-flex items-center gap-2 font-medium text-slate-600 md:hidden">
+      <div class="mx-auto max-w-7xl px-4 py-3 text-sm text-slate-500 sm:px-6 lg:px-8">
+        <a href="${SiteRoutes.buildCategoryPath(product.categorySlug)}" class="product-mobile-back inline-flex min-h-8 items-center gap-2 text-sm font-medium text-slate-600 md:hidden">
           <span aria-hidden="true">&larr;</span>
           <span>${escapeHtml(product.categoryLabel)}</span>
         </a>
@@ -946,48 +946,56 @@ function renderProductPage(product, categoryEntries, productEntries) {
       </div>
     </div>
     <section class="bg-white">
-      <div class="mx-auto max-w-7xl px-4 pb-8 pt-0 sm:px-6 sm:pt-3 lg:px-8 lg:py-14">
-        <div class="product-detail-hero grid gap-6 sm:gap-8 lg:grid-cols-[minmax(0,1.04fr),minmax(360px,0.96fr)]">
-          <div class="product-hero-media overflow-hidden rounded-2xl border border-slate-200 bg-white p-2.5 sm:rounded-[1.5rem] sm:p-4">
-            <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="aspect-[4/3] h-full w-full rounded-xl bg-white object-contain p-3 sm:rounded-2xl sm:p-6" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
-          </div>
-          <div class="product-hero-copy flex flex-col gap-5 sm:gap-6">
-            <div class="product-summary-intro-block">
-              <p class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-blue-600">${escapeHtml(product.categoryLabel)}</p>
-              <h1 class="product-page-title mt-3 text-3xl font-semibold leading-tight tracking-tight text-slate-900 sm:text-4xl lg:text-5xl">${escapeHtml(product.nome)}</h1>
-              <p class="product-summary-intro mt-4 text-[0.95rem] leading-7 text-slate-600 sm:text-base">${escapeHtml(decisionContent.lead || product.display_description || product.seo_description)}</p>
+      <div class="mx-auto max-w-7xl px-4 py-5 sm:px-6 sm:py-8 lg:px-8 lg:py-12">
+        <div class="product-detail-hero grid gap-6 lg:grid-cols-[minmax(0,1fr),minmax(400px,480px)] lg:items-start lg:gap-10">
+          <div class="product-hero-media min-w-0 lg:sticky lg:top-24">
+            <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-5">
+              <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="product-main-image mx-auto aspect-[4/3] w-full rounded-md bg-white object-contain p-4 sm:p-8" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
             </div>
-            <div class="product-summary-card rounded-xl border border-slate-200 bg-white p-4 sm:rounded-2xl sm:p-6">
-              <div class="product-purchase-summary flex flex-col gap-4 border-b border-slate-100 pb-5 sm:flex-row sm:items-end sm:justify-between">
-                <div>
-                  <div class="text-[0.68rem] font-semibold uppercase tracking-[0.22em] text-slate-500">Preço base</div>
-                  <div class="mt-2 flex flex-wrap items-end gap-3">
-                    <div class="text-3xl font-semibold tracking-tight text-slate-900 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
+          </div>
+          <div class="product-hero-copy min-w-0">
+            <div class="product-summary-intro-block border-b border-slate-200 pb-5">
+              <p class="text-xs font-semibold uppercase text-blue-600">${escapeHtml(product.categoryLabel)}</p>
+              <h1 class="product-page-title mt-2 text-[2rem] font-semibold leading-tight text-slate-950 sm:text-4xl lg:text-[2.6rem]">${escapeHtml(product.nome)}</h1>
+              <p class="product-summary-intro mt-3 text-base leading-7 text-slate-600">${escapeHtml(decisionContent.lead || product.display_description || product.seo_description)}</p>
+            </div>
+            <div class="product-summary-card mt-5 rounded-lg border border-slate-200 bg-white p-4 sm:p-5">
+              <div class="product-purchase-summary grid gap-4">
+                <div class="flex items-end justify-between gap-4">
+                  <div>
+                    <div class="text-xs font-semibold uppercase text-slate-500">Preço base</div>
+                    <div class="mt-1 text-4xl font-semibold leading-none text-slate-950 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
+                  </div>
+                  <div class="hidden text-right text-xs leading-5 text-slate-500 sm:block">
+                    IVA calculado no checkout<br>
+                    Personalização incluída
                   </div>
                 </div>
-                <div class="w-full sm:w-auto">
-                  <label for="product-quantity-${escapeHtml(product.id)}" class="mb-1.5 block text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Quantidade</label>
-                  <div class="product-quantity-row flex w-full items-stretch gap-2 sm:w-auto">
-                    <input id="product-quantity-${escapeHtml(product.id)}" type="number" min="1" max="999" step="1" value="1" inputmode="numeric" data-product-quantity-input="${escapeHtml(product.id)}" class="product-quantity-input h-11 w-24 rounded-xl border border-slate-200 bg-white px-3 text-center text-sm font-semibold text-slate-900 outline-none transition focus:border-slate-400 focus:ring-2 focus:ring-slate-200" aria-label="Quantidade">
-                    <a href="${product.personalizePath}" data-personalize-link="true" data-product-quantity-link="${escapeHtml(product.id)}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="product-personalize-button inline-flex min-h-11 flex-1 items-center justify-center gap-2 rounded-xl bg-slate-900 px-4 py-3 text-sm font-semibold text-white transition hover:bg-slate-800 sm:flex-none">
-                      <span>Personalizar produto</span>
+                <div>
+                  <label for="product-quantity-${escapeHtml(product.id)}" class="mb-2 block text-xs font-semibold uppercase text-slate-500">Quantidade</label>
+                  <div class="product-quantity-row grid grid-cols-[5.25rem,minmax(0,1fr)] items-stretch gap-2">
+                    <input id="product-quantity-${escapeHtml(product.id)}" type="number" min="1" max="999" step="1" value="1" inputmode="numeric" data-product-quantity-input="${escapeHtml(product.id)}" class="product-quantity-input h-12 w-full rounded-md border border-slate-300 bg-white px-3 text-center text-base font-semibold text-slate-900 outline-none transition focus:border-slate-500 focus:ring-2 focus:ring-slate-200" aria-label="Quantidade">
+                    <a href="${product.personalizePath}" data-personalize-link="true" data-product-quantity-link="${escapeHtml(product.id)}" ${product.categorySlug === 'fly-banner' ? 'data-flybanner-personalize-trigger="true"' : ''} data-product-id="${escapeHtml(product.id)}" data-product-name="${escapeHtml(product.nome)}" data-product-category="${escapeHtml(product.categorySlug)}" data-analytics-event="start_personalization" data-analytics-product-id="${escapeHtml(product.id)}" data-analytics-category-slug="${escapeHtml(product.categorySlug)}" class="product-personalize-button inline-flex min-h-12 min-w-0 items-center justify-center gap-2 rounded-md bg-slate-900 px-4 text-sm font-semibold text-white transition hover:bg-slate-800">
+                      <span class="min-w-0 truncate">Personalizar produto</span>
                       <span aria-hidden="true">&rarr;</span>
                     </a>
-                  </div>
                 </div>
               </div>
-              ${renderProductBuyingNotes(product)}
-              <div class="mt-5 border-t border-slate-100 pt-5">
-                <p class="text-[0.68rem] font-semibold uppercase tracking-[0.18em] text-slate-500">Ideal para</p>
-                <ul class="product-use-cases mt-3 flex flex-wrap gap-2">
-                  ${getProductUseCases(product).map((useCase) => `<li class="product-use-case max-w-full break-words rounded-full border border-slate-200 bg-slate-50 px-3 py-1.5 text-[0.72rem] font-semibold leading-5 text-slate-700 sm:text-xs">${escapeHtml(useCase)}</li>`).join('')}
-                </ul>
+              <div class="mt-4 border-t border-slate-100 pt-4">
+                ${renderProductBuyingNotes(product)}
               </div>
             </div>
+            </div>
+            <div class="mt-5">
+              <p class="text-xs font-semibold uppercase text-slate-500">Ideal para</p>
+              <ul class="product-use-cases mt-2 flex flex-wrap gap-2">
+                ${getProductUseCases(product).map((useCase) => `<li class="product-use-case max-w-full rounded-md bg-slate-100 px-3 py-1.5 text-xs font-semibold leading-5 text-slate-700">${escapeHtml(useCase)}</li>`).join('')}
+              </ul>
+            </div>
+            <div class="mt-5">
+              ${renderProductDecisionBlocks(product)}
+            </div>
           </div>
-        </div>
-        <div class="mt-6 sm:mt-8">
-          ${renderProductDecisionBlocks(product)}
         </div>
       </div>
     </section>
@@ -995,7 +1003,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
       <div class="mx-auto max-w-7xl px-4 py-10 sm:px-6 lg:px-8">
         <div class="product-related-intro flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div>
-            <p class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Compare antes de decidir</p>
+            <p class="text-xs font-semibold uppercase text-slate-500">Compare antes de decidir</p>
             <h2 class="mt-2 text-2xl font-semibold text-slate-900">${escapeHtml(relatedHeading)}</h2>
             <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">${escapeHtml(relatedSummary)}</p>
           </div>
@@ -1004,30 +1012,13 @@ function renderProductPage(product, categoryEntries, productEntries) {
             <span aria-hidden="true">&rarr;</span>
           </a>
         </div>
-        <div class="product-related-track mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
-          ${fallbackProducts.map((candidate) => `
-            <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
-              <a href="${candidate.canonicalPath}" class="block">
-                <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
-              </a>
-              <div class="p-4 sm:p-5">
-                <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
-                <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
-                <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
-                  <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 sm:text-sm">
-                    <span>Ver produto</span>
-                    <span aria-hidden="true">&rarr;</span>
-                  </a>
-                </div>
-              </div>
-            </article>
-          `).join('')}
+        <div class="product-related-track mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-4">
+          ${renderRelatedProductCards(fallbackProducts)}
         </div>
-        <div class="mt-12 border-t border-slate-200 pt-10">
+        <div class="mt-10 border-t border-slate-200 pt-8">
           <div class="product-related-intro flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
             <div>
-              <p class="text-[0.68rem] font-semibold uppercase tracking-[0.24em] text-slate-500">Ver mais</p>
+              <p class="text-xs font-semibold uppercase text-slate-500">Ver mais</p>
               <h2 class="mt-2 text-2xl font-semibold text-slate-900">Outras opções que podem interessar</h2>
               <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-600">Uma seleção rápida de produtos para explorar formatos diferentes sem voltar ao catálogo inteiro.</p>
             </div>
@@ -1036,25 +1027,8 @@ function renderProductPage(product, categoryEntries, productEntries) {
               <span aria-hidden="true">&rarr;</span>
             </a>
           </div>
-          <div class="product-related-track mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 sm:gap-5 xl:grid-cols-4">
-            ${shuffledSuggestions.map((candidate) => `
-              <article class="overflow-hidden rounded-2xl border border-slate-200 bg-white transition hover:border-slate-300">
-                <a href="${candidate.canonicalPath}" class="block">
-                  <img src="${escapeHtml(candidate.imageUrl)}" alt="${escapeHtml(candidate.nome)}" class="aspect-[4/3] h-full w-full bg-white object-contain p-3 sm:p-5" loading="lazy" width="720" height="540" decoding="async">
-                </a>
-                <div class="p-4 sm:p-5">
-                  <p class="text-[0.68rem] font-semibold uppercase tracking-[0.2em] text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
-                  <h3 class="mt-2 text-sm font-semibold leading-5 text-slate-900 sm:text-base"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
-                  <div class="mt-4 flex flex-col items-start gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
-                    <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex items-center gap-1 rounded-full bg-slate-900 px-3 py-2 text-xs font-semibold text-white transition hover:bg-slate-800 sm:text-sm">
-                      <span>Ver produto</span>
-                      <span aria-hidden="true">&rarr;</span>
-                    </a>
-                  </div>
-                </div>
-              </article>
-            `).join('')}
+          <div class="product-related-track mt-6 grid grid-cols-1 gap-4 sm:mt-8 sm:grid-cols-2 lg:grid-cols-4">
+            ${renderRelatedProductCards(shuffledSuggestions)}
           </div>
         </div>
       </div>
