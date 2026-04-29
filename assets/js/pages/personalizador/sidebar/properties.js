@@ -1459,8 +1459,8 @@ Object.assign(DesignEditor.prototype, {
                 };
             }
 
-            const fallbackWidth = this.initialCanvasSize.width * this.zoom;
-            const fallbackHeight = this.initialCanvasSize.height * this.zoom;
+            const fallbackWidth = this.initialCanvasSize.width;
+            const fallbackHeight = this.initialCanvasSize.height;
             this.syncCanvasWrapperToStage?.(fallbackWidth, fallbackHeight);
             if (this.selectedElement) {
                 this.requestHandlesRefresh?.();
@@ -1501,11 +1501,8 @@ Object.assign(DesignEditor.prototype, {
             this._lastViewportViewBoxHeight = viewBoxHeight;
         }
 
-        // Apply zoom to base size
-        const scaledWidth = this.initialCanvasSize.width * this.zoom;
-        const scaledHeight = this.initialCanvasSize.height * this.zoom;
-
-        this.syncCanvasWrapperToStage?.(scaledWidth, scaledHeight);
+        // O wrapper fica fixo; o zoom e pan aplicam-se ao SVG dentro dele.
+        this.syncCanvasWrapperToStage?.(this.initialCanvasSize.width, this.initialCanvasSize.height);
         this.syncWorkspaceBounds?.();
 
         if (
@@ -1527,14 +1524,17 @@ Object.assign(DesignEditor.prototype, {
 
     setZoom(newZoom, options = {}) {
         this.hideGuideLines?.();
+        const previousZoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
         const nextZoom = Math.max(0.5, Math.min(5, Number(newZoom) || (Number(this.zoom) || 1)));
         const hasAnchor = Number.isFinite(Number(options?.clientX)) && Number.isFinite(Number(options?.clientY));
 
         let anchorData = null;
         if (hasAnchor && this.canvasStage) {
             const stageRect = this.canvasStage.getBoundingClientRect();
-            const wrapperWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
-            const wrapperHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const wrapperBaseWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
+            const wrapperBaseHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const wrapperWidth = wrapperBaseWidth * previousZoom;
+            const wrapperHeight = wrapperBaseHeight * previousZoom;
             const offsetX = Number(this.cameraOffset?.x) || 0;
             const offsetY = Number(this.cameraOffset?.y) || 0;
             const stageLocalX = Number(options.clientX) - stageRect.left;
@@ -1554,8 +1554,10 @@ Object.assign(DesignEditor.prototype, {
         this.syncCanvasViewport();
 
         if (anchorData && this.canvasStage) {
-            const nextWrapperWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
-            const nextWrapperHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const nextBaseWidth = Math.max(1, parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1);
+            const nextBaseHeight = Math.max(1, parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1);
+            const nextWrapperWidth = nextBaseWidth * nextZoom;
+            const nextWrapperHeight = nextBaseHeight * nextZoom;
             const nextOffsetX = anchorData.stageLocalX
                 - ((anchorData.stageRect.width - nextWrapperWidth) / 2)
                 - (anchorData.ratioX * nextWrapperWidth);

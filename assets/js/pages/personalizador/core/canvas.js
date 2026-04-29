@@ -90,9 +90,13 @@ Object.assign(DesignEditor.prototype, {
             this.canvasWrapper.style.width = `${nextWidth}px`;
             this.canvasWrapper.style.height = `${nextHeight}px`;
         }
-        const checkerSize = Math.max(12, Math.min(56, (Number(this.zoom) || 1) * 20));
+        this.canvasWrapper.style.transform = '';
+
+        const checkerSize = 20;
         this.canvasWrapper.style.setProperty('--checker-size', `${checkerSize.toFixed(2)}px`);
-        this.clampCameraOffset?.(nextWidth, nextHeight);
+
+        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
+        this.clampCameraOffset?.(nextWidth * zoom, nextHeight * zoom);
         this.applyCameraTransform?.();
         return true;
     },
@@ -106,14 +110,17 @@ Object.assign(DesignEditor.prototype, {
         const stageRect = this.canvasStage.getBoundingClientRect();
         const stageWidth = Number(stageRect?.width) || this.canvasStage.clientWidth || 0;
         const stageHeight = Number(stageRect?.height) || this.canvasStage.clientHeight || 0;
-        const currentWrapperWidth = Math.max(
+        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
+        const baseWrapperWidth = Math.max(
             1,
-            Number(wrapperWidth) || parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1
+            parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1
         );
-        const currentWrapperHeight = Math.max(
+        const baseWrapperHeight = Math.max(
             1,
-            Number(wrapperHeight) || parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1
+            parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1
         );
+        const currentWrapperWidth = Math.max(1, Number(wrapperWidth) || (baseWrapperWidth * zoom));
+        const currentWrapperHeight = Math.max(1, Number(wrapperHeight) || (baseWrapperHeight * zoom));
 
         const maxX = Math.max(0, (currentWrapperWidth - stageWidth) / 2);
         const maxY = Math.max(0, (currentWrapperHeight - stageHeight) / 2);
@@ -128,7 +135,16 @@ Object.assign(DesignEditor.prototype, {
         if (!this.canvasWrapper) return;
         const offsetX = Number(this.cameraOffset?.x) || 0;
         const offsetY = Number(this.cameraOffset?.y) || 0;
-        this.canvasWrapper.style.transform = `translate3d(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px, 0)`;
+        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
+
+        this.canvasWrapper.style.transform = '';
+
+        if (this.canvas?.style) {
+            this.canvas.style.transformOrigin = 'center center';
+            this.canvas.style.transformBox = 'fill-box';
+            this.canvas.style.willChange = 'transform';
+            this.canvas.style.transform = `translate3d(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px, 0) scale(${zoom.toFixed(4)})`;
+        }
     },
 
     setCameraOffset(x, y, options = {}) {
