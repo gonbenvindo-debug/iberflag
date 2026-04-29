@@ -36,13 +36,11 @@
         }
 
         .canvas-container {
-            background: #f8f9fa;
-            background-image:
-                linear-gradient(rgba(0, 0, 0, .05) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(0, 0, 0, .05) 1px, transparent 1px);
-            background-size: 20px 20px;
-            border-radius: 16px;
-            border: 1px solid var(--panel-border);
+            background: transparent;
+            background-image: none;
+            background-size: auto;
+            border-radius: 0;
+            border: 0;
             box-shadow: var(--panel-shadow);
         }
 
@@ -127,8 +125,8 @@
         }
 
         .sidebar-shell {
-            background: #ffffff;
-            border: 1px solid var(--panel-border);
+            background: transparent;
+            border: 0;
             border-radius: 0;
             box-shadow: none;
             backdrop-filter: none;
@@ -145,7 +143,7 @@
         }
 
         .sidebar-section+.sidebar-section {
-            border-top: 1px solid var(--panel-border);
+            border-top: 0;
         }
 
         #elements-panel,
@@ -160,10 +158,11 @@
         #elements-panel {
             display: flex;
             flex-direction: column;
-            overflow: visible;
+            overflow-y: auto;
+            overflow-x: hidden;
             gap: 1rem;
             justify-content: flex-start;
-            flex: 0 0 auto;
+            flex: 1 1 auto;
         }
 
         #layers-panel {

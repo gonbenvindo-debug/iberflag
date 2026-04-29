@@ -301,21 +301,37 @@ body.app-page {
 
 .editor-body-layout {
     background: #f7f8fa !important;
-    gap: 12px !important;
-    padding: 12px !important;
+    gap: 0 !important;
+    padding: 0 !important;
+    isolation: isolate;
 }
 
 .editor-sidebar-left,
 .editor-sidebar-right {
-    background: var(--iber-surface) !important;
-    border: 1px solid var(--iber-border) !important;
-    border-radius: 12px !important;
+    background: transparent !important;
+    border: 0 !important;
+    border-radius: 0 !important;
     box-shadow: none !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
 }
 
 .sidebar-shell,
 .sidebar-section {
     background: transparent !important;
+}
+
+.sidebar-shell {
+    border: 0 !important;
+    box-shadow: none !important;
+    min-height: 0 !important;
+    max-height: 100% !important;
+    overflow: hidden !important;
+}
+
+.sidebar-section+.sidebar-section {
+    border-top: 0 !important;
 }
 
 .drawer-grip {
@@ -701,22 +717,25 @@ body.app-page {
 }
 
 .editor-main {
-    border-radius: 12px !important;
-    background: #fff !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    min-height: 0 !important;
+    min-width: 0 !important;
 }
 
 .canvas-container {
-    border: 1px solid var(--iber-border) !important;
-    border-radius: 10px !important;
-    background: #fff !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    background-image: none !important;
     box-shadow: none !important;
 }
 
 #canvas-stage {
     position: relative;
-    border: 1px solid var(--iber-border) !important;
-    border-radius: 10px !important;
-    background: #fff !important;
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
     box-shadow: none !important;
 }
 
@@ -2045,17 +2064,24 @@ body.is-camera-panning #canvas-stage {
 
     #editor-sidebar-left {
         width: 292px !important;
-        padding: 10px 12px 10px 10px !important;
+        padding: 12px !important;
+        align-self: stretch;
+        max-height: 100% !important;
+        overflow: hidden !important;
     }
 
     #editor-sidebar-left .sidebar-shell {
         width: 100%;
+        height: 100%;
+        min-height: 0 !important;
+        max-height: 100% !important;
         padding: 0 !important;
         gap: 18px;
         border: 0 !important;
         border-radius: 0 !important;
         background: transparent !important;
         box-shadow: none !important;
+        overflow: hidden !important;
     }
 
     #editor-sidebar-left .drawer-grip {
@@ -2065,6 +2091,13 @@ body.is-camera-panning #canvas-stage {
     #editor-sidebar-left #elements-panel {
         gap: 12px;
         width: 100%;
+        min-height: 0 !important;
+        max-height: 100% !important;
+        overflow-x: hidden !important;
+        overflow-y: auto !important;
+        overscroll-behavior: contain;
+        padding: 0 !important;
+        scrollbar-gutter: stable;
     }
 
     #editor-sidebar-left .elements-group {
@@ -2164,12 +2197,14 @@ body.is-camera-panning #canvas-stage {
     #editor-sidebar-left .elements-group--layers {
         min-height: 0;
         padding-top: 14px;
-        border-top: 1px solid #e4e7ec;
+        border-top: 0;
     }
 
     #editor-sidebar-left #layers-list {
         gap: 0.5rem;
         width: 100%;
+        min-height: 0;
+        overflow-x: hidden;
     }
 
     #editor-sidebar-left .layer-item {
@@ -2314,6 +2349,14 @@ body.is-camera-panning #canvas-stage {
 }
 
 @media (max-width: 1023px) {
+    #editor-sidebar-left,
+    #editor-sidebar-right {
+        background: rgba(255, 255, 255, 0.98) !important;
+        border-top: 1px solid var(--iber-border) !important;
+        border-radius: 18px 18px 0 0 !important;
+        overflow: hidden !important;
+    }
+
     #editor-nav > div {
         flex: 1 1 auto !important;
         min-width: 0;
