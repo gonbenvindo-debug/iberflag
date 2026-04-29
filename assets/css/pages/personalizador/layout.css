@@ -111,7 +111,7 @@
 
         .editor-body-layout {
             display: grid;
-            grid-template-columns: clamp(14rem, 15vw, 16rem) minmax(0, 1fr);
+            grid-template-columns: var(--editor-sidebar-width, 292px) minmax(0, 1fr);
             grid-template-rows: auto minmax(0, 1fr);
             gap: 0;
             height: calc(100vh - 4rem - 2.25rem);

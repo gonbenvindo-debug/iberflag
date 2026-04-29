@@ -8,6 +8,7 @@
     --iber-accent: #ef4825;
     --iber-accent-strong: #c13d1f;
     --iber-accent-soft: #fff1ec;
+    --editor-sidebar-width: 292px;
 }
 
 body.app-page {
@@ -315,6 +316,16 @@ body.app-page {
     min-height: 0 !important;
     max-height: 100% !important;
     overflow: hidden !important;
+}
+
+.editor-sidebar-left {
+    background: #ffffff !important;
+    border-right: 1px solid var(--iber-border) !important;
+}
+
+.editor-sidebar-left .sidebar-shell,
+.editor-sidebar-left .sidebar-section {
+    background: #ffffff !important;
 }
 
 .sidebar-shell,
@@ -721,6 +732,10 @@ body.app-page {
     background: transparent !important;
     min-height: 0 !important;
     min-width: 0 !important;
+    max-width: 100% !important;
+    overflow: hidden !important;
+    contain: layout paint;
+    isolation: isolate;
 }
 
 .canvas-container {
@@ -737,6 +752,14 @@ body.app-page {
     border-radius: 0 !important;
     background: transparent !important;
     box-shadow: none !important;
+    width: 100% !important;
+    height: 100% !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: 100% !important;
+    max-height: 100% !important;
+    flex: 1 1 auto !important;
+    overflow: hidden !important;
 }
 
 #canvas-stage.is-camera-panning,
@@ -2051,23 +2074,36 @@ body.is-camera-panning #canvas-stage {
 @media (min-width: 1024px) {
     #editor-body-layout {
         position: relative;
+        grid-template-columns: var(--editor-sidebar-width) minmax(0, calc(100% - var(--editor-sidebar-width))) !important;
         grid-template-rows: minmax(0, 1fr) !important;
+        width: 100% !important;
+        max-width: 100vw !important;
+        overflow: hidden !important;
     }
 
     .editor-sidebar-left {
         grid-row: 1 !important;
+        grid-column: 1 !important;
     }
 
     .editor-main {
+        grid-column: 2 !important;
         grid-row: 1 !important;
+        width: 100% !important;
+        height: 100% !important;
+        max-width: 100% !important;
     }
 
     #editor-sidebar-left {
-        width: 292px !important;
+        width: var(--editor-sidebar-width) !important;
+        max-width: var(--editor-sidebar-width) !important;
         padding: 12px !important;
         align-self: stretch;
         max-height: 100% !important;
         overflow: hidden !important;
+        box-sizing: border-box;
+        background: #ffffff !important;
+        border-right: 1px solid var(--iber-border) !important;
     }
 
     #editor-sidebar-left .sidebar-shell {
@@ -2079,7 +2115,7 @@ body.is-camera-panning #canvas-stage {
         gap: 18px;
         border: 0 !important;
         border-radius: 0 !important;
-        background: transparent !important;
+        background: #ffffff !important;
         box-shadow: none !important;
         overflow: hidden !important;
     }
@@ -2098,6 +2134,7 @@ body.is-camera-panning #canvas-stage {
         overscroll-behavior: contain;
         padding: 0 !important;
         scrollbar-gutter: stable;
+        background: #ffffff !important;
     }
 
     #editor-sidebar-left .elements-group {
@@ -2125,7 +2162,7 @@ body.is-camera-panning #canvas-stage {
         padding: 0;
         border: 0;
         border-radius: 0;
-        background: transparent;
+        background: #ffffff;
         box-shadow: none;
     }
 
