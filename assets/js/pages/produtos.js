@@ -295,6 +295,9 @@ function renderProductsGrid(products) {
     }
 
     enforceCatalogMobileGrid();
+    if (typeof window.IberFlagFitProductCardTitles === 'function') {
+        window.IberFlagFitProductCardTitles(productsGrid);
+    }
     renderPagination(products.length);
 }
 
@@ -509,7 +512,12 @@ if (clearFiltersBtn) {
 }
 
 if (catalogTwoColumnMedia && typeof catalogTwoColumnMedia.addEventListener === 'function') {
-    catalogTwoColumnMedia.addEventListener('change', enforceCatalogMobileGrid);
+    catalogTwoColumnMedia.addEventListener('change', () => {
+        enforceCatalogMobileGrid();
+        if (typeof window.IberFlagFitProductCardTitles === 'function') {
+            window.IberFlagFitProductCardTitles(productsGrid);
+        }
+    });
 }
 
 // ===== CHECK URL PARAMETERS =====

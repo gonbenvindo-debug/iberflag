@@ -439,13 +439,19 @@ function findProductQuantityInput(key) {
         .find((input) => input.getAttribute('data-product-quantity-input') === targetKey) || null;
 }
 
-function syncProductQuantityLink(input) {
+function syncProductQuantityLink(input, options = {}) {
     if (!(input instanceof HTMLInputElement)) {
         return;
     }
 
-    const quantity = normalizeProductQuantity(input.value);
-    input.value = String(quantity);
+    const shouldCommit = options.commit !== false;
+    const rawValue = String(input.value || '').trim();
+    const quantity = rawValue === '' ? 1 : normalizeProductQuantity(rawValue);
+
+    if (shouldCommit || rawValue !== '') {
+        input.value = String(quantity);
+    }
+
     const key = String(input.getAttribute('data-product-quantity-input') || '').trim();
     if (!key) {
         return;
@@ -475,8 +481,9 @@ function initProductQuantityControls() {
         }
 
         input.dataset.quantityBound = '1';
-        input.addEventListener('input', () => syncProductQuantityLink(input));
+        input.addEventListener('input', () => syncProductQuantityLink(input, { commit: false }));
         input.addEventListener('change', () => syncProductQuantityLink(input));
+        input.addEventListener('blur', () => syncProductQuantityLink(input));
         syncProductQuantityLink(input);
     });
 }
@@ -570,8 +577,16 @@ function injectLanguageSwitcher() {
         return;
     }
 
+    const pathname = window.location.pathname || '/';
+    const isCustomizerPage = pathname.includes('/personalizar') || Boolean(document.getElementById('editor-body-layout'));
+    if (isCustomizerPage) {
+        document.querySelectorAll('[data-language-switcher="rail"]').forEach((rail) => rail.remove());
+        window.__iberflagLanguageSwitcherInjected = true;
+        return;
+    }
+
     const currentPath = `${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`;
-    const currentLocale = SiteRoutes.getLocaleFromPathname?.(window.location.pathname || '/') || 'pt';
+    const currentLocale = SiteRoutes.getLocaleFromPathname?.(pathname) || 'pt';
     const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
     if (!document.querySelector('[data-language-switcher="rail"]')) {
         const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
@@ -1026,6 +1041,95 @@ cart = normalizeCartItems(getStoredCart());
 window.cartHydrationPromise = hydrateCartDesignAssets();
 
 const productCardPreviewTouchQuery = window.matchMedia('(hover: none), (pointer: coarse)');
+const productCardTitleFitQuery = window.matchMedia('(max-width: 767px)');
+const productCardTitleFitSelector = '.product-card-title, [data-fit-card-title]';
+let productCardTitleFitFrame = null;
+
+function parseCssPixelValue(value, fallback) {
+    const parsed = Number.parseFloat(String(value || ''));
+    return Number.isFinite(parsed) ? parsed : fallback;
+}
+
+function getProductCardTitleLineHeight(element, fontSize) {
+    const computed = window.getComputedStyle(element);
+    return parseCssPixelValue(computed.lineHeight, fontSize * 1.08);
+}
+
+function fitProductCardTitle(element) {
+    if (!(element instanceof HTMLElement)) {
+        return;
+    }
+
+    element.style.removeProperty('font-size');
+
+    if (!productCardTitleFitQuery.matches) {
+        return;
+    }
+
+    const previousClamp = element.style.webkitLineClamp;
+    const previousMaxHeight = element.style.maxHeight;
+    const previousMinHeight = element.style.minHeight;
+    const previousOverflow = element.style.overflow;
+
+    element.style.webkitLineClamp = 'unset';
+    element.style.maxHeight = 'none';
+    element.style.minHeight = '0';
+    element.style.overflow = 'visible';
+
+    let computed = window.getComputedStyle(element);
+    let fontSize = parseCssPixelValue(computed.fontSize, 10);
+    const minFontSize = element.closest('[data-catalog-item]') ? 8.5 : 8.2;
+
+    while (fontSize > minFontSize) {
+        const lineHeight = getProductCardTitleLineHeight(element, fontSize);
+        const maxTwoLineHeight = (lineHeight * 2) + 1;
+
+        if (element.scrollHeight <= maxTwoLineHeight) {
+            break;
+        }
+
+        fontSize = Math.max(minFontSize, fontSize - 0.4);
+        element.style.fontSize = `${fontSize.toFixed(1)}px`;
+        computed = window.getComputedStyle(element);
+        fontSize = parseCssPixelValue(computed.fontSize, fontSize);
+    }
+
+    element.style.webkitLineClamp = previousClamp;
+    element.style.maxHeight = previousMaxHeight;
+    element.style.minHeight = previousMinHeight;
+    element.style.overflow = previousOverflow;
+}
+
+function fitProductCardTitles(root = document) {
+    const scope = root instanceof Element || root instanceof Document ? root : document;
+    const titles = [];
+
+    if (scope instanceof Element && scope.matches(productCardTitleFitSelector)) {
+        titles.push(scope);
+    }
+
+    titles.push(...scope.querySelectorAll(productCardTitleFitSelector));
+    titles.forEach(fitProductCardTitle);
+}
+
+function scheduleProductCardTitleFit(root = document) {
+    if (productCardTitleFitFrame) {
+        window.cancelAnimationFrame(productCardTitleFitFrame);
+    }
+
+    productCardTitleFitFrame = window.requestAnimationFrame(() => {
+        productCardTitleFitFrame = null;
+        fitProductCardTitles(root);
+    });
+}
+
+window.IberFlagFitProductCardTitles = scheduleProductCardTitleFit;
+
+window.addEventListener('resize', () => scheduleProductCardTitleFit(), { passive: true });
+
+if (document.fonts?.ready) {
+    document.fonts.ready.then(() => scheduleProductCardTitleFit()).catch(() => {});
+}
 
 function clearProductCardPreviewState() {
     document.querySelectorAll('.product-card.is-preview-active, .product-card-image.is-preview-active').forEach((element) => {
@@ -1104,6 +1208,7 @@ function renderProducts(products) {
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
+    scheduleProductCardTitleFit(productsContainer);
     scheduleCartItemPreviewHeightSync();
 }
 
@@ -1396,6 +1501,7 @@ if (cartBtn) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
     initPageUiInteractions();
+    scheduleProductCardTitleFit();
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

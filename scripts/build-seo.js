@@ -459,7 +459,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260428logo">
   <link rel="shortcut icon" href="/favicon.svg?v=20260428logo">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429product-shop3">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260429card-fit1">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
@@ -568,7 +568,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <script defer src="/assets/js/generated/catalog-seo-manifest.js?v=20260409seo1"></script>
   <script defer src="/assets/js/core/cart-assets.js?v=20260401a"></script>
   <script defer src="/assets/js/core/analytics.js?v=20260410a"></script>
-  <script defer src="/assets/js/core/logic.js?v=20260422f"></script>
+  <script defer src="/assets/js/core/logic.js?v=20260429q1"></script>
   <script defer src="/assets/js/core/flybanner-selection.js?v=20260420a"></script>
   ${schemas.map((entry) => `<script type="application/ld+json">\n${buildStructuredDataJson(entry)}\n</script>`).join('\n  ')}
 </head>`;
@@ -863,7 +863,7 @@ function renderRelatedProductCards(products) {
               </a>
               <div class="p-4">
                 <p class="text-xs font-medium uppercase text-slate-500">${escapeHtml(candidate.categoryLabel)}</p>
-                <h3 class="mt-1.5 min-h-[2.5rem] text-sm font-semibold leading-5 text-slate-900"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
+                <h3 data-fit-card-title class="mt-1.5 min-h-[2.5rem] text-sm font-semibold leading-5 text-slate-900"><a href="${candidate.canonicalPath}" class="hover:text-slate-700">${escapeHtml(candidate.nome)}</a></h3>
                 <div class="mt-4 flex items-center justify-between gap-3">
                   <span class="text-sm font-semibold text-slate-900">${escapeHtml(formatCurrency(candidate.preco))}</span>
                   <a href="${candidate.canonicalPath}" data-product-id="${escapeHtml(candidate.id)}" data-product-name="${escapeHtml(candidate.nome)}" data-product-category="${escapeHtml(candidate.categorySlug)}" class="inline-flex min-h-9 items-center justify-center rounded-md bg-slate-900 px-3 text-xs font-semibold text-white transition hover:bg-slate-800">
@@ -1138,7 +1138,7 @@ function renderCategoryPage(category, categoryEntries, productEntries) {
             <div class="flex flex-1 flex-col p-3 sm:p-5">
               <div class="flex flex-1 flex-col">
                 <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
-                <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+                <h2 data-fit-card-title class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-lg sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
                 <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.display_description || product.seo_description, 160))}</p>
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">
@@ -1227,7 +1227,7 @@ function renderProductsLandingPage(categoryEntries, productEntries) {
             <div class="flex flex-1 flex-col p-3 sm:p-5">
               <div class="flex flex-1 flex-col">
                 <p class="text-[0.64rem] font-medium uppercase tracking-[0.18em] text-slate-500 sm:text-xs">${escapeHtml(product.categoryLabel)}</p>
-                <h2 class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
+                <h2 data-fit-card-title class="mt-1.5 text-[0.68rem] font-semibold leading-[1.02] text-slate-900 sm:mt-2 sm:text-base sm:leading-5"><a href="${product.canonicalPath}" class="hover:text-slate-700">${escapeHtml(product.nome)}</a></h2>
                 <p class="mt-3 hidden text-sm leading-6 text-slate-600 sm:block">${escapeHtml(summarize(product.display_description || product.seo_description, 145))}</p>
               </div>
               <div class="mt-3 flex items-center justify-between gap-2 sm:mt-4">

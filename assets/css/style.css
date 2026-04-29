@@ -1077,6 +1077,10 @@ body {
     -webkit-box-orient: vertical;
     -webkit-line-clamp: 2;
     overflow: hidden;
+    max-height: 2.4em;
+    text-overflow: ellipsis;
+    overflow-wrap: anywhere;
+    word-break: normal;
 }
 
 .product-card-cta {
@@ -3235,15 +3239,41 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     }
 
     .product-card-title {
-        font-size: 0.62rem;
-        line-height: 1.03;
+        font-size: 0.6rem;
+        line-height: 1.08;
         -webkit-line-clamp: 2;
+        max-height: 2.16em;
+        min-height: 2.16em;
+        overflow-wrap: anywhere;
+        word-break: normal;
     }
 
     .catalog-grid-two h2,
     .catalog-grid-two .product-card-title {
-        font-size: 0.72rem !important;
+        font-size: 0.62rem !important;
         line-height: 1.08 !important;
+    }
+
+    [data-fit-card-title] {
+        display: -webkit-box !important;
+        -webkit-box-orient: vertical;
+        -webkit-line-clamp: 2;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        overflow-wrap: anywhere;
+        word-break: normal;
+    }
+
+    .catalog-grid-two [data-fit-card-title] {
+        max-height: 2.16em;
+        min-height: 2.16em;
+    }
+
+    .product-related-card [data-fit-card-title] {
+        font-size: 0.78rem !important;
+        line-height: 1.15 !important;
+        max-height: 2.3em;
+        min-height: 2.3em;
     }
 
     .product-card-cta {
