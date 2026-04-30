@@ -22,6 +22,8 @@ const customerTypeSelect = document.getElementById('customer-type-select');
 const customerTypeDescription = document.getElementById('customer-type-description');
 const nifInput = document.getElementById('nif-input');
 const phoneInput = checkoutForm?.elements?.telefone || null;
+const phoneCountryToggle = document.getElementById('phone-country-toggle');
+const phoneHelp = document.getElementById('phone-help');
 const emailInput = checkoutForm?.elements?.email || null;
 const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
 const cityInput = checkoutForm?.elements?.cidade || null;
@@ -80,6 +82,35 @@ const COUNTRY_LABELS = {
     PT: 'Portugal',
     ES: 'Espanha'
 };
+const PHONE_COUNTRIES = {
+    PT: {
+        code: 'PT',
+        label: 'Portugal',
+        dialCode: '+351',
+        placeholder: '912 345 678',
+        help: 'Não precisa escrever +351.',
+        pattern: /^[29]\d{8}$/,
+        invalidMessage: 'Introduza um número português com 9 dígitos válido.',
+        flagSvg: `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <rect width="21.6" height="36" fill="#006A4E"/>
+            <rect x="21.6" width="32.4" height="36" fill="#DA291C"/>
+            <circle cx="21.6" cy="18" r="6.2" fill="#F6C645"/>
+        </svg>`
+    },
+    ES: {
+        code: 'ES',
+        label: 'Espanha',
+        dialCode: '+34',
+        placeholder: '612 345 678',
+        help: 'Não precisa escrever +34.',
+        pattern: /^[6789]\d{8}$/,
+        invalidMessage: 'Introduza um número espanhol com 9 dígitos válido.',
+        flagSvg: `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+            <rect width="54" height="36" fill="#AA151B"/>
+            <rect y="9" width="54" height="18" fill="#F1BF00"/>
+        </svg>`
+    }
+};
 const ES_TEXT = {
     'Abrir pagamento seguro': 'Abrir pago seguro',
     'Pagamento carregado': 'Pago cargado',
@@ -96,7 +127,16 @@ const ES_TEXT = {
     'O pagamento abre aqui na loja com Stripe.': 'El pago se abre aquí en la tienda con Stripe.',
     'Cartão, MB Way e Multibanco aparecem conforme disponibilidade.': 'Tarjeta, MB Way y Multibanco aparecen según disponibilidad.',
     'Complete o pagamento abaixo para confirmar a encomenda.': 'Complete el pago abajo para confirmar el pedido.',
-    'Grátis': 'Gratis'
+    'Grátis': 'Gratis',
+    'Não precisa escrever +351.': 'No necesita escribir +351.',
+    'Não precisa escrever +34.': 'No necesita escribir +34.',
+    'Introduza um número de telemóvel ou telefone válido.': 'Introduzca un número de móvil o teléfono válido.',
+    'Introduza um número português com 9 dígitos válido.': 'Introduzca un número portugués válido de 9 dígitos.',
+    'Introduza um número espanhol com 9 dígitos válido.': 'Introduzca un número español válido de 9 dígitos.',
+    'Usar indicativo de': 'Usar prefijo de',
+    'Trocar indicativo': 'Cambiar prefijo',
+    'Portugal': 'Portugal',
+    'Espanha': 'España'
 };
 const EU_COUNTRIES = new Set(['PT', 'ES']);
 let companyLookupInFlight = false;
@@ -113,6 +153,7 @@ let stripeBrowserClient = null;
 let embeddedCheckoutInstance = null;
 let activeCheckoutSession = null;
 let currentCheckoutStep = 'details';
+let selectedPhoneCountry = 'PT';
 
 function escapeHtml(value) {
     return String(value || '')
@@ -558,6 +599,76 @@ function validateTaxId(value, postalCode = '') {
     };
 }
 
+function normalizePhoneCountry(value) {
+    const normalized = String(value || '').trim().toUpperCase();
+    return PHONE_COUNTRIES[normalized] ? normalized : 'PT';
+}
+
+function getDefaultPhoneCountry() {
+    const localeCountry = getCurrentLocale() === 'es' ? 'ES' : '';
+    return normalizePhoneCountry(localeCountry || getSelectedFiscalCountry() || 'PT');
+}
+
+function getSelectedPhoneCountry() {
+    return normalizePhoneCountry(selectedPhoneCountry || phoneCountryToggle?.dataset?.country || getDefaultPhoneCountry());
+}
+
+function getPhoneCountryFromInternationalDigits(digits = '') {
+    if (String(digits).startsWith('351')) {
+        return 'PT';
+    }
+    if (String(digits).startsWith('34')) {
+        return 'ES';
+    }
+    return '';
+}
+
+function formatLocalPhoneNumber(value = '') {
+    const digits = String(value || '').replace(/\D/g, '');
+    if (digits.length <= 3) {
+        return digits;
+    }
+    if (digits.length <= 6) {
+        return `${digits.slice(0, 3)} ${digits.slice(3)}`;
+    }
+    return `${digits.slice(0, 3)} ${digits.slice(3, 6)} ${digits.slice(6)}`;
+}
+
+function renderPhoneCountryToggle() {
+    if (!phoneCountryToggle) {
+        return;
+    }
+
+    const country = getSelectedPhoneCountry();
+    const config = PHONE_COUNTRIES[country];
+    phoneCountryToggle.dataset.country = country;
+    phoneCountryToggle.setAttribute('aria-label', `${i18nText('Usar indicativo de')} ${i18nText(config.label)}, ${config.dialCode}`);
+    phoneCountryToggle.setAttribute('title', i18nText('Trocar indicativo'));
+    phoneCountryToggle.innerHTML = `
+        <span class="checkout-phone-flag" aria-hidden="true">${config.flagSvg}</span>
+        <span class="checkout-phone-dial">${config.dialCode}</span>
+    `;
+}
+
+function setPhoneCountry(country, { normalizeInput = false, skipValidation = false } = {}) {
+    selectedPhoneCountry = normalizePhoneCountry(country);
+    const config = PHONE_COUNTRIES[selectedPhoneCountry];
+    const wrapper = phoneCountryToggle?.closest?.('.checkout-phone-field');
+    if (wrapper) {
+        wrapper.dataset.phoneCountry = selectedPhoneCountry;
+    }
+    if (phoneInput) {
+        phoneInput.placeholder = config.placeholder;
+    }
+    if (phoneHelp) {
+        phoneHelp.textContent = i18nText(config.help);
+    }
+    renderPhoneCountryToggle();
+    if (!skipValidation) {
+        updatePhoneValidity({ normalizeInput });
+    }
+}
+
 function normalizeCheckoutPhone(value) {
     const raw = String(value || '').trim();
     if (!raw) {
@@ -888,58 +999,49 @@ function schedulePostalLookup() {
     }, POSTAL_LOOKUP_DEBOUNCE_MS);
 }
 
-function validateCheckoutPhone(value, postalCode = '', taxId = '') {
+function validateCheckoutPhone(value, postalCode = '', taxId = '', phoneCountry = getSelectedPhoneCountry()) {
     const normalized = normalizeCheckoutPhone(value);
-    const country = detectTaxCountry(taxId, postalCode);
+    const selectedCountry = normalizePhoneCountry(phoneCountry || detectTaxCountry(taxId, postalCode));
     if (!normalized) {
         return {
             valid: false,
             normalized,
+            country: selectedCountry,
+            displayValue: '',
             message: i18nText('Introduza um número de telemóvel ou telefone válido.')
         };
     }
 
     const digits = normalized.replace(/^\+/, '');
+    const explicitCountry = normalized.startsWith('+') ? getPhoneCountryFromInternationalDigits(digits) : '';
+    const country = explicitCountry || selectedCountry;
+    const config = PHONE_COUNTRIES[country];
+    const localNumber = explicitCountry
+        ? digits.slice(config.dialCode.replace('+', '').length)
+        : digits;
 
-    if (digits.startsWith('351')) {
-        const localNumber = digits.slice(3);
+    if (!config) {
+        const validInternational = /^\d{6,15}$/.test(digits);
         return {
-            valid: /^[29]\d{8}$/.test(localNumber),
-            normalized: `+${digits}`,
-            message: /^[29]\d{8}$/.test(localNumber)
+            valid: validInternational,
+            normalized: normalized.startsWith('+') ? normalized : `+${digits}`,
+            country,
+            displayValue: normalized,
+            message: validInternational
                 ? ''
-                : i18nText('O número de contacto português parece inválido.')
+                : i18nText('Introduza um número de telemóvel ou telefone válido.')
         };
     }
 
-    if (digits.startsWith('34')) {
-        const localNumber = digits.slice(2);
-        return {
-            valid: /^[6789]\d{8}$/.test(localNumber),
-            normalized: `+${digits}`,
-            message: /^[6789]\d{8}$/.test(localNumber)
-                ? ''
-                : i18nText('O número de contacto espanhol parece inválido.')
-        };
-    }
-
-    if (country === 'ES' || /^[6789]\d{8}$/.test(digits)) {
-        return {
-            valid: /^[6789]\d{8}$/.test(digits),
-            normalized: `+34${digits}`,
-            country: 'ES',
-            message: /^[6789]\d{8}$/.test(digits)
-                ? ''
-                : i18nText('Introduza um número espanhol com 9 dígitos válido.')
-        };
-    }
-
+    const localDigits = String(localNumber || '').replace(/\D/g, '');
+    const valid = config.pattern.test(localDigits);
     return {
-        valid: /^[29]\d{8}$/.test(digits),
-        normalized: `+351${digits}`,
-        message: /^[29]\d{8}$/.test(digits)
-            ? ''
-            : i18nText('Introduza um número português com 9 dígitos válido.')
+        valid,
+        normalized: `${config.dialCode}${localDigits}`,
+        country,
+        explicitCountry,
+        displayValue: formatLocalPhoneNumber(localDigits),
+        message: valid ? '' : i18nText(config.invalidMessage)
     };
 }
 
@@ -951,10 +1053,14 @@ function updatePhoneValidity({ normalizeInput = false } = {}) {
     const validation = validateCheckoutPhone(
         phoneInput.value,
         postalCodeInput?.value || '',
-        nifInput?.value || ''
+        nifInput?.value || '',
+        getSelectedPhoneCountry()
     );
+    if (validation.explicitCountry && validation.explicitCountry !== getSelectedPhoneCountry()) {
+        setPhoneCountry(validation.explicitCountry, { skipValidation: true });
+    }
     if (normalizeInput) {
-        phoneInput.value = validation.normalized;
+        phoneInput.value = validation.displayValue || '';
     }
     phoneInput.setCustomValidity(validation.valid ? '' : validation.message);
     return validation;
@@ -1899,7 +2005,7 @@ if (placeOrderBtn) {
         const customerData = {
             nome: formData.get('nome'),
             email: formData.get('email'),
-            telefone: formData.get('telefone'),
+            telefone: phoneValidation.normalized,
             tipo_cliente: customerType,
             country: getSelectedFiscalCountry(),
             nif: formData.get('nif') || null,
@@ -2021,6 +2127,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+    if (phoneCountryToggle) {
+        phoneCountryToggle.addEventListener('click', () => {
+            const nextCountry = getSelectedPhoneCountry() === 'PT' ? 'ES' : 'PT';
+            setPhoneCountry(nextCountry, { normalizeInput: true });
+            clearCheckoutFeedback();
+            phoneInput?.focus();
+        });
+    }
     if (nifInput) {
         nifInput.addEventListener('input', () => {
             updateTaxIdValidity();
@@ -2090,6 +2204,9 @@ document.addEventListener('DOMContentLoaded', () => {
         populateAddressRegions({ preserveValue: true });
         updatePostalCodeFormatting();
         updateTaxIdValidity();
+        if (phoneInput && !String(phoneInput.value || '').trim()) {
+            setPhoneCountry(getSelectedFiscalCountry(), { skipValidation: true });
+        }
         updatePhoneValidity();
         applyVatValidationResult(null);
         setCompanyLookupStatus('');
@@ -2124,6 +2241,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     syncAddressCountryFromFiscal({ force: true });
     populateAddressRegions({ preserveValue: true });
+    setPhoneCountry(getDefaultPhoneCountry(), { skipValidation: true });
     syncCustomerTypeUI();
     syncOrderNotesVisibility();
     updateFiscalSummary();

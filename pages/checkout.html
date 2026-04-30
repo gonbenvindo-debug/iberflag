@@ -27,7 +27,7 @@
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
     <script src="/assets/js/core/logic.js?v=20260429q2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260430checkout-mobile1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260430phone1">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -118,7 +118,14 @@
                                     <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label class="form-label">Telemóvel / telefone *</label>
-                                            <input type="text" name="telefone" required="" class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
+                                            <div class="checkout-phone-field" data-phone-country="PT">
+                                                <button type="button" id="phone-country-toggle" class="checkout-phone-country-btn" aria-label="Usar indicativo de Portugal, +351" title="Trocar indicativo">
+                                                    <span class="checkout-phone-flag" aria-hidden="true"></span>
+                                                    <span class="checkout-phone-dial">+351</span>
+                                                </button>
+                                                <input type="text" name="telefone" required="" class="form-input checkout-phone-input" autocomplete="tel-national" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="912 345 678">
+                                            </div>
+                                            <p id="phone-help" class="checkout-phone-help">Não precisa escrever +351.</p>
                                         </div>
                                     </div>
                                 </div>
@@ -400,7 +407,7 @@
 
     <script src="/assets/js/core/order-workflow.js"></script>
     <script src="/assets/js/pages/checkout-location-data.js?v=20260421a"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260430steps1"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260430phone1"></script>
     <script>
         lucide.createIcons();
     </script>
