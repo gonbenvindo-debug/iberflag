@@ -1035,10 +1035,11 @@ async function lookupPostalCode({ force = false } = {}) {
         postalLookupController = new AbortController();
 
         const lookupParams = new URLSearchParams({
+            mode: 'postal',
             country,
             postalCode: normalized
         });
-        const response = await fetch(`/api/checkout/postal-lookup?${lookupParams.toString()}`, {
+        const response = await fetch(`/api/checkout/company-lookup?${lookupParams.toString()}`, {
             signal: postalLookupController.signal
         });
         if (!response.ok) {

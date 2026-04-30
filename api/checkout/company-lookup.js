@@ -8,6 +8,7 @@ const {
 const { findCustomerByVatNumber } = require('../../lib/server/facturalusa');
 const { normalizeCustomerType } = require('../../lib/server/checkout');
 const { validateVatVies } = require('../../lib/server/vies');
+const { resolvePostalLookup } = require('../../lib/server/postal-lookup');
 
 function pickString(source, keys) {
     for (const key of Array.isArray(keys) ? keys : []) {
@@ -65,9 +66,48 @@ async function findCustomerInDatabase(supabase, taxId) {
     return data || null;
 }
 
+async function handlePostalLookup(req, res, requestUrl) {
+    if (!applyRateLimit(req, res, {
+        key: 'checkout-postal-lookup',
+        windowMs: 5 * 60 * 1000,
+        max: 60,
+        message: 'Demasiadas pesquisas de codigo postal. Aguarde um pouco e tente novamente.'
+    })) {
+        return;
+    }
+
+    try {
+        const country = requestUrl.searchParams.get('country') || '';
+        const postalCode = requestUrl.searchParams.get('postalCode') || '';
+        const result = await resolvePostalLookup({ country, postalCode });
+
+        sendJson(res, 200, result, {
+            'Cache-Control': 'public, max-age=86400, s-maxage=86400'
+        });
+    } catch (error) {
+        const statusCode = Number(error?.statusCode || 500);
+        const safeStatusCode = statusCode >= 400 && statusCode < 600 ? statusCode : 500;
+        sendJson(res, safeStatusCode, {
+            error: error?.message || 'POSTAL_LOOKUP_FAILED',
+            message: safeStatusCode === 404
+                ? 'Nao foi possivel encontrar este codigo postal.'
+                : safeStatusCode === 400
+                    ? 'Introduza um codigo postal valido.'
+                    : 'Nao foi possivel validar o codigo postal agora.'
+        });
+    }
+}
+
 module.exports = async function checkoutCompanyLookupHandler(req, res) {
+    const requestUrl = new URL(req.url || '/', 'http://localhost');
+    const lookupMode = String(requestUrl.searchParams.get('mode') || '').trim().toLowerCase();
+    if (req.method === 'GET' && lookupMode === 'postal') {
+        await handlePostalLookup(req, res, requestUrl);
+        return;
+    }
+
     if (req.method !== 'POST') {
-        sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'POST' });
+        sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'GET, POST' });
         return;
     }
 
