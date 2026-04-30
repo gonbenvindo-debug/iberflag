@@ -494,8 +494,8 @@
     },
     "ES": {
         "label": "Espanha",
-        "regionLabel": "Prov?ncia",
-        "municipalityLabel": "Munic?pio",
+        "regionLabel": "Provincia",
+        "municipalityLabel": "Municipio",
         "postalPlaceholder": "28001",
         "regions": [
             {

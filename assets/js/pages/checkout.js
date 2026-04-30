@@ -315,7 +315,6 @@ function validateCheckoutStep(step = currentCheckoutStep) {
     if (step === 'address') {
         updatePostalCodeFormatting();
         syncFiscalCountryFromAddress();
-        syncCityFromMunicipality({ force: false });
 
         const invalidField = getFirstInvalidField([
             addressCountrySelect,
@@ -960,23 +959,22 @@ function setAddressSelection({ country, region, municipality, city, forceCity = 
         }
     }
 
-    const resolvedCity = String(city || municipality || addressMunicipalitySelect?.value || '').trim();
+    const resolvedCity = String(city || '').trim();
     if (cityInput && resolvedCity && (forceCity || !cityInput.value.trim() || cityInput.value === lastAutoCityValue)) {
         cityInput.value = resolvedCity;
         lastAutoCityValue = resolvedCity;
     }
 }
 
-function syncCityFromMunicipality({ force = false } = {}) {
-    const municipality = String(addressMunicipalitySelect?.value || '').trim();
-    if (!municipality || !cityInput) {
+function clearAutoCityIfStillOwned() {
+    if (!cityInput || !lastAutoCityValue) {
         return;
     }
 
-    if (force || !cityInput.value.trim() || cityInput.value === lastAutoCityValue) {
-        cityInput.value = municipality;
-        lastAutoCityValue = municipality;
+    if (cityInput.value === lastAutoCityValue) {
+        cityInput.value = '';
     }
+    lastAutoCityValue = '';
 }
 
 function inferAddressCountryFromPostalCode(value = '') {
@@ -1052,7 +1050,6 @@ async function lookupPostalCode({ force = false } = {}) {
         setAddressSelection({
             country,
             region: place.state,
-            municipality: place['place name'],
             city: place['place name'],
             forceCity: false
         });
@@ -2058,7 +2055,6 @@ if (placeOrderBtn) {
         }
 
         syncFiscalCountryFromAddress();
-        syncCityFromMunicipality({ force: false });
 
         if (isBusinessCustomerSelected() && taxIdValidation.normalized) {
             const shouldValidateEuBusiness = getSelectedFiscalCountry() !== 'PT' && isEuCountry(getSelectedFiscalCountry());
@@ -2270,10 +2266,7 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     addressRegionSelect?.addEventListener('change', () => {
         populateAddressMunicipalities({ preserveValue: false });
-        syncCityFromMunicipality({ force: false });
-    });
-    addressMunicipalitySelect?.addEventListener('change', () => {
-        syncCityFromMunicipality({ force: true });
+        clearAutoCityIfStillOwned();
     });
     cityInput?.addEventListener('input', () => {
         if (cityInput.value !== lastAutoCityValue) {
