@@ -2060,6 +2060,10 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     transition: background 0.2s ease, color 0.2s ease;
 }
 
+.checkout-tax-field .checkout-phone-country-btn {
+    min-width: 5.25rem;
+}
+
 .checkout-phone-country-btn:hover,
 .checkout-phone-country-btn:focus-visible {
     background: #eef2f7;

@@ -18,6 +18,8 @@ const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
 const customerTypeSelect = document.getElementById('customer-type-select');
 const nifInput = document.getElementById('nif-input');
+const taxCountryToggle = document.getElementById('tax-country-toggle');
+const nameInput = checkoutForm?.elements?.nome || null;
 const phoneInput = checkoutForm?.elements?.telefone || null;
 const phoneCountryToggle = document.getElementById('phone-country-toggle');
 const emailInput = checkoutForm?.elements?.email || null;
@@ -25,7 +27,6 @@ const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
 const cityInput = checkoutForm?.elements?.cidade || null;
 const companyInput = checkoutForm?.elements?.empresa || null;
 const contactNameLabel = document.getElementById('contact-name-label');
-const companyLabel = document.getElementById('company-label');
 const nifLabel = document.getElementById('nif-label');
 const companyLookupStatus = document.getElementById('company-lookup-status');
 const companyFieldRow = document.getElementById('company-field-row');
@@ -77,6 +78,10 @@ const COUNTRY_LABELS = {
     PT: 'Portugal',
     ES: 'Espanha'
 };
+const TAX_PLACEHOLDERS = {
+    PT: '123456789',
+    ES: 'B12345678'
+};
 const PHONE_COUNTRIES = {
     PT: {
         code: 'PT',
@@ -125,9 +130,15 @@ const ES_TEXT = {
     'Introduza um número português com 9 dígitos válido.': 'Introduzca un número portugués válido de 9 dígitos.',
     'Introduza um número espanhol com 9 dígitos válido.': 'Introduzca un número español válido de 9 dígitos.',
     'Usar indicativo de': 'Usar prefijo de',
+    'Usar NIF de': 'Usar NIF de',
     'Trocar indicativo': 'Cambiar prefijo',
+    'Trocar país fiscal': 'Cambiar país fiscal',
     'Portugal': 'Portugal',
-    'Espanha': 'España'
+    'Espanha': 'España',
+    'Empresa *': 'Empresa *',
+    'Nome completo *': 'Nombre completo *',
+    'Nome fiscal da empresa': 'Nombre fiscal de la empresa',
+    'Indique o nome fiscal da empresa.': 'Indique el nombre fiscal de la empresa.'
 };
 const EU_COUNTRIES = new Set(['PT', 'ES']);
 let companyLookupInFlight = false;
@@ -465,6 +476,15 @@ function getSelectedFiscalCountry() {
     return ['PT', 'ES'].includes(normalized) ? normalized : 'PT';
 }
 
+function normalizeFiscalCountry(value) {
+    const normalized = String(value || '').trim().toUpperCase();
+    return ['PT', 'ES'].includes(normalized) ? normalized : 'PT';
+}
+
+function getDefaultFiscalCountry() {
+    return getCurrentLocale() === 'es' ? 'ES' : 'PT';
+}
+
 function getSelectedAddressCountry() {
     const normalized = String(addressCountrySelect?.value || getSelectedFiscalCountry() || 'PT').trim().toUpperCase();
     return ['PT', 'ES'].includes(normalized) ? normalized : 'PT';
@@ -488,6 +508,10 @@ function isBusinessCustomerSelected() {
 
 function detectTaxCountry(value, postalCode = '') {
     const explicitCountry = getSelectedFiscalCountry();
+    if (['PT', 'ES'].includes(explicitCountry)) {
+        return explicitCountry;
+    }
+
     const normalized = normalizeTaxId(value);
     const normalizedPostalCode = String(postalCode || '').trim().toUpperCase();
 
@@ -641,6 +665,34 @@ function renderPhoneCountryToggle() {
     `;
 }
 
+function renderTaxCountryToggle() {
+    if (!taxCountryToggle) {
+        return;
+    }
+
+    const country = getSelectedFiscalCountry();
+    const config = PHONE_COUNTRIES[country];
+    taxCountryToggle.dataset.country = country;
+    taxCountryToggle.setAttribute('aria-label', `${i18nText('Usar NIF de')} ${i18nText(config.label)}`);
+    taxCountryToggle.setAttribute('title', i18nText('Trocar país fiscal'));
+    taxCountryToggle.innerHTML = `
+        <span class="checkout-phone-flag" aria-hidden="true">${config.flagSvg}</span>
+        <span class="checkout-phone-dial">${country}</span>
+    `;
+}
+
+function syncTaxCountryUI() {
+    const country = getSelectedFiscalCountry();
+    const wrapper = taxCountryToggle?.closest?.('.checkout-tax-field');
+    if (wrapper) {
+        wrapper.dataset.taxCountry = country;
+    }
+    if (nifInput) {
+        nifInput.placeholder = TAX_PLACEHOLDERS[country] || TAX_PLACEHOLDERS.PT;
+    }
+    renderTaxCountryToggle();
+}
+
 function setPhoneCountry(country, { normalizeInput = false, skipValidation = false } = {}) {
     selectedPhoneCountry = normalizePhoneCountry(country);
     const config = PHONE_COUNTRIES[selectedPhoneCountry];
@@ -654,6 +706,47 @@ function setPhoneCountry(country, { normalizeInput = false, skipValidation = fal
     renderPhoneCountryToggle();
     if (!skipValidation) {
         updatePhoneValidity({ normalizeInput });
+    }
+}
+
+function setFiscalCountry(country, {
+    syncAddress = true,
+    preserveAddressRegion = true,
+    updatePhoneCountry = true,
+    validateTax = true,
+    scheduleLookups = true
+} = {}) {
+    const normalizedCountry = normalizeFiscalCountry(country);
+    if (countrySelect) {
+        countrySelect.value = normalizedCountry;
+    }
+
+    syncTaxCountryUI();
+
+    if (syncAddress) {
+        syncAddressCountryFromFiscal({ force: true });
+        populateAddressRegions({ preserveValue: preserveAddressRegion });
+    }
+
+    updatePostalCodeFormatting();
+
+    if (updatePhoneCountry && phoneInput && !String(phoneInput.value || '').trim()) {
+        setPhoneCountry(normalizedCountry, { skipValidation: true });
+    }
+
+    updatePhoneValidity({ allowEmpty: true });
+    applyVatValidationResult(null);
+    setCompanyLookupStatus('');
+
+    if (validateTax) {
+        updateTaxIdValidity();
+    }
+
+    updateFiscalSummary();
+
+    if (scheduleLookups) {
+        scheduleCompanyLookup();
+        schedulePostalLookup();
     }
 }
 
@@ -759,6 +852,7 @@ function syncFiscalCountryFromAddress() {
     }
 
     countrySelect.value = addressCountry;
+    syncTaxCountryUI();
     applyVatValidationResult(null);
     updateTaxIdValidity();
     updatePhoneValidity({ allowEmpty: true });
@@ -1102,17 +1196,21 @@ function updateTaxIdValidity() {
 }
 
 function updateCompanyValidity() {
-    if (!companyInput) {
+    const targetInput = companyInput || nameInput;
+    if (!targetInput) {
         return { valid: true, normalized: '', message: '' };
     }
 
-    const normalized = String(companyInput.value || '').trim();
+    const normalized = String(targetInput.value || '').trim();
     const required = isBusinessCustomerSelected();
     const message = required && !normalized
-        ? 'Indique o nome fiscal da empresa.'
+        ? i18nText('Indique o nome fiscal da empresa.')
         : '';
 
-    companyInput.setCustomValidity(message);
+    targetInput.setCustomValidity(message);
+    if (companyInput && companyInput !== targetInput) {
+        companyInput.setCustomValidity('');
+    }
     return {
         valid: !message,
         normalized,
@@ -1204,8 +1302,12 @@ function applyCompanyLookupResult(customer = {}) {
         return;
     }
 
-    if (companyInput && !String(companyInput.value || '').trim() && String(customer.empresa || '').trim()) {
-        companyInput.value = String(customer.empresa || '').trim();
+    const companyName = String(customer.empresa || '').trim();
+    if (companyInput && !String(companyInput.value || '').trim() && companyName) {
+        companyInput.value = companyName;
+    }
+    if (isBusinessCustomerSelected() && nameInput && !String(nameInput.value || '').trim() && companyName) {
+        nameInput.value = companyName;
     }
 
     if (cityInput && !String(cityInput.value || '').trim() && String(customer.cidade || '').trim()) {
@@ -1375,11 +1477,12 @@ function syncCustomerTypeUI() {
     const business = isBusinessCustomerSelected();
 
     if (contactNameLabel) {
-        contactNameLabel.textContent = business ? i18nText('Pessoa de contacto *') : i18nText('Nome completo *');
+        contactNameLabel.textContent = business ? i18nText('Empresa *') : i18nText('Nome completo *');
     }
-
-    if (companyLabel) {
-        companyLabel.textContent = i18nText('Empresa *');
+    if (nameInput) {
+        nameInput.autocomplete = business ? 'organization' : 'name';
+        nameInput.placeholder = business ? i18nText('Nome fiscal da empresa') : '';
+        nameInput.setCustomValidity('');
     }
 
     if (nifLabel) {
@@ -1944,7 +2047,7 @@ if (placeOrderBtn) {
         const companyValidation = updateCompanyValidity();
         if (!companyValidation.valid) {
             setCheckoutFeedback(companyValidation.message, 'error');
-            revealCheckoutField(companyInput);
+            revealCheckoutField(companyInput || nameInput);
             return;
         }
 
@@ -1983,14 +2086,16 @@ if (placeOrderBtn) {
 
         // Get form data
         const formData = new FormData(checkoutForm);
+        const customerName = String(formData.get('nome') || '').trim();
+        const companyName = String(formData.get('empresa') || '').trim();
         const customerData = {
-            nome: formData.get('nome'),
+            nome: customerName,
             email: formData.get('email'),
             telefone: phoneValidation.normalized,
             tipo_cliente: customerType,
             country: getSelectedFiscalCountry(),
             nif: formData.get('nif') || null,
-            empresa: formData.get('empresa') || null,
+            empresa: customerType === 'empresa' ? (companyName || customerName) : null,
             morada: formData.get('morada'),
             codigo_postal: formData.get('codigo_postal'),
             cidade: formData.get('cidade'),
@@ -2182,23 +2287,20 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
     checkoutForm?.elements?.nome?.addEventListener('input', () => {
+        updateCompanyValidity();
         updateFiscalSummary();
     });
     countrySelect?.addEventListener('change', () => {
-        syncAddressCountryFromFiscal({ force: true });
-        populateAddressRegions({ preserveValue: true });
-        updatePostalCodeFormatting();
-        updateTaxIdValidity();
-        if (phoneInput && !String(phoneInput.value || '').trim()) {
-            setPhoneCountry(getSelectedFiscalCountry(), { skipValidation: true });
-        }
-        updatePhoneValidity({ allowEmpty: true });
-        applyVatValidationResult(null);
-        setCompanyLookupStatus('');
-        updateFiscalSummary();
-        scheduleCompanyLookup();
-        schedulePostalLookup();
+        setFiscalCountry(countrySelect.value);
     });
+    if (taxCountryToggle) {
+        taxCountryToggle.addEventListener('click', () => {
+            const nextCountry = getSelectedFiscalCountry() === 'PT' ? 'ES' : 'PT';
+            setFiscalCountry(nextCountry);
+            clearCheckoutFeedback();
+            nifInput?.focus();
+        });
+    }
     if (toggleOrderNotesBtn) {
         toggleOrderNotesBtn.addEventListener('click', () => {
             const isOpen = toggleOrderNotesBtn.getAttribute('aria-expanded') === 'true';
@@ -2224,6 +2326,11 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    setFiscalCountry(getDefaultFiscalCountry(), {
+        syncAddress: false,
+        validateTax: false,
+        scheduleLookups: false
+    });
     syncAddressCountryFromFiscal({ force: true });
     populateAddressRegions({ preserveValue: true });
     setPhoneCountry(getDefaultPhoneCountry(), { skipValidation: true });

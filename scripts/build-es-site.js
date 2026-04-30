@@ -1047,6 +1047,21 @@ function applyCheckoutOverrides($) {
     $('#customer-type-select option[value="empresa"]').text('Empresa');
     $('#country-select option[value="PT"], #address-country-select option[value="PT"]').text('Portugal');
     $('#country-select option[value="ES"], #address-country-select option[value="ES"]').text('España');
+    $('#country-select, #address-country-select').val('ES');
+    $('.checkout-phone-field').first().attr('data-phone-country', 'ES');
+    $('#phone-country-toggle')
+        .attr('aria-label', 'Usar indicativo de España, +34')
+        .attr('title', 'Cambiar prefijo')
+        .find('.checkout-phone-dial')
+        .text('+34');
+    $('input[name="telefone"]').attr('placeholder', '612 345 678');
+    $('.checkout-tax-field').attr('data-tax-country', 'ES');
+    $('#tax-country-toggle')
+        .attr('aria-label', 'Usar NIF de España')
+        .attr('title', 'Cambiar país fiscal')
+        .find('.checkout-phone-dial')
+        .text('ES');
+    $('#nif-input').attr('placeholder', 'B12345678');
     $('#company-field-row input[name="empresa"]').attr('placeholder', 'Nombre fiscal de la empresa');
     $('#contact-name-label').text('Nombre completo *');
     $('#company-label').text('Empresa *');
