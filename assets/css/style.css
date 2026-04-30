@@ -2655,11 +2655,26 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     display: none !important;
 }
 
+.checkout-page.checkout-payment-active > section {
+    background: #ffffff;
+    padding-top: 0 !important;
+    padding-bottom: 2rem !important;
+}
+
+.checkout-page.checkout-payment-active > section > .max-w-7xl {
+    max-width: none;
+    padding-left: 0;
+    padding-right: 0;
+}
+
 .checkout-page.checkout-payment-active .checkout-main-column {
     grid-column: 1 / -1;
-    max-width: min(100%, 64rem);
+    box-sizing: border-box;
+    max-width: min(100%, 38rem);
     width: 100%;
     margin: 0 auto;
+    padding-left: 0.75rem;
+    padding-right: 0.75rem;
 }
 
 .checkout-page.checkout-payment-active .checkout-main-card {
