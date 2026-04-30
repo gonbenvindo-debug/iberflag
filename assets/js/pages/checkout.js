@@ -59,6 +59,25 @@ const checkoutStepLines = Array.from(document.querySelectorAll('[data-checkout-l
 const checkoutNextButtons = Array.from(document.querySelectorAll('[data-checkout-next]'));
 const checkoutBackButtons = Array.from(document.querySelectorAll('[data-checkout-back]'));
 const CHECKOUT_STEP_ORDER = ['details', 'address', 'payment'];
+const CHECKOUT_STATE_STORAGE_PREFIX = 'iberflag_checkout_state_v1';
+const CHECKOUT_STATE_VERSION = 1;
+const CHECKOUT_STATE_TTL_MS = 24 * 60 * 60 * 1000;
+const CHECKOUT_FORM_FIELD_NAMES = [
+    'tipo_cliente',
+    'nome',
+    'empresa',
+    'email',
+    'telefone',
+    'nif',
+    'country',
+    'pais_entrega',
+    'codigo_postal',
+    'distrito',
+    'concelho',
+    'cidade',
+    'morada',
+    'notas'
+];
 
 const COMMON_EMAIL_DOMAIN_FIXES = {
     'gmail.com.pt': 'gmail.com',
@@ -157,6 +176,9 @@ let embeddedCheckoutInstance = null;
 let activeCheckoutSession = null;
 let currentCheckoutStep = 'details';
 let selectedPhoneCountry = 'PT';
+let checkoutStateReady = false;
+let checkoutStateRestoreInProgress = false;
+let checkoutStateSaveTimer = null;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -183,6 +205,167 @@ function i18nText(value) {
     return window.IberFlagI18n?.translateText
         ? window.IberFlagI18n.translateText(value)
         : value;
+}
+
+function getCheckoutStateStorageKey(locale = getCurrentLocale()) {
+    return `${CHECKOUT_STATE_STORAGE_PREFIX}:${locale === 'es' ? 'es' : 'pt'}`;
+}
+
+function getCheckoutStateStorageKeys() {
+    return [getCheckoutStateStorageKey('pt'), getCheckoutStateStorageKey('es')];
+}
+
+function removeStoredCheckoutState({ allLocales = false } = {}) {
+    try {
+        const keys = allLocales ? getCheckoutStateStorageKeys() : [getCheckoutStateStorageKey()];
+        keys.forEach((key) => localStorage.removeItem(key));
+    } catch (error) {
+        console.warn('Não foi possível limpar o estado do checkout:', error);
+    }
+}
+
+function readStoredCheckoutState() {
+    try {
+        const raw = localStorage.getItem(getCheckoutStateStorageKey());
+        if (!raw) {
+            return null;
+        }
+
+        const state = JSON.parse(raw);
+        const updatedAt = Number(state?.updatedAt || 0);
+        const expired = !updatedAt || Date.now() - updatedAt > CHECKOUT_STATE_TTL_MS;
+        if (state?.version !== CHECKOUT_STATE_VERSION || expired) {
+            removeStoredCheckoutState();
+            return null;
+        }
+
+        return state;
+    } catch (error) {
+        console.warn('Não foi possível restaurar o estado do checkout:', error);
+        removeStoredCheckoutState();
+        return null;
+    }
+}
+
+function getCheckoutCartFingerprint(items = cart) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return '';
+    }
+
+    return JSON.stringify(items.map((item) => ({
+        id: item?.id ?? null,
+        quantity: Number(item?.quantity || 1),
+        customized: Boolean(item?.customized),
+        designId: String(item?.designId || item?.design_id || ''),
+        baseId: String(item?.baseId || item?.base_id || ''),
+        preco: Number(item?.preco || 0)
+    })));
+}
+
+function collectCheckoutFormState() {
+    const values = {};
+    if (!checkoutForm) {
+        return values;
+    }
+
+    CHECKOUT_FORM_FIELD_NAMES.forEach((name) => {
+        const field = checkoutForm.elements?.[name];
+        if (!field || typeof field.value === 'undefined') {
+            return;
+        }
+        values[name] = field.value;
+    });
+
+    return values;
+}
+
+function getSanitizedCheckoutSession(session = activeCheckoutSession) {
+    const sessionId = String(session?.sessionId || '').trim();
+    const orderCode = String(session?.orderCode || '').trim();
+    const clientSecret = String(session?.clientSecret || '').trim();
+    const publishableKey = String(session?.publishableKey || '').trim();
+    if (!sessionId || !clientSecret || !publishableKey) {
+        return null;
+    }
+
+    return {
+        sessionId,
+        orderCode,
+        clientSecret,
+        publishableKey
+    };
+}
+
+function buildCheckoutStatePayload({ activeSession = activeCheckoutSession } = {}) {
+    return {
+        version: CHECKOUT_STATE_VERSION,
+        updatedAt: Date.now(),
+        locale: getCurrentLocale(),
+        cartFingerprint: getCheckoutCartFingerprint(),
+        step: CHECKOUT_STEP_ORDER.includes(currentCheckoutStep) ? currentCheckoutStep : 'details',
+        form: collectCheckoutFormState(),
+        phoneCountry: getSelectedPhoneCountry(),
+        addressCountryTouched: Boolean(addressCountryTouched),
+        lastAutoCityValue: String(lastAutoCityValue || ''),
+        notesOpen: toggleOrderNotesBtn?.getAttribute('aria-expanded') === 'true',
+        designReviewSelected: Boolean(designReviewCheckbox?.checked),
+        termsAccepted: Boolean(termsCheckbox?.checked),
+        billingSameAsShipping: billingSameAsShippingCheckbox?.checked !== false,
+        paymentActive: Boolean(document.body?.classList.contains('checkout-payment-active')),
+        activeSession: getSanitizedCheckoutSession(activeSession)
+    };
+}
+
+function persistCheckoutState({ force = false, activeSession = activeCheckoutSession } = {}) {
+    if ((!checkoutStateReady && !force) || checkoutStateRestoreInProgress || !checkoutForm) {
+        return;
+    }
+
+    const cartFingerprint = getCheckoutCartFingerprint();
+    if (!cartFingerprint) {
+        removeStoredCheckoutState();
+        return;
+    }
+
+    try {
+        const payload = buildCheckoutStatePayload({ activeSession });
+        localStorage.setItem(getCheckoutStateStorageKey(), JSON.stringify(payload));
+    } catch (error) {
+        console.warn('Não foi possível guardar o estado do checkout:', error);
+    }
+}
+
+function schedulePersistCheckoutState() {
+    if (!checkoutStateReady || checkoutStateRestoreInProgress) {
+        return;
+    }
+
+    if (checkoutStateSaveTimer) {
+        window.clearTimeout(checkoutStateSaveTimer);
+    }
+
+    checkoutStateSaveTimer = window.setTimeout(() => {
+        checkoutStateSaveTimer = null;
+        persistCheckoutState();
+    }, 150);
+}
+
+function clearPersistedCheckoutSession() {
+    const state = readStoredCheckoutState();
+    if (!state) {
+        return;
+    }
+
+    state.updatedAt = Date.now();
+    state.paymentActive = false;
+    state.activeSession = null;
+    state.step = CHECKOUT_STEP_ORDER.includes(currentCheckoutStep) ? currentCheckoutStep : 'payment';
+
+    try {
+        localStorage.setItem(getCheckoutStateStorageKey(), JSON.stringify(state));
+    } catch (error) {
+        console.warn('Não foi possível limpar a sessão guardada do checkout:', error);
+    }
 }
 
 function getLocalizedStaticPath(pathname, fallback) {
@@ -262,6 +445,7 @@ function setCheckoutStep(step = 'details', { scroll = false } = {}) {
     });
 
     document.body?.setAttribute('data-checkout-step', normalizedStep);
+    schedulePersistCheckoutState();
 
     if (scroll) {
         const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === normalizedStep);
@@ -709,6 +893,7 @@ function setPhoneCountry(country, { normalizeInput = false, skipValidation = fal
     if (!skipValidation) {
         updatePhoneValidity({ normalizeInput });
     }
+    schedulePersistCheckoutState();
 }
 
 function setFiscalCountry(country, {
@@ -750,6 +935,7 @@ function setFiscalCountry(country, {
         scheduleCompanyLookup();
         schedulePostalLookup();
     }
+    schedulePersistCheckoutState();
 }
 
 function normalizeCheckoutPhone(value) {
@@ -1012,6 +1198,7 @@ function setAddressSelection({ country, region, municipality, city, forceCity = 
         cityInput.value = resolvedCity;
         lastAutoCityValue = resolvedCity;
     }
+    schedulePersistCheckoutState();
 }
 
 function clearAutoCityIfStillOwned() {
@@ -1591,6 +1778,117 @@ function syncOrderNotesVisibility({ forceOpen = null } = {}) {
     if (!shouldOpen && notesTextarea) {
         notesTextarea.value = '';
     }
+    schedulePersistCheckoutState();
+}
+
+function setCheckoutFormFieldValue(name, value) {
+    const field = checkoutForm?.elements?.[name];
+    if (!field || typeof field.value === 'undefined') {
+        return;
+    }
+    field.value = value ?? '';
+}
+
+function restoreCheckoutFormState(state) {
+    const formState = state?.form || {};
+    checkoutStateRestoreInProgress = true;
+
+    try {
+        if (customerTypeSelect && formState.tipo_cliente) {
+            customerTypeSelect.value = normalizeCustomerType(formState.tipo_cliente);
+        }
+
+        const fiscalCountry = normalizeFiscalCountry(formState.country || getDefaultFiscalCountry());
+        setFiscalCountry(fiscalCountry, {
+            syncAddress: false,
+            updatePhoneCountry: false,
+            validateTax: false,
+            scheduleLookups: false
+        });
+
+        const addressCountry = normalizeFiscalCountry(formState.pais_entrega || fiscalCountry);
+        if (addressCountrySelect) {
+            addressCountrySelect.value = addressCountry;
+            populateAddressRegions({ preserveValue: false });
+        }
+
+        [
+            'nome',
+            'empresa',
+            'email',
+            'telefone',
+            'nif',
+            'codigo_postal',
+            'cidade',
+            'morada',
+            'notas'
+        ].forEach((name) => {
+            setCheckoutFormFieldValue(name, formState[name] || '');
+        });
+
+        if (formState.distrito && addressRegionSelect) {
+            const matchingRegion = findAddressRegion(formState.distrito);
+            if (matchingRegion) {
+                addressRegionSelect.value = matchingRegion.name;
+                populateAddressMunicipalities({ preserveValue: false });
+            }
+        }
+
+        if (formState.concelho && addressMunicipalitySelect) {
+            const selectedRegion = findAddressRegion(addressRegionSelect?.value || '');
+            const matchingMunicipality = findAddressMunicipality(selectedRegion, formState.concelho);
+            if (matchingMunicipality) {
+                addressMunicipalitySelect.value = matchingMunicipality;
+            }
+        }
+
+        if (designReviewCheckbox) {
+            designReviewCheckbox.checked = Boolean(state?.designReviewSelected);
+        }
+        if (termsCheckbox) {
+            termsCheckbox.checked = Boolean(state?.termsAccepted);
+        }
+        if (billingSameAsShippingCheckbox) {
+            billingSameAsShippingCheckbox.checked = state?.billingSameAsShipping !== false;
+        }
+
+        addressCountryTouched = Boolean(state?.addressCountryTouched);
+        lastAutoCityValue = String(state?.lastAutoCityValue || '');
+        setPhoneCountry(state?.phoneCountry || getDefaultPhoneCountry(), { skipValidation: true });
+        syncCustomerTypeUI();
+        updatePostalCodeFormatting();
+        updateEmailValidity();
+        updatePhoneValidity({ allowEmpty: true });
+        updateTaxIdValidity();
+        updateFiscalSummary();
+        syncOrderNotesVisibility({
+            forceOpen: Boolean(state?.notesOpen || String(formState.notas || '').trim())
+        });
+        renderCheckoutSummary(cart);
+
+        const savedStep = CHECKOUT_STEP_ORDER.includes(state?.step) ? state.step : 'details';
+        if (!state?.paymentActive || !getSanitizedCheckoutSession(state?.activeSession)) {
+            setCheckoutStep(savedStep, { scroll: false });
+        }
+    } finally {
+        checkoutStateRestoreInProgress = false;
+    }
+}
+
+function restoreCheckoutStateAfterCartLoad() {
+    const state = readStoredCheckoutState();
+    if (!state) {
+        return null;
+    }
+
+    const currentCartFingerprint = getCheckoutCartFingerprint();
+    if (!currentCartFingerprint || state.cartFingerprint !== currentCartFingerprint) {
+        removeStoredCheckoutState();
+        return null;
+    }
+
+    restoreCheckoutFormState(state);
+    return state;
 }
 
 function isSupabaseReady() {
@@ -1732,7 +2030,7 @@ function setCheckoutEmbedLoading(isLoading) {
     }
 }
 
-async function destroyEmbeddedCheckout() {
+async function destroyEmbeddedCheckout({ clearPersistedSession = true } = {}) {
     if (embeddedCheckoutInstance) {
         try {
             if (typeof embeddedCheckoutInstance.destroy === 'function') {
@@ -1764,6 +2062,10 @@ async function destroyEmbeddedCheckout() {
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+
+    if (clearPersistedSession) {
+        clearPersistedCheckoutSession();
     }
 }
 
@@ -1818,7 +2120,7 @@ async function mountEmbeddedCheckout(sessionPayload) {
         throw new Error(i18nText('O checkout seguro não está disponível neste momento.'));
     }
 
-    await destroyEmbeddedCheckout();
+    await destroyEmbeddedCheckout({ clearPersistedSession: false });
 
     activeCheckoutSession = {
         sessionId: String(sessionPayload.sessionId || '').trim(),
@@ -1831,6 +2133,7 @@ async function mountEmbeddedCheckout(sessionPayload) {
     setCheckoutInputsLocked(true);
     setElementHidden(checkoutEmbedShell, false);
     setCheckoutEmbedLoading(true);
+    persistCheckoutState({ force: true });
     scrollToEmbeddedCheckout();
 
     try {
@@ -1844,6 +2147,7 @@ async function mountEmbeddedCheckout(sessionPayload) {
         embeddedCheckoutInstance.mount('#checkout-embed-container');
         setCheckoutEmbedLoading(false);
         setPlaceOrderLoadedState();
+        persistCheckoutState({ force: true });
         scrollToEmbeddedCheckout();
     } catch (error) {
         await destroyEmbeddedCheckout();
@@ -2243,6 +2547,17 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 
+    checkoutForm?.addEventListener('input', schedulePersistCheckoutState);
+    checkoutForm?.addEventListener('change', schedulePersistCheckoutState);
+    window.addEventListener('pagehide', () => {
+        persistCheckoutState({ force: true });
+    });
+    document.addEventListener('visibilitychange', () => {
+        if (document.visibilityState === 'hidden') {
+            persistCheckoutState({ force: true });
+        }
+    });
+
     if (emailInput) {
         emailInput.addEventListener('input', () => {
             updateEmailValidity();
@@ -2325,6 +2640,7 @@ document.addEventListener('DOMContentLoaded', () => {
         updatePostalCodeFormatting();
         syncFiscalCountryFromAddress();
         schedulePostalLookup();
+        schedulePersistCheckoutState();
     });
     addressRegionSelect?.addEventListener('change', () => {
         populateAddressMunicipalities({ preserveValue: false });
@@ -2378,6 +2694,7 @@ document.addEventListener('DOMContentLoaded', () => {
         designReviewCheckbox.addEventListener('change', () => {
             clearCheckoutFeedback();
             renderCheckoutSummary(cart);
+            schedulePersistCheckoutState();
         });
     }
 
@@ -2393,5 +2710,26 @@ document.addEventListener('DOMContentLoaded', () => {
     syncOrderNotesVisibility();
     updateFiscalSummary();
 
-    void loadCart();
+    void (async () => {
+        await loadCart();
+        const restoredState = restoreCheckoutStateAfterCartLoad();
+        const restoredSession = restoredState?.paymentActive
+            ? getSanitizedCheckoutSession(restoredState.activeSession)
+            : null;
+        checkoutStateReady = true;
+
+        if (restoredSession) {
+            try {
+                await mountEmbeddedCheckout(restoredSession);
+            } catch (error) {
+                console.warn('Não foi possível restaurar o pagamento em aberto:', error);
+                const message = getCheckoutErrorMessage(error);
+                setCheckoutFeedback(message, 'error');
+                setCheckoutStep('payment');
+                persistCheckoutState({ force: true, activeSession: null });
+            }
+        } else {
+            persistCheckoutState({ force: true });
+        }
+    })();
 });

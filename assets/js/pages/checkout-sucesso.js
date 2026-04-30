@@ -50,6 +50,8 @@ function updateState(title, message) {
 function clearConfirmedCheckoutCart() {
     localStorage.removeItem('iberflag_cart');
     localStorage.removeItem('cart');
+    localStorage.removeItem('iberflag_checkout_state_v1:pt');
+    localStorage.removeItem('iberflag_checkout_state_v1:es');
 
     if (window.CartAssetStore?.cleanupUnusedDesigns) {
         window.CartAssetStore.cleanupUnusedDesigns([]).catch((cleanupError) => {
