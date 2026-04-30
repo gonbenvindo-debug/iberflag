@@ -1069,6 +1069,10 @@ function applyCheckoutOverrides($) {
     $('input[name="telefone"]').closest('div').find('label').first().text('Móvil / teléfono *');
     $('select[name="pais_entrega"]').closest('div').find('label').first().text('País de entrega *');
     $('input[name="codigo_postal"]').closest('div').find('label').first().text('Código postal *');
+    $('#address-region-label').text('Provincia *');
+    $('#address-municipality-label').text('Municipio *');
+    $('#address-region-select option').first().text('Elija la provincia');
+    $('#address-municipality-select option').first().text('Elija primero la provincia');
     $('input[name="morada"]').closest('div').find('label').first().text('Dirección *');
     $('input[name="cidade"]').closest('div').find('label').first().text('Ciudad *');
     $('#toggle-order-notes').text('Añadir nota al pedido');

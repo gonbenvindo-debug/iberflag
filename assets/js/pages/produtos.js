@@ -625,7 +625,7 @@ function buildTemplateLoadingCard() {
 
 function buildTemplateGalleryCard({ action, title, meta = '', previewMarkup, templateId = '' }) {
     const ariaLabel = action === 'blank'
-        ? 'Come?ar em branco'
+        ? 'Começar em branco'
         : `Selecionar template ${title}`;
 
     return `

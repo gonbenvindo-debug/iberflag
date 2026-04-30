@@ -390,7 +390,7 @@
                 filtered = filtered.filter(t =>
                     t.nome.toLowerCase().includes(term) ||
                     (t.descrição && t.descrição.toLowerCase().includes(term)) ||
-                    (t.tags && t.tags.s?me(tag => tag.toLowerCase().includes(term)))
+                    (t.tags && t.tags.some(tag => tag.toLowerCase().includes(term)))
                 );
             }
 

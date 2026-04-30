@@ -23,8 +23,8 @@
         }, true);
 
         window.addEventListener('unhandledrejection', (event) => {
-            const reas?n = String(event.reas?n?.stack || event.reas?n?.message || event.reas?n || '');
-            if (reas?n.includes('bootstrap-autofill-overlay') || reas?n.includes('AutofillOverlayContentService')) {
+            const reason = String(event.reason?.stack || event.reason?.message || event.reason || '');
+            if (reason.includes('bootstrap-autofill-overlay') || reason.includes('AutofillOverlayContentService')) {
                 event.preventDefault();
                 return true;
             }

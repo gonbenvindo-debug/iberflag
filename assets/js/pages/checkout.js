@@ -823,6 +823,49 @@ function getAddressRegions() {
     return Array.isArray(config?.regions) ? config.regions : [];
 }
 
+function getAddressLocationCopy() {
+    const locale = getCurrentLocale();
+    const country = getSelectedAddressCountry();
+    const config = getLocationConfig();
+    const isSpanishCountry = country === 'ES';
+
+    if (locale === 'es') {
+        return isSpanishCountry
+            ? {
+                regionLabel: 'Provincia',
+                municipalityLabel: 'Municipio',
+                chooseRegion: 'Elija la provincia',
+                chooseMunicipality: 'Elija el municipio',
+                chooseFirstRegion: 'Elija primero la provincia'
+            }
+            : {
+                regionLabel: config?.regionLabel || 'Distrito / isla',
+                municipalityLabel: config?.municipalityLabel || 'Municipio',
+                chooseRegion: 'Elija el distrito / isla',
+                chooseMunicipality: 'Elija el municipio',
+                chooseFirstRegion: 'Elija primero el distrito / isla'
+            };
+    }
+
+    if (isSpanishCountry) {
+        return {
+            regionLabel: 'Província',
+            municipalityLabel: 'Município',
+            chooseRegion: 'Escolha a província',
+            chooseMunicipality: 'Escolha o município',
+            chooseFirstRegion: 'Escolha primeiro a província'
+        };
+    }
+
+    return {
+        regionLabel: config?.regionLabel || 'Distrito / ilha',
+        municipalityLabel: config?.municipalityLabel || 'Concelho',
+        chooseRegion: 'Escolha o distrito / ilha',
+        chooseMunicipality: 'Escolha o concelho',
+        chooseFirstRegion: 'Escolha primeiro o distrito / ilha'
+    };
+}
+
 function findAddressRegion(regionName = '') {
     const wanted = normalizeLocationKey(regionName);
     if (!wanted) {
@@ -878,11 +921,12 @@ function syncAddressCountryFromFiscal({ force = false } = {}) {
 
 function updateAddressLabels() {
     const config = getLocationConfig();
+    const copy = getAddressLocationCopy();
     if (addressRegionLabel) {
-        addressRegionLabel.textContent = `${i18nText(config?.regionLabel || 'Distrito / província')} *`;
+        addressRegionLabel.textContent = `${copy.regionLabel} *`;
     }
     if (addressMunicipalityLabel) {
-        addressMunicipalityLabel.textContent = `${i18nText(config?.municipalityLabel || 'Concelho / município')} *`;
+        addressMunicipalityLabel.textContent = `${copy.municipalityLabel} *`;
     }
     if (postalCodeInput && config?.postalPlaceholder) {
         postalCodeInput.placeholder = config.postalPlaceholder;
@@ -896,9 +940,9 @@ function populateAddressMunicipalities({ preserveValue = true } = {}) {
 
     const previousValue = preserveValue ? addressMunicipalitySelect.value : '';
     const region = findAddressRegion(addressRegionSelect?.value || '');
-    const municipalityLabel = getLocationConfig()?.municipalityLabel || 'concelho';
+    const copy = getAddressLocationCopy();
     if (!region) {
-        setSelectOptions(addressMunicipalitySelect, [], `${i18nText('Escolha primeiro o')} ${i18nText(getLocationConfig()?.regionLabel?.toLowerCase() || 'distrito')}`);
+        setSelectOptions(addressMunicipalitySelect, [], copy.chooseFirstRegion);
         addressMunicipalitySelect.value = '';
         addressMunicipalitySelect.disabled = true;
         return;
@@ -908,7 +952,7 @@ function populateAddressMunicipalities({ preserveValue = true } = {}) {
     setSelectOptions(
         addressMunicipalitySelect,
         (region.municipalities || []).map((municipality) => ({ value: municipality, label: municipality })),
-        `${i18nText('Escolha o')} ${i18nText(municipalityLabel.toLowerCase())}`
+        copy.chooseMunicipality
     );
 
     const matchingValue = findAddressMunicipality(region, previousValue);
@@ -926,10 +970,11 @@ function populateAddressRegions({ preserveValue = true } = {}) {
 
     const previousValue = preserveValue ? addressRegionSelect.value : '';
     const regions = getAddressRegions();
+    const copy = getAddressLocationCopy();
     setSelectOptions(
         addressRegionSelect,
         regions.map((region) => ({ value: region.name, label: region.name })),
-        `${i18nText('Escolha o')} ${i18nText((getLocationConfig()?.regionLabel || 'distrito').toLowerCase())}`
+        copy.chooseRegion
     );
 
     const matchingRegion = findAddressRegion(previousValue);
