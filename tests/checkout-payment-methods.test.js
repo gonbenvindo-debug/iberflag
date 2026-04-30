@@ -10,10 +10,12 @@ const {
 test('checkout aceita modo dinamico para pagamento embebido', () => {
     assert.equal(normalizePaymentMethodType('dynamic'), 'dynamic');
     assert.equal(getPaymentMethodLabel('dynamic'), 'Pagamento online');
-    assert.deepEqual(resolveStripePaymentMethodTypes('dynamic'), []);
+    assert.deepEqual(resolveStripePaymentMethodTypes('dynamic', 'PT'), ['card', 'mb_way', 'multibanco']);
+    assert.deepEqual(resolveStripePaymentMethodTypes('dynamic', 'ES'), ['card', 'bizum']);
 });
 
 test('checkout mantem normalizacao dos metodos legados', () => {
     assert.equal(normalizePaymentMethodType('mbway'), 'mbway');
     assert.deepEqual(resolveStripePaymentMethodTypes('multibanco'), ['multibanco']);
+    assert.deepEqual(resolveStripePaymentMethodTypes('bizum'), ['bizum']);
 });

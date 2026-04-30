@@ -1598,13 +1598,15 @@ function setCheckoutFeedback(message, type = 'error') {
         info: 'border-slate-200 bg-slate-50 text-slate-700'
     };
 
-    checkoutFeedback.className = `rounded-xl border px-4 py-3 text-sm font-medium ${palette[type] || palette.error}`;
+    checkoutFeedback.hidden = false;
+    checkoutFeedback.className = `checkout-feedback rounded-xl border px-4 py-3 text-sm font-medium ${palette[type] || palette.error}`;
     checkoutFeedback.textContent = message;
     checkoutFeedback.classList.remove('hidden');
 }
 
 function clearCheckoutFeedback() {
     if (!checkoutFeedback) return;
+    checkoutFeedback.hidden = true;
     checkoutFeedback.classList.add('hidden');
     checkoutFeedback.textContent = '';
 }

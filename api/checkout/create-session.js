@@ -4,7 +4,8 @@ const {
     buildStripeLineItem,
     generateOrderNumber,
     normalizeCheckoutServiceOptions,
-    normalizePaymentMethodType
+    normalizePaymentMethodType,
+    resolveStripePaymentMethodTypes
 } = require('../../lib/server/checkout');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
 const { getStripeClient, getStripePublishableKey } = require('../../lib/server/stripe');
@@ -554,6 +555,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             codigo: orderNumber
         })}`;
 
+        const checkoutCountryCode = resolveCheckoutCountryCode(customerSnapshot);
+        const stripePaymentMethodTypes = resolveStripePaymentMethodTypes(
+            selectedPaymentMethod,
+            checkoutCountryCode
+        );
+
         const session = await stripe.checkout.sessions.create({
             mode: 'payment',
             ui_mode: 'embedded',
@@ -561,6 +568,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             return_url: returnUrl,
             client_reference_id: orderNumber,
             customer_email: customerSnapshot.email,
+            payment_method_types: stripePaymentMethodTypes,
             metadata: {
                 order_code: orderNumber,
                 order_id: String(order.id),
