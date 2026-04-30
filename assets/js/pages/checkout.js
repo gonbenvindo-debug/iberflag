@@ -221,8 +221,10 @@ function setElementHidden(element, hidden) {
         return;
     }
 
-    element.classList.toggle('hidden', hidden);
-    element.setAttribute('aria-hidden', hidden ? 'true' : 'false');
+    const shouldHide = Boolean(hidden);
+    element.hidden = shouldHide;
+    element.classList.toggle('hidden', shouldHide);
+    element.setAttribute('aria-hidden', shouldHide ? 'true' : 'false');
 }
 
 function getCheckoutStepIndex(step) {

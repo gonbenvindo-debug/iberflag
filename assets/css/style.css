@@ -2613,6 +2613,10 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     font-weight: 500;
 }
 
+.checkout-embed-loader.hidden {
+    display: none !important;
+}
+
 .checkout-embed-container {
     min-height: 0;
     overflow: hidden;
@@ -2645,23 +2649,34 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
 
 .checkout-page.checkout-payment-active .checkout-main-column {
     grid-column: 1 / -1;
-    max-width: 58rem;
+    max-width: min(100%, 76rem);
     width: 100%;
     margin: 0 auto;
 }
 
 .checkout-page.checkout-payment-active .checkout-main-card {
+    background: transparent;
+    border: 0;
+    border-radius: 0;
+    box-shadow: none;
     overflow: visible;
 }
 
 .checkout-page.checkout-payment-active .checkout-step-panel[data-checkout-panel="payment"] {
-    padding: clamp(1rem, 3vw, 1.75rem);
+    padding: 0;
 }
 
 .checkout-page.checkout-payment-active .checkout-embed-shell {
     margin-top: 0;
     padding-top: 0;
     border-top: 0;
+}
+
+.checkout-page.checkout-payment-active .checkout-embed-container {
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    overflow: visible;
 }
 
 .checkout-main-card .app-section-title,
