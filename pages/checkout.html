@@ -27,7 +27,7 @@
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
     <script src="/assets/js/core/logic.js?v=20260429q2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260430phone1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260430clean1">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -101,11 +101,10 @@
                                         Dados
                                     </div>
                                     <h2 class="app-section-title">Contacto e faturação</h2>
-                                    <p class="app-section-subtitle mt-1">Dados mínimos para identificar a encomenda e preparar o pagamento.</p>
                                 </div>
 
                                 <div class="checkout-form-section checkout-form-section-first">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                         <div>
                                             <label id="contact-name-label" class="form-label">Nome completo *</label>
                                             <input type="text" name="nome" required="" class="form-input" autocomplete="name">
@@ -114,8 +113,6 @@
                                             <label class="form-label">Email *</label>
                                             <input type="text" name="email" required="" class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label class="form-label">Telemóvel / telefone *</label>
                                             <div class="checkout-phone-field" data-phone-country="PT">
@@ -125,29 +122,19 @@
                                                 </button>
                                                 <input type="text" name="telefone" required="" class="form-input checkout-phone-input" autocomplete="tel-national" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="912 345 678">
                                             </div>
-                                            <p id="phone-help" class="checkout-phone-help">Não precisa escrever +351.</p>
                                         </div>
-                                    </div>
-                                </div>
-
-                                <div class="checkout-form-section">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                                         <div>
                                             <label class="form-label">Tipo de faturação</label>
                                             <select id="customer-type-select" name="tipo_cliente" class="form-input">
                                                 <option value="particular" selected="">Particular</option>
                                                 <option value="empresa">Empresa</option>
                                             </select>
-                                            <p id="customer-type-description" class="mt-2 text-xs text-slate-500">O NIF continua opcional para particulares.</p>
                                         </div>
                                         <div id="tax-field-row">
                                             <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
                                             <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12" placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
-                                            <p id="nif-help" class="mt-2 text-xs text-slate-500">Preencha se quiser associar número fiscal à encomenda.</p>
                                             <p id="company-lookup-status" class="hidden"></p>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label class="form-label">País fiscal *</label>
                                             <select id="country-select" name="country" class="form-input" required="">
@@ -177,19 +164,17 @@
                                         Morada
                                     </div>
                                     <h2 class="app-section-title">Entrega e faturação</h2>
-                                    <p class="app-section-subtitle mt-1">Use uma única morada para simplificar a encomenda.</p>
                                 </div>
 
                                 <label class="checkout-same-address">
                                     <input type="checkbox" id="billing-same-as-shipping" class="custom-checkbox" checked="">
                                     <span>
                                         <strong>Usar esta morada para entrega e faturação</strong>
-                                        <small>Não pedimos uma segunda morada.</small>
                                     </span>
                                 </label>
 
                                 <div class="checkout-form-section checkout-form-section-first">
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
                                         <div>
                                             <label class="form-label">País de entrega *</label>
                                             <select id="address-country-select" name="pais_entrega" class="form-input" required="" autocomplete="country">
@@ -201,8 +186,6 @@
                                             <label class="form-label">Código postal *</label>
                                             <input type="text" name="codigo_postal" required="" class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label id="address-region-label" class="form-label">Distrito / ilha *</label>
                                             <select id="address-region-select" name="distrito" class="form-input" required="" autocomplete="address-level1">
@@ -215,8 +198,6 @@
                                                 <option value="">Escolha primeiro o distrito</option>
                                             </select>
                                         </div>
-                                    </div>
-                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
                                         <div>
                                             <label class="form-label">Localidade / cidade *</label>
                                             <input type="text" name="cidade" required="" class="form-input" autocomplete="address-level2" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Madrid...">
@@ -247,22 +228,9 @@
                                         Pagamento
                                     </div>
                                     <h2 class="app-section-title">Rever e pagar</h2>
-                                    <p class="app-section-subtitle mt-1">O pagamento abre aqui na loja com Stripe.</p>
                                 </div>
 
-                                <div id="checkout-payment-intro" class="checkout-payment-intro">
-                                    <div class="checkout-payment-copy">
-                                        <i data-lucide="credit-card" class="w-5 h-5"></i>
-                                        <span>Cartão, MB Way e Multibanco aparecem conforme disponibilidade.</span>
-                                    </div>
-                                    <div class="checkout-payment-methods" aria-label="Métodos de pagamento">
-                                        <span class="checkout-method-pill"><i data-lucide="credit-card" class="w-4 h-4"></i>Cartão</span>
-                                        <span class="checkout-method-pill"><i data-lucide="smartphone" class="w-4 h-4"></i>MB Way</span>
-                                        <span class="checkout-method-pill"><i data-lucide="landmark" class="w-4 h-4"></i>Multibanco</span>
-                                    </div>
-                                </div>
-
-                                <div class="checkout-form-section checkout-form-section-optional">
+                                <div class="checkout-form-section checkout-form-section-first checkout-form-section-optional">
                                     <button type="button" id="toggle-order-notes" class="checkout-text-toggle" aria-expanded="false" aria-controls="order-notes-field">
                                         Adicionar nota à encomenda
                                     </button>
@@ -300,13 +268,9 @@
                                     </button>
                                 </div>
 
-                                <div id="checkout-locked-note" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
-                                    Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.
-                                </div>
                                 <div id="checkout-embed-shell" class="hidden checkout-embed-shell">
                                     <div class="mb-4">
                                         <h3 class="text-base font-semibold text-slate-900">Pagamento seguro</h3>
-                                        <p class="mt-1 text-sm leading-6 text-slate-600">Complete o pagamento abaixo para confirmar a encomenda.</p>
                                     </div>
                                     <div id="checkout-embed-loader" class="checkout-embed-loader">
                                         <div class="spinner"></div>
@@ -322,7 +286,6 @@
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Confirme produtos, quantidades e total antes de pagar.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -341,20 +304,6 @@
                                 <span>Total</span>
                                 <span id="total" class="checkout-total">0.00€</span>
                             </div>
-                        </div>
-                        <div class="mt-6 p-4 checkout-shipping-box rounded-xl border">
-                            <div class="flex items-start gap-2">
-                                <i data-lucide="truck" class="w-5 h-5 text-emerald-700 flex-shrink-0 mt-0.5"></i>
-                                <div class="text-sm text-emerald-900">
-                                    <p class="font-semibold">Envio grátis</p>
-                                    <p id="free-shipping-msg">Envio grátis para Portugal e Espanha, confirmado com base na morada de entrega.</p>
-                                    <span id="remaining" class="hidden">0.00€</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div class="checkout-summary-note">
-                            <i data-lucide="shield-check" class="w-4 h-4"></i>
-                            <span>Pagamento seguro dentro da loja.</span>
                         </div>
                     </div>
                 </div>
@@ -407,7 +356,7 @@
 
     <script src="/assets/js/core/order-workflow.js"></script>
     <script src="/assets/js/pages/checkout-location-data.js?v=20260421a"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260430phone2"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260430clean1"></script>
     <script>
         lucide.createIcons();
     </script>

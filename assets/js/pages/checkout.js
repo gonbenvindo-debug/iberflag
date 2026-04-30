@@ -10,8 +10,6 @@ const orderItems = document.getElementById('order-items');
 const subtotalEl = document.getElementById('subtotal');
 const shippingEl = document.getElementById('shipping');
 const totalEl = document.getElementById('total');
-const remainingEl = document.getElementById('remaining');
-const freeShippingMsg = document.getElementById('free-shipping-msg');
 const placeOrderBtn = document.getElementById('place-order-btn');
 const designReviewCheckbox = document.getElementById('design-review-checkbox');
 const designReviewRow = document.getElementById('design-review-row');
@@ -19,11 +17,9 @@ const designReviewAmountEl = document.getElementById('design-review-amount');
 const termsCheckbox = document.getElementById('terms-checkbox');
 const checkoutFeedback = document.getElementById('checkout-feedback');
 const customerTypeSelect = document.getElementById('customer-type-select');
-const customerTypeDescription = document.getElementById('customer-type-description');
 const nifInput = document.getElementById('nif-input');
 const phoneInput = checkoutForm?.elements?.telefone || null;
 const phoneCountryToggle = document.getElementById('phone-country-toggle');
-const phoneHelp = document.getElementById('phone-help');
 const emailInput = checkoutForm?.elements?.email || null;
 const postalCodeInput = checkoutForm?.elements?.codigo_postal || null;
 const cityInput = checkoutForm?.elements?.cidade || null;
@@ -31,7 +27,6 @@ const companyInput = checkoutForm?.elements?.empresa || null;
 const contactNameLabel = document.getElementById('contact-name-label');
 const companyLabel = document.getElementById('company-label');
 const nifLabel = document.getElementById('nif-label');
-const nifHelp = document.getElementById('nif-help');
 const companyLookupStatus = document.getElementById('company-lookup-status');
 const companyFieldRow = document.getElementById('company-field-row');
 const toggleOrderNotesBtn = document.getElementById('toggle-order-notes');
@@ -88,7 +83,6 @@ const PHONE_COUNTRIES = {
         label: 'Portugal',
         dialCode: '+351',
         placeholder: '912 345 678',
-        help: 'Não precisa escrever +351.',
         pattern: /^[29]\d{8}$/,
         invalidMessage: 'Introduza um número português com 9 dígitos válido.',
         flagSvg: `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -102,7 +96,6 @@ const PHONE_COUNTRIES = {
         label: 'Espanha',
         dialCode: '+34',
         placeholder: '612 345 678',
-        help: 'Não precisa escrever +34.',
         pattern: /^[6789]\d{8}$/,
         invalidMessage: 'Introduza um número espanhol com 9 dígitos válido.',
         flagSvg: `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
@@ -128,8 +121,6 @@ const ES_TEXT = {
     'Cartão, MB Way e Multibanco aparecem conforme disponibilidade.': 'Tarjeta, MB Way y Multibanco aparecen según disponibilidad.',
     'Complete o pagamento abaixo para confirmar a encomenda.': 'Complete el pago abajo para confirmar el pedido.',
     'Grátis': 'Gratis',
-    'Não precisa escrever +351.': 'No necesita escribir +351.',
-    'Não precisa escrever +34.': 'No necesita escribir +34.',
     'Introduza um número de telemóvel ou telefone válido.': 'Introduzca un número de móvil o teléfono válido.',
     'Introduza um número português com 9 dígitos válido.': 'Introduzca un número portugués válido de 9 dígitos.',
     'Introduza um número espanhol com 9 dígitos válido.': 'Introduzca un número español válido de 9 dígitos.',
@@ -659,9 +650,6 @@ function setPhoneCountry(country, { normalizeInput = false, skipValidation = fal
     }
     if (phoneInput) {
         phoneInput.placeholder = config.placeholder;
-    }
-    if (phoneHelp) {
-        phoneHelp.textContent = i18nText(config.help);
     }
     renderPhoneCountryToggle();
     if (!skipValidation) {
@@ -1386,12 +1374,6 @@ async function lookupCompanyByTaxId({ force = false } = {}) {
 function syncCustomerTypeUI() {
     const business = isBusinessCustomerSelected();
 
-    if (customerTypeDescription) {
-        customerTypeDescription.textContent = business
-            ? i18nText('Mostramos os campos fiscais da empresa e tentamos preencher o nome fiscal pelo NIF.')
-            : i18nText('Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.');
-    }
-
     if (contactNameLabel) {
         contactNameLabel.textContent = business ? i18nText('Pessoa de contacto *') : i18nText('Nome completo *');
     }
@@ -1402,12 +1384,6 @@ function syncCustomerTypeUI() {
 
     if (nifLabel) {
         nifLabel.textContent = business ? i18nText('NIF / VAT / CIF *') : i18nText('NIF / NIE (opcional)');
-    }
-
-    if (nifHelp) {
-        nifHelp.textContent = business
-            ? i18nText('Para faturação empresarial precisamos do NIF válido e, se existir, tentamos preencher os dados automaticamente.')
-            : i18nText('Se preencher, o número fiscal tem de ser válido para emitirmos a fatura.');
     }
 
     if (companyFieldRow) {
@@ -1706,7 +1682,6 @@ async function mountEmbeddedCheckout(sessionPayload) {
         embeddedCheckoutInstance.mount('#checkout-embed-container');
         setCheckoutEmbedLoading(false);
         setPlaceOrderLoadedState();
-        setCheckoutFeedback(i18nText('Pagamento carregado abaixo. Complete o processo para confirmar a encomenda.'), 'success');
         scrollToEmbeddedCheckout();
     } catch (error) {
         await destroyEmbeddedCheckout();
@@ -1897,14 +1872,6 @@ async function loadCart() {
 
     const summary = renderCheckoutSummary(cart);
 
-    // Free shipping message
-    if (freeShippingMsg) {
-        freeShippingMsg.innerHTML = 'Envio grátis para Portugal e Espanha.<span class="mt-1 block text-xs text-emerald-800">A cobertura é confirmada com base na morada de entrega.</span>';
-    }
-    if (remainingEl) {
-        remainingEl.textContent = '0.00€';
-    }
-
     if (!beginCheckoutTracked && typeof window.trackAnalyticsEvent === 'function') {
         beginCheckoutTracked = true;
         void window.trackAnalyticsEvent('begin_checkout', {
@@ -2065,11 +2032,6 @@ if (placeOrderBtn) {
                 };
             }
 
-            if (payload?.fiscalSummary?.warning) {
-                setCheckoutFeedback(payload.fiscalSummary.warning, 'info');
-            }
-
-            setCheckoutFeedback(i18nText('Estamos a abrir o pagamento seguro dentro da IberFlag.'), 'success');
             showToast(i18nText('Pagamento iniciado com sucesso!'), 'success');
 
             await mountEmbeddedCheckout(payload);

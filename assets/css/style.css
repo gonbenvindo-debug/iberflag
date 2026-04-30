@@ -2108,13 +2108,6 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     box-shadow: none;
 }
 
-.checkout-phone-help {
-    margin-top: 0.45rem;
-    font-size: 0.75rem;
-    line-height: 1.35;
-    color: #64748b;
-}
-
 .form-label {
     display: block;
     margin-bottom: 0.5rem;
