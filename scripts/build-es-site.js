@@ -96,6 +96,32 @@ const EXTRA_TEXT_REPLACEMENTS = [
     ['Complete o pagamento abaixo. A confirmação da encomenda acontece no final do processo.', 'Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.'],
     ['A preparar o pagamento seguro...', 'Preparando el pago seguro...'],
     ['Abrir pagamento seguro', 'Abrir pago seguro'],
+    ['Contacto e faturação', 'Contacto y facturación'],
+    ['Dados mínimos para identificar a encomenda e preparar o pagamento.', 'Datos mínimos para identificar el pedido y preparar el pago.'],
+    ['O NIF continua opcional para particulares.', 'El NIF sigue siendo opcional para particulares.'],
+    ['Preencha se quiser associar número fiscal à encomenda.', 'Complételo si desea asociar un número fiscal al pedido.'],
+    ['Continuar para morada', 'Continuar a dirección'],
+    ['Entrega e faturação', 'Entrega y facturación'],
+    ['Use uma única morada para simplificar a encomenda.', 'Use una única dirección para simplificar el pedido.'],
+    ['Usar esta morada para entrega e faturação', 'Usar esta dirección para entrega y facturación'],
+    ['Não pedimos uma segunda morada.', 'No pedimos una segunda dirección.'],
+    ['Rever e pagar', 'Revisar y pagar'],
+    ['O pagamento abre aqui na loja com Stripe.', 'El pago se abre aquí en la tienda con Stripe.'],
+    ['Cartão, MB Way e Multibanco aparecem conforme disponibilidade.', 'Tarjeta, MB Way y Multibanco aparecen según disponibilidad.'],
+    ['Métodos de pagamento', 'Métodos de pago'],
+    ['Cartão', 'Tarjeta'],
+    ['Informações adicionais para a equipa.', 'Información adicional para el equipo.'],
+    ['Adicionar revisão de design por', 'Añadir revisión de diseño por'],
+    ['Ver termos', 'Ver términos'],
+    ['Complete o pagamento abaixo para confirmar a encomenda.', 'Complete el pago abajo para confirmar el pedido.'],
+    ['Confirme produtos, quantidades e total antes de pagar.', 'Confirme productos, cantidades y total antes de pagar.'],
+    ['Pagamento seguro dentro da loja.', 'Pago seguro dentro de la tienda.'],
+    ['Preencha os dados de contacto e faturação antes de continuar.', 'Complete los datos de contacto y facturación antes de continuar.'],
+    ['Preencha a morada de entrega antes de continuar.', 'Complete la dirección de entrega antes de continuar.'],
+    ['Aceite os termos para continuar.', 'Acepte los términos para continuar.'],
+    ['Dados', 'Datos'],
+    ['Morada', 'Dirección'],
+    ['Voltar', 'Volver'],
     ['Telemóvel / telefone', 'Móvil / teléfono'],
     ['Grátis', 'Gratis'],
     ['IVA calculado no checkout', 'IVA calculado en el checkout'],
@@ -978,6 +1004,18 @@ function applyCheckoutOverrides($) {
             element.text(text);
         }
     };
+    const setPanelKicker = (step, number, label) => {
+        const element = $(`[data-checkout-panel="${step}"] .checkout-panel-kicker`).first();
+        if (element.length > 0) {
+            element.html(`<span class="checkout-step-badge">${number}</span>${label}`);
+        }
+    };
+    const setButtonHtml = (selector, text, icon, iconSide = 'right') => {
+        const element = $(selector).first();
+        if (element.length === 0) return;
+        const iconHtml = `<i data-lucide="${icon}" class="w-4 h-4"></i>`;
+        element.html(iconSide === 'left' ? `${iconHtml}${text}` : `${text}${iconHtml}`);
+    };
 
     $('title').text('Finalizar pedido | IberFlag');
     $('meta[name="description"]').attr('content', 'Finaliza tu pedido IberFlag con pago online mediante Stripe, facturación validada y envío a la dirección indicada.');
@@ -985,9 +1023,25 @@ function applyCheckoutOverrides($) {
     $('meta[property="og:description"], meta[name="twitter:description"]').attr('content', 'Finaliza tu pedido IberFlag con pago online mediante Stripe, facturación validada y envío a la dirección indicada.');
 
     setText('h1', 'Finalizar pedido');
-    $('.checkout-step span').eq(0).text('Carrito');
-    $('.checkout-step span').eq(1).text('Datos');
-    $('.checkout-step span').eq(2).text('Pago');
+    $('.checkout-steps').attr('aria-label', 'Pasos del checkout');
+    $('.checkout-step[data-checkout-step="details"] .checkout-step-number').text('1');
+    $('.checkout-step[data-checkout-step="address"] .checkout-step-number').text('2');
+    $('.checkout-step[data-checkout-step="payment"] .checkout-step-number').text('3');
+    $('.checkout-step[data-checkout-step="details"] .checkout-step-text').text('Datos');
+    $('.checkout-step[data-checkout-step="address"] .checkout-step-text').text('Dirección');
+    $('.checkout-step[data-checkout-step="payment"] .checkout-step-text').text('Pago');
+
+    setPanelKicker('details', '1', 'Datos');
+    setText('[data-checkout-panel="details"] .app-section-title', 'Contacto y facturación');
+    setText('[data-checkout-panel="details"] .app-section-subtitle', 'Datos mínimos para identificar el pedido y preparar el pago.');
+
+    setPanelKicker('address', '2', 'Dirección');
+    setText('[data-checkout-panel="address"] .app-section-title', 'Entrega y facturación');
+    setText('[data-checkout-panel="address"] .app-section-subtitle', 'Use una única dirección para simplificar el pedido.');
+
+    setPanelKicker('payment', '3', 'Pago');
+    setText('[data-checkout-panel="payment"] .app-section-title', 'Revisar y pagar');
+    setText('[data-checkout-panel="payment"] .app-section-subtitle', 'El pago se abre aquí en la tienda con Stripe.');
 
     $('#customer-type-select option[value="particular"]').text('Particular');
     $('#customer-type-select option[value="empresa"]').text('Empresa');
@@ -1006,31 +1060,35 @@ function applyCheckoutOverrides($) {
     $('#order-notes-field label').text('Notas del pedido (opcional)');
     $('#order-notes-field textarea').attr('placeholder', 'Información adicional para el equipo.');
 
-    $('.checkout-surface-card').has('#checkout-payment-intro').find('.app-section-title').first().text('Pago online');
-    $('.checkout-surface-card').has('#checkout-payment-intro').find('.app-section-subtitle').first().text('Al continuar, el checkout seguro aparece abajo, sin salir de IberFlag.');
-    $('#checkout-payment-intro > div').eq(0).find('p.font-semibold').first().text('Métodos mostrados en el siguiente paso');
-    $('#checkout-payment-intro > div').eq(0).find('p.text-slate-600').first().text('Tarjeta, MB Way, Multibanco y otros métodos compatibles aparecen automáticamente según el cliente y el pedido.');
-    $('#checkout-payment-intro > div').eq(1).text('El pago permanece dentro de IberFlag. Solo sale de este flujo si el propio método pide autenticación externa.');
-    $('#checkout-payment-intro > div').eq(2).text('Cuando se abra el pago, bloqueamos estos datos para evitar diferencias entre el pedido y el cobro.');
+    $('.checkout-same-address strong').text('Usar esta dirección para entrega y facturación');
+    $('.checkout-same-address small').text('No pedimos una segunda dirección.');
+    setButtonHtml('[data-checkout-next="address"]', 'Continuar a dirección', 'arrow-right');
+    setButtonHtml('[data-checkout-back="details"]', 'Volver', 'arrow-left', 'left');
+    setButtonHtml('[data-checkout-next="payment"]', 'Revisar y pagar', 'arrow-right');
+    setButtonHtml('[data-checkout-back="address"]', 'Volver', 'arrow-left', 'left');
+
+    $('.checkout-payment-copy span').text('Tarjeta, MB Way y Multibanco aparecen según disponibilidad.');
+    $('.checkout-payment-methods').attr('aria-label', 'Métodos de pago');
+    $('.checkout-method-pill').eq(0).html('<i data-lucide="credit-card" class="w-4 h-4"></i>Tarjeta');
+    $('.checkout-method-pill').eq(1).html('<i data-lucide="smartphone" class="w-4 h-4"></i>MB Way');
+    $('.checkout-method-pill').eq(2).html('<i data-lucide="landmark" class="w-4 h-4"></i>Multibanco');
     $('#checkout-locked-note').text('Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.');
     $('#checkout-embed-shell h3').text('Pago seguro');
-    $('#checkout-embed-shell p.text-slate-600').first().text('Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.');
+    $('#checkout-embed-shell p.text-slate-600').first().text('Complete el pago abajo para confirmar el pedido.');
     $('#checkout-embed-loader span').text('Preparando el pago seguro...');
 
-    const supportItems = $('.checkout-support-list .checkout-support-item span');
-    supportItems.eq(0).text('Pago seguro con Stripe');
-    supportItems.eq(1).text('Documento fiscal emitido tras el pago');
-    supportItems.eq(2).text('Seguimiento disponible en la página del pedido y en el email');
-
-    $('#design-review-checkbox').closest('label').find('span').first().html('Añadir revisión de diseño por <strong>5€</strong> antes de la producción. <a href="/es/termos#responsabilidade-design" class="text-blue-600 hover:underline">Consulta los términos de responsabilidad del diseño</a>.');
+    $('#design-review-checkbox').closest('label').find('span').first().html('Añadir revisión de diseño por <strong>5€</strong>. <a href="/es/termos#responsabilidade-design" class="text-blue-600 hover:underline">Ver términos</a>.');
     $('#terms-checkbox').closest('label').find('span').first().html('He leído y acepto los <a href="/es/termos" class="text-blue-600 hover:underline">Términos y condiciones</a> y la <a href="/es/privacidade" class="text-blue-600 hover:underline">Política de privacidad</a>.');
     $('#place-order-btn').html('<i data-lucide="lock" class="w-5 h-5"></i> Abrir pago seguro');
 
     setText('.checkout-summary h2', 'Resumen del pedido');
-    $('.checkout-summary .app-section-subtitle').first().text('Plazo comunicado tras pago confirmado y validación del pedido.');
+    $('.checkout-summary .app-section-subtitle').first().text('Confirme productos, cantidades y total antes de pagar.');
     $('#design-review-row span').first().text('Revisión de diseño');
     $('#shipping').prev('span').text('Envío');
     $('#shipping').text('Gratis');
+    $('.checkout-shipping-box p.font-semibold').text('Envío gratis');
+    $('#free-shipping-msg').text('Envío gratis para Portugal y España, confirmado según la dirección de entrega.');
+    $('.checkout-summary-note span').text('Pago seguro dentro de la tienda.');
 }
 
 function translateHtmlFile(html, sourceFileName) {

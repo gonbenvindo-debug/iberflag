@@ -27,7 +27,7 @@
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
     <script src="/assets/js/core/logic.js?v=20260429q2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260429checkout-embed1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260430checkout-steps1">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -66,22 +66,22 @@
     </nav>
 
     <div class="checkout-steps-wrap">
-        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
-            <div class="checkout-steps flex items-center justify-center gap-4">
-                <div class="flex items-center gap-2 checkout-step checkout-step-active">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold">1</div>
-                    <span>Carrinho</span>
-                </div>
-                <div class="w-12 h-0.5 checkout-step-line checkout-step-line-active"></div>
-                <div class="flex items-center gap-2 checkout-step checkout-step-active">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold">2</div>
-                    <span>Dados</span>
-                </div>
-                <div class="w-12 h-0.5 checkout-step-line"></div>
-                <div class="flex items-center gap-2 checkout-step">
-                    <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold">3</div>
-                    <span>Pagamento</span>
-                </div>
+        <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-5">
+            <div class="checkout-steps" aria-label="Passos do checkout">
+                <button type="button" class="checkout-step checkout-step-active" data-checkout-step="details" aria-current="step">
+                    <span class="checkout-step-number">1</span>
+                    <span class="checkout-step-text">Dados</span>
+                </button>
+                <span class="checkout-step-line checkout-step-line-active" data-checkout-line="details-address"></span>
+                <button type="button" class="checkout-step" data-checkout-step="address">
+                    <span class="checkout-step-number">2</span>
+                    <span class="checkout-step-text">Morada</span>
+                </button>
+                <span class="checkout-step-line" data-checkout-line="address-payment"></span>
+                <button type="button" class="checkout-step" data-checkout-step="payment">
+                    <span class="checkout-step-number">3</span>
+                    <span class="checkout-step-text">Pagamento</span>
+                </button>
             </div>
         </div>
     </div>
@@ -89,195 +89,233 @@
     <section class="py-10 md:py-12">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
-                <div class="lg:col-span-2 space-y-6">
-                    <div class="app-surface checkout-surface-card checkout-main-card p-6 md:p-7">
-                        <div class="mb-6">
-                            <h2 class="app-section-title">Dados de faturação</h2>
-                            <p class="app-section-subtitle mt-1">Preencha apenas o essencial para emitir a encomenda e entregar.</p>
-                        </div>
+                <div class="lg:col-span-2">
+                    <div class="app-surface checkout-surface-card checkout-main-card overflow-hidden">
                         <form id="checkout-form" class="checkout-form-stack">
-                            <div class="checkout-form-section">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="form-label">Tipo de faturação</label>
-                                        <select id="customer-type-select" name="tipo_cliente" class="form-input">
-                                            <option value="particular" selected="">Particular</option>
-                                            <option value="empresa">Empresa</option>
-                                        </select>
-                                        <p id="customer-type-description" class="mt-2 text-xs text-slate-500">Mantemos apenas os dados pessoais essenciais. O NIF continua opcional.</p>
-                                    </div>
-                                    <div id="tax-field-row">
-                                        <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
-                                        <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12" placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
-                                        <p id="nif-help" class="mt-2 text-xs text-slate-500">Se preencher, o número fiscal tem de ser válido para emitirmos a fatura.</p>
-                                        <p id="company-lookup-status" class="hidden"></p>
-                                    </div>
-                                </div>
-                                <div class="mt-4">
-                                        <label class="form-label">País fiscal *</label>
-                                        <select id="country-select" name="country" class="form-input" required="">
-                                            <option value="PT" selected="">Portugal</option>
-                                            <option value="ES">Espanha</option>
-                                        </select>
-                                    <p class="mt-2 text-xs text-slate-500">Usamos este país para decidir o enquadramento fiscal antes do pagamento. Apenas Portugal e Espanha estão disponíveis.</p>
-                                </div>
-                                <div id="company-field-row" class="hidden mt-4">
-                                    <label id="company-label" class="form-label">Empresa *</label>
-                                    <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
-                                </div>
-                            </div>
+                            <div id="checkout-feedback" class="hidden checkout-feedback rounded-xl border px-4 py-3 text-sm font-medium"></div>
 
-                            <div class="checkout-form-section">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label id="contact-name-label" class="form-label">Nome completo *</label>
-                                        <input type="text" name="nome" required="" class="form-input" autocomplete="name">
+                            <section class="checkout-step-panel checkout-step-panel-active" data-checkout-panel="details">
+                                <div class="checkout-panel-heading">
+                                    <div class="checkout-panel-kicker">
+                                        <span class="checkout-step-badge">1</span>
+                                        Dados
                                     </div>
-                                    <div>
-                                        <label class="form-label">Email *</label>
-                                        <input type="text" name="email" required="" class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
-                                    </div>
+                                    <h2 class="app-section-title">Contacto e faturação</h2>
+                                    <p class="app-section-subtitle mt-1">Dados mínimos para identificar a encomenda e preparar o pagamento.</p>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="form-label">Telemóvel / telefone *</label>
-                                        <input type="text" name="telefone" required="" class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="checkout-form-section">
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label class="form-label">País de entrega *</label>
-                                        <select id="address-country-select" name="pais_entrega" class="form-input" required="" autocomplete="country">
-                                            <option value="PT" selected="">Portugal</option>
-                                            <option value="ES">Espanha</option>
-                                        </select>
+                                <div class="checkout-form-section checkout-form-section-first">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label id="contact-name-label" class="form-label">Nome completo *</label>
+                                            <input type="text" name="nome" required="" class="form-input" autocomplete="name">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Email *</label>
+                                            <input type="text" name="email" required="" class="form-input" autocomplete="email" inputmode="email" autocapitalize="off" spellcheck="false" placeholder="nome@empresa.com">
+                                        </div>
                                     </div>
-                                    <div>
-                                        <label class="form-label">Código postal *</label>
-                                        <input type="text" name="codigo_postal" required="" class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
-                                    </div>
-                                </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label id="address-region-label" class="form-label">Distrito / ilha *</label>
-                                        <select id="address-region-select" name="distrito" class="form-input" required="" autocomplete="address-level1">
-                                            <option value="">Escolha primeiro o país</option>
-                                        </select>
-                                    </div>
-                                    <div>
-                                        <label id="address-municipality-label" class="form-label">Concelho *</label>
-                                        <select id="address-municipality-select" name="concelho" class="form-input" required="" autocomplete="address-level2">
-                                            <option value="">Escolha primeiro o distrito</option>
-                                        </select>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label class="form-label">Telemóvel / telefone *</label>
+                                            <input type="text" name="telefone" required="" class="form-input" autocomplete="tel" inputmode="tel" autocapitalize="off" spellcheck="false" placeholder="+351 912 345 678">
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-                                    <div>
-                                        <label class="form-label">Localidade / cidade *</label>
-                                        <input type="text" name="cidade" required="" class="form-input" autocomplete="address-level2" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Madrid...">
-                                    </div>
-                                    <div>
-                                        <label class="form-label">Morada *</label>
-                                        <input type="text" name="morada" required="" class="form-input" autocomplete="street-address">
-                                    </div>
-                                </div>
-                            </div>
 
-                            <div class="checkout-form-section checkout-form-section-optional">
-                                <button type="button" id="toggle-order-notes" class="checkout-text-toggle" aria-expanded="false" aria-controls="order-notes-field">
-                                    Adicionar nota a encomenda
-                                </button>
-                                <div id="order-notes-field" class="hidden mt-4">
-                                    <label class="form-label">Notas da encomenda (opcional)</label>
-                                    <textarea name="notas" rows="3" class="form-input" placeholder="Informacoes adicionais para a equipa."></textarea>
+                                <div class="checkout-form-section">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="form-label">Tipo de faturação</label>
+                                            <select id="customer-type-select" name="tipo_cliente" class="form-input">
+                                                <option value="particular" selected="">Particular</option>
+                                                <option value="empresa">Empresa</option>
+                                            </select>
+                                            <p id="customer-type-description" class="mt-2 text-xs text-slate-500">O NIF continua opcional para particulares.</p>
+                                        </div>
+                                        <div id="tax-field-row">
+                                            <label id="nif-label" class="form-label">NIF / NIE (opcional)</label>
+                                            <input type="text" name="nif" id="nif-input" class="form-input" maxlength="12" placeholder="PT: 123456789 | ES: B12345678" autocomplete="off">
+                                            <p id="nif-help" class="mt-2 text-xs text-slate-500">Preencha se quiser associar número fiscal à encomenda.</p>
+                                            <p id="company-lookup-status" class="hidden"></p>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label class="form-label">País fiscal *</label>
+                                            <select id="country-select" name="country" class="form-input" required="">
+                                                <option value="PT" selected="">Portugal</option>
+                                                <option value="ES">Espanha</option>
+                                            </select>
+                                        </div>
+                                        <div id="company-field-row" class="hidden">
+                                            <label id="company-label" class="form-label">Empresa *</label>
+                                            <input type="text" name="empresa" class="form-input" autocomplete="organization" placeholder="Nome fiscal da empresa">
+                                        </div>
+                                    </div>
                                 </div>
-                            </div>
+
+                                <div class="checkout-panel-actions">
+                                    <button type="button" class="checkout-next-btn" data-checkout-next="address">
+                                        Continuar para morada
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section class="checkout-step-panel" data-checkout-panel="address" hidden="">
+                                <div class="checkout-panel-heading">
+                                    <div class="checkout-panel-kicker">
+                                        <span class="checkout-step-badge">2</span>
+                                        Morada
+                                    </div>
+                                    <h2 class="app-section-title">Entrega e faturação</h2>
+                                    <p class="app-section-subtitle mt-1">Use uma única morada para simplificar a encomenda.</p>
+                                </div>
+
+                                <label class="checkout-same-address">
+                                    <input type="checkbox" id="billing-same-as-shipping" class="custom-checkbox" checked="">
+                                    <span>
+                                        <strong>Usar esta morada para entrega e faturação</strong>
+                                        <small>Não pedimos uma segunda morada.</small>
+                                    </span>
+                                </label>
+
+                                <div class="checkout-form-section checkout-form-section-first">
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                        <div>
+                                            <label class="form-label">País de entrega *</label>
+                                            <select id="address-country-select" name="pais_entrega" class="form-input" required="" autocomplete="country">
+                                                <option value="PT" selected="">Portugal</option>
+                                                <option value="ES">Espanha</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Código postal *</label>
+                                            <input type="text" name="codigo_postal" required="" class="form-input" placeholder="PT: 0000-000 | ES: 28001" autocomplete="postal-code" inputmode="text" autocapitalize="characters" spellcheck="false">
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label id="address-region-label" class="form-label">Distrito / ilha *</label>
+                                            <select id="address-region-select" name="distrito" class="form-input" required="" autocomplete="address-level1">
+                                                <option value="">Escolha primeiro o país</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label id="address-municipality-label" class="form-label">Concelho *</label>
+                                            <select id="address-municipality-select" name="concelho" class="form-input" required="" autocomplete="address-level2">
+                                                <option value="">Escolha primeiro o distrito</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
+                                        <div>
+                                            <label class="form-label">Localidade / cidade *</label>
+                                            <input type="text" name="cidade" required="" class="form-input" autocomplete="address-level2" autocapitalize="words" spellcheck="false" placeholder="Lisboa, Porto, Madrid...">
+                                        </div>
+                                        <div>
+                                            <label class="form-label">Morada *</label>
+                                            <input type="text" name="morada" required="" class="form-input" autocomplete="street-address">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="checkout-panel-actions checkout-panel-actions-between">
+                                    <button type="button" class="checkout-secondary-btn" data-checkout-back="details">
+                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                        Voltar
+                                    </button>
+                                    <button type="button" class="checkout-next-btn" data-checkout-next="payment">
+                                        Rever e pagar
+                                        <i data-lucide="arrow-right" class="w-4 h-4"></i>
+                                    </button>
+                                </div>
+                            </section>
+
+                            <section class="checkout-step-panel" data-checkout-panel="payment" hidden="">
+                                <div class="checkout-panel-heading">
+                                    <div class="checkout-panel-kicker">
+                                        <span class="checkout-step-badge">3</span>
+                                        Pagamento
+                                    </div>
+                                    <h2 class="app-section-title">Rever e pagar</h2>
+                                    <p class="app-section-subtitle mt-1">O pagamento abre aqui na loja com Stripe.</p>
+                                </div>
+
+                                <div id="checkout-payment-intro" class="checkout-payment-intro">
+                                    <div class="checkout-payment-copy">
+                                        <i data-lucide="credit-card" class="w-5 h-5"></i>
+                                        <span>Cartão, MB Way e Multibanco aparecem conforme disponibilidade.</span>
+                                    </div>
+                                    <div class="checkout-payment-methods" aria-label="Métodos de pagamento">
+                                        <span class="checkout-method-pill"><i data-lucide="credit-card" class="w-4 h-4"></i>Cartão</span>
+                                        <span class="checkout-method-pill"><i data-lucide="smartphone" class="w-4 h-4"></i>MB Way</span>
+                                        <span class="checkout-method-pill"><i data-lucide="landmark" class="w-4 h-4"></i>Multibanco</span>
+                                    </div>
+                                </div>
+
+                                <div class="checkout-form-section checkout-form-section-optional">
+                                    <button type="button" id="toggle-order-notes" class="checkout-text-toggle" aria-expanded="false" aria-controls="order-notes-field">
+                                        Adicionar nota à encomenda
+                                    </button>
+                                    <div id="order-notes-field" class="hidden mt-4">
+                                        <label class="form-label">Notas da encomenda (opcional)</label>
+                                        <textarea name="notas" rows="3" class="form-input" placeholder="Informações adicionais para a equipa."></textarea>
+                                    </div>
+                                </div>
+
+                                <div class="checkout-consent-stack">
+                                    <label class="checkout-consent-card">
+                                        <input type="checkbox" id="design-review-checkbox" class="custom-checkbox">
+                                        <span>
+                                            Adicionar revisão de design por <strong>5€</strong>.
+                                            <a href="/termos#responsabilidade-design" class="text-blue-600 hover:underline">Ver termos</a>.
+                                        </span>
+                                    </label>
+                                    <label class="checkout-consent-card">
+                                        <input type="checkbox" id="terms-checkbox" required="" class="custom-checkbox">
+                                        <span>
+                                            Li e aceito os <a href="/termos" class="text-blue-600 hover:underline">Termos e Condições</a> e a
+                                            <a href="/privacidade" class="text-blue-600 hover:underline">Política de Privacidade</a>.
+                                        </span>
+                                    </label>
+                                </div>
+
+                                <div class="checkout-panel-actions checkout-panel-actions-between">
+                                    <button type="button" class="checkout-secondary-btn" data-checkout-back="address">
+                                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                                        Voltar
+                                    </button>
+                                    <button type="button" id="place-order-btn" class="checkout-place-order-btn text-white py-4 rounded-xl font-bold text-base transition-all flex items-center justify-center gap-2">
+                                        <i data-lucide="lock" class="w-5 h-5"></i>
+                                        Abrir pagamento seguro
+                                    </button>
+                                </div>
+
+                                <div id="checkout-locked-note" class="hidden rounded-xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
+                                    Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.
+                                </div>
+                                <div id="checkout-embed-shell" class="hidden checkout-embed-shell">
+                                    <div class="mb-4">
+                                        <h3 class="text-base font-semibold text-slate-900">Pagamento seguro</h3>
+                                        <p class="mt-1 text-sm leading-6 text-slate-600">Complete o pagamento abaixo para confirmar a encomenda.</p>
+                                    </div>
+                                    <div id="checkout-embed-loader" class="checkout-embed-loader">
+                                        <div class="spinner"></div>
+                                        <span>A preparar o pagamento seguro...</span>
+                                    </div>
+                                    <div id="checkout-embed-container" class="checkout-embed-container"></div>
+                                </div>
+                            </section>
                         </form>
                     </div>
-
-                    <div class="app-surface checkout-surface-card p-6 md:p-7">
-                        <div class="mb-5">
-                            <h2 class="app-section-title">Pagamento online</h2>
-                            <p class="app-section-subtitle mt-1">Ao continuar, o checkout seguro aparece abaixo, sem sair da IberFlag.</p>
-                        </div>
-                        <div id="checkout-payment-intro" class="space-y-3">
-                            <div class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-4">
-                                <div class="flex items-start gap-3">
-                                    <i data-lucide="shield-check" class="mt-0.5 h-5 w-5 text-slate-900"></i>
-                                    <div class="min-w-0">
-                                        <p class="text-sm font-semibold text-slate-900">Métodos mostrados no passo seguinte</p>
-                                        <p class="mt-1 text-sm leading-6 text-slate-600">Cartão, MB Way, Multibanco e outros métodos compatíveis surgem automaticamente conforme o cliente e a encomenda.</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-4 text-sm leading-6 text-blue-950">
-                                O pagamento fica dentro da IberFlag. Só sai deste fluxo se o próprio método pedir autenticação externa.
-                            </div>
-                            <div class="rounded-2xl border border-slate-200 bg-white px-4 py-4 text-sm leading-6 text-slate-600">
-                                Quando abrir o pagamento, bloqueamos estes dados para evitar diferenças entre a encomenda e a cobrança.
-                            </div>
-                        </div>
-                        <div id="checkout-locked-note" class="hidden mt-4 rounded-2xl border border-amber-200 bg-amber-50 px-4 py-3 text-sm font-medium text-amber-900">
-                            Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.
-                        </div>
-                        <div id="checkout-embed-shell" class="hidden checkout-embed-shell mt-5">
-                            <div class="mb-4">
-                                <h3 class="text-base font-semibold text-slate-900">Pagamento seguro</h3>
-                                <p class="mt-1 text-sm leading-6 text-slate-600">Complete o pagamento abaixo. A confirmação da encomenda acontece no final do processo.</p>
-                            </div>
-                            <div id="checkout-embed-loader" class="checkout-embed-loader">
-                                <div class="spinner"></div>
-                                <span>A preparar o pagamento seguro...</span>
-                            </div>
-                            <div id="checkout-embed-container" class="checkout-embed-container"></div>
-                        </div>
-                    </div>
-                    <div class="app-surface checkout-surface-card checkout-support-card p-5 md:p-6">
-                        <label class="flex items-start gap-3 cursor-pointer mb-4 pb-4 border-b border-slate-200">
-                            <input type="checkbox" id="design-review-checkbox" class="custom-checkbox mt-0.5">
-                            <span class="text-sm text-gray-700">
-                                Adicionar revisão de design por <strong>5€</strong> antes da produção.
-                                <a href="/termos#responsabilidade-design" class="text-blue-600 hover:underline">Consulta os termos de responsabilidade do design</a>.
-                            </span>
-                        </label>
-                        <label class="flex items-start gap-3 cursor-pointer">
-                            <input type="checkbox" id="terms-checkbox" required="" class="custom-checkbox mt-0.5">
-                            <span class="text-sm text-gray-700">
-                                Li e aceito os <a href="/termos" class="text-blue-600 hover:underline">Termos e Condições</a> e a
-                                <a href="/privacidade" class="text-blue-600 hover:underline">Política de Privacidade</a>.
-                            </span>
-                        </label>
-                        <div class="checkout-support-list">
-                            <div class="checkout-support-item">
-                                <i data-lucide="shield-check" class="w-4 h-4"></i>
-                                <span>Pagamento seguro com Stripe</span>
-                            </div>
-                            <div class="checkout-support-item">
-                                <i data-lucide="receipt-text" class="w-4 h-4"></i>
-                                <span>Documento fiscal emitido após pagamento</span>
-                            </div>
-                            <div class="checkout-support-item">
-                                <i data-lucide="package" class="w-4 h-4"></i>
-                                <span>Tracking disponível na página da encomenda e no email</span>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div id="checkout-feedback" class="hidden rounded-xl border px-4 py-3 text-sm font-medium"></div>
-
-                    <button id="place-order-btn" class="w-full checkout-place-order-btn text-white py-4 rounded-xl font-bold text-lg transition-all flex items-center justify-center gap-2">
-                        <i data-lucide="lock" class="w-5 h-5"></i>
-                        Abrir pagamento seguro
-                    </button>
                 </div>
 
                 <div class="lg:col-span-1">
                     <div class="app-surface checkout-summary p-6 sticky top-24">
                         <h2 class="text-xl font-bold mb-2">Resumo da encomenda</h2>
-                        <p class="app-section-subtitle mb-6">Prazo comunicado após pagamento confirmado e validação da encomenda.</p>
+                        <p class="app-section-subtitle mb-6">Confirme produtos, quantidades e total antes de pagar.</p>
                         <div id="order-items" class="space-y-4 mb-6"></div>
                         <div class="border-t pt-4 space-y-3">
                             <div class="flex justify-between text-sm">
@@ -307,23 +345,9 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="mt-6 space-y-2 text-xs text-gray-600">
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="shield-check" class="w-4 h-4 text-emerald-700"></i>
-                                <span>Pagamento seguro com Stripe</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="clock" class="w-4 h-4 text-slate-700"></i>
-                                <span>Prazo total 24-48h após pagamento</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="package" class="w-4 h-4 text-slate-700"></i>
-                                <span>Tracking enviado por email assim que a expedicao for criada</span>
-                            </div>
-                            <div class="flex items-center gap-2">
-                                <i data-lucide="pen-tool" class="w-4 h-4 text-slate-700"></i>
-                                <span>Revisão de design opcional: 5€ antes da produção, sujeita aos termos de responsabilidade</span>
-                            </div>
+                        <div class="checkout-summary-note">
+                            <i data-lucide="shield-check" class="w-4 h-4"></i>
+                            <span>Pagamento seguro dentro da loja.</span>
                         </div>
                     </div>
                 </div>
@@ -376,7 +400,7 @@
 
     <script src="/assets/js/core/order-workflow.js"></script>
     <script src="/assets/js/pages/checkout-location-data.js?v=20260421a"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260429embedded2"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260430steps1"></script>
     <script>
         lucide.createIcons();
     </script>

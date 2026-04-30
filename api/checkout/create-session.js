@@ -569,7 +569,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 design_review: serviceOptions.designReview ? 'true' : 'false'
             },
             line_items: chargeableItems.map(buildStripeLineItem),
-            billing_address_collection: 'required'
+            billing_address_collection: 'auto'
         });
 
         if (!String(session?.client_secret || '').trim()) {

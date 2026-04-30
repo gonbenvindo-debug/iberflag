@@ -53,6 +53,14 @@ const checkoutLockedNote = document.getElementById('checkout-locked-note');
 const checkoutEmbedShell = document.getElementById('checkout-embed-shell');
 const checkoutEmbedLoader = document.getElementById('checkout-embed-loader');
 const checkoutEmbedContainer = document.getElementById('checkout-embed-container');
+const streetInput = checkoutForm?.elements?.morada || null;
+const billingSameAsShippingCheckbox = document.getElementById('billing-same-as-shipping');
+const checkoutStepButtons = Array.from(document.querySelectorAll('[data-checkout-step]'));
+const checkoutStepPanels = Array.from(document.querySelectorAll('[data-checkout-panel]'));
+const checkoutStepLines = Array.from(document.querySelectorAll('[data-checkout-line]'));
+const checkoutNextButtons = Array.from(document.querySelectorAll('[data-checkout-next]'));
+const checkoutBackButtons = Array.from(document.querySelectorAll('[data-checkout-back]'));
+const CHECKOUT_STEP_ORDER = ['details', 'address', 'payment'];
 
 const COMMON_EMAIL_DOMAIN_FIXES = {
     'gmail.com.pt': 'gmail.com',
@@ -82,6 +90,12 @@ const ES_TEXT = {
     'Estamos a abrir o pagamento seguro dentro da IberFlag.': 'Estamos abriendo el pago seguro dentro de IberFlag.',
     'O pagamento vai ser confirmado no passo seguinte.': 'El pago se confirmará en el siguiente paso.',
     'Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.': 'Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.',
+    'Preencha os dados de contacto e faturação antes de continuar.': 'Complete los datos de contacto y facturación antes de continuar.',
+    'Preencha a morada de entrega antes de continuar.': 'Complete la dirección de entrega antes de continuar.',
+    'Aceite os termos para continuar.': 'Acepte los términos para continuar.',
+    'O pagamento abre aqui na loja com Stripe.': 'El pago se abre aquí en la tienda con Stripe.',
+    'Cartão, MB Way e Multibanco aparecem conforme disponibilidade.': 'Tarjeta, MB Way y Multibanco aparecen según disponibilidad.',
+    'Complete o pagamento abaixo para confirmar a encomenda.': 'Complete el pago abajo para confirmar el pedido.',
     'Grátis': 'Gratis'
 };
 const EU_COUNTRIES = new Set(['PT', 'ES']);
@@ -98,6 +112,7 @@ let stripePublishableKeyInUse = '';
 let stripeBrowserClient = null;
 let embeddedCheckoutInstance = null;
 let activeCheckoutSession = null;
+let currentCheckoutStep = 'details';
 
 function escapeHtml(value) {
     return String(value || '')
@@ -167,32 +182,156 @@ function setElementHidden(element, hidden) {
     element.setAttribute('aria-hidden', hidden ? 'true' : 'false');
 }
 
+function getCheckoutStepIndex(step) {
+    const index = CHECKOUT_STEP_ORDER.indexOf(step);
+    return index >= 0 ? index : 0;
+}
+
+function setCheckoutStep(step = 'details', { scroll = false } = {}) {
+    const normalizedStep = CHECKOUT_STEP_ORDER.includes(step) ? step : 'details';
+    if (document.body?.classList.contains('checkout-payment-active') && normalizedStep !== 'payment') {
+        return;
+    }
+
+    currentCheckoutStep = normalizedStep;
+    const activeIndex = getCheckoutStepIndex(normalizedStep);
+
+    checkoutStepPanels.forEach((panel) => {
+        const isActive = panel.dataset.checkoutPanel === normalizedStep;
+        panel.hidden = !isActive;
+        panel.classList.toggle('checkout-step-panel-active', isActive);
+        panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
+    });
+
+    checkoutStepButtons.forEach((button) => {
+        const stepIndex = getCheckoutStepIndex(button.dataset.checkoutStep);
+        const isActive = button.dataset.checkoutStep === normalizedStep;
+        button.classList.toggle('checkout-step-active', isActive);
+        button.classList.toggle('checkout-step-complete', stepIndex < activeIndex);
+        button.setAttribute('aria-current', isActive ? 'step' : 'false');
+    });
+
+    checkoutStepLines.forEach((line, index) => {
+        line.classList.toggle('checkout-step-line-active', index < activeIndex);
+    });
+
+    document.body?.setAttribute('data-checkout-step', normalizedStep);
+
+    if (scroll) {
+        const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === normalizedStep);
+        if (activePanel && typeof activePanel.getBoundingClientRect === 'function') {
+            const rect = activePanel.getBoundingClientRect();
+            const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
+            window.scrollTo({ top: nextTop, behavior: 'smooth' });
+        }
+    }
+}
+
+function getCheckoutStepForField(field) {
+    return field?.closest?.('[data-checkout-panel]')?.dataset?.checkoutPanel || '';
+}
+
+function getFirstInvalidField(fields = []) {
+    return fields.find((field) => (
+        field
+        && !field.disabled
+        && typeof field.checkValidity === 'function'
+        && !field.checkValidity()
+    )) || null;
+}
+
+function validateCheckoutStep(step = currentCheckoutStep) {
+    clearCheckoutFeedback();
+
+    if (step === 'details') {
+        syncCustomerTypeUI();
+        updateEmailValidity({ normalizeInput: true });
+        updatePhoneValidity({ normalizeInput: true });
+        updateTaxIdValidity();
+        updateCompanyValidity();
+
+        const invalidField = getFirstInvalidField([
+            checkoutForm?.elements?.nome,
+            emailInput,
+            phoneInput,
+            customerTypeSelect,
+            countrySelect,
+            nifInput,
+            companyInput
+        ]);
+
+        if (invalidField) {
+            setCheckoutFeedback(i18nText('Preencha os dados de contacto e faturação antes de continuar.'), 'error');
+            revealCheckoutField(invalidField);
+            return false;
+        }
+
+        return true;
+    }
+
+    if (step === 'address') {
+        updatePostalCodeFormatting();
+        syncFiscalCountryFromAddress();
+        syncCityFromMunicipality({ force: false });
+
+        const invalidField = getFirstInvalidField([
+            addressCountrySelect,
+            postalCodeInput,
+            addressRegionSelect,
+            addressMunicipalitySelect,
+            cityInput,
+            streetInput
+        ]);
+
+        if (invalidField) {
+            setCheckoutFeedback(i18nText('Preencha a morada de entrega antes de continuar.'), 'error');
+            revealCheckoutField(invalidField);
+            return false;
+        }
+
+        return true;
+    }
+
+    if (step === 'payment' && termsCheckbox && !termsCheckbox.checked) {
+        setCheckoutFeedback(i18nText('Aceite os termos para continuar.'), 'error');
+        revealCheckoutField(termsCheckbox);
+        return false;
+    }
+
+    return true;
+}
+
+function canMoveToCheckoutStep(nextStep) {
+    const nextIndex = getCheckoutStepIndex(nextStep);
+    const currentIndex = getCheckoutStepIndex(currentCheckoutStep);
+
+    if (nextIndex <= currentIndex) {
+        return true;
+    }
+
+    for (let index = currentIndex; index < nextIndex; index += 1) {
+        if (!validateCheckoutStep(CHECKOUT_STEP_ORDER[index])) {
+            return false;
+        }
+    }
+
+    return true;
+}
+
 function localizeEmbeddedCheckoutStaticContent() {
     if (getCurrentLocale() !== 'es') {
         return;
     }
 
-    const paymentSection = checkoutPaymentIntro?.closest('.app-surface');
+    const paymentSection = checkoutPaymentIntro?.closest('[data-checkout-panel="payment"]');
     const paymentSubtitle = paymentSection?.querySelector('.app-section-subtitle');
     if (paymentSubtitle) {
-        paymentSubtitle.textContent = i18nText('Ao continuar, o checkout seguro aparece abaixo, sem sair da IberFlag.');
+        paymentSubtitle.textContent = i18nText('O pagamento abre aqui na loja com Stripe.');
     }
 
-    const introCards = checkoutPaymentIntro ? Array.from(checkoutPaymentIntro.children) : [];
-    const [methodsCard, inlineCard, lockCard] = introCards;
-    const methodsTitle = methodsCard?.querySelector('p.font-semibold');
-    const methodsText = methodsCard?.querySelector('p.text-slate-600');
-    if (methodsTitle) {
-        methodsTitle.textContent = 'Métodos mostrados en el siguiente paso';
-    }
-    if (methodsText) {
-        methodsText.textContent = 'Tarjeta, MB Way, Multibanco y otros métodos compatibles aparecen automáticamente según el cliente y el pedido.';
-    }
-    if (inlineCard) {
-        inlineCard.textContent = 'El pago permanece dentro de IberFlag. Solo sale de este flujo si el propio método pide autenticación externa.';
-    }
-    if (lockCard) {
-        lockCard.textContent = 'Cuando se abra el pago, bloqueamos estos datos para evitar diferencias entre el pedido y el cobro.';
+    const paymentCopy = checkoutPaymentIntro?.querySelector('.checkout-payment-copy span');
+    if (paymentCopy) {
+        paymentCopy.textContent = i18nText('Cartão, MB Way e Multibanco aparecem conforme disponibilidade.');
     }
     if (checkoutLockedNote) {
         checkoutLockedNote.textContent = i18nText('Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.');
@@ -205,15 +344,18 @@ function localizeEmbeddedCheckoutStaticContent() {
         embedTitle.textContent = 'Pago seguro';
     }
     if (embedSubtitle) {
-        embedSubtitle.textContent = 'Complete el pago abajo. La confirmación del pedido ocurre al final del proceso.';
+        embedSubtitle.textContent = i18nText('Complete o pagamento abaixo para confirmar a encomenda.');
     }
     if (embedLoaderText) {
         embedLoaderText.textContent = i18nText('A preparar o pagamento seguro...');
     }
 
-    const checkoutSteps = document.querySelectorAll('.checkout-step span');
+    const checkoutSteps = document.querySelectorAll('.checkout-step-text');
+    if (checkoutSteps[0]) {
+        checkoutSteps[0].textContent = 'Datos';
+    }
     if (checkoutSteps[1]) {
-        checkoutSteps[1].textContent = 'Datos';
+        checkoutSteps[1].textContent = 'Dirección';
     }
     if (checkoutSteps[2]) {
         checkoutSteps[2].textContent = 'Pago';
@@ -1240,6 +1382,11 @@ function revealCheckoutField(field = null) {
         return;
     }
 
+    const fieldStep = getCheckoutStepForField(target);
+    if (fieldStep && fieldStep !== currentCheckoutStep) {
+        setCheckoutStep(fieldStep);
+    }
+
     const rect = target.getBoundingClientRect();
     const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
     window.scrollTo({ top: nextTop, behavior: 'smooth' });
@@ -1286,6 +1433,10 @@ function setPlaceOrderLoadedState() {
 
 function setCheckoutInputsLocked(locked) {
     document.body?.classList.toggle('checkout-payment-active', locked);
+
+    checkoutStepButtons.forEach((button) => {
+        button.disabled = locked && button.dataset.checkoutStep !== 'payment';
+    });
 
     if (checkoutForm) {
         checkoutForm.querySelectorAll('input, select, textarea, button').forEach((field) => {
@@ -1418,6 +1569,7 @@ async function mountEmbeddedCheckout(sessionPayload) {
         publishableKey
     };
 
+    setCheckoutStep('payment');
     setCheckoutInputsLocked(true);
     setElementHidden(checkoutEmbedShell, false);
     setCheckoutEmbedLoading(true);
@@ -1757,7 +1909,8 @@ if (placeOrderBtn) {
             cidade: formData.get('cidade'),
             pais_entrega: getSelectedAddressCountry(),
             distrito: formData.get('distrito') || null,
-            concelho: formData.get('concelho') || null
+            concelho: formData.get('concelho') || null,
+            billing_same_as_shipping: billingSameAsShippingCheckbox?.checked !== false
         };
 
         const orderNotes = formData.get('notas') || null;
@@ -1816,6 +1969,34 @@ if (placeOrderBtn) {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     localizeEmbeddedCheckoutStaticContent();
+    setCheckoutStep('details');
+
+    checkoutNextButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const nextStep = button.dataset.checkoutNext;
+            if (nextStep && canMoveToCheckoutStep(nextStep)) {
+                setCheckoutStep(nextStep, { scroll: true });
+            }
+        });
+    });
+
+    checkoutBackButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const previousStep = button.dataset.checkoutBack;
+            if (previousStep) {
+                setCheckoutStep(previousStep, { scroll: true });
+            }
+        });
+    });
+
+    checkoutStepButtons.forEach((button) => {
+        button.addEventListener('click', () => {
+            const nextStep = button.dataset.checkoutStep;
+            if (nextStep && canMoveToCheckoutStep(nextStep)) {
+                setCheckoutStep(nextStep, { scroll: true });
+            }
+        });
+    });
 
     if (emailInput) {
         emailInput.addEventListener('input', () => {
