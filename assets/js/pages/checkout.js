@@ -1034,7 +1034,11 @@ async function lookupPostalCode({ force = false } = {}) {
         }
         postalLookupController = new AbortController();
 
-        const response = await fetch(`https://api.zippopotam.us/${country.toLowerCase()}/${encodeURIComponent(normalized)}`, {
+        const lookupParams = new URLSearchParams({
+            country,
+            postalCode: normalized
+        });
+        const response = await fetch(`/api/checkout/postal-lookup?${lookupParams.toString()}`, {
             signal: postalLookupController.signal
         });
         if (!response.ok) {
@@ -1042,15 +1046,15 @@ async function lookupPostalCode({ force = false } = {}) {
         }
 
         const data = await response.json();
-        const place = Array.isArray(data?.places) ? data.places[0] : null;
-        if (!place) {
+        if (!data?.region && !data?.city) {
             return;
         }
 
         setAddressSelection({
-            country,
-            region: place.state,
-            city: place['place name'],
+            country: data.country || country,
+            region: data.region,
+            municipality: data.municipality,
+            city: data.city,
             forceCity: false
         });
     } catch (error) {

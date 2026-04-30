@@ -2633,6 +2633,37 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     color: #475569;
 }
 
+.checkout-page.checkout-payment-active .checkout-steps-wrap,
+.checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-panel-heading,
+.checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-form-section,
+.checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-consent-stack,
+.checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-panel-actions,
+.checkout-page.checkout-payment-active .checkout-summary-column,
+.checkout-page.checkout-payment-active .checkout-embed-shell > .mb-4 {
+    display: none !important;
+}
+
+.checkout-page.checkout-payment-active .checkout-main-column {
+    grid-column: 1 / -1;
+    max-width: 58rem;
+    width: 100%;
+    margin: 0 auto;
+}
+
+.checkout-page.checkout-payment-active .checkout-main-card {
+    overflow: visible;
+}
+
+.checkout-page.checkout-payment-active .checkout-step-panel[data-checkout-panel="payment"] {
+    padding: clamp(1rem, 3vw, 1.75rem);
+}
+
+.checkout-page.checkout-payment-active .checkout-embed-shell {
+    margin-top: 0;
+    padding-top: 0;
+    border-top: 0;
+}
+
 .checkout-main-card .app-section-title,
 .checkout-surface-card .app-section-title {
     font-size: 1.2rem;
