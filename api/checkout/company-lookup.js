@@ -8,7 +8,11 @@ const {
 const { findCustomerByVatNumber } = require('../../lib/server/facturalusa');
 const { normalizeCustomerType } = require('../../lib/server/checkout');
 const { validateVatVies } = require('../../lib/server/vies');
-const { resolvePostalLookup } = require('../../lib/server/postal-lookup');
+const {
+    normalizeLookupCountry,
+    normalizeLookupPostalCode,
+    resolvePostalLookup
+} = require('../../lib/server/postal-lookup');
 
 function pickString(source, keys) {
     for (const key of Array.isArray(keys) ? keys : []) {
@@ -87,6 +91,23 @@ async function handlePostalLookup(req, res, requestUrl) {
     } catch (error) {
         const statusCode = Number(error?.statusCode || 500);
         const safeStatusCode = statusCode >= 400 && statusCode < 600 ? statusCode : 500;
+        if (safeStatusCode === 404) {
+            const country = normalizeLookupCountry(requestUrl.searchParams.get('country') || '');
+            const postalCode = normalizeLookupPostalCode(requestUrl.searchParams.get('postalCode') || '', country);
+            sendJson(res, 200, {
+                found: false,
+                country,
+                postalCode,
+                region: '',
+                municipality: '',
+                city: '',
+                message: 'Codigo postal nao encontrado.'
+            }, {
+                'Cache-Control': 'private, max-age=300'
+            });
+            return;
+        }
+
         sendJson(res, safeStatusCode, {
             error: error?.message || 'POSTAL_LOOKUP_FAILED',
             message: safeStatusCode === 404

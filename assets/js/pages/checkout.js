@@ -148,6 +148,7 @@ let latestVatValidation = null;
 let postalLookupDebounceTimer = null;
 let postalLookupController = null;
 let latestPostalLookupKey = '';
+const postalLookupMissingKeys = new Set();
 let addressCountryTouched = false;
 let lastAutoCityValue = '';
 let stripePublishableKeyInUse = '';
@@ -1070,7 +1071,7 @@ async function lookupPostalCode({ force = false } = {}) {
     }
 
     const lookupKey = `${country}:${normalized}`;
-    if (!force && lookupKey === latestPostalLookupKey) {
+    if (postalLookupMissingKeys.has(lookupKey) || (!force && lookupKey === latestPostalLookupKey)) {
         return;
     }
     latestPostalLookupKey = lookupKey;
@@ -1085,7 +1086,7 @@ async function lookupPostalCode({ force = false } = {}) {
             mode: 'postal',
             country,
             postalCode: normalized,
-            v: '20260430postal1'
+            v: '20260430postal2'
         });
         const response = await fetch(`/api/checkout/company-lookup?${lookupParams.toString()}`, {
             signal: postalLookupController.signal
@@ -1095,6 +1096,12 @@ async function lookupPostalCode({ force = false } = {}) {
         }
 
         const data = await response.json();
+        if (data?.found === false) {
+            postalLookupMissingKeys.add(lookupKey);
+            return;
+        }
+        postalLookupMissingKeys.delete(lookupKey);
+
         if (!data?.region && !data?.city) {
             return;
         }
