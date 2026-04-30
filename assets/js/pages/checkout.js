@@ -773,7 +773,7 @@ function syncFiscalCountryFromAddress() {
     countrySelect.value = addressCountry;
     applyVatValidationResult(null);
     updateTaxIdValidity();
-    updatePhoneValidity();
+    updatePhoneValidity({ allowEmpty: true });
     updateFiscalSummary();
     scheduleCompanyLookup();
 }
@@ -1045,9 +1045,23 @@ function validateCheckoutPhone(value, postalCode = '', taxId = '', phoneCountry 
     };
 }
 
-function updatePhoneValidity({ normalizeInput = false } = {}) {
+function updatePhoneValidity({ normalizeInput = false, allowEmpty = false } = {}) {
     if (!phoneInput) {
         return { valid: true, normalized: '', message: '' };
+    }
+
+    if (allowEmpty && !String(phoneInput.value || '').trim()) {
+        if (normalizeInput) {
+            phoneInput.value = '';
+        }
+        phoneInput.setCustomValidity('');
+        return {
+            valid: true,
+            normalized: '',
+            country: getSelectedPhoneCountry(),
+            displayValue: '',
+            message: ''
+        };
     }
 
     const validation = validateCheckoutPhone(
@@ -2118,9 +2132,14 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     if (phoneInput) {
         phoneInput.addEventListener('input', () => {
-            updatePhoneValidity();
+            updatePhoneValidity({ allowEmpty: true });
         });
-        phoneInput.addEventListener('blur', () => {
+        phoneInput.addEventListener('blur', (event) => {
+            if (event.relatedTarget === phoneCountryToggle || !String(phoneInput.value || '').trim()) {
+                updatePhoneValidity({ normalizeInput: true, allowEmpty: true });
+                clearCheckoutFeedback();
+                return;
+            }
             const validation = updatePhoneValidity({ normalizeInput: true });
             if (!validation.valid) {
                 setCheckoutFeedback(validation.message, 'error');
@@ -2130,7 +2149,11 @@ document.addEventListener('DOMContentLoaded', () => {
     if (phoneCountryToggle) {
         phoneCountryToggle.addEventListener('click', () => {
             const nextCountry = getSelectedPhoneCountry() === 'PT' ? 'ES' : 'PT';
-            setPhoneCountry(nextCountry, { normalizeInput: true });
+            const hasPhoneValue = Boolean(String(phoneInput?.value || '').trim());
+            setPhoneCountry(nextCountry, { normalizeInput: hasPhoneValue, skipValidation: !hasPhoneValue });
+            if (!hasPhoneValue) {
+                phoneInput?.setCustomValidity('');
+            }
             clearCheckoutFeedback();
             phoneInput?.focus();
         });
@@ -2165,7 +2188,7 @@ document.addEventListener('DOMContentLoaded', () => {
         postalCodeInput.addEventListener('blur', () => {
             updatePostalCodeFormatting();
             updateTaxIdValidity();
-            updatePhoneValidity();
+            updatePhoneValidity({ allowEmpty: true });
             updateFiscalSummary();
             scheduleCompanyLookup();
             void lookupPostalCode({ force: true });
@@ -2207,7 +2230,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (phoneInput && !String(phoneInput.value || '').trim()) {
             setPhoneCountry(getSelectedFiscalCountry(), { skipValidation: true });
         }
-        updatePhoneValidity();
+        updatePhoneValidity({ allowEmpty: true });
         applyVatValidationResult(null);
         setCompanyLookupStatus('');
         updateFiscalSummary();
