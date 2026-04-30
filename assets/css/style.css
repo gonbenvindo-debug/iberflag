@@ -2670,11 +2670,11 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
 .checkout-page.checkout-payment-active .checkout-main-column {
     grid-column: 1 / -1;
     box-sizing: border-box;
-    max-width: min(100%, 38rem);
+    max-width: min(100%, 56rem);
     width: 100%;
     margin: 0 auto;
-    padding-left: 0.75rem;
-    padding-right: 0.75rem;
+    padding-left: 1rem;
+    padding-right: 1rem;
 }
 
 .checkout-page.checkout-payment-active .checkout-main-card {
