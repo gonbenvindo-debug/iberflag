@@ -1084,7 +1084,8 @@ async function lookupPostalCode({ force = false } = {}) {
         const lookupParams = new URLSearchParams({
             mode: 'postal',
             country,
-            postalCode: normalized
+            postalCode: normalized,
+            v: '20260430postal1'
         });
         const response = await fetch(`/api/checkout/company-lookup?${lookupParams.toString()}`, {
             signal: postalLookupController.signal

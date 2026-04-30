@@ -82,7 +82,7 @@ async function handlePostalLookup(req, res, requestUrl) {
         const result = await resolvePostalLookup({ country, postalCode });
 
         sendJson(res, 200, result, {
-            'Cache-Control': 'public, max-age=86400, s-maxage=86400'
+            'Cache-Control': 'private, max-age=300'
         });
     } catch (error) {
         const statusCode = Number(error?.statusCode || 500);
