@@ -288,32 +288,29 @@ function renderCartItemsList() {
     }
 
     cartItemsContainer.innerHTML = cart.map((item, index) => `
-        <article class="group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
+        <article class="cart-item-card group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
             <div class="cart-item-row flex items-start gap-3">
-                <a href="${getCartItemEditorLink(item, index)}" class="flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
+                <a href="${getCartItemEditorLink(item, index)}" class="cart-item-preview-link flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
                         <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
                     </div>
                 </a>
-                <div id="cart-item-details-${index}" data-cart-details="${index}" class="min-w-0 flex-1">
+                <div id="cart-item-details-${index}" data-cart-details="${index}" class="cart-item-details min-w-0 flex-1">
                     <div class="cart-item-top-row flex items-start justify-between gap-2">
-                        <div class="min-w-0">
-                            <h4 class="truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
-                            <p class="mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
+                        <div class="cart-item-title-wrap min-w-0">
+                            <h4 class="cart-item-name truncate font-bold text-sm text-gray-900">${escapeHtml(item.nome)}</h4>
+                            <p class="cart-item-price mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
                         </div>
-                        <button type="button" data-cart-action="remove" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="${i18nText('Remover item')}">
+                        <button type="button" data-cart-action="remove" data-cart-index="${index}" class="cart-item-remove inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="${i18nText('Remover item')}">
                             <i data-lucide="trash-2" class="w-4 h-4"></i>
                         </button>
                     </div>
-                    <div class="mt-2 flex items-center gap-2">
-                        ${item.quantity > 1 ? `<span class="text-xs text-gray-500">${i18nText('Qtd.')} ${item.quantity}</span>` : ''}
-                    </div>
                     <div class="cart-item-actions mt-3 flex flex-wrap items-center gap-2">
-                        <a href="${getCartItemEditorLink(item, index)}" class="inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
+                        <a href="${getCartItemEditorLink(item, index)}" class="cart-item-edit-link inline-flex items-center gap-1 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-700 transition hover:bg-blue-100">
                             <i data-lucide="${item.customized ? 'edit-3' : 'palette'}" class="w-3.5 h-3.5"></i>
                             ${item.customized ? i18nText('Editar') : i18nText('Personalizar')}
                         </a>
-                        <div class="ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
+                        <div class="cart-item-quantity-control ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
                             <button type="button" data-cart-action="decrease" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="${i18nText('Diminuir quantidade')}">
                                 <i data-lucide="minus" class="w-3.5 h-3.5"></i>
                             </button>
@@ -337,6 +334,12 @@ function syncCartItemPreviewHeights() {
         const details = card.querySelector('[data-cart-details]');
         const previewLink = card.querySelector('[data-cart-preview-link]');
         if (!(details instanceof Element) || !(previewLink instanceof HTMLElement)) {
+            return;
+        }
+
+        if (window.matchMedia?.('(max-width: 767px)').matches) {
+            previewLink.style.height = '';
+            previewLink.style.minHeight = '';
             return;
         }
 
@@ -1229,6 +1232,7 @@ function updateCart() {
     const totalItems = cart.reduce((sum, item) => sum + item.quantity, 0);
     updateCartCountBadges(totalItems);
     renderCartItemsList();
+    scheduleCartItemPreviewHeightSync();
     if (cartTotal) {
         const total = cart.reduce((sum, item) => sum + (item.preco * item.quantity), 0);
         cartTotal.textContent = `${total.toFixed(2)}€`;
