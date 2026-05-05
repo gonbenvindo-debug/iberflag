@@ -1116,10 +1116,17 @@ Object.assign(DesignEditor.prototype, {
             this.handleMouseUp('mouse');
         });
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
-        const syncViewportAndHandles = () => {
-            this._lastViewportStageWidth = null;
-            this._lastViewportStageHeight = null;
-            this._templateLayoutNeedsReflow = true;
+        const syncViewportAndHandles = (options = {}) => {
+            const shouldResetViewportCache = options.resetViewportCache !== false;
+            const shouldReflowTemplate = options.reflowTemplate !== false;
+
+            if (shouldResetViewportCache) {
+                this._lastViewportStageWidth = null;
+                this._lastViewportStageHeight = null;
+            }
+            if (shouldReflowTemplate) {
+                this._templateLayoutNeedsReflow = true;
+            }
             this.updateSidebarMode?.();
             this.syncCanvasViewport();
             if (this.selectedElement) {
@@ -1131,7 +1138,10 @@ Object.assign(DesignEditor.prototype, {
 
         if (window.visualViewport) {
             window.visualViewport.addEventListener('resize', syncViewportAndHandles, { passive: true });
-            window.visualViewport.addEventListener('scroll', syncViewportAndHandles, { passive: true });
+            window.visualViewport.addEventListener('scroll', () => syncViewportAndHandles({
+                resetViewportCache: false,
+                reflowTemplate: false
+            }), { passive: true });
         }
 
         // ResizeObserver: recalcula canvas quando o stage muda de tamanho

@@ -73,6 +73,17 @@ Object.assign(DesignEditor.prototype, {
     getInitialCanvasWrapperBounds(sourceBounds) {
         const sourceWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const sourceHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
+        const lockedBounds = this.initialCanvasLimitBounds;
+        if (
+            lockedBounds &&
+            Number.isFinite(lockedBounds.width) &&
+            Number.isFinite(lockedBounds.height) &&
+            lockedBounds.width > 0 &&
+            lockedBounds.height > 0
+        ) {
+            return { ...lockedBounds };
+        }
+
         const candidates = [];
 
         const stageRect = this.canvasStage?.getBoundingClientRect?.();
@@ -108,12 +119,21 @@ Object.assign(DesignEditor.prototype, {
             candidate.height > 0
         ));
 
-        return {
+        const renderedWidth = Math.round(Number(wrapperSize?.width) || sourceWidth);
+        const renderedHeight = Math.round(Number(wrapperSize?.height) || sourceHeight);
+
+        const bounds = {
             x: 0,
             y: 0,
-            width: Math.max(sourceWidth, Math.round(Number(wrapperSize?.width) || sourceWidth)),
-            height: Math.max(sourceHeight, Math.round(Number(wrapperSize?.height) || sourceHeight))
+            width: Math.max(1, renderedWidth),
+            height: Math.max(1, renderedHeight)
         };
+
+        if (wrapperSize) {
+            this.initialCanvasLimitBounds = { ...bounds };
+        }
+
+        return bounds;
     },
 
     configureCanvasFromSourceBounds(sourceBounds) {
