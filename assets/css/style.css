@@ -234,6 +234,47 @@ body {
     flex: 0 0 auto;
 }
 
+#cart-sidebar .cart-item-remove,
+#cart-sidebar .cart-item-quantity-control button {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    flex: 0 0 auto;
+    opacity: 1;
+    visibility: visible;
+    color: #475569;
+}
+
+#cart-sidebar .cart-item-remove {
+    min-width: 2rem;
+    min-height: 2rem;
+    background: transparent;
+    border: 0;
+}
+
+#cart-sidebar .cart-item-remove:hover {
+    color: #dc2626;
+    background: transparent;
+}
+
+#cart-sidebar .cart-control-icon {
+    display: block;
+    width: 1.18rem;
+    height: 1.18rem;
+    flex: 0 0 auto;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    pointer-events: none;
+}
+
+#cart-sidebar .cart-control-icon--quantity {
+    width: 0.9rem;
+    height: 0.9rem;
+}
+
 @media (max-width: 767px) {
     #cart-sidebar {
         width: min(92vw, 25rem) !important;
@@ -318,8 +359,10 @@ body {
 
     #cart-sidebar .cart-item-remove {
         grid-area: remove;
-        width: 1.75rem;
+        width: 2rem;
+        min-width: 2rem;
         height: 2.25rem;
+        min-height: 2.25rem;
         color: #475569;
         background: transparent;
         border: 0;
@@ -330,11 +373,6 @@ body {
     #cart-sidebar .cart-item-remove:hover {
         color: #dc2626;
         background: transparent;
-    }
-
-    #cart-sidebar .cart-item-remove svg {
-        width: 1.18rem;
-        height: 1.18rem;
     }
 
     #cart-sidebar .cart-item-actions {
@@ -357,13 +395,10 @@ body {
 
     #cart-sidebar .cart-item-quantity-control button {
         width: 1.55rem;
+        min-width: 1.55rem;
         height: 1.65rem;
+        min-height: 1.65rem;
         border-radius: 0.55rem;
-    }
-
-    #cart-sidebar .cart-item-quantity-control button svg {
-        width: 0.78rem;
-        height: 0.78rem;
     }
 
     #cart-sidebar .cart-item-quantity-control span {

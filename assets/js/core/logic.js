@@ -42,6 +42,16 @@ function i18nProduct(product) {
         : product;
 }
 
+function cartControlIcon(name, className = 'cart-control-icon') {
+    const paths = {
+        'trash-2': '<path d="M3 6h18"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><path d="M19 6l-1 14c-.1 1.1-.9 2-2 2H8c-1.1 0-1.9-.9-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path>',
+        minus: '<path d="M5 12h14"></path>',
+        plus: '<path d="M12 5v14"></path><path d="M5 12h14"></path>'
+    };
+
+    return `<svg class="${className}" viewBox="0 0 24 24" aria-hidden="true" focusable="false">${paths[name] || ''}</svg>`;
+}
+
 function getLocalizedStaticPath(pathname, fallback) {
     if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
         return SiteRoutes.getLocalizedPath(pathname);
@@ -302,7 +312,7 @@ function renderCartItemsList() {
                             <p class="cart-item-price mt-1 text-sm font-semibold text-blue-600">${Number(item.preco || 0).toFixed(2)}€</p>
                         </div>
                         <button type="button" data-cart-action="remove" data-cart-index="${index}" class="cart-item-remove inline-flex h-8 w-8 items-center justify-center rounded-full text-gray-400 transition hover:bg-red-50 hover:text-red-600" aria-label="${i18nText('Remover item')}">
-                            <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            ${cartControlIcon('trash-2')}
                         </button>
                     </div>
                     <div class="cart-item-actions mt-3 flex flex-wrap items-center gap-2">
@@ -312,11 +322,11 @@ function renderCartItemsList() {
                         </a>
                         <div class="cart-item-quantity-control ml-auto flex items-center gap-1 rounded-lg border border-gray-200 bg-gray-50 p-1">
                             <button type="button" data-cart-action="decrease" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="${i18nText('Diminuir quantidade')}">
-                                <i data-lucide="minus" class="w-3.5 h-3.5"></i>
+                                ${cartControlIcon('minus', 'cart-control-icon cart-control-icon--quantity')}
                             </button>
                             <span class="min-w-8 px-2 text-center text-sm font-semibold text-gray-900">${item.quantity}</span>
                             <button type="button" data-cart-action="increase" data-cart-index="${index}" class="inline-flex h-8 w-8 items-center justify-center rounded-md text-gray-700 transition hover:bg-white hover:shadow-sm" aria-label="${i18nText('Aumentar quantidade')}">
-                                <i data-lucide="plus" class="w-3.5 h-3.5"></i>
+                                ${cartControlIcon('plus', 'cart-control-icon cart-control-icon--quantity')}
                             </button>
                         </div>
                     </div>

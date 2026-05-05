@@ -459,7 +459,7 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260428logo">
   <link rel="shortcut icon" href="/favicon.svg?v=20260428logo">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
-  <link rel="stylesheet" href="/assets/css/style.css?v=20260429card-fit1">
+  <link rel="stylesheet" href="/assets/css/style.css?v=20260505cart-controls1">
   <style>
     @media (max-width: 767px) {
       .catalog-grid-two {
