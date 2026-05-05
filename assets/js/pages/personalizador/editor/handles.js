@@ -408,7 +408,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     isElementFullyInsideEditableBounds(elementData) {
-        const bounds = this.getEditableBounds();
+        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
         const transformed = this.getTransformedBounds(elementData);
         return (
             transformed.left >= bounds.x &&
@@ -420,7 +420,7 @@ Object.assign(DesignEditor.prototype, {
     
     bringElementInBounds(elementData) {
         // Check if element is out of bounds and move it back in
-        const bounds = this.getEditableBounds();
+        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
         const transformed = this.getTransformedBounds(elementData);
         
         // Calculate how much the element exceeds bounds on each side
@@ -1163,7 +1163,7 @@ Object.assign(DesignEditor.prototype, {
         const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         const rotation = this.selectedElement.rotation || 0;
         const bbox = this.dragStart.bbox || this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
-        const canvasBounds = this.getEditableBounds();
+        const canvasBounds = this.getElementLimitBounds?.() || this.getEditableBounds();
         const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
         const centerPoint = {
             x: bbox.x + (bbox.width / 2),
@@ -1429,7 +1429,7 @@ Object.assign(DesignEditor.prototype, {
             this.applyRotatedResizeAnchor(this.selectedElement);
         }
 
-        // Never allow rotated elements to grow outside the design canvas.
+        // Never allow rotated elements to grow outside the editable element limit.
         // If a resize step crosses the wall, reject that step instead of
         // translating the element, which can look like growth on the opposite side.
         if (rotation !== 0 && this.selectedElement.type !== 'text' && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
@@ -1524,7 +1524,7 @@ Object.assign(DesignEditor.prototype, {
         this.applyElementRotation(this.selectedElement, rotation);
         
         const transformed = this.getTransformedBounds(this.selectedElement);
-        const bounds = this.getEditableBounds();
+        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
         
         // Check if ANY part of element is outside bounds (same logic as movement)
         const isOutOfBounds = 
@@ -1578,7 +1578,7 @@ Object.assign(DesignEditor.prototype, {
             this.applyElementRotation(this.selectedElement, rotation);
             
             const transformed = this.getTransformedBounds(this.selectedElement);
-            const bounds = this.getEditableBounds();
+            const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
             
             // Check if ANY part of element would be outside bounds (same logic as movement)
             const isOutOfBounds = 

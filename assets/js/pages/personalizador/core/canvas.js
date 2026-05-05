@@ -21,6 +21,22 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
+    getElementLimitBounds() {
+        const bounds = this.getCanvasBounds();
+        const width = Math.max(1, Number(bounds.width) || 1);
+        const height = Math.max(1, Number(bounds.height) || 1);
+        const scale = 2;
+        const extraX = (width * (scale - 1)) / 2;
+        const extraY = (height * (scale - 1)) / 2;
+
+        return {
+            x: (Number(bounds.x) || 0) - extraX,
+            y: (Number(bounds.y) || 0) - extraY,
+            width: width * scale,
+            height: height * scale
+        };
+    },
+
     getCanvasViewportMetrics() {
         const rect = this.canvas?.getBoundingClientRect?.();
         const vb = this.getCanvasViewBoxSize();
