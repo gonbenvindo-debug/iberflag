@@ -681,10 +681,16 @@
         }
 
         .cart-step-content {
+            display: flex;
+            flex-direction: column;
+            gap: 0.65rem;
             flex: 1 1 auto;
             min-height: 0;
             padding: 1rem;
             overflow-y: auto;
+            overscroll-behavior: contain;
+            -webkit-overflow-scrolling: touch;
+            touch-action: pan-y;
         }
 
         .cart-step-pane {
@@ -693,6 +699,17 @@
 
         .cart-step-pane.active {
             display: block;
+        }
+
+        #cart-step-pane-2.active {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        #cart-step-pane-2 > p {
+            margin-top: 0 !important;
+            margin-bottom: 0.15rem !important;
         }
 
         .cart-design-preview {
@@ -709,9 +726,13 @@
             grid-template-columns: repeat(3, minmax(0, 1fr));
             gap: 0.8rem;
             align-items: stretch;
+            min-height: 0;
+            margin: 0;
         }
 
         .cart-base-card {
+            appearance: none;
+            -webkit-appearance: none;
             position: relative;
             display: flex;
             min-height: 100%;
@@ -722,19 +743,31 @@
             padding: 0.65rem;
             cursor: pointer;
             text-align: left;
+            font: inherit;
+            touch-action: pan-y;
+            user-select: none;
+            -webkit-tap-highlight-color: transparent;
             transition: border-color .15s ease, background .15s ease;
         }
 
+        .cart-base-card input[type="radio"],
+        .cart-base-card input[type="checkbox"] {
+            position: absolute !important;
+            width: 1px !important;
+            height: 1px !important;
+            margin: -1px !important;
+            padding: 0 !important;
+            overflow: hidden !important;
+            clip: rect(0 0 0 0) !important;
+            white-space: nowrap !important;
+            border: 0 !important;
+            opacity: 0 !important;
+            pointer-events: none !important;
+        }
+
         .cart-base-card::after {
-            content: "";
-            position: absolute;
-            top: 0.75rem;
-            right: 0.75rem;
-            width: 1.05rem;
-            height: 1.05rem;
-            border: 1px solid #cbd5e1;
-            border-radius: 9999px;
-            background: #fff;
+            content: none;
+            display: none;
         }
 
         .cart-base-card.selected {
@@ -744,9 +777,8 @@
         }
 
         .cart-base-card.selected::after {
-            border-color: #111827;
-            background: #111827;
-            box-shadow: inset 0 0 0 3px #fff;
+            content: none;
+            display: none;
         }
 
         .cart-base-card.is-unavailable {
@@ -827,7 +859,7 @@
 
             .checkout-steps {
                 gap: 0.45rem;
-                padding: 0.75rem 0.85rem;
+                padding: 0.62rem 0.78rem;
             }
 
             .checkout-step {
@@ -843,7 +875,8 @@
             }
 
             .cart-step-content {
-                padding: 0.85rem;
+                gap: 0.45rem;
+                padding: 0.5rem 0.68rem 0.72rem;
             }
 
             .cart-step-pane h3 {
@@ -853,9 +886,18 @@
             }
 
             .cart-step-pane > p {
-                margin-bottom: 0.85rem !important;
+                margin-bottom: 0.48rem !important;
                 font-size: 0.84rem;
                 line-height: 1.45;
+            }
+
+            #cart-step-pane-2.active {
+                gap: 0.38rem;
+            }
+
+            #cart-step-pane-2 > p {
+                margin-top: 0 !important;
+                margin-bottom: 0.08rem !important;
             }
 
             .cart-design-preview {
@@ -864,42 +906,41 @@
 
             .cart-base-grid {
                 display: grid;
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.55rem;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 0.36rem;
                 margin: 0;
                 padding: 0;
                 overflow: visible;
                 scroll-snap-type: none;
+                touch-action: pan-y;
             }
 
             .cart-base-card {
                 min-width: 0;
-                padding: 0.5rem;
-                border-radius: 10px;
+                padding: 0.32rem;
+                border-radius: 9px;
             }
 
             .cart-base-card::after {
-                top: 0.5rem;
-                right: 0.5rem;
-                width: 0.85rem;
-                height: 0.85rem;
+                content: none;
+                display: none;
             }
 
             .cart-base-card img {
-                aspect-ratio: 1 / 0.72;
-                margin-bottom: 0.45rem;
-                border-radius: 7px;
+                aspect-ratio: 1 / 0.68;
+                margin-bottom: 0.26rem;
+                border-radius: 6px;
             }
 
             .cart-base-card p:first-of-type {
-                min-height: 2.25em;
-                font-size: 0.78rem;
-                line-height: 1.12;
+                min-height: 2.1em;
+                font-size: 0.68rem;
+                line-height: 1.08;
             }
 
             .cart-base-card p:last-of-type {
-                padding-top: 0.28rem;
-                font-size: 0.72rem;
+                padding-top: 0.14rem;
+                font-size: 0.66rem;
                 line-height: 1.2;
             }
 
@@ -925,16 +966,16 @@
 
         @media (max-width: 520px) {
             .cart-base-grid {
-                grid-template-columns: repeat(2, minmax(0, 1fr));
-                gap: 0.5rem;
+                grid-template-columns: repeat(3, minmax(0, 1fr)) !important;
+                gap: 0.34rem;
             }
 
             .cart-base-card {
-                padding: 0.45rem;
+                padding: 0.28rem;
             }
 
             .cart-base-card p:first-of-type {
-                font-size: 0.74rem;
+                font-size: 0.6rem;
             }
         }
 
