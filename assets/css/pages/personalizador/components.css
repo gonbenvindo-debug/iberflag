@@ -78,9 +78,9 @@
         }
 
         .resize-handle:hover {
-            background: #2563eb;
-            transform: scale(1.4);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            background: #eff6ff;
+            border-color: #1d4ed8;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
         }
 
         .rotate-handle {
@@ -110,9 +110,10 @@
         }
 
         .rotate-handle:hover {
-            background: #f0f4ff;
-            transform: scale(1.15);
-            box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+            background: #eff6ff;
+            border-color: #1d4ed8;
+            color: #1d4ed8;
+            box-shadow: 0 2px 8px rgba(37, 99, 235, 0.22);
         }
 
         .rotate-handle:active {

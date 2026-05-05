@@ -182,8 +182,26 @@ Object.assign(DesignEditor.prototype, {
 
     captureResizeState(elementData) {
         const state = {
-            transform: elementData.element.getAttribute('transform')
+            transform: elementData.element.getAttribute('transform'),
+            data: {}
         };
+        [
+            'x',
+            'y',
+            'width',
+            'height',
+            'size',
+            'boundsX',
+            'boundsY',
+            'baseX',
+            'baseY',
+            'baseWidth',
+            'baseHeight'
+        ].forEach((key) => {
+            if (Object.prototype.hasOwnProperty.call(elementData, key)) {
+                state.data[key] = elementData[key];
+            }
+        });
 
         if (elementData.type === 'text') {
             state.x = elementData.element.getAttribute('x');
@@ -229,6 +247,10 @@ Object.assign(DesignEditor.prototype, {
             elementData.element.setAttribute('transform', state.transform);
         } else {
             elementData.element.removeAttribute('transform');
+        }
+
+        if (state.data) {
+            Object.assign(elementData, state.data);
         }
     },
 

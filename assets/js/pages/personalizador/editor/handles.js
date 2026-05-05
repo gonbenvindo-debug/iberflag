@@ -1043,6 +1043,11 @@ Object.assign(DesignEditor.prototype, {
 
         this.beginHistoryGesture();
         this.hideGuideLines?.();
+        this.pendingElementDrag = null;
+        this.isDragging = false;
+        this.isRotating = false;
+        this.isPanningCamera = false;
+        this.cameraPanStart = null;
         document.body.classList.add('is-resizing-element');
         this.isResizing = true;
         this.resizeHandle = position;
@@ -1253,7 +1258,7 @@ Object.assign(DesignEditor.prototype, {
         const shouldKeepRatio = forceKeepAspect
             ? true
             : ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text');
-        if (shouldKeepRatio && rotation === 0 && bbox.height > 0) {
+        if (shouldKeepRatio && bbox.height > 0) {
             const ratio = this.getElementStableAspectRatio?.(this.selectedElement, bbox) || (bbox.width / bbox.height);
 
             if (['e', 'w'].includes(this.resizeHandle)) {
@@ -1295,7 +1300,7 @@ Object.assign(DesignEditor.prototype, {
             height: newHeight
         };
 
-        if (this.selectedElement.type !== 'text') {
+        if (this.selectedElement.type !== 'text' && rotation === 0) {
             const constrainedRect = shouldKeepRatio
                 ? this.constrainResizeRectWithRatio(
                     startBox,
@@ -1420,16 +1425,17 @@ Object.assign(DesignEditor.prototype, {
             );
         }
 
+        if (rotation !== 0) {
+            this.applyRotatedResizeAnchor(this.selectedElement);
+        }
+
         // Never allow rotated elements to grow outside the design canvas.
         // If a resize step crosses the wall, reject that step instead of
         // translating the element, which can look like growth on the opposite side.
         if (rotation !== 0 && this.selectedElement.type !== 'text' && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
             this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
+            this.updateResizeHandlesPosition(this.selectedElement);
             return;
-        }
-
-        if (rotation !== 0) {
-            this.applyRotatedResizeAnchor(this.selectedElement);
         }
 
         if (this.selectedElement.type === 'text') {
@@ -1444,8 +1450,11 @@ Object.assign(DesignEditor.prototype, {
         if (e.preventDefault) e.preventDefault();
         this.beginHistoryGesture();
         this.hideGuideLines?.();
+        this.pendingElementDrag = null;
         this.isDragging = false;
         this.isResizing = false;
+        this.isPanningCamera = false;
+        this.cameraPanStart = null;
         this.isRotating = true;
 
         const bbox = this.getElementGeometryBox(elementData, elementData.element.getBBox());
@@ -1457,16 +1466,8 @@ Object.assign(DesignEditor.prototype, {
         const centerClient = new DOMPoint(centerX, centerY).matrixTransform(ctm);
         this.rotationCenterClient = { x: centerClient.x, y: centerClient.y };
 
-        // Record the rotation at the start of this gesture s? we can compute the CSS delta.
+        // Record the rotation at the start of this gesture.
         this._rotateStartRotation = elementData.rotation || 0;
-
-        // Apply CSS transform-origin on the handles container s? all handles rotate together.
-        // Container is position:fixed inset:0, s? origin coords are raw viewport (clientX/Y).
-        const handlesContainer = document.getElementById('resize-handles');
-        if (handlesContainer) {
-            handlesContainer.style.transformOrigin = `${centerClient.x}px ${centerClient.y}px`;
-            handlesContainer.style.transform = 'rotate(0deg)';
-        }
 
         const mouseX = e.clientX;
         const mouseY = e.clientY;
@@ -1517,17 +1518,10 @@ Object.assign(DesignEditor.prototype, {
         // Normalize rotation and snap to 45-degree guides when very close.
         rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
         
+        const previousRotation = this.selectedElement.rotation || 0;
         const previousTransform = this.selectedElement.element.getAttribute('transform');
-        const candidateTransform = rotation
-            ? `rotate(${rotation} ${centerX} ${centerY})`
-            : null;
-
-        // Apply candidate transform once to validate bounds at the same pivot.
-        if (candidateTransform) {
-            this.selectedElement.element.setAttribute('transform', candidateTransform);
-        } else {
-            this.selectedElement.element.removeAttribute('transform');
-        }
+        this.selectedElement.rotation = rotation;
+        this.applyElementRotation(this.selectedElement, rotation);
         
         const transformed = this.getTransformedBounds(this.selectedElement);
         const bounds = this.getEditableBounds();
@@ -1541,6 +1535,7 @@ Object.assign(DesignEditor.prototype, {
         
         if (isOutOfBounds) {
             // Revert to previous transform - not allowed to exceed bounds
+            this.selectedElement.rotation = previousRotation;
             if (previousTransform) {
                 this.selectedElement.element.setAttribute('transform', previousTransform);
             } else {
@@ -1549,8 +1544,7 @@ Object.assign(DesignEditor.prototype, {
             return; // Don't update the display
         }
         
-        // Rotation is valid; keep the candidate transform exactly as-is.
-        this.selectedElement.rotation = rotation;
+        // Rotation is valid; keep the element transform and refresh handles from geometry.
         this.showRotationGuideLine(rotation, elementCenter);
         
         // Sync rotation input/display based on element type
@@ -1571,33 +1565,17 @@ Object.assign(DesignEditor.prototype, {
             if (rotationVal) rotationVal.textContent = rotation;
         }
 
-        // Rotate the entire handles container by the delta angle ÔÇö zero JS geometry, instant GPU sync.
-        const handlesContainer = document.getElementById('resize-handles');
-        if (handlesContainer) {
-            const delta = rotation - (this._rotateStartRotation || 0);
-            handlesContainer.style.transform = `rotate(${delta}deg)`;
-        }
+        this.updateResizeHandlesPosition(this.selectedElement);
     },
     
     updateRotation(value) {
         if (this.selectedElement) {
-            const bbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
-            const centerX = bbox.x + bbox.width / 2;
-            const centerY = bbox.y + bbox.height / 2;
-            
             let rotation = this.getRotationGuideSnap(parseFloat(value), 4).value;
 
+            const previousRotation = this.selectedElement.rotation || 0;
             const previousTransform = this.selectedElement.element.getAttribute('transform');
-            const candidateTransform = rotation
-                ? `rotate(${rotation} ${centerX} ${centerY})`
-                : null;
-
-            // Test the new rotation using the same pivot.
-            if (candidateTransform) {
-                this.selectedElement.element.setAttribute('transform', candidateTransform);
-            } else {
-                this.selectedElement.element.removeAttribute('transform');
-            }
+            this.selectedElement.rotation = rotation;
+            this.applyElementRotation(this.selectedElement, rotation);
             
             const transformed = this.getTransformedBounds(this.selectedElement);
             const bounds = this.getEditableBounds();
@@ -1611,23 +1589,28 @@ Object.assign(DesignEditor.prototype, {
             
             if (isOutOfBounds) {
                 // Reject this rotation - revert to previous transform.
+                this.selectedElement.rotation = previousRotation;
                 if (previousTransform) {
                     this.selectedElement.element.setAttribute('transform', previousTransform);
                 } else {
                     this.selectedElement.element.removeAttribute('transform');
                 }
                 // Reset input to previous value
-                const prevRotation = this.selectedElement.rotation || 0;
+                const prevRotation = previousRotation;
                 const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
                                this.selectedElement.type === 'image' ? 'prop-image-rotation' :
                                'prop-shape-rotation';
+                const valueId = this.selectedElement.type === 'text' ? 'prop-text-rotation-val' :
+                               this.selectedElement.type === 'image' ? 'prop-image-rotation-val' :
+                               'prop-shape-rotation-val';
                 const input = document.getElementById(inputId);
                 if (input) input.value = prevRotation;
+                const valueLabel = document.getElementById(valueId);
+                if (valueLabel) valueLabel.textContent = prevRotation;
                 return;
             }
             
             // Rotation is valid; keep tested transform and persist angle.
-            this.selectedElement.rotation = rotation;
             this.showResizeHandles(this.selectedElement);
             this.queueHistorySave();
         }
