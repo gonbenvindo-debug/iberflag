@@ -863,26 +863,44 @@
             }
 
             .cart-base-grid {
-                display: flex;
-                grid-template-columns: none;
-                gap: 0.65rem;
-                margin-right: -0.85rem;
-                margin-left: -0.85rem;
-                padding: 0 0.85rem 0.15rem;
-                overflow-x: auto;
-                scroll-padding-inline: 0.85rem;
-                scroll-snap-type: x mandatory;
-                -webkit-overflow-scrolling: touch;
+                display: grid;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.55rem;
+                margin: 0;
+                padding: 0;
+                overflow: visible;
+                scroll-snap-type: none;
             }
 
             .cart-base-card {
-                flex: 0 0 min(74vw, 17rem);
-                scroll-snap-align: start;
-                padding: 0.6rem;
+                min-width: 0;
+                padding: 0.5rem;
+                border-radius: 10px;
+            }
+
+            .cart-base-card::after {
+                top: 0.5rem;
+                right: 0.5rem;
+                width: 0.85rem;
+                height: 0.85rem;
             }
 
             .cart-base-card img {
-                aspect-ratio: 4 / 3;
+                aspect-ratio: 1 / 0.72;
+                margin-bottom: 0.45rem;
+                border-radius: 7px;
+            }
+
+            .cart-base-card p:first-of-type {
+                min-height: 2.25em;
+                font-size: 0.78rem;
+                line-height: 1.12;
+            }
+
+            .cart-base-card p:last-of-type {
+                padding-top: 0.28rem;
+                font-size: 0.72rem;
+                line-height: 1.2;
             }
 
             .cart-steps-panel > div:last-child {
@@ -907,7 +925,16 @@
 
         @media (max-width: 520px) {
             .cart-base-grid {
-                grid-template-columns: none;
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+                gap: 0.5rem;
+            }
+
+            .cart-base-card {
+                padding: 0.45rem;
+            }
+
+            .cart-base-card p:first-of-type {
+                font-size: 0.74rem;
             }
         }
 

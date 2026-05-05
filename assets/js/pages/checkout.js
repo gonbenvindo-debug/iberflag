@@ -899,7 +899,7 @@ function setPhoneCountry(country, { normalizeInput = false, skipValidation = fal
 function setFiscalCountry(country, {
     syncAddress = true,
     preserveAddressRegion = true,
-    updatePhoneCountry = true,
+    updatePhoneCountry = false,
     validateTax = true,
     scheduleLookups = true
 } = {}) {
@@ -2322,16 +2322,18 @@ async function loadCart() {
 
     // Render cart items
     orderItems.innerHTML = cart.map(item => `
-        <div class="flex gap-3 pb-4 border-b">
-            <img src="${escapeHtml(typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem)}" alt="${escapeHtml(item.nome)}" class="w-16 h-16 object-cover rounded bg-gray-50 border border-gray-100">
-            <div class="flex-1">
-                <h4 class="font-semibold text-sm">${escapeHtml(item.nome)}</h4>
-                ${item.customized ? '<span class="text-xs text-green-600 flex items-center gap-1"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
-                ${item.baseNome ? `<p class="text-xs text-gray-500 mt-1">Base: ${escapeHtml(item.baseNome)}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</p>` : ''}
-                <p class="text-sm text-gray-600">Qtd: ${Number(item.quantity || 0)}</p>
-            </div>
-            <div class="text-right">
-                <p class="font-bold text-blue-600">${(Number(item.preco || 0) * Number(item.quantity || 0)).toFixed(2)}€</p>
+        <div class="checkout-summary-item">
+            <img src="${escapeHtml(typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem)}" alt="${escapeHtml(item.nome)}" class="checkout-summary-item-media">
+            <div class="checkout-summary-item-body">
+                <div class="checkout-summary-item-main">
+                    <h4>${escapeHtml(item.nome)}</h4>
+                    <div class="checkout-summary-item-meta">
+                        ${item.customized ? '<span class="checkout-summary-item-status"><i data-lucide="check" class="w-3 h-3"></i>Personalizado</span>' : ''}
+                        ${item.baseNome ? `<span>Base: ${escapeHtml(item.baseNome)}${Number(item.basePrecoExtra || 0) > 0 ? ` (+${Number(item.basePrecoExtra).toFixed(2)}€)` : ''}</span>` : ''}
+                        <span>Qtd: ${Number(item.quantity || 0)}</span>
+                    </div>
+                </div>
+                <p class="checkout-summary-item-total">${(Number(item.preco || 0) * Number(item.quantity || 0)).toFixed(2)}€</p>
             </div>
         </div>
     `).join('');
