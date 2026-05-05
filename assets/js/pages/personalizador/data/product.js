@@ -465,6 +465,8 @@ Object.assign(DesignEditor.prototype, {
             }
         });
 
+        this.setupCartBaseTouchScroll();
+
         document.addEventListener('keydown', (event) => {
             if (event.key === 'Escape' && modal.classList.contains('is-open')) {
                 closeModal();
@@ -474,10 +476,84 @@ Object.assign(DesignEditor.prototype, {
         this.cartStepsListenersReady = true;
     },
 
+    setupCartBaseTouchScroll() {
+        const optionsWrap = document.getElementById('cart-base-options');
+        const scroller = document.querySelector('#cart-steps-modal .cart-step-content');
+        if (!optionsWrap || !scroller || optionsWrap.dataset.dragScrollReady === 'true') {
+            return;
+        }
+
+        let activePointerId = null;
+        let startY = 0;
+        let startScrollTop = 0;
+        let didDrag = false;
+
+        const stopDrag = () => {
+            if (didDrag) {
+                this.cartBaseDragSuppressClick = true;
+                setTimeout(() => {
+                    this.cartBaseDragSuppressClick = false;
+                }, 0);
+            }
+
+            activePointerId = null;
+            didDrag = false;
+        };
+
+        optionsWrap.addEventListener('pointerdown', (event) => {
+            if (event.pointerType === 'mouse') {
+                return;
+            }
+
+            activePointerId = event.pointerId;
+            startY = event.clientY;
+            startScrollTop = scroller.scrollTop;
+            didDrag = false;
+
+            if (typeof optionsWrap.setPointerCapture === 'function') {
+                try {
+                    optionsWrap.setPointerCapture(event.pointerId);
+                } catch (error) {
+                    // Some mobile browsers can reject capture during fast multi-touch gestures.
+                }
+            }
+        });
+
+        optionsWrap.addEventListener('pointermove', (event) => {
+            if (activePointerId !== event.pointerId) {
+                return;
+            }
+
+            const deltaY = event.clientY - startY;
+            if (Math.abs(deltaY) < 4) {
+                return;
+            }
+
+            didDrag = true;
+            scroller.scrollTop = startScrollTop - deltaY;
+            event.preventDefault();
+        }, { passive: false });
+
+        optionsWrap.addEventListener('pointerup', stopDrag);
+        optionsWrap.addEventListener('pointercancel', stopDrag);
+        optionsWrap.addEventListener('click', (event) => {
+            if (!this.cartBaseDragSuppressClick) {
+                return;
+            }
+
+            event.preventDefault();
+            event.stopPropagation();
+        }, true);
+
+        optionsWrap.dataset.dragScrollReady = 'true';
+    },
+
     setCartStepsCurrent(stepNumber) {
         const hasBaseStep = this.hasBaseSelectionStep();
         this.cartStepsCurrent = hasBaseStep && stepNumber === 2 ? 2 : 1;
 
+        const panel = document.querySelector('#cart-steps-modal .cart-steps-panel');
+        const content = document.querySelector('#cart-steps-modal .cart-step-content');
         const step1 = document.getElementById('checkout-step-1');
         const step2 = document.getElementById('checkout-step-2');
         const stepSeparator = step2?.previousElementSibling;
@@ -493,6 +569,14 @@ Object.assign(DesignEditor.prototype, {
             step2.classList.toggle('active', this.cartStepsCurrent === 2);
             step2.classList.toggle('done', false);
             step2.classList.toggle('hidden', !hasBaseStep);
+        }
+
+        if (panel instanceof HTMLElement) {
+            panel.dataset.cartStep = String(this.cartStepsCurrent);
+        }
+
+        if (content instanceof HTMLElement) {
+            content.scrollTop = 0;
         }
 
         if (stepSeparator instanceof HTMLElement) {

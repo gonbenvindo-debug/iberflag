@@ -691,6 +691,14 @@
             overscroll-behavior: contain;
             -webkit-overflow-scrolling: touch;
             touch-action: pan-y;
+            scrollbar-width: none;
+            -ms-overflow-style: none;
+        }
+
+        .cart-step-content::-webkit-scrollbar {
+            display: none;
+            width: 0;
+            height: 0;
         }
 
         .cart-step-pane {
@@ -705,6 +713,11 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            touch-action: pan-y;
+        }
+
+        .cart-steps-panel[data-cart-step="2"] .cart-step-content {
+            padding-top: 0;
         }
 
         #cart-step-pane-2 > p {
@@ -728,6 +741,8 @@
             align-items: stretch;
             min-height: 0;
             margin: 0;
+            touch-action: pan-y;
+            overscroll-behavior: contain;
         }
 
         .cart-base-card {
