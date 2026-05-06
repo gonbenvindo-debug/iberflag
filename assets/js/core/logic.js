@@ -590,10 +590,14 @@ function injectLanguageSwitcher() {
         return;
     }
 
+    document.querySelectorAll('[data-language-switcher="rail"]').forEach((rail) => rail.remove());
+    document.querySelectorAll('[data-language-switcher-slot]').forEach((slot) => {
+        slot.querySelectorAll('[data-language-switcher="slot"]').forEach((node) => node.remove());
+    });
+
     const pathname = window.location.pathname || '/';
     const isCustomizerPage = pathname.includes('/personalizar') || Boolean(document.getElementById('editor-body-layout'));
     if (isCustomizerPage) {
-        document.querySelectorAll('[data-language-switcher="rail"]').forEach((rail) => rail.remove());
         window.__iberflagLanguageSwitcherInjected = true;
         return;
     }
@@ -601,6 +605,25 @@ function injectLanguageSwitcher() {
     const currentPath = `${window.location.pathname || '/'}${window.location.search || ''}${window.location.hash || ''}`;
     const currentLocale = SiteRoutes.getLocaleFromPathname?.(pathname) || 'pt';
     const targetLocale = currentLocale === 'es' ? 'pt' : 'es';
+
+    const explicitSlot = document.querySelector('[data-language-switcher-slot]');
+    if (explicitSlot) {
+        const requestedVariant = String(explicitSlot.getAttribute('data-language-switcher-slot') || '').toLowerCase();
+        const variant = requestedVariant === 'mobile' ? 'mobile' : 'desktop';
+        const markup = buildLanguageSwitcherMarkup(currentLocale, currentPath, variant);
+        if (markup) {
+            const wrapper = document.createElement('div');
+            wrapper.dataset.languageSwitcher = 'slot';
+            wrapper.className = requestedVariant === 'mobile'
+                ? 'inline-flex items-center'
+                : 'inline-flex items-center justify-end';
+            wrapper.innerHTML = markup;
+            explicitSlot.appendChild(wrapper);
+        }
+        window.__iberflagLanguageSwitcherInjected = true;
+        return;
+    }
+
     if (!document.querySelector('[data-language-switcher="rail"]')) {
         const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
         const href = SiteRoutes.getLocalizedPath
@@ -619,27 +642,25 @@ function injectLanguageSwitcher() {
                     <rect x="21.6" width="32.4" height="36" fill="#DA291C"/>
                     <circle cx="21.6" cy="18" r="6.2" fill="#F6C645"/>
                 </svg>`;
-        const rail = document.createElement('div');
-        rail.dataset.languageSwitcher = 'rail';
-        rail.className = 'language-rail language-rail-navbar';
-        rail.innerHTML = `
-            <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
-                <span class="language-rail-track" aria-hidden="true">
-                    <span class="language-rail-panel language-rail-panel-current">
-                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}">${flagSvg(currentLocale)}</span>
-                    </span>
-                    <span class="language-rail-panel language-rail-panel-target">
-                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}">${flagSvg(targetLocale)}</span>
-                    </span>
-                </span>
-                <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
-            </a>
-        `;
         const desktopCartButton = document.querySelector('nav #cart-btn');
         if (desktopCartButton?.parentElement) {
+            const rail = document.createElement('div');
+            rail.dataset.languageSwitcher = 'rail';
+            rail.className = 'language-rail language-rail-navbar';
+            rail.innerHTML = `
+                <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
+                    <span class="language-rail-track" aria-hidden="true">
+                        <span class="language-rail-panel language-rail-panel-current">
+                            <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}">${flagSvg(currentLocale)}</span>
+                        </span>
+                        <span class="language-rail-panel language-rail-panel-target">
+                            <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}">${flagSvg(targetLocale)}</span>
+                        </span>
+                    </span>
+                    <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
+                </a>
+            `;
             desktopCartButton.parentElement.insertBefore(rail, desktopCartButton.nextSibling);
-        } else {
-            document.body.appendChild(rail);
         }
     }
     window.__iberflagLanguageSwitcherInjected = true;

@@ -129,24 +129,68 @@ Object.assign(DesignEditor.prototype, {
     },
 
     getGuideBounds() {
+        return this.getProjectGuideFrame().bounds;
+    },
+
+    getProjectGuideFrame() {
+        const fallback = this.getEditableBounds();
+        const normalizeBounds = (bounds) => {
+            if (
+                bounds &&
+                Number.isFinite(bounds.x) &&
+                Number.isFinite(bounds.y) &&
+                Number.isFinite(bounds.width) &&
+                Number.isFinite(bounds.height) &&
+                bounds.width > 0 &&
+                bounds.height > 0
+            ) {
+                return {
+                    x: Number(bounds.x),
+                    y: Number(bounds.y),
+                    width: Number(bounds.width),
+                    height: Number(bounds.height)
+                };
+            }
+            return null;
+        };
+
         const outline = this.canvas?.querySelector?.('#print-area-shape-outline-border, #print-area-shape-outline');
         if (outline?.getBBox) {
             try {
-                const bbox = outline.getBBox();
-                if (bbox && bbox.width > 0 && bbox.height > 0) {
+                const bbox = normalizeBounds(outline.getBBox());
+                if (bbox) {
                     return {
-                        x: bbox.x,
-                        y: bbox.y,
-                        width: bbox.width,
-                        height: bbox.height
+                        bounds: bbox,
+                        center: {
+                            x: bbox.x + (bbox.width / 2),
+                            y: bbox.y + (bbox.height / 2)
+                        }
                     };
                 }
             } catch {
-                // Fall back to editable bounds below.
+                // Fall back to print area or editable bounds below.
             }
         }
 
-        return this.getEditableBounds();
+        const printAreaBounds = normalizeBounds(this.printAreaBounds);
+        if (printAreaBounds) {
+            return {
+                bounds: printAreaBounds,
+                center: {
+                    x: printAreaBounds.x + (printAreaBounds.width / 2),
+                    y: printAreaBounds.y + (printAreaBounds.height / 2)
+                }
+            };
+        }
+
+        const safeFallback = normalizeBounds(fallback) || { x: 0, y: 0, width: 1, height: 1 };
+        return {
+            bounds: safeFallback,
+            center: {
+                x: safeFallback.x + (safeFallback.width / 2),
+                y: safeFallback.y + (safeFallback.height / 2)
+            }
+        };
     },
 
     getResizeAnchorPoint(box, handle) {
@@ -561,12 +605,12 @@ Object.assign(DesignEditor.prototype, {
         return { snapped: false, value: normalized, guide: wrappedGuide, diff };
     },
 
-    showRotationGuideLine(rotation, elementCenter) {
+    showRotationGuideLine(rotation) {
         this.clearGuideLineArtifacts();
 
         if (!this.showGuides) return;
 
-        if (!Number.isFinite(rotation) || !elementCenter) return;
+        if (!Number.isFinite(rotation)) return;
 
         const guideLayer = this.ensureGuideLineLayer();
         if (!guideLayer) return;
@@ -579,11 +623,9 @@ Object.assign(DesignEditor.prototype, {
 
         const snapped = snap.value;
 
-        const bounds = this.getGuideBounds();
-        const projectCenter = {
-            x: bounds.x + (bounds.width / 2),
-            y: bounds.y + (bounds.height / 2)
-        };
+        const projectFrame = this.getProjectGuideFrame();
+        const bounds = projectFrame.bounds;
+        const projectCenter = projectFrame.center;
         const lineLength = Math.hypot(bounds.width, bounds.height) * 0.75;
         const angleRad = (snapped * Math.PI) / 180;
         const dx = Math.cos(angleRad) * lineLength;
@@ -605,9 +647,9 @@ Object.assign(DesignEditor.prototype, {
         this.guideLines.push(line);
 
         const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        ring.setAttribute('cx', String(elementCenter.x));
-        ring.setAttribute('cy', String(elementCenter.y));
-        ring.setAttribute('r', '6');
+        ring.setAttribute('cx', String(projectCenter.x));
+        ring.setAttribute('cy', String(projectCenter.y));
+        ring.setAttribute('r', '5');
         ring.setAttribute('fill', '#ffffff');
         ring.setAttribute('stroke', '#ef4825');
         ring.setAttribute('stroke-width', '1.5');

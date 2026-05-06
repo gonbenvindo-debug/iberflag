@@ -31,14 +31,17 @@
 <body class="app-page bg-gray-50 min-h-screen">
     <nav class="bg-white shadow-sm">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="h-16 flex items-center justify-between">
+            <div class="min-h-[4rem] flex flex-col items-stretch justify-between gap-2 py-3 sm:h-16 sm:flex-row sm:items-center sm:gap-3 sm:py-0">
                 <a href="/" aria-label="IberFlag">
                     <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-full">
                 </a>
-                <a href="/produtos" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
-                    <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                    Voltar aos produtos
-                </a>
+                <div class="flex w-full items-center justify-between gap-2 flex-wrap sm:w-auto sm:justify-end">
+                    <div data-language-switcher-slot="mobile"></div>
+                    <a href="/produtos" class="inline-flex items-center gap-2 text-sm font-semibold text-blue-700 hover:text-blue-800">
+                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
+                        Voltar aos produtos
+                    </a>
+                </div>
             </div>
         </div>
     </nav>

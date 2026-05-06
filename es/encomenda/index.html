@@ -5,6 +5,7 @@
   <script src="/assets/js/core/i18n.js?v=20260422a"></script><style>
         .order-tracking-compact {
             font-size: 14px;
+            overflow-x: hidden;
         }
 
         .order-tracking-compact nav .h-16 {
@@ -287,12 +288,66 @@
 
         .order-history-disclosure-body {
             margin-top: 0.75rem;
+            overflow-x: auto;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .order-history-disclosure-body table {
+            width: 100%;
+            min-width: 31rem;
+        }
+
+        .order-tracking-nav-row {
+            min-height: 3.25rem;
+            gap: 0.75rem;
+        }
+
+        .order-tracking-nav-actions {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .order-tracking-nav-links {
+            display: flex;
+            align-items: center;
+            justify-content: flex-end;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+            min-width: 0;
+        }
+
+        .order-tracking-brand-logo {
+            max-width: 8.5rem;
+            height: auto;
+        }
+
+        .order-summary-side {
+            min-width: 0;
+        }
+
+        .order-summary-badges {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: flex-end;
+            gap: 0.4rem;
+            margin-top: 0.375rem;
+        }
+
+        #order-not-found h2,
+        #order-error h2 {
+            white-space: normal;
+            overflow-wrap: anywhere;
+            word-break: break-word;
         }
 
         @media (max-width: 640px) {
             .order-tracking-compact main {
-                padding-top: 0.75rem;
-                padding-bottom: 1rem;
+                padding-top: 0.5rem;
+                padding-bottom: 0.85rem;
             }
 
             .order-tracking-compact .admin-card {
@@ -304,32 +359,143 @@
                 line-height: 1.4;
             }
 
+            .order-tracking-nav-row {
+                height: auto !important;
+                min-height: 0;
+                flex-direction: column;
+                align-items: stretch;
+                padding-top: 0.7rem;
+                padding-bottom: 0.7rem;
+            }
+
+            .order-tracking-nav-row > a:first-child {
+                align-self: flex-start;
+            }
+
+            .order-tracking-nav-actions {
+                width: 100%;
+                justify-content: flex-start;
+                align-items: flex-start;
+                flex-direction: column;
+                gap: 0.45rem;
+            }
+
+            .order-tracking-nav-actions > * {
+                flex: 0 1 auto;
+            }
+
+            .order-tracking-nav-links {
+                width: 100%;
+                justify-content: flex-start;
+                gap: 0.45rem 0.75rem;
+            }
+
+            .order-tracking-brand-logo {
+                max-width: 6rem;
+            }
+
             .order-overview-grid {
                 grid-template-columns: 1fr;
-                gap: 0.6rem;
+                gap: 0.55rem;
             }
 
             .order-item-card {
-                grid-template-columns: 3.25rem minmax(0, 1fr);
-                gap: 0.75rem;
+                grid-template-columns: 3.5rem minmax(0, 1fr);
+                gap: 0.65rem;
+                padding: 0.75rem;
             }
 
             .order-item-thumb {
-                width: 3.25rem;
-                height: 3.25rem;
+                width: 3.5rem;
+                height: 3.5rem;
             }
 
             .order-item-side {
                 grid-column: 2;
                 flex-direction: row;
+                flex-wrap: wrap;
                 align-items: center;
                 justify-content: space-between;
                 width: 100%;
+                margin-top: 0.15rem;
             }
 
             .order-info-actions {
                 display: grid;
                 grid-template-columns: 1fr;
+                gap: 0.45rem;
+                margin-top: 0.85rem;
+                padding-top: 0.85rem;
+            }
+
+            .order-info-actions > * {
+                width: 100%;
+            }
+
+            .order-summary-side {
+                width: 100%;
+                text-align: left;
+            }
+
+            .order-summary-badges {
+                justify-content: flex-start;
+            }
+
+            .order-progress-card {
+                padding: 0.85rem !important;
+            }
+
+            .order-progress-scroll {
+                margin-inline: -0.1rem;
+                padding-bottom: 0.1rem;
+            }
+
+            .order-progressbar {
+                gap: 0.4rem;
+            }
+
+            .order-progress-label {
+                font-size: 0.69rem;
+            }
+
+            .order-info-block {
+                padding: 0.75rem;
+            }
+
+            .order-info-value {
+                font-size: 0.8rem;
+            }
+
+            .order-plain-btn {
+                min-height: 2.55rem;
+                padding-inline: 0.85rem;
+                font-size: 0.8rem;
+            }
+
+            .order-item-title,
+            .order-item-options,
+            .order-item-meta,
+            .order-item-total,
+            .order-item-copy,
+            #order-not-found h2,
+            #order-error h2,
+            #order-progress-summary,
+            #order-tracking-code,
+            #order-nif,
+            #order-facturalusa-number {
+                min-width: 0;
+                overflow-wrap: anywhere;
+                word-break: break-word;
+            }
+
+            .order-history-disclosure-body table {
+                min-width: 29rem;
+            }
+
+            #order-not-found h2,
+            #order-error h2 {
+                font-size: 1.55rem;
+                line-height: 1.2;
             }
         }
-    </style></head><body class="app-page order-tracking-compact bg-slate-50 min-h-screen"><nav class="bg-white shadow-sm"><div class="max-w-6xl mx-auto px-3 sm:px-5 lg:px-7"><div class="h-16 flex items-center justify-between"><a href="/es/" aria-label="IberFlag"><img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact"></a><div class="flex items-center gap-2"><a href="/es/encomendas" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800"><i data-lucide="search" class="w-4 h-4"></i>Nueva búsqueda</a><a href="/es/contacto" class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900">Ayuda</a></div></div></div></nav><main class="max-w-4xl mx-auto px-3 sm:px-5 lg:px-6 py-3 md:py-4"><div id="order-loading" class="admin-card p-6 text-center text-gray-500"><div class="spinner mx-auto mb-3"></div>Cargando pedido...</div><div id="order-not-found" class="admin-card p-6 text-center text-gray-500 hidden"><i data-lucide="package-x" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i><h2 class="text-xl font-bold text-gray-800">Pedido no encontrado</h2><p class="mt-2">Compruebe el código identificador e inténtelo de nuevo.</p><a href="/es/encomendas" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"><i data-lucide="search" class="w-4 h-4"></i>Volver al seguimiento</a></div><div id="order-error" class="admin-card p-6 text-center text-gray-500 hidden"><i data-lucide="triangle-alert" class="w-12 h-12 mx-auto mb-3 text-amber-500"></i><h2 class="text-xl font-bold text-gray-800">Errorr al cargar el pedido</h2><p id="order-error-message" class="mt-2">Ocorreu um problema técnico al consultar esta pedido.</p><a href="/es/encomendas" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"><i data-lucide="search" class="w-4 h-4"></i>Volver al seguimiento</a></div><div id="order-detail" class="hidden space-y-4"><section class="admin-card order-progress-card p-4 md:p-5"><div class="flex flex-wrap items-start justify-between gap-2 mb-4"><div><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Progresso</p><h2 class="text-sm font-bold text-gray-900 mt-1">Estado da pedido</h2></div><p id="order-progress-summary" class="text-xs text-gray-500 text-left md:text-right">Cargando estado...</p></div><div class="order-progress-scroll"><div id="order-progressbar" class="order-progressbar" role="progressbar" aria-label="Progresso da pedido"></div></div></section><section class="admin-card p-4 md:p-5"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Pedido</p><h1 id="order-number" class="text-lg md:text-xl font-extrabold text-gray-900 truncate">--</h1><p id="order-created-at" class="text-xs text-gray-500 mt-1">--</p></div><div class="text-left md:text-right"><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Total</p><p id="order-total" class="text-lg font-extrabold text-blue-700">0.00€</p><span id="order-status-badge" class="inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">--</span><span id="order-payment-badge" class="inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">Pago --</span><span id="order-facturalusa-badge" class="inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">Facturación --</span></div></div><div class="order-overview-grid mt-4 pt-4 border-t border-gray-100"><div class="order-info-block"><div class="order-info-label">Entrega</div><div id="order-shipping" class="order-info-value">-</div></div><div class="order-info-block"><div class="order-info-label">Seguimiento</div><div id="order-tracking-code" class="order-info-value">Todavía no disponible</div><a id="order-tracking-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">Abrir seguimiento</a></div><div class="order-info-block"><div class="order-info-label">Facturación</div><div class="order-info-value"><strong id="order-facturalusa-status" class="text-gray-900">-</strong><div id="order-facturalusa-number" class="text-xs text-gray-600 mt-1">-</div><div class="text-xs text-gray-500 mt-2">NIF:<strong id="order-nif" class="text-gray-900">-</strong></div></div><a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">Abrir factura</a></div></div><div class="order-info-actions"><button id="order-copy-code-btn" type="button" class="order-plain-btn">Copiar código</button><button id="order-copy-tracking-btn" type="button" class="order-plain-btn">Copiar seguimiento</button><a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden"><i data-lucide="file-text" class="w-4 h-4"></i>Fatura</a><a id="order-contact-support-btn" href="/es/contacto" class="order-plain-btn order-plain-btn-primary">Solicitar ayuda</a></div></section><section class="admin-card p-4 md:p-5"><details class="order-history-disclosure"><summary>Historial</summary><div class="order-history-disclosure-body table-container"><table><thead><tr><th>Estado</th><th>Data</th><th>Nota</th></tr></thead><tbody id="order-status-table-body"><tr><td colspan="3" class="text-sm text-gray-400">Sem atualizações.</td></tr></tbody></table></div></details></section><section class="admin-card p-4 md:p-5"><div class="flex items-center justify-between mb-3"><h2 class="text-sm font-bold text-gray-900">Productos</h2><p class="text-xs text-gray-500">Resumen del pedido</p></div><div id="order-items" class="order-items-stack"></div></section></div></main><div id="item-preview-modal" class="modal-overlay hidden p-4"><div class="modal-content w-full max-w-2xl p-4 md:p-5"><div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Personalização</p><h3 id="item-preview-title" class="text-lg font-bold text-gray-900">Producto</h3></div><button id="item-preview-close" type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-2"><img id="item-preview-image" src="/favicon.svg" alt="Preview" class="w-full h-[72vh] object-contain rounded-md bg-white"><div id="item-preview-options" class="hidden"></div><a id="item-preview-download" href="#" download="" class="hidden"></a></div></div></div><script src="/assets/js/core/cart-assets.js?v=20260401a"></script><script src="/assets/js/core/logic.js?v=20260429q2"></script><script src="/assets/js/core/order-workflow.js?v=20260408c"></script><script src="/assets/js/pages/encomenda.js?v=20260408e"></script><script>lucide.createIcons();</script></body></html>
+    </style></head><body class="app-page order-tracking-compact bg-slate-50 min-h-screen"><nav class="bg-white shadow-sm"><div class="max-w-6xl mx-auto px-3 sm:px-5 lg:px-7"><div class="h-16 flex items-center justify-between order-tracking-nav-row"><a href="/es/" aria-label="IberFlag"><img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact order-tracking-brand-logo"></a><div class="order-tracking-nav-actions"><div data-language-switcher-slot="mobile"></div><div class="order-tracking-nav-links"><a href="/es/encomendas" class="inline-flex items-center gap-1.5 text-xs font-semibold text-blue-700 hover:text-blue-800"><i data-lucide="search" class="w-4 h-4"></i>Nueva búsqueda</a><a href="/es/contacto" class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900">Ayuda</a></div></div></div></div></nav><main class="max-w-4xl mx-auto px-3 sm:px-5 lg:px-6 py-3 md:py-4"><div id="order-loading" class="admin-card p-6 text-center text-gray-500"><div class="spinner mx-auto mb-3"></div>Cargando pedido...</div><div id="order-not-found" class="admin-card p-6 text-center text-gray-500 hidden"><i data-lucide="package-x" class="w-12 h-12 mx-auto mb-3 text-gray-300"></i><h2 class="text-xl font-bold text-gray-800">Pedido no encontrado</h2><p class="mt-2">Compruebe el código identificador e inténtelo de nuevo.</p><a href="/es/encomendas" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"><i data-lucide="search" class="w-4 h-4"></i>Volver al seguimiento</a></div><div id="order-error" class="admin-card p-6 text-center text-gray-500 hidden"><i data-lucide="triangle-alert" class="w-12 h-12 mx-auto mb-3 text-amber-500"></i><h2 class="text-xl font-bold text-gray-800">Errorr al cargar el pedido</h2><p id="order-error-message" class="mt-2">Ocorreu um problema técnico al consultar esta pedido.</p><a href="/es/encomendas" class="inline-flex items-center gap-2 mt-5 px-5 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition"><i data-lucide="search" class="w-4 h-4"></i>Volver al seguimiento</a></div><div id="order-detail" class="hidden space-y-4"><section class="admin-card order-progress-card p-4 md:p-5"><div class="flex flex-wrap items-start justify-between gap-2 mb-4"><div><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Progresso</p><h2 class="text-sm font-bold text-gray-900 mt-1">Estado da pedido</h2></div><p id="order-progress-summary" class="text-xs text-gray-500 text-left md:text-right">Cargando estado...</p></div><div class="order-progress-scroll"><div id="order-progressbar" class="order-progressbar" role="progressbar" aria-label="Progresso da pedido"></div></div></section><section class="admin-card p-4 md:p-5"><div class="flex flex-wrap items-start justify-between gap-3"><div class="min-w-0"><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Pedido</p><h1 id="order-number" class="text-lg md:text-xl font-extrabold text-gray-900 truncate">--</h1><p id="order-created-at" class="text-xs text-gray-500 mt-1">--</p></div><div class="text-left md:text-right order-summary-side"><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Total</p><p id="order-total" class="text-lg font-extrabold text-blue-700">0.00€</p><div class="order-summary-badges"><span id="order-status-badge" class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">--</span><span id="order-payment-badge" class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">Pago --</span><span id="order-facturalusa-badge" class="inline-block px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700">Facturación --</span></div></div></div><div class="order-overview-grid mt-4 pt-4 border-t border-gray-100"><div class="order-info-block"><div class="order-info-label">Entrega</div><div id="order-shipping" class="order-info-value">-</div></div><div class="order-info-block"><div class="order-info-label">Seguimiento</div><div id="order-tracking-code" class="order-info-value">Todavía no disponible</div><a id="order-tracking-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">Abrir seguimiento</a></div><div class="order-info-block"><div class="order-info-label">Facturación</div><div class="order-info-value"><strong id="order-facturalusa-status" class="text-gray-900">-</strong><div id="order-facturalusa-number" class="text-xs text-gray-600 mt-1">-</div><div class="text-xs text-gray-500 mt-2">NIF:<strong id="order-nif" class="text-gray-900">-</strong></div></div><a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">Abrir factura</a></div></div><div class="order-info-actions"><button id="order-copy-code-btn" type="button" class="order-plain-btn">Copiar código</button><button id="order-copy-tracking-btn" type="button" class="order-plain-btn">Copiar seguimiento</button><a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden"><i data-lucide="file-text" class="w-4 h-4"></i>Fatura</a><a id="order-contact-support-btn" href="/es/contacto" class="order-plain-btn order-plain-btn-primary">Solicitar ayuda</a></div></section><section class="admin-card p-4 md:p-5"><details class="order-history-disclosure"><summary>Historial</summary><div class="order-history-disclosure-body table-container"><table><thead><tr><th>Estado</th><th>Data</th><th>Nota</th></tr></thead><tbody id="order-status-table-body"><tr><td colspan="3" class="text-sm text-gray-400">Sem atualizações.</td></tr></tbody></table></div></details></section><section class="admin-card p-4 md:p-5"><div class="flex items-center justify-between mb-3"><h2 class="text-sm font-bold text-gray-900">Productos</h2><p class="text-xs text-gray-500">Resumen del pedido</p></div><div id="order-items" class="order-items-stack"></div></section></div></main><div id="item-preview-modal" class="modal-overlay hidden p-4"><div class="modal-content w-full max-w-2xl p-4 md:p-5"><div class="flex items-start justify-between gap-3"><div><p class="text-xs uppercase tracking-wide text-gray-500 font-semibold">Personalização</p><h3 id="item-preview-title" class="text-lg font-bold text-gray-900">Producto</h3></div><button id="item-preview-close" type="button" class="inline-flex items-center justify-center w-8 h-8 rounded-md border border-gray-200 text-gray-500 hover:text-gray-700 hover:bg-gray-50"><i data-lucide="x" class="w-4 h-4"></i></button></div><div class="mt-3 rounded-lg border border-gray-200 bg-gray-50 p-2"><img id="item-preview-image" src="/favicon.svg" alt="Preview" class="w-full h-[72vh] object-contain rounded-md bg-white"><div id="item-preview-options" class="hidden"></div><a id="item-preview-download" href="#" download="" class="hidden"></a></div></div></div><script src="/assets/js/core/cart-assets.js?v=20260401a"></script><script src="/assets/js/core/logic.js?v=20260429q2"></script><script src="/assets/js/core/order-workflow.js?v=20260408c"></script><script src="/assets/js/pages/encomenda.js?v=20260408e"></script><script>lucide.createIcons();</script></body></html>
