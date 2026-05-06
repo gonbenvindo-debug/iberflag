@@ -132,6 +132,70 @@ Object.assign(DesignEditor.prototype, {
         return this.getProjectGuideFrame().bounds;
     },
 
+    getTransformedSvgBounds(node, fallback = null) {
+        if (!node?.getBBox) {
+            return fallback;
+        }
+
+        try {
+            const bbox = node.getBBox();
+            if (
+                !bbox ||
+                !Number.isFinite(bbox.x) ||
+                !Number.isFinite(bbox.y) ||
+                !Number.isFinite(bbox.width) ||
+                !Number.isFinite(bbox.height) ||
+                bbox.width <= 0 ||
+                bbox.height <= 0
+            ) {
+                return fallback;
+            }
+
+            const ctm = typeof node.getCTM === 'function' ? node.getCTM() : null;
+            if (!ctm) {
+                return {
+                    x: Number(bbox.x),
+                    y: Number(bbox.y),
+                    width: Number(bbox.width),
+                    height: Number(bbox.height)
+                };
+            }
+
+            const corners = [
+                new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm),
+                new DOMPoint(bbox.x + bbox.width, bbox.y).matrixTransform(ctm),
+                new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm),
+                new DOMPoint(bbox.x, bbox.y + bbox.height).matrixTransform(ctm)
+            ];
+            const xs = corners.map((point) => point.x);
+            const ys = corners.map((point) => point.y);
+            const minX = Math.min(...xs);
+            const maxX = Math.max(...xs);
+            const minY = Math.min(...ys);
+            const maxY = Math.max(...ys);
+
+            if (
+                !Number.isFinite(minX) ||
+                !Number.isFinite(maxX) ||
+                !Number.isFinite(minY) ||
+                !Number.isFinite(maxY) ||
+                maxX <= minX ||
+                maxY <= minY
+            ) {
+                return fallback;
+            }
+
+            return {
+                x: minX,
+                y: minY,
+                width: maxX - minX,
+                height: maxY - minY
+            };
+        } catch {
+            return fallback;
+        }
+    },
+
     getProjectGuideFrame() {
         const fallback = this.getEditableBounds();
         const normalizeBounds = (bounds) => {
@@ -155,20 +219,16 @@ Object.assign(DesignEditor.prototype, {
         };
 
         const outline = this.canvas?.querySelector?.('#print-area-shape-outline-border, #print-area-shape-outline');
-        if (outline?.getBBox) {
-            try {
-                const bbox = normalizeBounds(outline.getBBox());
-                if (bbox) {
-                    return {
-                        bounds: bbox,
-                        center: {
-                            x: bbox.x + (bbox.width / 2),
-                            y: bbox.y + (bbox.height / 2)
-                        }
-                    };
+        if (outline) {
+            const bbox = normalizeBounds(this.getTransformedSvgBounds(outline));
+            if (bbox) {
+                return {
+                    bounds: bbox,
+                    center: {
+                        x: bbox.x + (bbox.width / 2),
+                        y: bbox.y + (bbox.height / 2)
+                    }
                 }
-            } catch {
-                // Fall back to print area or editable bounds below.
             }
         }
 
