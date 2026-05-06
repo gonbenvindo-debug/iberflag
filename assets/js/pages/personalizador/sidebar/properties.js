@@ -1520,6 +1520,7 @@ Object.assign(DesignEditor.prototype, {
             this.requestHandlesRefresh?.();
         }
         this.updateDesktopFloatingToolbarPosition?.();
+        this.updateResetViewButtonVisibility?.();
     },
 
     setZoom(newZoom, options = {}) {
@@ -1567,13 +1568,11 @@ Object.assign(DesignEditor.prototype, {
             this.setCameraOffset?.(nextOffsetX, nextOffsetY, { refreshHandles: Boolean(this.selectedElement) });
         }
 
-        const zoomLevel = document.getElementById('zoom-level');
-        if (zoomLevel) {
-            zoomLevel.textContent = Math.round(this.zoom * 100) + '%';
-        }
+        this.updateZoomLevelDisplay?.();
         if (this.selectedElement) {
             this.requestHandlesRefresh?.();
         }
+        this.updateResetViewButtonVisibility?.();
     },
 
     getHistorySnapshot() {

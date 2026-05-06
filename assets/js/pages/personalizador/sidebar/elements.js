@@ -929,8 +929,16 @@ Object.assign(DesignEditor.prototype, {
         // Zoom
         const zoomInBtn = document.getElementById('zoom-in');
         const zoomOutBtn = document.getElementById('zoom-out');
+        const resetViewBtn = document.getElementById('reset-view-btn');
         if (zoomInBtn) zoomInBtn.addEventListener('click', () => this.executeEditorCommand('zoom-in'));
         if (zoomOutBtn) zoomOutBtn.addEventListener('click', () => this.executeEditorCommand('zoom-out'));
+        if (resetViewBtn) {
+            resetViewBtn.addEventListener('click', (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                this.executeEditorCommand('reset-view');
+            });
+        }
 
         // Undo/Redo
         document.getElementById('undo-btn').addEventListener('click', () => this.executeEditorCommand('undo'));
@@ -1165,10 +1173,7 @@ Object.assign(DesignEditor.prototype, {
                 y: (touches[0].clientY + touches[1].clientY) / 2
             });
             const shouldStartCameraPan = (event) => {
-                const isMobileViewport = window.matchMedia('(max-width: 767px)').matches;
-                if (isMobileViewport) {
-                    if ((Number(this.zoom) || 1) <= 1.01) return false;
-                } else if (event.button != null && event.button !== 0) {
+                if (event.button != null && event.button !== 0) {
                     return false;
                 }
                 if (this.isDragging || this.isResizing || this.isRotating || this.cropMode || this.isPinchZooming) return false;

@@ -29,7 +29,8 @@ class DesignEditor {
         this.historyCommitDelay = 180;
         this.activeHistoryGestureSnapshot = null;
         this.layerDragIndex = null;
-        this.zoom = 0.9;
+        this.initialZoom = 0.9;
+        this.zoom = this.initialZoom;
         this.cameraOffset = { x: 0, y: 0 };
         this.isPanningCamera = false;
         this.isPinchZooming = false;
@@ -195,6 +196,8 @@ class DesignEditor {
                 return this.setZoom?.(this.zoom + 0.1);
             case 'zoom-out':
                 return this.setZoom?.(this.zoom - 0.1);
+            case 'reset-view':
+                return this.resetCanvasView?.();
             case 'undo':
                 return this.undo?.();
             case 'redo':

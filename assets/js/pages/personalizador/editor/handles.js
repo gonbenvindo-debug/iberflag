@@ -227,9 +227,7 @@ Object.assign(DesignEditor.prototype, {
         }
     },
     
-    selectElement(elementData, options = {}) {
-        const { skipReposition = false } = options;
-
+    selectElement(elementData) {
         if (this._inlineTextEditorState && this._inlineTextEditorState.elementId !== elementData?.id) {
             this.closeInlineTextEditor?.(true);
         }
@@ -251,11 +249,6 @@ Object.assign(DesignEditor.prototype, {
         
         // Add class to body for mobile tab visibility
         document.body.classList.add('has-element-selected');
-        
-        // Ensure element is within bounds before showing handles
-        if (!skipReposition) {
-            this.bringElementInBounds(elementData);
-        }
         
         // Show resize handles
         this.showResizeHandles(elementData);
@@ -408,48 +401,11 @@ Object.assign(DesignEditor.prototype, {
     },
 
     isElementFullyInsideEditableBounds(elementData) {
-        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
-        const transformed = this.getTransformedBounds(elementData);
-        return (
-            transformed.left >= bounds.x &&
-            transformed.right <= bounds.x + bounds.width &&
-            transformed.top >= bounds.y &&
-            transformed.bottom <= bounds.y + bounds.height
-        );
+        return true;
     },
     
     bringElementInBounds(elementData) {
-        // Check if element is out of bounds and move it back in
-        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
-        const transformed = this.getTransformedBounds(elementData);
-        
-        // Calculate how much the element exceeds bounds on each side
-        let offsetX = 0;
-        let offsetY = 0;
-        
-        // Check left edge
-        if (transformed.left < bounds.x) {
-            offsetX = bounds.x - transformed.left;
-        }
-        // Check right edge
-        else if (transformed.right > bounds.x + bounds.width) {
-            offsetX = (bounds.x + bounds.width) - transformed.right;
-        }
-        
-        // Check top edge
-        if (transformed.top < bounds.y) {
-            offsetY = bounds.y - transformed.top;
-        }
-        // Check bottom edge
-        else if (transformed.bottom > bounds.y + bounds.height) {
-            offsetY = (bounds.y + bounds.height) - transformed.bottom;
-        }
-        
-        // Apply offset if needed
-        if (offsetX !== 0 || offsetY !== 0) {
-            this.offsetElementGeometry(elementData, offsetX, offsetY);
-            this.applyElementRotation(elementData);
-        }
+        return elementData;
     },
     
     // Compute all handle positions for elementData using direct SVG viewport math,
@@ -954,10 +910,6 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (this.selectedElement) {
-            // After rotation or drag, ensure element stays within bounds
-            if ((wasRotating || wasDragging || wasResizing) && !this.cropMode) {
-                this.bringElementInBounds(this.selectedElement);
-            }
             if (this.selectedElement.type === 'image') {
                 this.syncImageGeometryState?.(this.selectedElement, {}, { updateBaseBox: true });
             } else if (this.selectedElement.type === 'text') {
@@ -1160,10 +1112,8 @@ Object.assign(DesignEditor.prototype, {
 
         // ===== NORMAL RESIZE =====
 
-        const resizeStateBeforeChange = this.captureResizeState(this.selectedElement);
         const rotation = this.selectedElement.rotation || 0;
         const bbox = this.dragStart.bbox || this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
-        const canvasBounds = this.getElementLimitBounds?.() || this.getEditableBounds();
         const pointerPoint = this.clientToSvgPoint(e.clientX, e.clientY);
         const centerPoint = {
             x: bbox.x + (bbox.width / 2),
@@ -1286,42 +1236,6 @@ Object.assign(DesignEditor.prototype, {
                 }
             }
         }
-        
-        const startBox = {
-            x: bbox.x,
-            y: bbox.y,
-            width: bbox.width,
-            height: bbox.height
-        };
-        const proposedBox = {
-            x: newX,
-            y: newY,
-            width: newWidth,
-            height: newHeight
-        };
-
-        if (this.selectedElement.type !== 'text' && rotation === 0) {
-            const constrainedRect = shouldKeepRatio
-                ? this.constrainResizeRectWithRatio(
-                    startBox,
-                    proposedBox,
-                    this.resizeHandle,
-                    canvasBounds,
-                    bbox.width > 0 && bbox.height > 0 ? (bbox.width / bbox.height) : 1
-                )
-                : this.constrainResizeRect(
-                    startBox,
-                    proposedBox,
-                    this.resizeHandle,
-                    canvasBounds
-                );
-
-            newX = constrainedRect.x;
-            newY = constrainedRect.y;
-            newWidth = constrainedRect.width;
-            newHeight = constrainedRect.height;
-        }
-
         // Subpixel jitter during locked-ratio resize can create visual hairlines
         // on some SVG renderers. Snap to half-pixels for stable rendering.
         if (shouldKeepRatio && this.selectedElement.type !== 'text') {
@@ -1429,15 +1343,6 @@ Object.assign(DesignEditor.prototype, {
             this.applyRotatedResizeAnchor(this.selectedElement);
         }
 
-        // Never allow rotated elements to grow outside the editable element limit.
-        // If a resize step crosses the wall, reject that step instead of
-        // translating the element, which can look like growth on the opposite side.
-        if (rotation !== 0 && this.selectedElement.type !== 'text' && !this.isElementFullyInsideEditableBounds(this.selectedElement)) {
-            this.restoreResizeState(this.selectedElement, resizeStateBeforeChange);
-            this.updateResizeHandlesPosition(this.selectedElement);
-            return;
-        }
-
         if (this.selectedElement.type === 'text') {
             this.syncTextMetrics?.(this.selectedElement);
         }
@@ -1518,31 +1423,8 @@ Object.assign(DesignEditor.prototype, {
         // Normalize rotation and snap to 45-degree guides when very close.
         rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
         
-        const previousRotation = this.selectedElement.rotation || 0;
-        const previousTransform = this.selectedElement.element.getAttribute('transform');
         this.selectedElement.rotation = rotation;
         this.applyElementRotation(this.selectedElement, rotation);
-        
-        const transformed = this.getTransformedBounds(this.selectedElement);
-        const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
-        
-        // Check if ANY part of element is outside bounds (same logic as movement)
-        const isOutOfBounds = 
-            transformed.left < bounds.x ||
-            transformed.right > bounds.x + bounds.width ||
-            transformed.top < bounds.y ||
-            transformed.bottom > bounds.y + bounds.height;
-        
-        if (isOutOfBounds) {
-            // Revert to previous transform - not allowed to exceed bounds
-            this.selectedElement.rotation = previousRotation;
-            if (previousTransform) {
-                this.selectedElement.element.setAttribute('transform', previousTransform);
-            } else {
-                this.selectedElement.element.removeAttribute('transform');
-            }
-            return; // Don't update the display
-        }
         
         // Rotation is valid; keep the element transform and refresh handles from geometry.
         this.showRotationGuideLine(rotation, elementCenter);
@@ -1572,43 +1454,8 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement) {
             let rotation = this.getRotationGuideSnap(parseFloat(value), 4).value;
 
-            const previousRotation = this.selectedElement.rotation || 0;
-            const previousTransform = this.selectedElement.element.getAttribute('transform');
             this.selectedElement.rotation = rotation;
             this.applyElementRotation(this.selectedElement, rotation);
-            
-            const transformed = this.getTransformedBounds(this.selectedElement);
-            const bounds = this.getElementLimitBounds?.() || this.getEditableBounds();
-            
-            // Check if ANY part of element would be outside bounds (same logic as movement)
-            const isOutOfBounds = 
-                transformed.left < bounds.x ||
-                transformed.right > bounds.x + bounds.width ||
-                transformed.top < bounds.y ||
-                transformed.bottom > bounds.y + bounds.height;
-            
-            if (isOutOfBounds) {
-                // Reject this rotation - revert to previous transform.
-                this.selectedElement.rotation = previousRotation;
-                if (previousTransform) {
-                    this.selectedElement.element.setAttribute('transform', previousTransform);
-                } else {
-                    this.selectedElement.element.removeAttribute('transform');
-                }
-                // Reset input to previous value
-                const prevRotation = previousRotation;
-                const inputId = this.selectedElement.type === 'text' ? 'prop-text-rotation' :
-                               this.selectedElement.type === 'image' ? 'prop-image-rotation' :
-                               'prop-shape-rotation';
-                const valueId = this.selectedElement.type === 'text' ? 'prop-text-rotation-val' :
-                               this.selectedElement.type === 'image' ? 'prop-image-rotation-val' :
-                               'prop-shape-rotation-val';
-                const input = document.getElementById(inputId);
-                if (input) input.value = prevRotation;
-                const valueLabel = document.getElementById(valueId);
-                if (valueLabel) valueLabel.textContent = prevRotation;
-                return;
-            }
             
             // Rotation is valid; keep tested transform and persist angle.
             this.showResizeHandles(this.selectedElement);

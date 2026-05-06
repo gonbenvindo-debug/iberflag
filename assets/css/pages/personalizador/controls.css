@@ -777,6 +777,64 @@ body.is-camera-panning #canvas-stage {
     cursor: grabbing !important;
 }
 
+.canvas-reset-view-btn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    z-index: 260;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    min-height: 38px;
+    max-width: calc(100% - 28px);
+    padding: 0 12px;
+    border: 0;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #0f172a;
+    font-size: 13px;
+    font-weight: 700;
+    line-height: 1;
+    box-shadow: 0 1px 4px rgba(15, 23, 42, 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateY(-4px);
+    transition: opacity 120ms ease, transform 120ms ease, background-color 120ms ease;
+}
+
+.canvas-reset-view-btn.is-visible {
+    opacity: 1;
+    pointer-events: auto;
+    transform: translateY(0);
+}
+
+.canvas-reset-view-btn:hover,
+.canvas-reset-view-btn:focus-visible {
+    background: #f8fafc;
+}
+
+.canvas-reset-view-btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+}
+
+.canvas-reset-view-btn svg {
+    width: 16px;
+    height: 16px;
+    flex: 0 0 auto;
+}
+
+@media (max-width: 767px) {
+    .canvas-reset-view-btn {
+        top: 10px;
+        right: 10px;
+        min-height: 36px;
+        padding: 0 10px;
+        font-size: 12px;
+        gap: 6px;
+    }
+}
+
 .editor-bottom-bar {
     border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;

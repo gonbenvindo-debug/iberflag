@@ -22,18 +22,14 @@ Object.assign(DesignEditor.prototype, {
     },
 
     getElementLimitBounds() {
-        const bounds = this.getCanvasBounds();
-        const width = Math.max(1, Number(bounds.width) || 1);
-        const height = Math.max(1, Number(bounds.height) || 1);
-        const scale = 2;
-        const extraX = (width * (scale - 1)) / 2;
-        const extraY = (height * (scale - 1)) / 2;
-
+        // Legacy callers still ask for element bounds. Keep the contract, but
+        // make the workspace effectively open so elements are not pushed back.
+        const range = Number.MAX_SAFE_INTEGER / 8;
         return {
-            x: (Number(bounds.x) || 0) - extraX,
-            y: (Number(bounds.y) || 0) - extraY,
-            width: width * scale,
-            height: height * scale
+            x: -range,
+            y: -range,
+            width: range * 2,
+            height: range * 2
         };
     },
 
@@ -100,38 +96,13 @@ Object.assign(DesignEditor.prototype, {
         const checkerSize = 20;
         this.canvasWrapper.style.setProperty('--checker-size', `${checkerSize.toFixed(2)}px`);
 
-        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
-        this.clampCameraOffset?.(nextWidth * zoom, nextHeight * zoom);
         this.applyCameraTransform?.();
         return true;
     },
 
     clampCameraOffset(wrapperWidth = null, wrapperHeight = null) {
-        if (!this.canvasStage) {
-            this.cameraOffset = { x: 0, y: 0 };
-            return this.cameraOffset;
-        }
-
-        const stageRect = this.canvasStage.getBoundingClientRect();
-        const stageWidth = Number(stageRect?.width) || this.canvasStage.clientWidth || 0;
-        const stageHeight = Number(stageRect?.height) || this.canvasStage.clientHeight || 0;
-        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
-        const baseWrapperWidth = Math.max(
-            1,
-            parseFloat(this.canvasWrapper?.style?.width || '') || this.canvasWrapper?.clientWidth || 1
-        );
-        const baseWrapperHeight = Math.max(
-            1,
-            parseFloat(this.canvasWrapper?.style?.height || '') || this.canvasWrapper?.clientHeight || 1
-        );
-        const currentWrapperWidth = Math.max(1, Number(wrapperWidth) || (baseWrapperWidth * zoom));
-        const currentWrapperHeight = Math.max(1, Number(wrapperHeight) || (baseWrapperHeight * zoom));
-
-        const maxX = Math.max(0, (currentWrapperWidth - stageWidth) / 2);
-        const maxY = Math.max(0, (currentWrapperHeight - stageHeight) / 2);
-
-        const nextX = Math.min(maxX, Math.max(-maxX, Number(this.cameraOffset?.x) || 0));
-        const nextY = Math.min(maxY, Math.max(-maxY, Number(this.cameraOffset?.y) || 0));
+        const nextX = Number.isFinite(Number(this.cameraOffset?.x)) ? Number(this.cameraOffset.x) : 0;
+        const nextY = Number.isFinite(Number(this.cameraOffset?.y)) ? Number(this.cameraOffset.y) : 0;
         this.cameraOffset = { x: nextX, y: nextY };
         return this.cameraOffset;
     },
@@ -153,6 +124,7 @@ Object.assign(DesignEditor.prototype, {
             this.canvas.style.willChange = 'transform';
             this.canvas.style.transform = `translate3d(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px, 0) scale(${zoom.toFixed(4)})`;
         }
+        this.updateResetViewButtonVisibility?.();
     },
 
     setCameraOffset(x, y, options = {}) {
@@ -160,11 +132,63 @@ Object.assign(DesignEditor.prototype, {
             x: Number(x) || 0,
             y: Number(y) || 0
         };
-        this.clampCameraOffset?.();
         this.applyCameraTransform?.();
         if (options.refreshHandles && this.selectedElement) {
             this.requestHandlesRefresh?.();
         }
+    },
+
+    updateZoomLevelDisplay() {
+        const zoomLevel = document.getElementById('zoom-level');
+        if (zoomLevel) {
+            zoomLevel.textContent = Math.round((Number(this.zoom) || 1) * 100) + '%';
+        }
+    },
+
+    resetCanvasView() {
+        this.hideGuideLines?.();
+        this.zoom = Number(this.initialZoom) || 0.9;
+        this.cameraOffset = { x: 0, y: 0 };
+        this.syncCanvasViewport?.();
+        this.applyCameraTransform?.();
+        this.updateZoomLevelDisplay?.();
+        if (this.selectedElement) {
+            this.requestHandlesRefresh?.();
+        }
+        this.updateDesktopFloatingToolbarPosition?.();
+        this.updateResetViewButtonVisibility?.();
+    },
+
+    getProjectViewportRect() {
+        const projectNode = this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-shape-outline-border')
+            || this.printArea
+            || this.canvas;
+        const rect = projectNode?.getBoundingClientRect?.();
+        if (rect && Number(rect.width) > 0 && Number(rect.height) > 0) {
+            return rect;
+        }
+        return null;
+    },
+
+    isProjectVisibleInCanvasStage() {
+        const stageRect = this.canvasStage?.getBoundingClientRect?.();
+        const projectRect = this.getProjectViewportRect();
+        if (!stageRect || !projectRect || stageRect.width <= 0 || stageRect.height <= 0) {
+            return true;
+        }
+
+        const visibleWidth = Math.max(0, Math.min(stageRect.right, projectRect.right) - Math.max(stageRect.left, projectRect.left));
+        const visibleHeight = Math.max(0, Math.min(stageRect.bottom, projectRect.bottom) - Math.max(stageRect.top, projectRect.top));
+        return visibleWidth > 4 && visibleHeight > 4;
+    },
+
+    updateResetViewButtonVisibility() {
+        const button = document.getElementById('reset-view-btn');
+        if (!button) return;
+        const shouldShow = !this.isProjectVisibleInCanvasStage();
+        button.classList.toggle('is-visible', shouldShow);
+        button.setAttribute('aria-hidden', shouldShow ? 'false' : 'true');
+        button.tabIndex = shouldShow ? 0 : -1;
     },
 
     constrainResizeRect(startBox, proposedBox, handle, bounds) {
@@ -174,8 +198,6 @@ Object.assign(DesignEditor.prototype, {
         const startTop = startBox.y;
         const startRight = startBox.x + startBox.width;
         const startBottom = startBox.y + startBox.height;
-        const maxRight = bounds.x + bounds.width;
-        const maxBottom = bounds.y + bounds.height;
 
         let left = proposedBox.x;
         let top = proposedBox.y;
@@ -188,58 +210,30 @@ Object.assign(DesignEditor.prototype, {
         const movesSouth = handle.includes('s');
 
         if (movesWest && !movesEast) {
-            left = Math.max(bounds.x, Math.min(left, startRight - minWidth));
+            left = Math.min(left, startRight - minWidth);
             right = startRight;
         } else if (movesEast && !movesWest) {
             left = startLeft;
-            right = Math.min(maxRight, Math.max(right, startLeft + minWidth));
+            right = Math.max(right, startLeft + minWidth);
         } else {
-            // When moving both sides (corner handles), keep within bounds
-            if (movesWest && movesEast) {
-                left = Math.max(bounds.x, left);
-                right = Math.min(maxRight, right);
-            }
-            // Ensure minimum size
             if ((right - left) < minWidth) {
                 const centerX = (left + right) / 2;
                 left = centerX - (minWidth / 2);
                 right = centerX + (minWidth / 2);
-                // Clamp to bounds if needed
-                if (left < bounds.x) {
-                    left = bounds.x;
-                    right = left + minWidth;
-                } else if (right > maxRight) {
-                    right = maxRight;
-                    left = right - minWidth;
-                }
             }
         }
 
         if (movesNorth && !movesSouth) {
-            top = Math.max(bounds.y, Math.min(top, startBottom - minHeight));
+            top = Math.min(top, startBottom - minHeight);
             bottom = startBottom;
         } else if (movesSouth && !movesNorth) {
             top = startTop;
-            bottom = Math.min(maxBottom, Math.max(bottom, startTop + minHeight));
+            bottom = Math.max(bottom, startTop + minHeight);
         } else {
-            // When moving both sides (corner handles), keep within bounds
-            if (movesNorth && movesSouth) {
-                top = Math.max(bounds.y, top);
-                bottom = Math.min(maxBottom, bottom);
-            }
-            // Ensure minimum size
             if ((bottom - top) < minHeight) {
                 const centerY = (top + bottom) / 2;
                 top = centerY - (minHeight / 2);
                 bottom = centerY + (minHeight / 2);
-                // Clamp to bounds if needed
-                if (top < bounds.y) {
-                    top = bounds.y;
-                    bottom = top + minHeight;
-                } else if (bottom > maxBottom) {
-                    bottom = maxBottom;
-                    top = bottom - minHeight;
-                }
             }
         }
 
@@ -257,18 +251,12 @@ Object.assign(DesignEditor.prototype, {
         const minWidth = Math.max(20, minWidthByHeight);
         const minHeightByWidth = 20 / safeRatio;
         const minHeight = Math.max(20, minHeightByWidth);
-        const maxRight = bounds.x + bounds.width;
-        const maxBottom = bounds.y + bounds.height;
         const startRight = startBox.x + startBox.width;
         const startBottom = startBox.y + startBox.height;
         const startCenterX = startBox.x + (startBox.width / 2);
         const startCenterY = startBox.y + (startBox.height / 2);
 
-        const clamp = (value, min, max) => {
-            if (!Number.isFinite(value)) return min;
-            if (max < min) return Math.max(1, max);
-            return Math.min(max, Math.max(min, value));
-        };
+        const normalize = (value, min) => Math.max(min, Number.isFinite(Number(value)) ? Number(value) : min);
 
         const buildFromWidth = (width, anchorX, anchorY, fromLeft, fromTop) => {
             const h = width / safeRatio;
@@ -283,48 +271,38 @@ Object.assign(DesignEditor.prototype, {
         if (handle === 'se') {
             const anchorX = startBox.x;
             const anchorY = startBox.y;
-            const maxWidth = Math.min(maxRight - anchorX, (maxBottom - anchorY) * safeRatio);
             const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
-            const width = clamp(targetWidth, minWidth, maxWidth);
+            const width = normalize(targetWidth, minWidth);
             return buildFromWidth(width, anchorX, anchorY, true, true);
         }
 
         if (handle === 'sw') {
             const anchorX = startRight;
             const anchorY = startBox.y;
-            const maxWidth = Math.min(anchorX - bounds.x, (maxBottom - anchorY) * safeRatio);
             const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
-            const width = clamp(targetWidth, minWidth, maxWidth);
+            const width = normalize(targetWidth, minWidth);
             return buildFromWidth(width, anchorX, anchorY, false, true);
         }
 
         if (handle === 'ne') {
             const anchorX = startBox.x;
             const anchorY = startBottom;
-            const maxWidth = Math.min(maxRight - anchorX, (anchorY - bounds.y) * safeRatio);
             const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
-            const width = clamp(targetWidth, minWidth, maxWidth);
+            const width = normalize(targetWidth, minWidth);
             return buildFromWidth(width, anchorX, anchorY, true, false);
         }
 
         if (handle === 'nw') {
             const anchorX = startRight;
             const anchorY = startBottom;
-            const maxWidth = Math.min(anchorX - bounds.x, (anchorY - bounds.y) * safeRatio);
             const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
-            const width = clamp(targetWidth, minWidth, maxWidth);
+            const width = normalize(targetWidth, minWidth);
             return buildFromWidth(width, anchorX, anchorY, false, false);
         }
 
         if (handle === 'e' || handle === 'w') {
-            const maxHeightByCenter = 2 * Math.min(startCenterY - bounds.y, maxBottom - startCenterY);
-            const maxWidthByHeight = maxHeightByCenter * safeRatio;
-            const maxWidthBySide = handle === 'e'
-                ? (maxRight - startBox.x)
-                : (startRight - bounds.x);
-            const maxWidth = Math.min(maxWidthBySide, maxWidthByHeight);
             const targetWidth = Math.max(proposedBox.width, proposedBox.height * safeRatio);
-            const width = clamp(targetWidth, minWidth, maxWidth);
+            const width = normalize(targetWidth, minWidth);
             const height = width / safeRatio;
             const y = startCenterY - (height / 2);
             const x = handle === 'e' ? startBox.x : startRight - width;
@@ -332,14 +310,8 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (handle === 's' || handle === 'n') {
-            const maxWidthByCenter = 2 * Math.min(startCenterX - bounds.x, maxRight - startCenterX);
-            const maxHeightByWidth = maxWidthByCenter / safeRatio;
-            const maxHeightBySide = handle === 's'
-                ? (maxBottom - startBox.y)
-                : (startBottom - bounds.y);
-            const maxHeight = Math.min(maxHeightBySide, maxHeightByWidth);
             const targetHeight = Math.max(proposedBox.height, proposedBox.width / safeRatio);
-            const height = clamp(targetHeight, minHeight, maxHeight);
+            const height = normalize(targetHeight, minHeight);
             const width = height * safeRatio;
             const x = startCenterX - (width / 2);
             const y = handle === 's' ? startBox.y : startBottom - height;

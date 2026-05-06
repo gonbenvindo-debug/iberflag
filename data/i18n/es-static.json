@@ -572,6 +572,7 @@
     ["Espessura:", "Grosor:"],
     ["Reduzir zoom", "Reducir zoom"],
     ["Aumentar zoom", "Aumentar zoom"],
+    ["Repor vista", "Restablecer vista"],
     ["Aumentar fonte", "Aumentar fuente"],
     ["Reduzir fonte", "Reducir fuente"],
     ["Centrar no canvas", "Centrar en el lienzo"],
