@@ -1355,6 +1355,30 @@ function openCart(event) {
     });
 }
 
+function shouldAutoOpenCartFromLocation() {
+    try {
+        const currentUrl = new URL(window.location.href);
+        return currentUrl.searchParams.get('openCart') === '1';
+    } catch {
+        return false;
+    }
+}
+
+function consumeAutoOpenCartFromLocation() {
+    try {
+        const currentUrl = new URL(window.location.href);
+        if (currentUrl.searchParams.get('openCart') !== '1') {
+            return;
+        }
+
+        currentUrl.searchParams.delete('openCart');
+        const nextUrl = `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`;
+        window.history.replaceState({}, document.title, nextUrl);
+    } catch {
+        // Ignore URL cleanup failures.
+    }
+}
+
 function closeCart() {
     if (cartSidebar) {
         cartSidebar.classList.add('translate-x-full');
@@ -1474,6 +1498,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
+    }
+
+    if (shouldAutoOpenCartFromLocation()) {
+        window.setTimeout(() => {
+            openCart();
+            consumeAutoOpenCartFromLocation();
+        }, 80);
     }
 });
 

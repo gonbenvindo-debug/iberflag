@@ -437,7 +437,10 @@ Object.assign(DesignEditor.prototype, {
         this.closeCartStepsModal();
 
         setTimeout(() => {
-            window.location.href = window.personalizerProductsPath ? window.personalizerProductsPath() : '/produtos';
+            const nextPath = window.personalizerProductsPath ? window.personalizerProductsPath() : '/produtos';
+            const nextUrl = new URL(String(nextPath || '/produtos'), window.location.origin);
+            nextUrl.searchParams.set('openCart', '1');
+            window.location.href = nextUrl.toString();
         }, 1000);
     }
 
