@@ -1401,6 +1401,12 @@ Object.assign(DesignEditor.prototype, {
             this.rotationHasMovement = true;
         }
 
+        const bbox = this.getElementGeometryBox(this.selectedElement, this.selectedElement.element.getBBox());
+        const elementCenter = {
+            x: bbox.x + (bbox.width / 2),
+            y: bbox.y + (bbox.height / 2)
+        };
+
         const center = this.rotationCenterClient;
         if (!center) return;
 
@@ -1422,7 +1428,7 @@ Object.assign(DesignEditor.prototype, {
         this.applyElementRotation(this.selectedElement, rotation);
 
         // Rotation is valid; keep the element transform and refresh handles from geometry.
-        this.showRotationGuideLine(rotation);
+        this.showRotationGuideLine(rotation, elementCenter);
         
         // Sync rotation input/display based on element type
         if (this.selectedElement.type === 'text') {

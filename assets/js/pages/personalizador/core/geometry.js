@@ -605,7 +605,7 @@ Object.assign(DesignEditor.prototype, {
         return { snapped: false, value: normalized, guide: wrappedGuide, diff };
     },
 
-    showRotationGuideLine(rotation) {
+    showRotationGuideLine(rotation, elementCenter = null) {
         this.clearGuideLineArtifacts();
 
         if (!this.showGuides) return;
@@ -625,17 +625,23 @@ Object.assign(DesignEditor.prototype, {
 
         const projectFrame = this.getProjectGuideFrame();
         const bounds = projectFrame.bounds;
-        const projectCenter = projectFrame.center;
+        const guideCenter = (
+            elementCenter &&
+            Number.isFinite(elementCenter.x) &&
+            Number.isFinite(elementCenter.y)
+        )
+            ? { x: Number(elementCenter.x), y: Number(elementCenter.y) }
+            : projectFrame.center;
         const lineLength = Math.hypot(bounds.width, bounds.height) * 0.75;
         const angleRad = (snapped * Math.PI) / 180;
         const dx = Math.cos(angleRad) * lineLength;
         const dy = Math.sin(angleRad) * lineLength;
 
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', String(projectCenter.x - dx));
-        line.setAttribute('y1', String(projectCenter.y - dy));
-        line.setAttribute('x2', String(projectCenter.x + dx));
-        line.setAttribute('y2', String(projectCenter.y + dy));
+        line.setAttribute('x1', String(guideCenter.x - dx));
+        line.setAttribute('y1', String(guideCenter.y - dy));
+        line.setAttribute('x2', String(guideCenter.x + dx));
+        line.setAttribute('y2', String(guideCenter.y + dy));
         line.setAttribute('stroke', '#ef4825');
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '6,6');
@@ -647,8 +653,8 @@ Object.assign(DesignEditor.prototype, {
         this.guideLines.push(line);
 
         const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        ring.setAttribute('cx', String(projectCenter.x));
-        ring.setAttribute('cy', String(projectCenter.y));
+        ring.setAttribute('cx', String(guideCenter.x));
+        ring.setAttribute('cy', String(guideCenter.y));
         ring.setAttribute('r', '5');
         ring.setAttribute('fill', '#ffffff');
         ring.setAttribute('stroke', '#ef4825');
