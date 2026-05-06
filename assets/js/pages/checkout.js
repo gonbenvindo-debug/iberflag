@@ -129,8 +129,9 @@ const PHONE_COUNTRIES = {
     }
 };
 const ES_TEXT = {
-    'Abrir pagamento seguro': 'Abrir pago seguro',
-    'Pagamento carregado': 'Pago cargado',
+    'Pagar agora': 'Pagar ahora',
+    'Pagamento aberto': 'Pago abierto',
+    'Reveja o total e conclua o pagamento.': 'Revise el total y complete el pago.',
     'Pagamento carregado abaixo. Complete o processo para confirmar a encomenda.': 'Pago cargado abajo. Complete el proceso para confirmar el pedido.',
     'A preparar o pagamento seguro...': 'Preparando el pago seguro...',
     'O checkout seguro não está disponível neste momento.': 'El checkout seguro no está disponible en este momento.',
@@ -377,11 +378,11 @@ function getLocalizedStaticPath(pathname, fallback) {
 }
 
 function getPlaceOrderDefaultLabel() {
-    return `<i data-lucide="lock" class="w-5 h-5"></i> ${i18nText('Abrir pagamento seguro')}`;
+    return `<i data-lucide="lock" class="w-5 h-5"></i> ${i18nText('Pagar agora')}`;
 }
 
 function getPlaceOrderLoadedLabel() {
-    return `<i data-lucide="shield-check" class="w-5 h-5"></i> ${i18nText('Pagamento carregado')}`;
+    return `<i data-lucide="shield-check" class="w-5 h-5"></i> ${i18nText('Pagamento aberto')}`;
 }
 
 function buildCheckoutSuccessPath(params = {}) {
@@ -555,7 +556,7 @@ function localizeEmbeddedCheckoutStaticContent() {
     const paymentSection = checkoutPaymentIntro?.closest('[data-checkout-panel="payment"]');
     const paymentSubtitle = paymentSection?.querySelector('.app-section-subtitle');
     if (paymentSubtitle) {
-        paymentSubtitle.textContent = i18nText('O pagamento abre aqui na loja com Stripe.');
+        paymentSubtitle.textContent = i18nText('Reveja o total e conclua o pagamento.');
     }
 
     const paymentCopy = checkoutPaymentIntro?.querySelector('.checkout-payment-copy span');

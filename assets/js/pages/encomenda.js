@@ -27,6 +27,12 @@ const ES_TEXT = {
     'Faturação': 'Facturación',
     'Ainda não disponível': 'Todavía no disponible',
     'Disponível no email de confirmação': 'Disponible en el email de confirmación',
+    'Em emissão': 'En emisión',
+    'Após pagamento': 'Tras el pago',
+    'Qtd': 'Ud.',
+    '/ un.': '/ ud.',
+    'Sem opcoes registadas': 'Sin opciones registradas',
+    'Sem produtos associados a esta encomenda.': 'Sin productos asociados a este pedido.',
     'Sem notas adicionais.': 'Sin notas adicionales.',
     'Emissão pendente. A nossa equipa está a validar.': 'Emisión pendiente. Nuestro equipo lo está validando.',
     'A aguardar emissão automática': 'Esperando la emisión automática',
@@ -414,7 +420,7 @@ function deduplicateOptions(entries) {
 
 function buildOptionsSummary(options) {
     if (!Array.isArray(options) || options.length === 0) {
-        return 'Sem opcoes registadas';
+        return i18nText('Sem opcoes registadas');
     }
 
     if (options.length <= 2) {
@@ -557,10 +563,10 @@ function renderOrderSidebar(order, splitMeta) {
         facturalusaNumberEl.textContent = documentNumber
             ? `Nº ${documentNumber}`
             : facturalusaStatus === 'blocked' || facturalusaStatus === 'error'
-                ? i18nText('Emissão pendente. A nossa equipa está a validar.')
+                ? i18nText('Em emissão')
                 : facturalusaStatus === 'pending'
-                    ? i18nText('A aguardar emissão automática')
-                    : i18nText('Disponível após confirmação do pagamento');
+                    ? i18nText('Em emissão')
+                    : i18nText('Após pagamento');
     }
     if (facturalusaLinkEl) {
         const url = String(order.facturalusa_document_url || splitMeta.meta.facturalusaDocumentUrl || '').trim();
@@ -719,13 +725,9 @@ function renderOrderItems(order, items, splitMeta) {
 
     if (!Array.isArray(listSource) || listSource.length === 0) {
         orderItemsEl.innerHTML = `
-            <table>
-                <tbody>
-                    <tr>
-                        <td class="text-sm text-gray-400">Sem produtos associados a esta encomenda.</td>
-                    </tr>
-                </tbody>
-            </table>
+            <div class="order-info-block">
+                <div class="order-info-value text-gray-500">${escapeHtml(i18nText('Sem produtos associados a esta encomenda.'))}</div>
+            </div>
         `;
         return;
     }
@@ -747,45 +749,28 @@ function renderOrderItems(order, items, splitMeta) {
         });
 
         return `
-            <tr>
-                <td class="align-top">
-                    <div class="flex items-center gap-2 min-w-[160px]">
-                        <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="w-12 h-12 object-cover rounded-md border border-gray-200 bg-gray-50">
-                        <div class="min-w-0">
-                            <p class="text-xs font-semibold text-gray-900 truncate">${escapeHtml(productName)}</p>
-                            <p class="text-xs text-gray-500">${formatCurrency(unitPrice)} / unidade</p>
-                        </div>
+            <article class="order-item-card">
+                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="order-item-thumb">
+                <div class="order-item-copy">
+                    <h3 class="order-item-title">${escapeHtml(productName)}</h3>
+                    <div class="order-item-meta">
+                        <span>${escapeHtml(i18nText('Qtd'))} ${quantity}</span>
+                        <span>${formatCurrency(unitPrice)} ${escapeHtml(i18nText('/ un.'))}</span>
                     </div>
-                </td>
-                <td class="text-xs text-gray-700">${quantity}</td>
-                <td class="text-xs font-semibold text-gray-800">${formatCurrency(lineSubtotal)}</td>
-                <td>
-                    <button type="button" data-preview-index="${index}" class="inline-flex items-center gap-1 rounded-md border border-blue-200 bg-blue-50 px-2.5 py-1 text-xs font-semibold text-blue-700 hover:bg-blue-100">
-                        <i data-lucide="eye" class="w-3 h-3"></i>
+                    <p class="order-item-options">${escapeHtml(optionsSummary)}</p>
+                </div>
+                <div class="order-item-side">
+                    <div class="order-item-total">${formatCurrency(lineSubtotal)}</div>
+                    <button type="button" data-preview-index="${index}" class="order-plain-btn">
+                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
                         Ver
                     </button>
-                </td>
-                <td class="text-xs text-gray-600 max-w-[220px]">${escapeHtml(optionsSummary)}</td>
-            </tr>
+                </div>
+            </article>
         `;
     }).join('');
 
-    orderItemsEl.innerHTML = `
-        <table>
-            <thead>
-                <tr>
-                    <th>Produto</th>
-                    <th>Qtd</th>
-                    <th>Subtotal</th>
-                    <th>Personalizacao</th>
-                    <th>Opcoes compradas</th>
-                </tr>
-            </thead>
-            <tbody>
-                ${rowsHtml}
-            </tbody>
-        </table>
-    `;
+    orderItemsEl.innerHTML = rowsHtml;
 }
 
 function renderItemPreviewOptions(options) {
@@ -794,7 +779,7 @@ function renderItemPreviewOptions(options) {
     }
 
     if (!Array.isArray(options) || options.length === 0) {
-        itemPreviewOptions.innerHTML = '<p class="text-sm text-gray-500">Sem opcoes registadas para este produto.</p>';
+        itemPreviewOptions.innerHTML = `<p class="text-sm text-gray-500">${escapeHtml(i18nText('Sem opcoes registadas'))}</p>`;
         return;
     }
 

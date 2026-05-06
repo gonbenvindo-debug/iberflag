@@ -162,6 +162,155 @@
             color: #111827;
         }
 
+        .order-overview-grid {
+            display: grid;
+            grid-template-columns: repeat(3, minmax(0, 1fr));
+            gap: 0.75rem;
+        }
+
+        .order-info-block {
+            border: 1px solid #e5e7eb;
+            border-radius: 0.875rem;
+            padding: 0.875rem;
+            background: #ffffff;
+        }
+
+        .order-info-label {
+            font-size: 0.7rem;
+            font-weight: 700;
+            letter-spacing: 0.04em;
+            text-transform: uppercase;
+            color: #6b7280;
+            margin-bottom: 0.35rem;
+        }
+
+        .order-info-value {
+            font-size: 0.82rem;
+            line-height: 1.5;
+            color: #111827;
+            word-break: break-word;
+        }
+
+        .order-info-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+            padding-top: 1rem;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        .order-plain-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.45rem;
+            min-height: 2.5rem;
+            border-radius: 0.75rem;
+            padding: 0 0.9rem;
+            border: 1px solid #e5e7eb;
+            background: #ffffff;
+            color: #111827;
+            font-size: 0.82rem;
+            font-weight: 700;
+        }
+
+        .order-plain-btn:hover {
+            background: #f8fafc;
+        }
+
+        .order-plain-btn-primary {
+            border-color: #2563eb;
+            background: #2563eb;
+            color: #ffffff;
+        }
+
+        .order-plain-btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .order-items-stack {
+            display: grid;
+            gap: 0.75rem;
+        }
+
+        .order-item-card {
+            display: grid;
+            grid-template-columns: 4rem minmax(0, 1fr) auto;
+            gap: 0.875rem;
+            align-items: start;
+            border: 1px solid #e5e7eb;
+            border-radius: 0.875rem;
+            padding: 0.875rem;
+            background: #ffffff;
+        }
+
+        .order-item-thumb {
+            width: 4rem;
+            height: 4rem;
+            object-fit: cover;
+            border-radius: 0.75rem;
+            border: 1px solid #e5e7eb;
+            background: #f8fafc;
+        }
+
+        .order-item-copy {
+            min-width: 0;
+        }
+
+        .order-item-title {
+            font-size: 0.9rem;
+            font-weight: 700;
+            line-height: 1.3;
+            color: #111827;
+        }
+
+        .order-item-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.45rem 0.75rem;
+            margin-top: 0.35rem;
+            color: #6b7280;
+            font-size: 0.78rem;
+        }
+
+        .order-item-options {
+            margin-top: 0.45rem;
+            color: #475569;
+            font-size: 0.78rem;
+            line-height: 1.45;
+        }
+
+        .order-item-side {
+            display: flex;
+            flex-direction: column;
+            align-items: flex-end;
+            gap: 0.55rem;
+        }
+
+        .order-item-total {
+            font-size: 0.88rem;
+            font-weight: 800;
+            color: #111827;
+            white-space: nowrap;
+        }
+
+        .order-history-disclosure summary {
+            list-style: none;
+            cursor: pointer;
+            font-size: 0.82rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .order-history-disclosure summary::-webkit-details-marker {
+            display: none;
+        }
+
+        .order-history-disclosure-body {
+            margin-top: 0.75rem;
+        }
+
         @media (max-width: 640px) {
             .order-tracking-compact main {
                 padding-top: 0.75rem;
@@ -175,6 +324,34 @@
             .order-tracking-compact h1 {
                 font-size: 1rem;
                 line-height: 1.4;
+            }
+
+            .order-overview-grid {
+                grid-template-columns: 1fr;
+                gap: 0.6rem;
+            }
+
+            .order-item-card {
+                grid-template-columns: 3.25rem minmax(0, 1fr);
+                gap: 0.75rem;
+            }
+
+            .order-item-thumb {
+                width: 3.25rem;
+                height: 3.25rem;
+            }
+
+            .order-item-side {
+                grid-column: 2;
+                flex-direction: row;
+                align-items: center;
+                justify-content: space-between;
+                width: 100%;
+            }
+
+            .order-info-actions {
+                display: grid;
+                grid-template-columns: 1fr;
             }
         }
     </style>
@@ -192,9 +369,9 @@
                         <i data-lucide="search" class="w-4 h-4"></i>
                         Nova pesquisa
                     </a>
-                    <a href="/produtos" class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900">
-                        <i data-lucide="arrow-left" class="w-4 h-4"></i>
-                        Produtos
+                    <a href="/contacto" class="inline-flex items-center gap-1.5 text-xs font-semibold text-gray-700 hover:text-gray-900">
+                        <i data-lucide="life-buoy" class="w-4 h-4"></i>
+                        Apoio
                     </a>
                 </div>
             </div>
@@ -257,96 +434,81 @@
                     </div>
                 </div>
 
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mt-4 pt-4 border-t border-gray-100">
-                    <div>
-                        <h2 class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1.5">Dados de
-                            Faturação</h2>
-                        <p class="text-xs"><span class="text-gray-500">NIF:</span> <strong id="order-nif" class="text-gray-900">-</strong></p>
-                        <p class="text-xs mt-2"><span class="text-gray-500">Documento:</span> <strong id="order-facturalusa-status" class="text-gray-900">-</strong></p>
-                        <p id="order-facturalusa-number" class="text-xs text-gray-600 mt-1">-</p>
-                        <a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">
-                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                            Abrir documento
-                        </a>
+                <div class="order-overview-grid mt-4 pt-4 border-t border-gray-100">
+                    <div class="order-info-block">
+                        <div class="order-info-label">Entrega</div>
+                        <div id="order-shipping" class="order-info-value">-</div>
                     </div>
-                    <div>
-                        <h2 class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-1.5">Entrega</h2>
-                        <p id="order-shipping" class="text-xs text-gray-800">-</p>
-                        <p class="text-xs mt-2"><span class="text-gray-500">Tracking:</span> <strong id="order-tracking-code" class="text-gray-900">Ainda não disponível</strong></p>
+                    <div class="order-info-block">
+                        <div class="order-info-label">Tracking</div>
+                        <div id="order-tracking-code" class="order-info-value">Ainda não disponível</div>
                         <a id="order-tracking-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
                             Abrir tracking
                         </a>
                     </div>
+                    <div class="order-info-block">
+                        <div class="order-info-label">Faturação</div>
+                        <div class="order-info-value">
+                            <strong id="order-facturalusa-status" class="text-gray-900">-</strong>
+                            <div id="order-facturalusa-number" class="text-xs text-gray-600 mt-1">-</div>
+                            <div class="text-xs text-gray-500 mt-2">NIF: <strong id="order-nif" class="text-gray-900">-</strong></div>
+                        </div>
+                        <a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">
+                            <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
+                            Abrir fatura
+                        </a>
+                    </div>
+                </div>
+
+                <div class="order-info-actions">
+                    <button id="order-copy-code-btn" type="button" class="order-plain-btn">
+                        <i data-lucide="copy" class="w-4 h-4"></i>
+                        Copiar código
+                    </button>
+                    <button id="order-copy-tracking-btn" type="button" class="order-plain-btn">
+                        <i data-lucide="package-search" class="w-4 h-4"></i>
+                        Copiar tracking
+                    </button>
+                    <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden">
+                        <i data-lucide="file-text" class="w-4 h-4"></i>
+                        Fatura
+                    </a>
+                    <a id="order-contact-support-btn" href="/contacto" class="order-plain-btn order-plain-btn-primary">
+                        <i data-lucide="life-buoy" class="w-4 h-4"></i>
+                        Pedir apoio
+                    </a>
                 </div>
             </section>
 
             <section class="admin-card p-4 md:p-5">
-                <div class="flex flex-col lg:flex-row lg:items-start gap-4">
-                    <div class="flex-1 min-w-0">
-                        <h2 class="text-sm font-bold text-gray-900 mb-2">Próximos passos</h2>
-                        <div id="order-next-steps" class="space-y-2 text-xs text-gray-700">
-                            <p>A preparar resumo logístico...</p>
-                        </div>
+                <details class="order-history-disclosure">
+                    <summary>Histórico</summary>
+                    <div class="order-history-disclosure-body table-container">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Estado</th>
+                                    <th>Data</th>
+                                    <th>Nota</th>
+                                </tr>
+                            </thead>
+                            <tbody id="order-status-table-body">
+                                <tr>
+                                    <td colspan="3" class="text-sm text-gray-400">Sem atualizações.</td>
+                                </tr>
+                            </tbody>
+                        </table>
                     </div>
-                    <div class="lg:w-[260px]">
-                        <h2 class="text-sm font-bold text-gray-900 mb-2">Ações rápidas</h2>
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-1 gap-2">
-                            <button id="order-copy-code-btn" type="button" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition">
-                                <i data-lucide="copy" class="w-4 h-4"></i>
-                                Copiar código
-                            </button>
-                            <button id="order-copy-tracking-btn" type="button" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition">
-                                <i data-lucide="package-search" class="w-4 h-4"></i>
-                                Copiar tracking
-                            </button>
-                            <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg border border-gray-200 text-gray-700 font-semibold hover:bg-gray-50 transition hidden">
-                                <i data-lucide="file-text" class="w-4 h-4"></i>
-                                Abrir fatura
-                            </a>
-                            <a id="order-contact-support-btn" href="/contacto" class="inline-flex items-center justify-center gap-2 px-4 py-2.5 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 transition">
-                                <i data-lucide="life-buoy" class="w-4 h-4"></i>
-                                Pedir apoio
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <section class="admin-card p-4 md:p-5">
-                <div class="flex items-center justify-between mb-3">
-                    <h2 class="text-sm font-bold text-gray-900">Tabela de Estado</h2>
-                    <p class="text-xs text-gray-500">Últimas atualizações</p>
-                </div>
-                <div class="table-container">
-                    <table>
-                        <thead>
-                            <tr>
-                                <th>Estado</th>
-                                <th>Data</th>
-                                <th>Nota</th>
-                            </tr>
-                        </thead>
-                        <tbody id="order-status-table-body">
-                            <tr>
-                                <td colspan="3" class="text-sm text-gray-400">Sem atualizações.</td>
-                            </tr>
-                        </tbody>
-                    </table>
-                </div>
+                </details>
             </section>
 
             <section class="admin-card p-4 md:p-5">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="text-sm font-bold text-gray-900">Produtos</h2>
-                    <p class="text-xs text-gray-500">Personalização e opções compradas</p>
+                    <p class="text-xs text-gray-500">Resumo da encomenda</p>
                 </div>
-                <div id="order-items" class="table-container"></div>
-            </section>
-
-            <section class="admin-card p-4 md:p-5">
-                <h2 class="text-xs uppercase tracking-wide text-gray-500 font-semibold mb-2">Notas</h2>
-                <p id="order-notes" class="text-xs text-gray-700 whitespace-pre-line">Sem notas adicionais.</p>
+                <div id="order-items" class="order-items-stack"></div>
             </section>
         </div>
     </main>

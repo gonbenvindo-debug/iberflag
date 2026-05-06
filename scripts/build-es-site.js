@@ -1032,16 +1032,16 @@ function applyCheckoutOverrides($) {
     $('.checkout-step[data-checkout-step="payment"] .checkout-step-text').text('Pago');
 
     setPanelKicker('details', '1', 'Datos');
-    setText('[data-checkout-panel="details"] .app-section-title', 'Contacto y facturación');
-    setText('[data-checkout-panel="details"] .app-section-subtitle', 'Datos mínimos para identificar el pedido y preparar el pago.');
+    setText('[data-checkout-panel="details"] .app-section-title', 'Datos de contacto');
+    setText('[data-checkout-panel="details"] .app-section-subtitle', 'Solo lo esencial para continuar.');
 
     setPanelKicker('address', '2', 'Dirección');
-    setText('[data-checkout-panel="address"] .app-section-title', 'Entrega y facturación');
-    setText('[data-checkout-panel="address"] .app-section-subtitle', 'Use una única dirección para simplificar el pedido.');
+    setText('[data-checkout-panel="address"] .app-section-title', 'Dirección de entrega');
+    setText('[data-checkout-panel="address"] .app-section-subtitle', 'Use la misma dirección para facturación si quiere mantener todo simple.');
 
     setPanelKicker('payment', '3', 'Pago');
-    setText('[data-checkout-panel="payment"] .app-section-title', 'Revisar y pagar');
-    setText('[data-checkout-panel="payment"] .app-section-subtitle', 'El pago se abre aquí en la tienda con Stripe.');
+    setText('[data-checkout-panel="payment"] .app-section-title', 'Confirmar y pagar');
+    setText('[data-checkout-panel="payment"] .app-section-subtitle', 'Revise el total y complete el pago.');
 
     $('#customer-type-select option[value="particular"]').text('Particular');
     $('#customer-type-select option[value="empresa"]').text('Empresa');
@@ -1079,8 +1079,8 @@ function applyCheckoutOverrides($) {
     $('#order-notes-field label').text('Notas del pedido (opcional)');
     $('#order-notes-field textarea').attr('placeholder', 'Información adicional para el equipo.');
 
-    $('.checkout-same-address strong').text('Usar esta dirección para entrega y facturación');
-    $('.checkout-same-address small').text('No pedimos una segunda dirección.');
+    $('.checkout-same-address strong').text('Usar también para facturación');
+    $('.checkout-same-address small').remove();
     setButtonHtml('[data-checkout-next="address"]', 'Continuar a dirección', 'arrow-right');
     setButtonHtml('[data-checkout-back="details"]', 'Volver', 'arrow-left', 'left');
     setButtonHtml('[data-checkout-next="payment"]', 'Revisar y pagar', 'arrow-right');
@@ -1096,11 +1096,13 @@ function applyCheckoutOverrides($) {
     $('#checkout-embed-shell p.text-slate-600').first().text('Complete el pago abajo para confirmar el pedido.');
     $('#checkout-embed-loader span').text('Preparando el pago seguro...');
 
-    $('#design-review-checkbox').closest('label').find('span').first().html('Añadir revisión de diseño por <strong>5€</strong>. <a href="/es/termos#responsabilidade-design" class="text-blue-600 hover:underline">Ver términos</a>.');
-    $('#terms-checkbox').closest('label').find('span').first().html('He leído y acepto los <a href="/es/termos" class="text-blue-600 hover:underline">Términos y condiciones</a> y la <a href="/es/privacidade" class="text-blue-600 hover:underline">Política de privacidad</a>.');
-    $('#place-order-btn').html('<i data-lucide="lock" class="w-5 h-5"></i> Abrir pago seguro');
+    $('label[for], .form-label').filter((_, el) => $(el).text().trim() === 'Nota (opcional)').text('Nota (opcional)');
+    $('textarea[name="notas"]').attr('placeholder', 'Ej.: horario de entrega o detalle importante.');
+    $('#design-review-checkbox').closest('label').find('span').first().html('<strong>Revisión de diseño (+5€)</strong>');
+    $('#terms-checkbox').closest('label').find('span').first().html('Acepto los <a href="/es/termos" class="text-blue-600 hover:underline">Términos</a> y la <a href="/es/privacidade" class="text-blue-600 hover:underline">Privacidad</a>.');
+    $('#place-order-btn').html('<i data-lucide="lock" class="w-5 h-5"></i> Pagar ahora');
 
-    setText('.checkout-summary h2', 'Resumen del pedido');
+    setText('.checkout-summary h2', 'Resumen');
     $('.checkout-summary .app-section-subtitle').first().text('Confirme productos, cantidades y total antes de pagar.');
     $('#design-review-row span').first().text('Revisión de diseño');
     $('#shipping').prev('span').text('Envío');
@@ -1108,6 +1110,24 @@ function applyCheckoutOverrides($) {
     $('.checkout-shipping-box p.font-semibold').text('Envío gratis');
     $('#free-shipping-msg').text('Envío gratis para Portugal y España, confirmado según la dirección de entrega.');
     $('.checkout-summary-note span').text('Pago seguro dentro de la tienda.');
+}
+
+function applyOrderTrackingOverrides($) {
+    const setText = (selector, text) => {
+        const element = $(selector).first();
+        if (element.length > 0) {
+            element.text(text);
+        }
+    };
+
+    setText('nav a[href="/es/contacto"]', 'Ayuda');
+    setText('#order-tracking-link', 'Abrir seguimiento');
+    setText('#order-facturalusa-link', 'Abrir factura');
+    setText('#order-copy-code-btn', 'Copiar código');
+    setText('#order-copy-tracking-btn', 'Copiar seguimiento');
+    setText('#order-contact-support-btn', 'Solicitar ayuda');
+    setText('.order-history-disclosure summary', 'Historial');
+    setText('#order-detail section:last-of-type p.text-xs.text-gray-500', 'Resumen del pedido');
 }
 
 function translateHtmlFile(html, sourceFileName) {
@@ -1131,6 +1151,10 @@ function translateHtmlFile(html, sourceFileName) {
 
     if (sourceCanonical === '/checkout') {
         applyCheckoutOverrides($);
+    }
+
+    if (sourceCanonical === '/encomenda') {
+        applyOrderTrackingOverrides($);
     }
 
     applyStaticSeoOverride($, sourceCanonical);
