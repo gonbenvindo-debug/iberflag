@@ -561,12 +561,12 @@ Object.assign(DesignEditor.prototype, {
         return { snapped: false, value: normalized, guide: wrappedGuide, diff };
     },
 
-    showRotationGuideLine(rotation, center) {
+    showRotationGuideLine(rotation, elementCenter) {
         this.clearGuideLineArtifacts();
 
         if (!this.showGuides) return;
 
-        if (!Number.isFinite(rotation) || !center) return;
+        if (!Number.isFinite(rotation) || !elementCenter) return;
 
         const guideLayer = this.ensureGuideLineLayer();
         if (!guideLayer) return;
@@ -579,17 +579,21 @@ Object.assign(DesignEditor.prototype, {
 
         const snapped = snap.value;
 
-        const bounds = this.getEditableBounds();
-        const lineLength = Math.hypot(bounds.width, bounds.height) * 1.25;
+        const bounds = this.getGuideBounds();
+        const projectCenter = {
+            x: bounds.x + (bounds.width / 2),
+            y: bounds.y + (bounds.height / 2)
+        };
+        const lineLength = Math.hypot(bounds.width, bounds.height) * 0.75;
         const angleRad = (snapped * Math.PI) / 180;
         const dx = Math.cos(angleRad) * lineLength;
         const dy = Math.sin(angleRad) * lineLength;
 
         const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-        line.setAttribute('x1', String(center.x - dx));
-        line.setAttribute('y1', String(center.y - dy));
-        line.setAttribute('x2', String(center.x + dx));
-        line.setAttribute('y2', String(center.y + dy));
+        line.setAttribute('x1', String(projectCenter.x - dx));
+        line.setAttribute('y1', String(projectCenter.y - dy));
+        line.setAttribute('x2', String(projectCenter.x + dx));
+        line.setAttribute('y2', String(projectCenter.y + dy));
         line.setAttribute('stroke', '#ef4825');
         line.setAttribute('stroke-width', '1.5');
         line.setAttribute('stroke-dasharray', '6,6');
@@ -601,8 +605,8 @@ Object.assign(DesignEditor.prototype, {
         this.guideLines.push(line);
 
         const ring = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
-        ring.setAttribute('cx', String(center.x));
-        ring.setAttribute('cy', String(center.y));
+        ring.setAttribute('cx', String(elementCenter.x));
+        ring.setAttribute('cy', String(elementCenter.y));
         ring.setAttribute('r', '6');
         ring.setAttribute('fill', '#ffffff');
         ring.setAttribute('stroke', '#ef4825');
