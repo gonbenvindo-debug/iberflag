@@ -3031,6 +3031,12 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     gap: 0.5rem;
 }
 
+.checkout-embed-actions {
+    display: flex;
+    justify-content: flex-start;
+    margin-bottom: 1rem;
+}
+
 .checkout-method-pill {
     display: inline-flex;
     align-items: center;

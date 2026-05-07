@@ -608,18 +608,40 @@ function injectLanguageSwitcher() {
 
     const explicitSlot = document.querySelector('[data-language-switcher-slot]');
     if (explicitSlot) {
-        const requestedVariant = String(explicitSlot.getAttribute('data-language-switcher-slot') || '').toLowerCase();
-        const variant = requestedVariant === 'mobile' ? 'mobile' : 'desktop';
-        const markup = buildLanguageSwitcherMarkup(currentLocale, currentPath, variant);
-        if (markup) {
-            const wrapper = document.createElement('div');
-            wrapper.dataset.languageSwitcher = 'slot';
-            wrapper.className = requestedVariant === 'mobile'
-                ? 'inline-flex items-center'
-                : 'inline-flex items-center justify-end';
-            wrapper.innerHTML = markup;
-            explicitSlot.appendChild(wrapper);
-        }
+        const targetLocaleMeta = SiteRoutes.getLocaleMeta?.(targetLocale) || {};
+        const flagSvg = (locale) => locale === 'es'
+            ? `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="54" height="36" fill="#AA151B"/>
+                    <rect y="9" width="54" height="18" fill="#F1BF00"/>
+                </svg>`
+            : `<svg viewBox="0 0 54 36" role="img" focusable="false" aria-hidden="true" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="21.6" height="36" fill="#006A4E"/>
+                    <rect x="21.6" width="32.4" height="36" fill="#DA291C"/>
+                    <circle cx="21.6" cy="18" r="6.2" fill="#F6C645"/>
+                </svg>`;
+        const currentUrl = new URL(String(currentPath || '/'), window.location.origin);
+        const href = SiteRoutes.getLocalizedPath
+            ? `${SiteRoutes.getLocalizedPath(currentUrl.pathname, targetLocale)}${currentUrl.search}${currentUrl.hash}`
+            : (targetLocale === 'es'
+                ? `/es${currentUrl.pathname === '/' ? '/' : currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`
+                : `${currentUrl.pathname}${currentUrl.search}${currentUrl.hash}`);
+        const wrapper = document.createElement('div');
+        wrapper.dataset.languageSwitcher = 'slot';
+        wrapper.className = 'language-rail';
+        wrapper.innerHTML = `
+            <a href="${href}" lang="${targetLocaleMeta.lang || (targetLocale === 'es' ? 'es-ES' : 'pt-PT')}" aria-label="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" title="${currentLocale === 'es' ? 'Ver site em Português' : 'Ver site em Español'}" class="language-rail-link">
+                <span class="language-rail-track" aria-hidden="true">
+                    <span class="language-rail-panel language-rail-panel-current">
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-es' : 'language-rail-flag-pt'}">${flagSvg(currentLocale)}</span>
+                    </span>
+                    <span class="language-rail-panel language-rail-panel-target">
+                        <span class="language-rail-flag ${currentLocale === 'es' ? 'language-rail-flag-pt' : 'language-rail-flag-es'}">${flagSvg(targetLocale)}</span>
+                    </span>
+                </span>
+                <span class="sr-only">${currentLocale === 'es' ? 'Português' : 'Español'}</span>
+            </a>
+        `;
+        explicitSlot.appendChild(wrapper);
         window.__iberflagLanguageSwitcherInjected = true;
         return;
     }

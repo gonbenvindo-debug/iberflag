@@ -51,6 +51,7 @@ const checkoutLockedNote = document.getElementById('checkout-locked-note');
 const checkoutEmbedShell = document.getElementById('checkout-embed-shell');
 const checkoutEmbedLoader = document.getElementById('checkout-embed-loader');
 const checkoutEmbedContainer = document.getElementById('checkout-embed-container');
+const checkoutEmbedBackBtn = document.getElementById('checkout-embed-back-btn');
 const streetInput = checkoutForm?.elements?.morada || null;
 const billingSameAsShippingCheckbox = document.getElementById('billing-same-as-shipping');
 const checkoutStepButtons = Array.from(document.querySelectorAll('[data-checkout-step]'));
@@ -385,6 +386,10 @@ function getPlaceOrderLoadedLabel() {
     return `<i data-lucide="shield-check" class="w-5 h-5"></i> ${i18nText('Pagamento aberto')}`;
 }
 
+function getCheckoutEmbedBackLabel() {
+    return `<i data-lucide="arrow-left" class="w-4 h-4"></i> ${i18nText('Voltar')}`;
+}
+
 function buildCheckoutSuccessPath(params = {}) {
     if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildCheckoutSuccessPath === 'function') {
         return SiteRoutes.buildCheckoutSuccessPath(params);
@@ -593,6 +598,9 @@ function localizeEmbeddedCheckoutStaticContent() {
 
     if (placeOrderBtn && !document.body.classList.contains('checkout-payment-active')) {
         placeOrderBtn.innerHTML = getPlaceOrderDefaultLabel();
+    }
+    if (checkoutEmbedBackBtn) {
+        checkoutEmbedBackBtn.innerHTML = getCheckoutEmbedBackLabel();
     }
 }
 
@@ -2061,6 +2069,11 @@ async function destroyEmbeddedCheckout({ clearPersistedSession = true } = {}) {
         placeOrderBtn.innerHTML = getPlaceOrderDefaultLabel();
     }
 
+    if (checkoutEmbedBackBtn) {
+        checkoutEmbedBackBtn.disabled = false;
+        checkoutEmbedBackBtn.innerHTML = getCheckoutEmbedBackLabel();
+    }
+
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -2068,6 +2081,16 @@ async function destroyEmbeddedCheckout({ clearPersistedSession = true } = {}) {
     if (clearPersistedSession) {
         clearPersistedCheckoutSession();
     }
+}
+
+async function handleEmbeddedCheckoutBack() {
+    if (checkoutEmbedBackBtn) {
+        checkoutEmbedBackBtn.disabled = true;
+    }
+
+    clearCheckoutFeedback();
+    await destroyEmbeddedCheckout();
+    setCheckoutStep('address', { scroll: true });
 }
 
 function scrollToEmbeddedCheckout() {
@@ -2548,6 +2571,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 setCheckoutStep(nextStep, { scroll: true });
             }
         });
+    });
+
+    checkoutEmbedBackBtn?.addEventListener('click', () => {
+        void handleEmbeddedCheckoutBack();
     });
 
     checkoutForm?.addEventListener('input', schedulePersistCheckoutState);
