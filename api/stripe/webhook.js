@@ -4,6 +4,7 @@ const { readRawBody, sendJson } = require('../../lib/server/http');
 const {
     appendWorkflowHistory,
     buildOrderNotesWithMeta,
+    buildStripeSessionSummary,
     splitOrderNotesAndMeta
 } = require('../../lib/server/checkout');
 const {
@@ -194,7 +195,7 @@ async function updateOrderPaymentStatus(supabase, order, session, paymentStatus)
         stripe_payment_method_type: session?.metadata?.payment_method || meta.paymentMethod || '',
         payment_confirmed_at: paymentStatus === 'paid' ? new Date().toISOString() : null,
         facturalusa_status: meta.facturalusaStatus || null,
-        stripe_metadata: session || {}
+        stripe_metadata: buildStripeSessionSummary(session)
     };
 
     const { error } = await updateWithOptionalColumns(

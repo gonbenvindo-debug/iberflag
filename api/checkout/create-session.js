@@ -2,6 +2,7 @@ const {
     buildServiceOptionItems,
     buildOrderNotesWithMeta,
     buildStripeLineItem,
+    buildStripeSessionSummary,
     generateOrderNumber,
     normalizeCheckoutServiceOptions,
     normalizePaymentMethodType,
@@ -571,10 +572,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             payment_method_types: stripePaymentMethodTypes,
             metadata: {
                 order_code: orderNumber,
-                order_id: String(order.id),
-                customer_id: String(customerId),
-                payment_method: selectedPaymentMethod,
-                design_review: serviceOptions.designReview ? 'true' : 'false'
+                payment_method: selectedPaymentMethod
             },
             line_items: chargeableItems.map(buildStripeLineItem),
             billing_address_collection: 'auto'
@@ -601,16 +599,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
                 stripe_session_id: session.id,
                 stripe_checkout_url: session.url || '',
                 stripe_payment_method_type: selectedPaymentMethod,
-                stripe_metadata: {
-                    id: session.id,
-                    status: session.status || '',
-                    payment_status: session.payment_status || '',
-                    client_reference_id: session.client_reference_id || '',
-                    payment_method_types: Array.isArray(session.payment_method_types) ? session.payment_method_types : [],
-                    checkout_ui_mode: session.ui_mode || 'embedded',
-                    redirect_on_completion: session.redirect_on_completion || 'if_required',
-                    design_review: serviceOptions.designReview
-                }
+                stripe_metadata: buildStripeSessionSummary(session)
             }
         );
 
