@@ -201,6 +201,19 @@ body {
     height: 1.95rem;
 }
 
+.design-preview-surface {
+    --design-preview-grid-size: 24px;
+    --design-preview-grid-color: rgba(37, 99, 235, 0.14);
+    --design-preview-surface-color: #f8fbff;
+
+    background-color: var(--design-preview-surface-color);
+    background-image:
+        linear-gradient(var(--design-preview-grid-color) 1px, transparent 1px),
+        linear-gradient(90deg, var(--design-preview-grid-color) 1px, transparent 1px);
+    background-size: var(--design-preview-grid-size) var(--design-preview-grid-size);
+    background-position: center center;
+}
+
 .cart-item-preview-frame {
     --cart-item-preview-inset: clamp(0.1rem, 0.25vw, 0.2rem);
     --cart-item-preview-radius: 0.85rem;
@@ -213,10 +226,13 @@ body {
     min-height: 0;
     padding: var(--cart-item-preview-inset);
     border-radius: var(--cart-item-preview-radius);
-    border: 1px solid #e5e7eb;
-    background-color: #f8fafc;
-    background-image: repeating-conic-gradient(#e5e7eb 0% 25%, #f8fafc 0% 50%);
-    background-size: 10px 10px;
+    border: 1px solid rgba(37, 99, 235, 0.18);
+    background-color: #f8fbff;
+    background-image:
+        linear-gradient(rgba(37, 99, 235, 0.14) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 99, 235, 0.14) 1px, transparent 1px);
+    background-size: 24px 24px;
+    background-position: center center;
     display: flex;
     align-items: center;
     justify-content: center;

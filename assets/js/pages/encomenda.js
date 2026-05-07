@@ -454,11 +454,13 @@ function resolveOrderItemVisual(item, snapshot) {
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
     const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
+    const hasDesign = Boolean(designSvg || explicitPreview);
 
     // Priority: SVG design → explicit preview → product image fallback
     return {
         designSvg,
-        previewUrl: designDataUrl || explicitPreview || fallbackImage
+        previewUrl: designDataUrl || explicitPreview || fallbackImage,
+        hasDesign
     };
 }
 
@@ -745,12 +747,13 @@ function renderOrderItems(order, items, splitMeta) {
         renderedItemPreviews.push({
             productName,
             previewUrl,
-            options: itemOptions
+            options: itemOptions,
+            hasDesign: visuals.hasDesign
         });
 
         return `
             <article class="order-item-card">
-                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="order-item-thumb">
+                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="order-item-thumb ${visuals.hasDesign ? 'design-preview-surface order-item-thumb--design' : ''}">
                 <div class="order-item-copy">
                     <h3 class="order-item-title">${escapeHtml(productName)}</h3>
                     <div class="order-item-meta">
@@ -800,6 +803,7 @@ function openItemPreview(index) {
     itemPreviewTitle.textContent = data.productName || 'Produto';
     itemPreviewImage.src = data.previewUrl || '/favicon.svg';
     itemPreviewImage.alt = data.productName || 'Preview';
+    itemPreviewImage.classList.toggle('design-preview-surface', Boolean(data.hasDesign));
     if (itemPreviewOptions) {
         itemPreviewOptions.innerHTML = '';
         itemPreviewOptions.classList.add('hidden');
