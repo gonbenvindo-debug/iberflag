@@ -2486,8 +2486,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
 
         if (emitFacturalusaBtn) {
 const canEmit = resolveFacturalusaStatus(order) !== 'emitted'
-    && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid'
-    && !fiscalDivergence?.diverged;
+    && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
             emitFacturalusaBtn.disabled = !canEmit;
             emitFacturalusaBtn.classList.toggle('opacity-60', !canEmit);
             emitFacturalusaBtn.classList.toggle('cursor-not-allowed', !canEmit);

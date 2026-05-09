@@ -19,6 +19,7 @@ const { runNonBlockingAction } = require('../../../lib/server/resilience');
 const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../../lib/server/email-notifications');
 const { logAnalyticsEvent, logOperationalEvent, queueReviewItem, resolveReviewItem } = require('../../../lib/server/ops');
+const { resolveStoredCheckoutCustomer } = require('../../../lib/server/order-flow');
 
 async function findOrderByIdOrCode(supabase, orderId, orderCode) {
     if (orderId) {
@@ -97,19 +98,8 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
         const invoiceState = resolveFacturalusaDocumentState(order, split.meta);
         const fiscalSnapshot = resolveStoredFiscalSnapshot(order, split.meta || {});
         const latestCustomer = await findCustomerForOrder(supabase, order);
-        const divergence = detectFiscalSnapshotDivergence(fiscalSnapshot, {
-            ...(split.meta?.checkoutCustomer || {}),
-            ...(latestCustomer || {})
-        });
-
-        if (divergence.diverged) {
-            sendJson(res, 409, {
-                error: 'FISCAL_DIVERGENCE_DETECTED',
-                message: divergence.reason || 'Os dados fiscais atuais diferem dos dados usados no snapshot fiscal congelado.',
-                divergence
-            });
-            return;
-        }
+        const frozenCustomer = resolveStoredCheckoutCustomer(order, split.meta || {}, latestCustomer || {});
+        const divergence = detectFiscalSnapshotDivergence(fiscalSnapshot, frozenCustomer);
 
         if (invoiceState.emitted) {
             sendJson(res, 200, {
@@ -142,7 +132,8 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
             const emissionResult = await issueFacturalusaDocumentForOrder({
                 supabase,
                 order,
-                session
+                session,
+                customer: frozenCustomer
             });
 
             const sale = emissionResult.sale;
@@ -237,7 +228,8 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 success: true,
                 orderId: order.id,
                 documentNumber: facturalusaDocumentNumber || null,
-                documentUrl: facturalusaDocumentUrl || null
+                documentUrl: facturalusaDocumentUrl || null,
+                divergence
             });
         } catch (invoiceError) {
             const classified = classifyFacturalusaError(invoiceError);

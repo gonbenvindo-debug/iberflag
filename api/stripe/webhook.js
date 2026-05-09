@@ -19,6 +19,7 @@ const {
     resolveFiscalSnapshotForPayment,
     resolveStoredFiscalSnapshot
 } = require('../../lib/server/fiscal-engine');
+const { resolveStoredCheckoutCustomer } = require('../../lib/server/order-flow');
 const { resolveFacturalusaDocumentState, attachIssuedDocumentContext } = require('../../lib/server/invoice-state');
 const {
     logAnalyticsEvent,
@@ -356,14 +357,7 @@ async function markOrderFailed(supabase, order, session, paymentStatus) {
 
 function buildWebhookCustomerSnapshot(order) {
     const split = splitOrderNotesAndMeta(order?.notas || '');
-    const payloadCustomer = order?.checkout_payload?.customer && typeof order.checkout_payload.customer === 'object'
-        ? order.checkout_payload.customer
-        : {};
-
-    return {
-        ...(payloadCustomer || {}),
-        ...(split.meta?.checkoutCustomer || {})
-    };
+    return resolveStoredCheckoutCustomer(order, split.meta || {});
 }
 
 async function applyPaidFiscalFields(supabase, order, customerSnapshot) {
@@ -598,7 +592,7 @@ module.exports = async function stripeWebhookHandler(req, res) {
 
                     let confirmationEmailOrder = paidOrderWithFiscal;
 
-                    if (!fiscalDivergence.diverged && fiscalSnapshot.fiscal_decision_mode === 'auto_emit') {
+                    if (fiscalSnapshot.fiscal_decision_mode === 'auto_emit') {
                         let invoiceResult = null;
 
                         try {
@@ -761,9 +755,7 @@ module.exports = async function stripeWebhookHandler(req, res) {
                             supabase,
                             paidOrderWithFiscal,
                             session,
-                            fiscalDivergence.diverged
-                                ? (fiscalDivergence.reason || 'Pagamento confirmado. Dados fiscais divergentes, enviada para revisao manual.')
-                                : 'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
+                            'Pagamento confirmado. Faturacao encaminhada para revisao manual.'
                         );
                     }
 
