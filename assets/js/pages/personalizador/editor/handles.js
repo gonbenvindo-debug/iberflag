@@ -81,15 +81,24 @@ Object.assign(DesignEditor.prototype, {
         editor.spellcheck = false;
 
         const computed = window.getComputedStyle(textNode);
+        const textRect = textNode.getBoundingClientRect();
+        const computedFontSize = Number.parseFloat(computed.fontSize || '');
+        const inferredFontSize = textRect.height > 0 ? (textRect.height / 1.2) : NaN;
+        const effectiveFontSize = Number.isFinite(inferredFontSize) && inferredFontSize > 0
+            ? inferredFontSize
+            : (Number.isFinite(computedFontSize) && computedFontSize > 0 ? computedFontSize : 16);
+        const fontFamily = textNode.getAttribute('font-family') || computed.fontFamily || 'inherit';
+        const fontWeight = textNode.getAttribute('font-weight') || computed.fontWeight || '400';
+        const fontStyle = textNode.getAttribute('font-style') || computed.fontStyle || 'normal';
         Object.assign(editorShell.style, {
             position: 'absolute',
             zIndex: '180',
             display: 'flex',
             alignItems: 'center',
             minWidth: '88px',
-            padding: '0 2px',
-            borderBottom: '1px solid rgba(239, 72, 37, 0.45)',
-            background: 'rgba(255, 255, 255, 0.92)',
+            padding: '0 1px',
+            borderBottom: '1px solid rgba(239, 72, 37, 0.55)',
+            background: 'transparent',
             boxShadow: 'none',
             pointerEvents: 'auto'
         });
@@ -102,13 +111,21 @@ Object.assign(DesignEditor.prototype, {
             borderRadius: '0',
             background: 'transparent',
             color: computed.fill || '#0f172a',
-            fontFamily: computed.fontFamily,
-            fontSize: computed.fontSize,
-            fontWeight: computed.fontWeight,
-            fontStyle: computed.fontStyle,
+            caretColor: computed.fill || '#0f172a',
+            WebkitTextFillColor: computed.fill || '#0f172a',
+            fontFamily,
+            fontSize: `${Math.max(8, effectiveFontSize)}px`,
+            fontWeight,
+            fontStyle,
             textDecoration: computed.textDecoration,
             textTransform: computed.textTransform,
-            lineHeight: computed.lineHeight,
+            letterSpacing: computed.letterSpacing,
+            lineHeight: '1.2',
+            boxSizing: 'border-box',
+            appearance: 'none',
+            WebkitAppearance: 'none',
+            MozAppearance: 'none',
+            outlineOffset: '0',
             outline: 'none',
             boxShadow: 'none'
         });
@@ -144,7 +161,8 @@ Object.assign(DesignEditor.prototype, {
         };
         this.refreshInlineTextEditorPosition?.();
         editor.focus();
-        editor.select();
+        const cursorPos = editor.value.length;
+        editor.setSelectionRange(cursorPos, cursorPos);
     },
 
     refreshInlineTextEditorPosition() {
@@ -160,6 +178,14 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const computed = window.getComputedStyle(state.textNode);
+        const computedFontSize = Number.parseFloat(computed.fontSize || '');
+        const inferredFontSize = textRect.height > 0 ? (textRect.height / 1.2) : NaN;
+        const effectiveFontSize = Number.isFinite(inferredFontSize) && inferredFontSize > 0
+            ? inferredFontSize
+            : (Number.isFinite(computedFontSize) && computedFontSize > 0 ? computedFontSize : 16);
+        const fontFamily = state.textNode.getAttribute('font-family') || computed.fontFamily || 'inherit';
+        const fontWeight = state.textNode.getAttribute('font-weight') || computed.fontWeight || '400';
+        const fontStyle = state.textNode.getAttribute('font-style') || computed.fontStyle || 'normal';
         const baseWidth = Math.max(textRect.width + 10, this.isMobileViewport?.() ? 110 : 96);
         const baseHeight = Math.max(textRect.height + 6, this.isMobileViewport?.() ? 34 : 30);
         const maxWidth = Math.max(80, stageRect.width - 16);
@@ -178,13 +204,16 @@ Object.assign(DesignEditor.prototype, {
         });
         Object.assign(state.editor.style, {
             color: computed.fill || '#0f172a',
-            fontFamily: computed.fontFamily,
-            fontSize: computed.fontSize,
-            fontWeight: computed.fontWeight,
-            fontStyle: computed.fontStyle,
+            caretColor: computed.fill || '#0f172a',
+            WebkitTextFillColor: computed.fill || '#0f172a',
+            fontFamily,
+            fontSize: `${Math.max(8, effectiveFontSize)}px`,
+            fontWeight,
+            fontStyle,
             textDecoration: computed.textDecoration,
             textTransform: computed.textTransform,
-            lineHeight: computed.lineHeight,
+            letterSpacing: computed.letterSpacing,
+            lineHeight: '1.2',
             textAlign: (() => {
                 const anchor = String(state.textNode.getAttribute('text-anchor') || 'start').toLowerCase();
                 if (anchor === 'end') return 'right';
