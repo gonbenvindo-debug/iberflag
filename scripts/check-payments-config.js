@@ -53,8 +53,7 @@ const stripeGroups = mode === 'test'
 const facturalusaGroups = mode === 'test'
     ? [
         { label: 'FACTURALUSA_API_TOKEN_TEST', keys: ['FACTURALUSA_API_TOKEN_TEST', 'FACTURALUSA_BEARER_TOKEN_TEST'] },
-        { label: 'FACTURALUSA_BASE_URL_TEST', keys: ['FACTURALUSA_BASE_URL_TEST'] },
-        { label: 'FACTURALUSA_SERIE_ID_TEST', keys: ['FACTURALUSA_SERIE_ID_TEST'] }
+        { label: 'FACTURALUSA_BASE_URL_TEST', keys: ['FACTURALUSA_BASE_URL_TEST'] }
     ]
     : [
         { label: 'FACTURALUSA_API_TOKEN_LIVE or FACTURALUSA_API_TOKEN', keys: ['FACTURALUSA_API_TOKEN_LIVE', 'FACTURALUSA_BEARER_TOKEN_LIVE', 'FACTURALUSA_API_TOKEN', 'FACTURALUSA_BEARER_TOKEN'] }
