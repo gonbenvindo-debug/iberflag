@@ -30,15 +30,13 @@ const {
     validateCheckoutCustomerEmail,
     validateCheckoutCustomerPhone,
     validateCheckoutCustomerType,
-    validateCheckoutPostalCode,
-    validateCheckoutCustomerTaxId
+    validateCheckoutPostalCode
 } = require('../../lib/server/order-flow');
 const {
     buildFiscalSnapshot,
     buildOrderFiscalFields,
     resolveCheckoutCountryCode
 } = require('../../lib/server/fiscal-engine');
-const { validateVatVies } = require('../../lib/server/vies');
 const {
     calculateOrderMarginEstimate,
     logAnalyticsEvent,
@@ -392,32 +390,12 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         }
         customerSnapshot.codigo_postal = postalCodeValidation.normalized;
 
-        const taxIdValidation = validateCheckoutCustomerTaxId(customerSnapshot);
-        if (!taxIdValidation.valid) {
-            sendJson(res, 400, {
-                error: 'NIF_INVALIDO',
-                message: taxIdValidation.message,
-                field: 'nif'
-            });
-            return;
-        }
-        customerSnapshot.nif = taxIdValidation.normalized;
-
         if (customerSnapshot.tipo_cliente === 'empresa') {
             if (!String(customerSnapshot.empresa || '').trim()) {
                 sendJson(res, 400, {
                     error: 'EMPRESA_REQUIRED',
                     message: 'Indique o nome fiscal da empresa para emitir a fatura.',
                     field: 'empresa'
-                });
-                return;
-            }
-
-            if (!String(customerSnapshot.nif || '').trim()) {
-                sendJson(res, 400, {
-                    error: 'NIF_REQUIRED',
-                    message: 'Para faturacao empresarial o NIF e obrigatorio.',
-                    field: 'nif'
                 });
                 return;
             }
@@ -430,11 +408,11 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const cart = await resolveCheckoutCart(supabase, rawCart);
         const chargeableItems = [...cart, ...buildServiceOptionItems(serviceOptions)];
         const { subtotal, shipping, total } = calculateCheckoutTotals(chargeableItems);
-        const vatValidation = await validateVatVies({
-            countryCode: customerSnapshot.country,
-            taxId: customerSnapshot.nif,
-            customerType: customerSnapshot.tipo_cliente
-        });
+        const vatValidation = {
+            status: 'not_required',
+            source: 'checkout',
+            message: ''
+        };
         const fiscalSnapshot = buildFiscalSnapshot({
             customer: customerSnapshot,
             paymentStatus: 'pending',

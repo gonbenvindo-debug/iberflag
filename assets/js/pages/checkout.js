@@ -789,23 +789,10 @@ function isValidSpanishCif(value) {
 
 function validateTaxId(value, postalCode = '') {
     const normalized = normalizeTaxId(value);
-    if (!normalized) {
-        return { valid: true, normalized, message: '' };
-    }
-
-    const country = detectTaxCountry(normalized, postalCode);
-    const valid = country === 'ES'
-        ? isValidSpanishDniOrNie(normalized) || isValidSpanishCif(normalized)
-        : isValidPortugueseNif(normalized);
-
     return {
-        valid,
+        valid: true,
         normalized,
-        message: valid
-            ? ''
-            : country === 'ES'
-                ? i18nText('NIF/NIE espanhol inválido. Verifique o número fiscal antes de continuar.')
-            : i18nText('NIF português inválido. Verifique os 9 dígitos antes de continuar.')
+        message: ''
     };
 }
 
@@ -1431,20 +1418,9 @@ function updateTaxIdValidity() {
         return { valid: true, normalized: '', message: '' };
     }
 
-    const postalCode = postalCodeInput?.value || '';
-    const validation = validateTaxId(nifInput.value, postalCode);
+    const validation = validateTaxId(nifInput.value, postalCodeInput?.value || '');
     nifInput.value = validation.normalized;
-    const nifRequired = isBusinessCustomerSelected();
-    if (nifRequired && !validation.normalized) {
-        nifInput.setCustomValidity(i18nText('Para faturação empresarial o NIF é obrigatório.'));
-        return {
-            valid: false,
-            normalized: validation.normalized,
-            message: i18nText('Para faturação empresarial o NIF é obrigatório.')
-        };
-    }
-
-    nifInput.setCustomValidity(validation.valid ? '' : validation.message);
+    nifInput.setCustomValidity('');
     return validation;
 }
 
@@ -1529,25 +1505,7 @@ function isTaxIdLookupReady(normalized, postalCode = '') {
 
 function scheduleCompanyLookup() {
     clearCompanyLookupDebounce();
-
-    if (!isBusinessCustomerSelected() || !nifInput) {
-        return;
-    }
-
-    const validation = updateTaxIdValidity();
-    if (!validation.normalized) {
-        setCompanyLookupStatus('');
-        return;
-    }
-
-    if (!isTaxIdLookupReady(validation.normalized, postalCodeInput?.value || '') || !validation.valid) {
-        return;
-    }
-
-    companyLookupDebounceTimer = window.setTimeout(() => {
-        companyLookupDebounceTimer = null;
-        void lookupCompanyByTaxId();
-    }, COMPANY_LOOKUP_DEBOUNCE_MS);
+    setCompanyLookupStatus('');
 }
 
 function applyCompanyLookupResult(customer = {}) {
@@ -1646,84 +1604,11 @@ function updateFiscalSummary() {
 }
 
 async function lookupCompanyByTaxId({ force = false } = {}) {
-    if (!isBusinessCustomerSelected() || !nifInput) {
-        return null;
-    }
-
-    const taxValidation = updateTaxIdValidity();
-    if (!taxValidation.valid || !taxValidation.normalized) {
-        return null;
-    }
-
-    const cacheKey = taxValidation.normalized;
-    if (!force && companyLookupCache.has(cacheKey)) {
-        const cached = companyLookupCache.get(cacheKey);
-        applyVatValidationResult(cached?.vatValidation || null);
-        if (cached?.found && cached.customer) {
-            applyCompanyLookupResult(cached.customer);
-            setCompanyLookupStatus(`Dados encontrados em ${cached.sourceLabel || 'registos anteriores'}.`, 'success');
-        } else if (cached?.vatValidation?.status === 'invalid' || cached?.vatValidation?.status === 'unavailable') {
-            setCompanyLookupStatus(cached.vatValidation.message || i18nText('Não foi possível validar o VAT automaticamente.'), 'warning');
-        }
-        return cached;
-    }
-
-    if (companyLookupInFlight) {
-        return null;
-    }
-
-    setCompanyLookupLoading(true);
-    setCompanyLookupStatus('A procurar dados fiscais para este NIF...', 'info');
-
-    try {
-        const response = await fetch('/api/checkout/company-lookup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                taxId: taxValidation.normalized,
-                postalCode: postalCodeInput?.value || '',
-                customerType: getSelectedCustomerType(),
-                country: getSelectedFiscalCountry()
-            })
-        });
-
-        const payload = await response.json().catch(() => ({}));
-        if (!response.ok) {
-            const message = String(payload?.message || i18nText('Não foi possível procurar a empresa pelo NIF.'));
-            setCompanyLookupStatus(message, 'warning');
-            return null;
-        }
-
-        companyLookupCache.set(cacheKey, payload || {});
-        applyVatValidationResult(payload?.vatValidation || null);
-
-        if (payload?.found && payload?.customer) {
-            applyCompanyLookupResult(payload.customer);
-            const vatWarning = payload?.vatValidation?.status === 'invalid' || payload?.vatValidation?.status === 'unavailable'
-                ? ` ${payload.vatValidation.message || ''}`.trim()
-                : '';
-            setCompanyLookupStatus(
-                `Nome fiscal encontrado em ${payload.sourceLabel || 'registos existentes'} e aplicado aos campos em falta.${vatWarning ? ` ${vatWarning}` : ''}`,
-                vatWarning ? 'warning' : 'success'
-            );
-            return payload;
-        }
-
-        if (payload?.vatValidation?.status === 'invalid' || payload?.vatValidation?.status === 'unavailable') {
-            setCompanyLookupStatus(payload.vatValidation.message || i18nText('Não foi possível validar o VAT automaticamente.'), 'warning');
-        } else {
-            setCompanyLookupStatus(i18nText('Não encontrámos dados automáticos para este NIF. Pode continuar e preencher manualmente.'), 'info');
-        }
-        return payload;
-    } catch (error) {
-        console.warn('Falha ao procurar empresa por NIF:', error);
-        setCompanyLookupStatus(i18nText('Não foi possível procurar dados automáticos agora. Pode continuar manualmente.'), 'warning');
-        return null;
-    } finally {
-        setCompanyLookupLoading(false);
-    }
+    void force;
+    setCompanyLookupStatus('');
+    setCompanyLookupLoading(false);
+    applyVatValidationResult(null);
+    return null;
 }
 
 function syncCustomerTypeUI() {
@@ -1739,7 +1624,7 @@ function syncCustomerTypeUI() {
     }
 
     if (nifLabel) {
-        nifLabel.textContent = business ? i18nText('NIF / VAT / CIF *') : i18nText('NIF / NIE (opcional)');
+        nifLabel.textContent = business ? i18nText('NIF / VAT / CIF (opcional)') : i18nText('NIF / NIE (opcional)');
     }
 
     if (companyFieldRow) {
@@ -1755,7 +1640,7 @@ function syncCustomerTypeUI() {
     }
 
     if (nifInput) {
-        nifInput.required = business;
+        nifInput.required = false;
     }
 
     updateCompanyValidity();
@@ -2426,12 +2311,7 @@ if (placeOrderBtn) {
         updatePostalCodeFormatting();
         updateFiscalSummary();
 
-        const taxIdValidation = updateTaxIdValidity();
-        if (!taxIdValidation.valid) {
-            setCheckoutFeedback(taxIdValidation.message, 'error');
-            revealCheckoutField(nifInput);
-            return;
-        }
+        updateTaxIdValidity();
 
         const companyValidation = updateCompanyValidity();
         if (!companyValidation.valid) {
@@ -2448,13 +2328,6 @@ if (placeOrderBtn) {
 
         syncFiscalCountryFromAddress();
 
-        if (isBusinessCustomerSelected() && taxIdValidation.normalized) {
-            const shouldValidateEuBusiness = getSelectedFiscalCountry() !== 'PT' && isEuCountry(getSelectedFiscalCountry());
-            if (shouldValidateEuBusiness || !latestVatValidation) {
-                await lookupCompanyByTaxId({ force: true });
-            }
-        }
-        
         // Validate form
         if (!checkoutForm.checkValidity()) {
             revealCheckoutField();
@@ -2634,25 +2507,16 @@ document.addEventListener('DOMContentLoaded', () => {
             setCompanyLookupStatus('');
             applyVatValidationResult(null);
             updateFiscalSummary();
-            scheduleCompanyLookup();
         });
         nifInput.addEventListener('blur', () => {
             clearCompanyLookupDebounce();
-            const validation = updateTaxIdValidity();
-            if (!validation.valid) {
-                setCheckoutFeedback(validation.message, 'error');
-                return;
-            }
-            if (isBusinessCustomerSelected() && validation.normalized && isTaxIdLookupReady(validation.normalized, postalCodeInput?.value || '')) {
-                void lookupCompanyByTaxId();
-            }
+            updateTaxIdValidity();
         });
     }
     if (postalCodeInput) {
         postalCodeInput.addEventListener('input', () => {
             updateTaxIdValidity();
             updateFiscalSummary();
-            scheduleCompanyLookup();
             schedulePostalLookup();
         });
         postalCodeInput.addEventListener('blur', () => {
@@ -2660,7 +2524,6 @@ document.addEventListener('DOMContentLoaded', () => {
             updateTaxIdValidity();
             updatePhoneValidity({ allowEmpty: true });
             updateFiscalSummary();
-            scheduleCompanyLookup();
             void lookupPostalCode({ force: true });
         });
     }
