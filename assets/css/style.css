@@ -2850,7 +2850,7 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     padding-top: 0 !important;
 }
 
-.checkout-page[data-checkout-step="payment"] .max-w-7xl {
+.checkout-page[data-checkout-step="payment"] > section > .max-w-7xl {
     max-width: none;
     padding-left: 0;
     padding-right: 0;
