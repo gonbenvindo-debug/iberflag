@@ -3035,12 +3035,12 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
 .checkout-embed-actions {
     display: flex;
     justify-content: flex-start;
-    margin: 0;
-    pointer-events: none;
-    position: absolute;
-    top: -2.75rem;
+    margin: 0 0 0.65rem;
+    pointer-events: auto;
+    position: relative;
+    top: 0;
     left: 0;
-    z-index: 3;
+    z-index: 6;
 }
 
 .checkout-embed-back-btn {
