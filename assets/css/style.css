@@ -2834,7 +2834,6 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     color: #475569;
 }
 
-.checkout-page.checkout-payment-active .checkout-steps-wrap,
 .checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-panel-heading,
 .checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-form-section,
 .checkout-page.checkout-payment-active [data-checkout-panel="payment"] > .checkout-consent-stack,
