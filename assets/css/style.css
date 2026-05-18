@@ -2834,61 +2834,6 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     color: #475569;
 }
 
-.checkout-page.checkout-payment-active [data-checkout-panel="confirm"] > .checkout-panel-heading,
-.checkout-page.checkout-payment-active [data-checkout-panel="confirm"] > .checkout-form-section,
-.checkout-page.checkout-payment-active [data-checkout-panel="confirm"] > .checkout-consent-stack,
-.checkout-page.checkout-payment-active [data-checkout-panel="confirm"] > .checkout-panel-actions,
-.checkout-page.checkout-payment-active .checkout-summary-column,
-.checkout-page.checkout-payment-active .checkout-embed-shell > .mb-4 {
-    display: none !important;
-}
-
-.checkout-page.checkout-payment-active > section {
-    background: #ffffff;
-    padding-top: 0 !important;
-    padding-bottom: 2rem !important;
-}
-
-.checkout-page.checkout-payment-active > section > .max-w-7xl {
-    max-width: none;
-    padding-left: 0;
-    padding-right: 0;
-}
-
-.checkout-page.checkout-payment-active .checkout-main-column {
-    grid-column: 1 / -1;
-    box-sizing: border-box;
-    max-width: min(100%, 56rem);
-    width: 100%;
-    margin: 0 auto;
-    padding-left: 1rem;
-    padding-right: 1rem;
-}
-
-.checkout-page.checkout-payment-active .checkout-main-card {
-    background: transparent;
-    border: 0;
-    border-radius: 0;
-    box-shadow: none;
-    overflow: visible;
-}
-
-.checkout-page.checkout-payment-active .checkout-step-panel[data-checkout-panel="confirm"] {
-    padding: 0;
-}
-
-.checkout-page.checkout-payment-active .checkout-embed-shell {
-    margin-top: 0;
-    padding-top: 0;
-    border-top: 0;
-}
-
-.checkout-page.checkout-payment-active .checkout-embed-container {
-    border: 0;
-    border-radius: 0;
-    background: transparent;
-    overflow: visible;
-}
 
 .checkout-main-card .app-section-title,
 .checkout-surface-card .app-section-title {
@@ -3666,9 +3611,6 @@ a[href="/checkout"].block.w-full:hover {
         padding: 0.72rem 0.75rem;
     }
 
-    .checkout-page.checkout-payment-active > section {
-        padding-bottom: calc(5.5rem + env(safe-area-inset-bottom)) !important;
-    }
 }
 
 /* ===== BADGES ===== */
