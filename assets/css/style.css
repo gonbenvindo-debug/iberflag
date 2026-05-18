@@ -2834,6 +2834,14 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     color: #475569;
 }
 
+.checkout-page[data-checkout-step="payment"] [data-checkout-panel="confirm"] > .checkout-panel-heading,
+.checkout-page[data-checkout-step="payment"] [data-checkout-panel="confirm"] > .checkout-form-section,
+.checkout-page[data-checkout-step="payment"] [data-checkout-panel="confirm"] > .checkout-consent-stack,
+.checkout-page[data-checkout-step="payment"] [data-checkout-panel="confirm"] > .checkout-panel-actions,
+.checkout-page[data-checkout-step="payment"] .checkout-summary-column {
+    display: none !important;
+}
+
 
 .checkout-main-card .app-section-title,
 .checkout-surface-card .app-section-title {

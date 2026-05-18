@@ -52,6 +52,7 @@ const checkoutEmbedShell = document.getElementById('checkout-embed-shell');
 const checkoutEmbedLoader = document.getElementById('checkout-embed-loader');
 const checkoutEmbedContainer = document.getElementById('checkout-embed-container');
 const checkoutEmbedBackBtn = document.getElementById('checkout-embed-back-btn');
+const checkoutSummaryColumn = document.querySelector('.checkout-summary-column');
 const streetInput = checkoutForm?.elements?.morada || null;
 const billingSameAsShippingCheckbox = document.getElementById('billing-same-as-shipping');
 const checkoutStepButtons = Array.from(document.querySelectorAll('[data-checkout-step]'));
@@ -140,6 +141,7 @@ const ES_TEXT = {
     'Estamos a abrir o pagamento seguro dentro da IberFlag.': 'Estamos abriendo el pago seguro dentro de IberFlag.',
     'O pagamento vai ser confirmado no passo seguinte.': 'El pago se confirmará en el siguiente paso.',
     'Pagamento em aberto. Para alterar dados ou carrinho, atualize a página antes de criar uma nova sessão.': 'Pago abierto. Para cambiar datos o carrito, actualice la página antes de crear una nueva sesión.',
+    'Para abrir o passo de pagamento, clique em "Pagar agora" no passo Confirmar.': 'Para abrir el paso de pago, haga clic en "Pagar ahora" en el paso Confirmar.',
     'Preencha os dados de contacto e faturação antes de continuar.': 'Complete los datos de contacto y facturación antes de continuar.',
     'Preencha a morada de entrega antes de continuar.': 'Complete la dirección de entrega antes de continuar.',
     'Aceite os termos para continuar.': 'Acepte los términos para continuar.',
@@ -452,6 +454,9 @@ function setCheckoutStep(step = 'details', { scroll = false } = {}) {
     });
 
     document.body?.setAttribute('data-checkout-step', normalizedStep);
+    if (checkoutSummaryColumn) {
+        setElementHidden(checkoutSummaryColumn, normalizedStep === 'payment');
+    }
     schedulePersistCheckoutState();
 
     if (scroll) {
@@ -538,6 +543,12 @@ function validateCheckoutStep(step = currentCheckoutStep) {
 }
 
 function canMoveToCheckoutStep(nextStep) {
+    if (nextStep === 'payment' && !getSanitizedCheckoutSession()) {
+        setCheckoutFeedback(i18nText('Para abrir o passo de pagamento, clique em "Pagar agora" no passo Confirmar.'), 'info');
+        placeOrderBtn?.scrollIntoView?.({ behavior: 'smooth', block: 'center' });
+        return false;
+    }
+
     const nextIndex = getCheckoutStepIndex(nextStep);
     const currentIndex = getCheckoutStepIndex(currentCheckoutStep);
 
