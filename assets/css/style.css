@@ -2858,8 +2858,8 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
 
 .checkout-page[data-checkout-step="payment"] .checkout-main-card {
     max-width: 100%;
-    background: transparent;
-    border: 0;
+    background: transparent !important;
+    border: 0 !important;
     border-radius: 0;
     box-shadow: none;
     margin-inline: auto;
@@ -2890,6 +2890,13 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     border-top: 0;
     margin-top: 0;
     padding-top: 0;
+}
+
+.checkout-page[data-checkout-step="payment"] .checkout-embed-container {
+    border: 0 !important;
+    border-radius: 0 !important;
+    background: transparent !important;
+    box-shadow: none !important;
 }
 
 
