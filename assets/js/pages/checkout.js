@@ -424,7 +424,7 @@ function getCheckoutStepIndex(step) {
     return index >= 0 ? index : 0;
 }
 
-function setCheckoutStep(step = 'details', { scroll = false } = {}) {
+function setCheckoutStep(step = 'details') {
     const normalizedStep = CHECKOUT_STEP_ORDER.includes(step) ? step : 'details';
     currentCheckoutStep = normalizedStep;
     const activeIndex = getCheckoutStepIndex(normalizedStep);
@@ -454,15 +454,6 @@ function setCheckoutStep(step = 'details', { scroll = false } = {}) {
         setElementHidden(checkoutSummaryColumn, normalizedStep === 'payment');
     }
     schedulePersistCheckoutState();
-
-    if (scroll) {
-        const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === activePanelKey);
-        if (activePanel && typeof activePanel.getBoundingClientRect === 'function') {
-            const rect = activePanel.getBoundingClientRect();
-            const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
-            window.scrollTo({ top: nextTop, behavior: 'smooth' });
-        }
-    }
 }
 
 function getCheckoutStepForField(field) {
@@ -1774,7 +1765,7 @@ function restoreCheckoutFormState(state) {
         const savedStep = CHECKOUT_STEP_ORDER.includes(state?.step) ? state.step : 'details';
         const hasOpenEmbeddedPayment = Boolean(state?.paymentActive && getSanitizedCheckoutSession(state?.activeSession));
         if (!hasOpenEmbeddedPayment) {
-            setCheckoutStep(savedStep === 'payment' ? 'confirm' : savedStep, { scroll: false });
+            setCheckoutStep(savedStep === 'payment' ? 'confirm' : savedStep);
         }
     } finally {
         checkoutStateRestoreInProgress = false;
@@ -1996,7 +1987,7 @@ async function handleEmbeddedCheckoutBackToStep(step = 'address') {
 
     clearCheckoutFeedback();
     await destroyEmbeddedCheckout();
-    setCheckoutStep(step, { scroll: true });
+    setCheckoutStep(step);
 }
 
 function scrollToEmbeddedCheckout() {
@@ -2444,7 +2435,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => {
             const nextStep = button.dataset.checkoutNext;
             if (nextStep && canMoveToCheckoutStep(nextStep)) {
-                setCheckoutStep(nextStep, { scroll: true });
+                setCheckoutStep(nextStep);
             }
         });
     });
@@ -2453,7 +2444,7 @@ document.addEventListener('DOMContentLoaded', () => {
         button.addEventListener('click', () => {
             const previousStep = button.dataset.checkoutBack;
             if (previousStep) {
-                setCheckoutStep(previousStep, { scroll: true });
+                setCheckoutStep(previousStep);
             }
         });
     });
@@ -2466,7 +2457,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     await handleEmbeddedCheckoutBackToStep(nextStep);
                     return;
                 }
-                setCheckoutStep(nextStep, { scroll: true });
+                setCheckoutStep(nextStep);
             }
         });
     });
