@@ -59,7 +59,7 @@ const checkoutStepPanels = Array.from(document.querySelectorAll('[data-checkout-
 const checkoutStepLines = Array.from(document.querySelectorAll('[data-checkout-line]'));
 const checkoutNextButtons = Array.from(document.querySelectorAll('[data-checkout-next]'));
 const checkoutBackButtons = Array.from(document.querySelectorAll('[data-checkout-back]'));
-const CHECKOUT_STEP_ORDER = ['details', 'address', 'payment'];
+const CHECKOUT_STEP_ORDER = ['details', 'address', 'confirm', 'payment'];
 const CHECKOUT_STATE_STORAGE_PREFIX = 'iberflag_checkout_state_v1';
 const CHECKOUT_STATE_VERSION = 1;
 const CHECKOUT_STATE_TTL_MS = 24 * 60 * 60 * 1000;
@@ -430,9 +430,10 @@ function setCheckoutStep(step = 'details', { scroll = false } = {}) {
 
     currentCheckoutStep = normalizedStep;
     const activeIndex = getCheckoutStepIndex(normalizedStep);
+    const activePanelKey = normalizedStep === 'payment' ? 'confirm' : normalizedStep;
 
     checkoutStepPanels.forEach((panel) => {
-        const isActive = panel.dataset.checkoutPanel === normalizedStep;
+        const isActive = panel.dataset.checkoutPanel === activePanelKey;
         panel.hidden = !isActive;
         panel.classList.toggle('checkout-step-panel-active', isActive);
         panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
@@ -454,7 +455,7 @@ function setCheckoutStep(step = 'details', { scroll = false } = {}) {
     schedulePersistCheckoutState();
 
     if (scroll) {
-        const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === normalizedStep);
+        const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === activePanelKey);
         if (activePanel && typeof activePanel.getBoundingClientRect === 'function') {
             const rect = activePanel.getBoundingClientRect();
             const nextTop = Math.max(0, window.scrollY + rect.top - getCheckoutScrollOffset());
@@ -527,7 +528,7 @@ function validateCheckoutStep(step = currentCheckoutStep) {
         return true;
     }
 
-    if (step === 'payment' && termsCheckbox && !termsCheckbox.checked) {
+    if (step === 'confirm' && termsCheckbox && !termsCheckbox.checked) {
         setCheckoutFeedback(i18nText('Aceite os termos para continuar.'), 'error');
         revealCheckoutField(termsCheckbox);
         return false;
@@ -558,7 +559,7 @@ function localizeEmbeddedCheckoutStaticContent() {
         return;
     }
 
-    const paymentSection = checkoutPaymentIntro?.closest('[data-checkout-panel="payment"]');
+    const paymentSection = checkoutPaymentIntro?.closest('[data-checkout-panel="confirm"]');
     const paymentSubtitle = paymentSection?.querySelector('.app-section-subtitle');
     if (paymentSubtitle) {
         paymentSubtitle.textContent = i18nText('Reveja o total e conclua o pagamento.');
@@ -593,7 +594,10 @@ function localizeEmbeddedCheckoutStaticContent() {
         checkoutSteps[1].textContent = 'Dirección';
     }
     if (checkoutSteps[2]) {
-        checkoutSteps[2].textContent = 'Pago';
+        checkoutSteps[2].textContent = 'Confirmar';
+    }
+    if (checkoutSteps[3]) {
+        checkoutSteps[3].textContent = 'Pago';
     }
 
     if (placeOrderBtn && !document.body.classList.contains('checkout-payment-active')) {
@@ -1761,8 +1765,9 @@ function restoreCheckoutFormState(state) {
         renderCheckoutSummary(cart);
 
         const savedStep = CHECKOUT_STEP_ORDER.includes(state?.step) ? state.step : 'details';
-        if (!state?.paymentActive || !getSanitizedCheckoutSession(state?.activeSession)) {
-            setCheckoutStep(savedStep, { scroll: false });
+        const hasOpenEmbeddedPayment = Boolean(state?.paymentActive && getSanitizedCheckoutSession(state?.activeSession));
+        if (!hasOpenEmbeddedPayment) {
+            setCheckoutStep(savedStep === 'payment' ? 'confirm' : savedStep, { scroll: false });
         }
     } finally {
         checkoutStateRestoreInProgress = false;

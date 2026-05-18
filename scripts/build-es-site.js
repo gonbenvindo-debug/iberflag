@@ -1026,9 +1026,11 @@ function applyCheckoutOverrides($) {
     $('.checkout-steps').attr('aria-label', 'Pasos del checkout');
     $('.checkout-step[data-checkout-step="details"] .checkout-step-number').text('1');
     $('.checkout-step[data-checkout-step="address"] .checkout-step-number').text('2');
-    $('.checkout-step[data-checkout-step="payment"] .checkout-step-number').text('3');
+    $('.checkout-step[data-checkout-step="confirm"] .checkout-step-number').text('3');
+    $('.checkout-step[data-checkout-step="payment"] .checkout-step-number').text('4');
     $('.checkout-step[data-checkout-step="details"] .checkout-step-text').text('Datos');
     $('.checkout-step[data-checkout-step="address"] .checkout-step-text').text('Dirección');
+    $('.checkout-step[data-checkout-step="confirm"] .checkout-step-text').text('Confirmar');
     $('.checkout-step[data-checkout-step="payment"] .checkout-step-text').text('Pago');
 
     setPanelKicker('details', '1', 'Datos');
@@ -1039,9 +1041,9 @@ function applyCheckoutOverrides($) {
     setText('[data-checkout-panel="address"] .app-section-title', 'Dirección de entrega');
     setText('[data-checkout-panel="address"] .app-section-subtitle', 'Use la misma dirección para facturación si quiere mantener todo simple.');
 
-    setPanelKicker('payment', '3', 'Pago');
-    setText('[data-checkout-panel="payment"] .app-section-title', 'Confirmar y pagar');
-    setText('[data-checkout-panel="payment"] .app-section-subtitle', 'Revise el total y complete el pago.');
+    setPanelKicker('confirm', '3', 'Confirmar');
+    setText('[data-checkout-panel="confirm"] .app-section-title', 'Confirmar');
+    setText('[data-checkout-panel="confirm"] .app-section-subtitle', 'Revise el total y complete el pago.');
 
     $('#customer-type-select option[value="particular"]').text('Particular');
     $('#customer-type-select option[value="empresa"]').text('Empresa');

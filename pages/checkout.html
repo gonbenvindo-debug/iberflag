@@ -27,7 +27,7 @@
     <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
     <script src="/assets/js/core/analytics.js?v=20260410a"></script>
     <script src="/assets/js/core/logic.js?v=20260429q2"></script>
-    <link rel="stylesheet" href="/assets/css/style.css?v=20260518steps1">
+    <link rel="stylesheet" href="/assets/css/style.css?v=20260518flow4a">
 </head>
 
 <body class="app-page checkout-page bg-slate-50">
@@ -77,9 +77,14 @@
                     <span class="checkout-step-number">2</span>
                     <span class="checkout-step-text">Morada</span>
                 </button>
-                <span class="checkout-step-line" data-checkout-line="address-payment"></span>
-                <button type="button" class="checkout-step" data-checkout-step="payment">
+                <span class="checkout-step-line" data-checkout-line="address-confirm"></span>
+                <button type="button" class="checkout-step" data-checkout-step="confirm">
                     <span class="checkout-step-number">3</span>
+                    <span class="checkout-step-text">Confirmar</span>
+                </button>
+                <span class="checkout-step-line" data-checkout-line="confirm-payment"></span>
+                <button type="button" class="checkout-step" data-checkout-step="payment">
+                    <span class="checkout-step-number">4</span>
                     <span class="checkout-step-text">Pagamento</span>
                 </button>
             </div>
@@ -210,16 +215,16 @@
                                         <i data-lucide="arrow-left" class="w-4 h-4"></i>
                                         Voltar
                                     </button>
-                                    <button type="button" class="checkout-next-btn" data-checkout-next="payment">
+                                    <button type="button" class="checkout-next-btn" data-checkout-next="confirm">
                                         Rever e pagar
                                         <i data-lucide="arrow-right" class="w-4 h-4"></i>
                                     </button>
                                 </div>
                             </section>
 
-                            <section class="checkout-step-panel" data-checkout-panel="payment" hidden="">
+                            <section class="checkout-step-panel" data-checkout-panel="confirm" hidden="">
                                 <div class="checkout-panel-heading">
-                                    <h2 class="app-section-title">Confirmar e pagar</h2>
+                                    <h2 class="app-section-title">Confirmar</h2>
                                     <p class="app-section-subtitle">Reveja o total e conclua o pagamento.</p>
                                 </div>
 
@@ -348,7 +353,7 @@
 
     <script src="/assets/js/core/order-workflow.js"></script>
     <script src="/assets/js/pages/checkout-location-data.js?v=20260430locfix1"></script>
-    <script src="/assets/js/pages/checkout.js?v=20260518backfix1"></script>
+    <script src="/assets/js/pages/checkout.js?v=20260518flow4a"></script>
     <script>
         lucide.createIcons();
     </script>
