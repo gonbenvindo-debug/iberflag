@@ -2842,6 +2842,31 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     display: none !important;
 }
 
+.checkout-page[data-checkout-step="payment"] .checkout-main-column {
+    grid-column: 1 / -1;
+}
+
+.checkout-page[data-checkout-step="payment"] .checkout-main-card {
+    max-width: 56rem;
+    margin-inline: auto;
+}
+
+.checkout-page[data-checkout-step="payment"] .checkout-step-panel[data-checkout-panel="confirm"] {
+    padding: 0;
+}
+
+.checkout-page[data-checkout-step="payment"] .checkout-step-panel[data-checkout-panel="confirm"] > .checkout-embed-shell {
+    border-top: 0;
+    padding-top: 0;
+    margin-top: 0;
+}
+
+.checkout-page[data-checkout-step="payment"] .checkout-embed-actions,
+.checkout-page[data-checkout-step="payment"] .checkout-embed-container {
+    width: min(100%, 36rem);
+    margin-inline: auto;
+}
+
 
 .checkout-main-card .app-section-title,
 .checkout-surface-card .app-section-title {
@@ -3096,6 +3121,7 @@ body[data-analytics-event="view_product"] .product-related-card .flex {
     background: var(--primary);
     border: 1px solid rgba(15, 23, 42, 0.1);
     box-shadow: none;
+    height: 3.5rem;
     min-width: min(100%, 14rem);
     padding-left: 1.2rem;
     padding-right: 1.2rem;

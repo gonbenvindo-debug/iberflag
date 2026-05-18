@@ -1,4 +1,4 @@
-﻿// ===== CHECKOUT PAGE LOGIC =====
+// ===== CHECKOUT PAGE LOGIC =====
 
 const FREE_SHIPPING_THRESHOLD = 0;
 const SHIPPING_COST = 0;
@@ -426,10 +426,6 @@ function getCheckoutStepIndex(step) {
 
 function setCheckoutStep(step = 'details', { scroll = false } = {}) {
     const normalizedStep = CHECKOUT_STEP_ORDER.includes(step) ? step : 'details';
-    if (document.body?.classList.contains('checkout-payment-active') && normalizedStep !== 'payment') {
-        return;
-    }
-
     currentCheckoutStep = normalizedStep;
     const activeIndex = getCheckoutStepIndex(normalizedStep);
     const activePanelKey = normalizedStep === 'payment' ? 'confirm' : normalizedStep;
@@ -1901,7 +1897,7 @@ function setCheckoutInputsLocked(locked) {
     document.body?.classList.toggle('checkout-payment-active', locked);
 
     checkoutStepButtons.forEach((button) => {
-        button.disabled = locked && button.dataset.checkoutStep !== 'payment';
+        button.disabled = false;
     });
 
     if (checkoutForm) {
@@ -1990,13 +1986,17 @@ async function destroyEmbeddedCheckout({ clearPersistedSession = true } = {}) {
 }
 
 async function handleEmbeddedCheckoutBack() {
+    await handleEmbeddedCheckoutBackToStep('address');
+}
+
+async function handleEmbeddedCheckoutBackToStep(step = 'address') {
     if (checkoutEmbedBackBtn) {
         checkoutEmbedBackBtn.disabled = true;
     }
 
     clearCheckoutFeedback();
     await destroyEmbeddedCheckout();
-    setCheckoutStep('address', { scroll: true });
+    setCheckoutStep(step, { scroll: true });
 }
 
 function scrollToEmbeddedCheckout() {
@@ -2459,9 +2459,13 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 
     checkoutStepButtons.forEach((button) => {
-        button.addEventListener('click', () => {
+        button.addEventListener('click', async () => {
             const nextStep = button.dataset.checkoutStep;
             if (nextStep && canMoveToCheckoutStep(nextStep)) {
+                if (currentCheckoutStep === 'payment' && nextStep !== 'payment') {
+                    await handleEmbeddedCheckoutBackToStep(nextStep);
+                    return;
+                }
                 setCheckoutStep(nextStep, { scroll: true });
             }
         });
