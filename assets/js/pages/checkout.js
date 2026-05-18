@@ -1910,6 +1910,11 @@ function setCheckoutInputsLocked(locked) {
         placeOrderBtn.disabled = false;
     }
 
+    // Keep the embedded checkout back action available while the form stays locked.
+    if (checkoutEmbedBackBtn && locked) {
+        checkoutEmbedBackBtn.disabled = false;
+    }
+
     if (checkoutPaymentIntro) {
         checkoutPaymentIntro.classList.toggle('opacity-60', locked);
     }
