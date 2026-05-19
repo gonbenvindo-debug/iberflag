@@ -592,7 +592,10 @@ module.exports = async function stripeWebhookHandler(req, res) {
 
                     let confirmationEmailOrder = paidOrderWithFiscal;
 
-                    if (fiscalSnapshot.fiscal_decision_mode === 'auto_emit') {
+                    if (
+                        fiscalSnapshot.fiscal_decision_mode === 'auto_emit'
+                        || String(process.env.FACTURALUSA_FORCE_EMIT_ON_PAID || 'true').toLowerCase() !== 'false'
+                    ) {
                         let invoiceResult = null;
 
                         try {
