@@ -28,6 +28,10 @@
         .order-tracking-compact {
             font-size: 14px;
             overflow-x: hidden;
+            background:
+                radial-gradient(1200px 420px at 8% -10%, rgba(37, 99, 235, 0.08), transparent 60%),
+                radial-gradient(900px 320px at 92% 0%, rgba(16, 185, 129, 0.07), transparent 55%),
+                #f8fafc;
         }
 
         .order-tracking-compact nav .h-16 {
@@ -37,11 +41,13 @@
         .order-tracking-compact .admin-card {
             border-radius: 0.75rem;
             padding: 0.875rem;
-            box-shadow: none;
+            border: 1px solid #e2e8f0;
+            box-shadow: 0 1px 2px rgba(15, 23, 42, 0.05);
+            background: rgba(255, 255, 255, 0.96);
         }
 
         .order-tracking-compact .admin-card:hover {
-            box-shadow: none;
+            box-shadow: 0 8px 24px rgba(15, 23, 42, 0.06);
         }
 
         .order-tracking-compact .table-container {
@@ -330,6 +336,19 @@
             gap: 0.75rem;
         }
 
+        .order-tracking-topbar {
+            border-bottom: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.93);
+            backdrop-filter: saturate(140%) blur(4px);
+        }
+
+        .order-tracking-brand-wrap {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.65rem;
+            min-width: 0;
+        }
+
         .order-tracking-nav-actions {
             display: flex;
             align-items: center;
@@ -349,8 +368,17 @@
         }
 
         .order-tracking-brand-logo {
-            max-width: 8.5rem;
+            max-width: 9.4rem;
             height: auto;
+        }
+
+        .order-tracking-brand-subtitle {
+            font-size: 0.66rem;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            font-weight: 700;
+            color: #64748b;
+            white-space: nowrap;
         }
 
         .order-summary-side {
@@ -370,6 +398,26 @@
             white-space: normal;
             overflow-wrap: anywhere;
             word-break: break-word;
+        }
+
+        .order-tracking-footer {
+            border-top: 1px solid #e2e8f0;
+            background: rgba(255, 255, 255, 0.86);
+            margin-top: 1.5rem;
+        }
+
+        .order-tracking-footer-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            gap: 0.75rem;
+            align-items: center;
+        }
+
+        .order-tracking-footer-links {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.9rem;
+            justify-content: flex-end;
         }
 
         @media (max-width: 640px) {
@@ -422,6 +470,10 @@
                 max-width: 6rem;
             }
 
+            .order-tracking-brand-subtitle {
+                display: none;
+            }
+
             .order-overview-grid {
                 grid-template-columns: 1fr;
                 gap: 0.55rem;
@@ -467,6 +519,16 @@
 
             .order-summary-badges {
                 justify-content: flex-start;
+            }
+
+            .order-tracking-footer-grid {
+                grid-template-columns: 1fr;
+                gap: 0.55rem;
+            }
+
+            .order-tracking-footer-links {
+                justify-content: flex-start;
+                gap: 0.75rem;
             }
 
             .order-progress-card {
@@ -529,12 +591,13 @@
     </style>
 </head>
 
-<body class="app-page order-tracking-compact bg-slate-50 min-h-screen">
-    <nav class="bg-white shadow-sm">
+<body class="app-page order-tracking-compact bg-slate-50 min-h-screen flex flex-col">
+    <nav class="order-tracking-topbar shadow-sm">
         <div class="max-w-6xl mx-auto px-3 sm:px-5 lg:px-7">
             <div class="h-16 flex items-center justify-between order-tracking-nav-row">
-                <a href="/" aria-label="IberFlag">
-                    <img src="/assets/logos/logo-minimalista.svg" alt="IberFlag" class="brand-logo-compact order-tracking-brand-logo">
+                <a href="/" aria-label="IberFlag" class="order-tracking-brand-wrap">
+                    <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="brand-logo-compact order-tracking-brand-logo">
+                    <span class="order-tracking-brand-subtitle">Tracking da encomenda</span>
                 </a>
                 <div class="order-tracking-nav-actions">
                     <div data-language-switcher-slot="mobile"></div>
@@ -553,7 +616,7 @@
         </div>
     </nav>
 
-    <main class="max-w-4xl mx-auto px-3 sm:px-5 lg:px-6 py-3 md:py-4">
+    <main class="max-w-4xl mx-auto w-full px-3 sm:px-5 lg:px-6 py-3 md:py-4 flex-1">
         <div id="order-loading" class="admin-card p-6 text-center text-gray-500">
             <div class="spinner mx-auto mb-3"></div>
             A carregar encomenda...
@@ -633,7 +696,7 @@
                         </div>
                         <a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="hidden inline-flex items-center gap-1 text-xs font-semibold text-blue-700 hover:text-blue-800 mt-2">
                             <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                            Abrir fatura
+                            Abrir PDF da fatura
                         </a>
                     </div>
                 </div>
@@ -649,7 +712,7 @@
                     </button>
                     <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden">
                         <i data-lucide="file-text" class="w-4 h-4"></i>
-                        Fatura
+                        Abrir fatura
                     </a>
                     <a id="order-contact-support-btn" href="/contacto" class="order-plain-btn order-plain-btn-primary">
                         <i data-lucide="life-buoy" class="w-4 h-4"></i>
@@ -690,6 +753,20 @@
         </div>
     </main>
 
+    <footer class="order-tracking-footer py-6 md:py-7">
+        <div class="max-w-6xl mx-auto px-3 sm:px-5 lg:px-7 order-tracking-footer-grid">
+            <div class="flex items-center gap-3">
+                <img src="/assets/logos/logo-completo.svg" alt="IberFlag" class="h-6 w-auto">
+                <p class="text-xs text-slate-500">© 2026 IberFlag. Todos os direitos reservados.</p>
+            </div>
+            <div class="order-tracking-footer-links">
+                <a href="/termos" class="text-xs font-semibold text-slate-600 hover:text-slate-900">Termos</a>
+                <a href="/privacidade" class="text-xs font-semibold text-slate-600 hover:text-slate-900">Privacidade</a>
+                <a href="/contacto" class="text-xs font-semibold text-slate-600 hover:text-slate-900">Contacto</a>
+            </div>
+        </div>
+    </footer>
+
     <div id="item-preview-modal" class="modal-overlay hidden p-4">
         <div class="modal-content w-full max-w-2xl p-4 md:p-5">
             <div class="flex items-start justify-between gap-3">
@@ -713,7 +790,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260429q2"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408c"></script>
-    <script src="/assets/js/pages/encomenda.js?v=20260408e"></script>
+    <script src="/assets/js/pages/encomenda.js?v=20260519tracking1"></script>
     <script>lucide.createIcons();</script>
 
 </body></html>
