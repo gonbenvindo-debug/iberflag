@@ -17,42 +17,57 @@ const orderContactSupportBtn = document.getElementById('order-contact-support-bt
 let renderedItemPreviews = [];
 const ES_TEXT = {
     'Sem estado': 'Sin estado',
-    'Em PreparaÃ§Ã£o': 'En preparaciÃ³n',
-    'Em ProduÃ§Ã£o': 'En producciÃ³n',
+    'Em Preparacao': 'En preparacion',
+    'Em Producao': 'En produccion',
     'Expedido': 'Expedido',
     'Entregue': 'Entregado',
     'atualizado em': 'actualizado el',
+    'Criada em': 'Creada el',
     'Nada para copiar.': 'Nada que copiar.',
-    'NÃ£o foi possÃ­vel copiar automaticamente.': 'No fue posible copiar automÃ¡ticamente.',
-    'FaturaÃ§Ã£o': 'FacturaciÃ³n',
-    'Ainda nÃ£o disponÃ­vel': 'TodavÃ­a no disponible',
-    'DisponÃ­vel no email de confirmaÃ§Ã£o': 'Disponible en el email de confirmaciÃ³n',
-    'Em emissÃ£o': 'En emisiÃ³n',
-    'ApÃ³s pagamento': 'Tras el pago',
+    'Nao foi possivel copiar automaticamente.': 'No fue posible copiar automaticamente.',
+    'Faturacao': 'Facturacion',
+    'Ainda nao disponivel': 'Todavia no disponible',
+    'Disponivel no email de confirmacao': 'Disponible en el email de confirmacion',
+    'Em emissao': 'En emision',
+    'Apos pagamento': 'Tras el pago',
+    'A emitir automaticamente': 'Emision automatica en curso',
+    'Documento': 'Documento',
     'Qtd': 'Ud.',
     '/ un.': '/ ud.',
     'Sem opcoes registadas': 'Sin opciones registradas',
+    'opcoes adicionais': 'opciones adicionales',
     'Sem produtos associados a esta encomenda.': 'Sin productos asociados a este pedido.',
     'Sem notas adicionais.': 'Sin notas adicionales.',
-    'EmissÃ£o pendente. A nossa equipa estÃ¡ a validar.': 'EmisiÃ³n pendiente. Nuestro equipo lo estÃ¡ validando.',
-    'A aguardar emissÃ£o automÃ¡tica': 'Esperando la emisiÃ³n automÃ¡tica',
-    'DisponÃ­vel apÃ³s confirmaÃ§Ã£o do pagamento': 'Disponible tras la confirmaciÃ³n del pago',
-    'O pagamento ainda nÃ£o foi confirmado. Assim que entrar, a equipa pode avanÃ§ar para a validaÃ§Ã£o do pedido.': 'El pago aÃºn no ha sido confirmado. En cuanto entre, el equipo podrÃ¡ avanzar con la validaciÃ³n del pedido.',
-    'Pagamento confirmado. A encomenda jÃ¡ estÃ¡ em fila operacional e pode ser atualizada pela equipa em tempo real.': 'Pago confirmado. El pedido ya estÃ¡ en cola operativa y puede actualizarse por el equipo en tiempo real.',
-    'A fatura jÃ¡ foi emitida e pode ser aberta diretamente a partir desta pÃ¡gina.': 'La factura ya ha sido emitida y puede abrirse directamente desde esta pÃ¡gina.',
-    'A emissÃ£o fiscal estÃ¡ a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.': 'La emisiÃ³n fiscal se estÃ¡ tramitando automÃ¡ticamente. Si hubiera retraso, el equipo puede reemitirla manualmente desde el panel.',
-    'Estamos a validar ficheiros e a preparar a produÃ§Ã£o do teu material.': 'Estamos validando archivos y preparando la producciÃ³n de su material.',
-    'A encomenda jÃ¡ estÃ¡ em produÃ§Ã£o. O prÃ³ximo passo normal Ã© expediÃ§Ã£o.': 'El pedido ya estÃ¡ en producciÃ³n. El siguiente paso habitual es la expediciÃ³n.',
-    'A encomenda jÃ¡ saiu para entrega. Use o tracking': 'El pedido ya ha salido para la entrega. Use el seguimiento',
+    'Emissao pendente. A nossa equipa esta a validar.': 'Emision pendiente. Nuestro equipo la esta validando.',
+    'A aguardar emissao automatica': 'Esperando la emision automatica',
+    'Disponivel apos confirmacao do pagamento': 'Disponible tras la confirmacion del pago',
+    'O pagamento ainda nao foi confirmado. Assim que entrar, a equipa pode avancar para a validacao do pedido.': 'El pago aun no ha sido confirmado. En cuanto entre, el equipo podra avanzar con la validacion del pedido.',
+    'Pagamento confirmado. A encomenda ja esta em fila operacional e pode ser atualizada pela equipa em tempo real.': 'Pago confirmado. El pedido ya esta en cola operativa y puede actualizarse por el equipo en tiempo real.',
+    'A fatura ja foi emitida e pode ser aberta diretamente a partir desta pagina.': 'La factura ya ha sido emitida y puede abrirse directamente desde esta pagina.',
+    'A emissao fiscal esta a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.': 'La emision fiscal se esta tramitando automaticamente. Si hubiera retraso, el equipo puede reemitirla manualmente desde el panel.',
+    'Estamos a validar ficheiros e a preparar a producao do teu material.': 'Estamos validando archivos y preparando la produccion de su material.',
+    'A encomenda ja esta em producao. O proximo passo normal e expedicao.': 'El pedido ya esta en produccion. El siguiente paso habitual es la expedicion.',
+    'A encomenda ja saiu para entrega. Use o tracking': 'El pedido ya ha salido para entrega. Use el seguimiento',
     'para acompanhar o percurso.': 'para seguir el recorrido.',
-    'A encomenda jÃ¡ foi expedida. O tracking ficarÃ¡ visÃ­vel assim que estiver disponÃ­vel.': 'El pedido ya ha sido expedido. El seguimiento serÃ¡ visible en cuanto estÃ© disponible.',
-    'A encomenda aparece como entregue. Se precisar de apoio, use o botÃ£o de contacto e responda com o cÃ³digo IBF.': 'El pedido figura como entregado. Si necesita ayuda, use el botÃ³n de contacto y responda con el cÃ³digo IBF.',
+    'A encomenda ja foi expedida. O tracking ficara visivel assim que estiver disponivel.': 'El pedido ya ha sido expedido. El seguimiento sera visible en cuanto este disponible.',
+    'A encomenda aparece como entregue. Se precisar de apoio, use o botao de contacto e responda com o codigo IBF.': 'El pedido figura como entregado. Si necesita ayuda, use el boton de contacto y responda con el codigo IBF.',
     'Sem passos adicionais para mostrar neste momento.': 'No hay pasos adicionales que mostrar en este momento.',
-    'CÃ³digo da encomenda copiado.': 'CÃ³digo del pedido copiado.',
-    'CÃ³digo de tracking copiado.': 'CÃ³digo de seguimiento copiado.',
-    'Apoio Ã  encomenda': 'Ayuda con el pedido',
-    'NÃ£o foi possÃ­vel consultar o estado da encomenda neste momento.': 'No fue posible consultar el estado del pedido en este momento.',
-    'Ocorreu um problema tÃ©cnico ao consultar esta encomenda. Tente novamente dentro de momentos.': 'Se produjo un problema tÃ©cnico al consultar este pedido. IntÃ©ntelo de nuevo dentro de unos instantes.'
+    'Codigo da encomenda copiado.': 'Codigo del pedido copiado.',
+    'Codigo de tracking copiado.': 'Codigo de seguimiento copiado.',
+    'Apoio a encomenda': 'Ayuda con el pedido',
+    'Documento fiscal indisponivel.': 'Documento fiscal no disponible.',
+    'O PDF da fatura ainda esta a ser preparado.': 'El PDF de la factura aun se esta preparando.',
+    'Nao foi possivel consultar o estado da encomenda neste momento.': 'No fue posible consultar el estado del pedido en este momento.',
+    'Ocorreu um problema tecnico ao consultar esta encomenda. Tente novamente dentro de momentos.': 'Se produjo un problema tecnico al consultar este pedido. Intentelo de nuevo dentro de unos instantes.',
+    'Encomenda registada': 'Pedido registrado',
+    'Pagamento confirmado': 'Pago confirmado',
+    'Pagamento em processamento': 'Pago en procesamiento',
+    'A aguardar pagamento': 'Esperando pago',
+    'Pagamento falhou': 'El pago ha fallado',
+    'Sessao expirada': 'Sesion expirada',
+    'Pagamento online': 'Pago online',
+    'Abrir fatura': 'Abrir factura',
+    'PDF em emissao': 'PDF en emision'
 };
 
 function escapeHtml(value) {
@@ -92,8 +107,8 @@ function buildWorkflowLabelWithGradeHtml(statusValue) {
 
 function getOrderProgressSteps(workflowStatus, splitMeta) {
     const defaultSteps = [
-        { value: 'em_preparacao', label: i18nText('Em PreparaÃ§Ã£o') },
-        { value: 'em_producao', label: i18nText('Em ProduÃ§Ã£o') },
+        { value: 'em_preparacao', label: i18nText('Em Preparacao') },
+        { value: 'em_producao', label: i18nText('Em Producao') },
         { value: 'expedido', label: i18nText('Expedido') },
         { value: 'entregue', label: i18nText('Entregue') }
     ];
@@ -158,13 +173,18 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
             ? getWorkflowStatusLabel(normalizedStatus)
             : normalizedStatus || i18nText('Sem estado'));
         const updatedAt = order?.updated_at || order?.created_at;
-        summaryEl.textContent = `${currentLabel}${updatedAt ? ` Â· ${i18nText('atualizado em')} ${formatDateTime(updatedAt)}` : ''}`;
+        summaryEl.textContent = `${currentLabel}${updatedAt ? ` • ${i18nText('atualizado em')} ${formatDateTime(updatedAt)}` : ''}`;
     }
 }
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `${amount.toFixed(2)}â‚¬`;
+    return new Intl.NumberFormat(getCurrentLocaleTag(), {
+        style: 'currency',
+        currency: 'EUR',
+        minimumFractionDigits: 2,
+        maximumFractionDigits: 2
+    }).format(Number.isFinite(amount) ? amount : 0);
 }
 
 function formatDateTime(value) {
@@ -201,7 +221,7 @@ async function copyTextToClipboard(value, successMessage) {
         showToast(successMessage, 'success');
     } catch (error) {
         console.error('Falha ao copiar texto:', error);
-        showToast(i18nText('NÃ£o foi possÃ­vel copiar automaticamente.'), 'error');
+        showToast(i18nText('Nao foi possivel copiar automaticamente.'), 'error');
     }
 }
 
@@ -492,7 +512,7 @@ function buildOptionsSummary(options) {
         .map((option) => `${option.label}: ${option.value}`)
         .join(' | ');
 
-    return `${preview} | +${options.length - 2} opcao(oes)`;
+    return `${preview} | +${options.length - 2} ${i18nText('opcoes adicionais')}`;
 }
 
 function resolveOrderItemVisual(item, snapshot) {
@@ -509,14 +529,14 @@ function resolveOrderItemVisual(item, snapshot) {
     const explicitPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
-    // Product store image â€” last resort fallback only
+    // Product store image as a final fallback only.
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
     const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
     const hasDesign = Boolean(designSvg || explicitPreview);
 
-    // Priority: SVG design â†’ explicit preview â†’ product image fallback
+    // Priority: SVG design -> explicit preview -> product image fallback.
     return {
         designSvg,
         previewUrl: designDataUrl || explicitPreview || fallbackImage,
@@ -533,11 +553,11 @@ function renderOrderHeader(order, workflowStatus) {
         ? getFacturalusaStatus(order)
         : (order.facturalusa_document_number ? 'emitted' : (paymentStatus === 'paid' ? 'pending' : 'not_required'));
     const paymentLabelMap = {
-        paid: 'Pagamento confirmado',
-        processing: 'Pagamento em processamento',
-        pending: 'A aguardar pagamento',
-        failed: 'Pagamento falhou',
-        expired: 'Sessao expirada'
+        paid: i18nText('Pagamento confirmado'),
+        processing: i18nText('Pagamento em processamento'),
+        pending: i18nText('A aguardar pagamento'),
+        failed: i18nText('Pagamento falhou'),
+        expired: i18nText('Sessao expirada')
     };
     const paymentClassMap = {
         paid: 'bg-emerald-50 border-emerald-200 text-emerald-700',
@@ -555,7 +575,7 @@ function renderOrderHeader(order, workflowStatus) {
     };
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
-    document.getElementById('order-created-at').textContent = `Criada em ${formatDateTime(order.created_at)}`;
+    document.getElementById('order-created-at').textContent = `${i18nText('Criada em')} ${formatDateTime(order.created_at)}`;
     document.getElementById('order-total').textContent = formatCurrency(order.total);
     const statusBadgeEl = document.getElementById('order-status-badge');
     if (statusBadgeEl) {
@@ -564,13 +584,13 @@ function renderOrderHeader(order, workflowStatus) {
     }
     if (paymentBadge) {
         paymentBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${paymentClassMap[paymentStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
-        paymentBadge.textContent = paymentLabelMap[paymentStatus] || 'Pagamento online';
+        paymentBadge.textContent = paymentLabelMap[paymentStatus] || i18nText('Pagamento online');
     }
     if (facturalusaBadge) {
         facturalusaBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${facturalusaClassMap[facturalusaStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
         facturalusaBadge.textContent = typeof getFacturalusaStatusLabel === 'function'
             ? getFacturalusaStatusLabel(facturalusaStatus)
-            : 'FaturaÃ§Ã£o';
+            : i18nText('Faturacao');
     }
 }
 
@@ -593,7 +613,7 @@ function renderOrderSidebar(order, splitMeta) {
     const invoiceDocument = resolveInvoiceDocumentDetails(order, splitMeta);
 
     if (trackingCodeEl) {
-        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda nÃ£o disponÃ­vel');
+        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda nao disponivel');
     }
 
     if (trackingLinkEl) {
@@ -608,14 +628,14 @@ function renderOrderSidebar(order, splitMeta) {
     }
 
     if (shippingEl) {
-        shippingEl.textContent = order.morada_envio || i18nText('DisponÃ­vel no email de confirmaÃ§Ã£o');
+        shippingEl.textContent = order.morada_envio || i18nText('Disponivel no email de confirmacao');
     }
     if (notesEl) {
         notesEl.textContent = splitMeta.publicNotes || i18nText('Sem notas adicionais.');
     }
 
     if (nifEl) {
-        nifEl.textContent = order.clientes?.nif || i18nText('DisponÃ­vel no email de confirmaÃ§Ã£o');
+        nifEl.textContent = order.clientes?.nif || i18nText('Disponivel no email de confirmacao');
     }
     if (facturalusaStatusEl) {
         facturalusaStatusEl.textContent = typeof getFacturalusaStatusLabel === 'function'
@@ -625,12 +645,12 @@ function renderOrderSidebar(order, splitMeta) {
     if (facturalusaNumberEl) {
         const documentNumber = invoiceDocument.documentNumber;
         facturalusaNumberEl.textContent = documentNumber
-            ? `No. ${documentNumber}`
+            ? `${i18nText('Documento')} ${documentNumber}`
             : facturalusaStatus === 'blocked' || facturalusaStatus === 'error'
-                ? i18nText('Em emissÃ£o')
+                ? i18nText('Em emissao')
                 : facturalusaStatus === 'pending'
-                    ? i18nText('Em emissÃ£o')
-                    : i18nText('ApÃ³s pagamento');
+                    ? i18nText('A emitir automaticamente')
+                    : i18nText('Apos pagamento');
     }
     if (facturalusaLinkEl) {
         const url = invoiceDocument.invoiceUrl;
@@ -655,27 +675,27 @@ function buildOrderNextSteps(order, workflowStatus, splitMeta) {
     const steps = [];
 
     if (paymentStatus !== 'paid') {
-        steps.push(i18nText('O pagamento ainda nÃ£o foi confirmado. Assim que entrar, a equipa pode avanÃ§ar para a validaÃ§Ã£o do pedido.'));
+        steps.push(i18nText('O pagamento ainda nao foi confirmado. Assim que entrar, a equipa pode avancar para a validacao do pedido.'));
     } else {
-        steps.push(i18nText('Pagamento confirmado. A encomenda jÃ¡ estÃ¡ em fila operacional e pode ser atualizada pela equipa em tempo real.'));
+        steps.push(i18nText('Pagamento confirmado. A encomenda ja esta em fila operacional e pode ser atualizada pela equipa em tempo real.'));
     }
 
     if (fiscalStatus === 'emitted') {
-        steps.push(i18nText('A fatura jÃ¡ foi emitida e pode ser aberta diretamente a partir desta pÃ¡gina.'));
+        steps.push(i18nText('A fatura ja foi emitida e pode ser aberta diretamente a partir desta pagina.'));
     } else if (paymentStatus === 'paid') {
-        steps.push(i18nText('A emissÃ£o fiscal estÃ¡ a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.'));
+        steps.push(i18nText('A emissao fiscal esta a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.'));
     }
 
     if (workflowStatus === 'em_preparacao') {
-        steps.push(i18nText('Estamos a validar ficheiros e a preparar a produÃ§Ã£o do teu material.'));
+        steps.push(i18nText('Estamos a validar ficheiros e a preparar a producao do teu material.'));
     } else if (workflowStatus === 'em_producao') {
-        steps.push(i18nText('A encomenda jÃ¡ estÃ¡ em produÃ§Ã£o. O prÃ³ximo passo normal Ã© expediÃ§Ã£o.'));
+        steps.push(i18nText('A encomenda ja esta em producao. O proximo passo normal e expedicao.'));
     } else if (workflowStatus === 'expedido') {
         steps.push(tracking.trackingCode
-            ? `${i18nText('A encomenda jÃ¡ saiu para entrega. Use o tracking')} ${tracking.trackingCode} ${i18nText('para acompanhar o percurso.')}`
-            : i18nText('A encomenda jÃ¡ foi expedida. O tracking ficarÃ¡ visÃ­vel assim que estiver disponÃ­vel.'));
+            ? `${i18nText('A encomenda ja saiu para entrega. Use o tracking')} ${tracking.trackingCode} ${i18nText('para acompanhar o percurso.')}`
+            : i18nText('A encomenda ja foi expedida. O tracking ficara visivel assim que estiver disponivel.'));
     } else if (workflowStatus === 'entregue') {
-        steps.push(i18nText('A encomenda aparece como entregue. Se precisar de apoio, use o botÃ£o de contacto e responda com o cÃ³digo IBF.'));
+        steps.push(i18nText('A encomenda aparece como entregue. Se precisar de apoio, use o botao de contacto e responda com o codigo IBF.'));
     }
 
     return steps.slice(0, 4);
@@ -693,26 +713,27 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
     if (nextStepsEl) {
         const steps = buildOrderNextSteps(order, workflowStatus, splitMeta);
         nextStepsEl.innerHTML = steps.length > 0
-            ? steps.map((step) => `
-                <div class="flex items-start gap-2">
-                    <span class="inline-flex items-center justify-center w-5 h-5 rounded-full bg-blue-50 text-blue-700 text-[10px] font-bold flex-shrink-0 mt-0.5">+</span>
+            ? steps.map((step, index) => `
+                <article class="tracking-step-item">
+                    <span class="tracking-step-marker">${escapeHtml(index + 1)}</span>
                     <p>${escapeHtml(step)}</p>
-                </div>
+                </article>
             `).join('')
-            : `<p>${escapeHtml(i18nText('Sem passos adicionais para mostrar neste momento.'))}</p>`;
+            : `<article class="tracking-step-item"><span class="tracking-step-marker">•</span><p>${escapeHtml(i18nText('Sem passos adicionais para mostrar neste momento.'))}</p></article>`;
     }
 
     if (orderCopyCodeBtn) {
-        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, i18nText('CÃ³digo da encomenda copiado.'));
+        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, i18nText('Codigo da encomenda copiado.'));
         orderCopyCodeBtn.disabled = !orderCode;
     }
 
     if (orderCopyTrackingBtn) {
         const hasTracking = Boolean(tracking.trackingCode);
-        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, i18nText('CÃ³digo de tracking copiado.'));
+        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, i18nText('Codigo de tracking copiado.'));
         orderCopyTrackingBtn.disabled = !hasTracking;
         orderCopyTrackingBtn.classList.toggle('opacity-50', !hasTracking);
         orderCopyTrackingBtn.classList.toggle('cursor-not-allowed', !hasTracking);
+        orderCopyTrackingBtn.setAttribute('aria-disabled', String(!hasTracking));
     }
 
     if (orderOpenDocumentBtn) {
@@ -722,28 +743,34 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
             orderOpenDocumentBtn.classList.remove('opacity-50', 'cursor-not-allowed');
             orderOpenDocumentBtn.removeAttribute('aria-disabled');
             orderOpenDocumentBtn.removeAttribute('title');
+            orderOpenDocumentBtn.innerHTML = `
+                <i data-lucide="file-text" class="w-4 h-4"></i>
+                ${escapeHtml(i18nText('Abrir fatura'))}
+            `;
         } else {
-            const supportParams = new URLSearchParams();
-            if (orderCode) supportParams.set('codigo', orderCode);
-            if (invoiceDocument.documentNumber) supportParams.set('fatura', invoiceDocument.documentNumber);
-            supportParams.set('assunto', 'Apoio a encomenda');
-            orderOpenDocumentBtn.href = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildContactPath === 'function'
-                ? SiteRoutes.buildContactPath(Object.fromEntries(supportParams.entries()))
-                : `/contacto?${supportParams.toString()}`;
             orderOpenDocumentBtn.classList.remove('hidden');
             orderOpenDocumentBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            orderOpenDocumentBtn.href = '#';
             orderOpenDocumentBtn.setAttribute('aria-disabled', 'true');
-            orderOpenDocumentBtn.setAttribute('title', 'Documento ainda nao disponivel');
+            orderOpenDocumentBtn.setAttribute('title', i18nText('Documento fiscal indisponivel.'));
+            orderOpenDocumentBtn.innerHTML = `
+                <i data-lucide="clock-3" class="w-4 h-4"></i>
+                ${escapeHtml(i18nText('PDF em emissao'))}
+            `;
         }
     }
 
     if (orderContactSupportBtn) {
         const params = new URLSearchParams();
         if (orderCode) params.set('codigo', orderCode);
-        params.set('assunto', i18nText('Apoio Ã  encomenda'));
+        params.set('assunto', i18nText('Apoio a encomenda'));
         orderContactSupportBtn.href = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildContactPath === 'function'
             ? SiteRoutes.buildContactPath(Object.fromEntries(params.entries()))
             : `/contacto?${params.toString()}`;
+    }
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
     }
 }
 
@@ -766,7 +793,7 @@ function renderStatusTable(order, workflowStatus, splitMeta) {
             {
                 status: workflowStatus,
                 at: order.created_at,
-                note: 'Encomenda registada'
+                note: i18nText('Encomenda registada')
             }
         ];
 
@@ -833,7 +860,7 @@ function renderOrderItems(order, items, splitMeta) {
                     <h3 class="order-item-title">${escapeHtml(productName)}</h3>
                     <div class="order-item-meta">
                         <span>${escapeHtml(i18nText('Qtd'))} ${quantity}</span>
-                        <span>${formatCurrency(unitPrice)} ${escapeHtml(i18nText('/ un.'))}</span>
+                        <span>${escapeHtml(i18nText('/ un.'))} ${formatCurrency(unitPrice)}</span>
                     </div>
                     <p class="order-item-options">${escapeHtml(optionsSummary)}</p>
                 </div>
@@ -880,8 +907,8 @@ function openItemPreview(index) {
     itemPreviewImage.alt = data.productName || 'Preview';
     itemPreviewImage.classList.toggle('design-preview-surface', Boolean(data.hasDesign));
     if (itemPreviewOptions) {
-        itemPreviewOptions.innerHTML = '';
-        itemPreviewOptions.classList.add('hidden');
+        renderItemPreviewOptions(data.options);
+        itemPreviewOptions.classList.remove('hidden');
     }
 
     if (itemPreviewDownload) {
@@ -966,10 +993,10 @@ function getOrderLoadErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
 
     if (rawMessage.includes('session-status') || rawMessage.includes('checkout/session-status')) {
-        return i18nText('NÃ£o foi possÃ­vel consultar o estado da encomenda neste momento.');
+        return i18nText('Nao foi possivel consultar o estado da encomenda neste momento.');
     }
 
-    return i18nText('Ocorreu um problema tÃ©cnico ao consultar esta encomenda. Tente novamente dentro de momentos.');
+    return i18nText('Ocorreu um problema tecnico ao consultar esta encomenda. Tente novamente dentro de momentos.');
 }
 
 async function initOrderPage() {
@@ -1066,7 +1093,7 @@ document.addEventListener('DOMContentLoaded', () => {
         orderOpenDocumentBtn.addEventListener('click', (event) => {
             if (orderOpenDocumentBtn.getAttribute('aria-disabled') === 'true') {
                 event.preventDefault();
-                showToast('A emissao fiscal esta a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.', 'warning');
+                showToast(i18nText('O PDF da fatura ainda esta a ser preparado.'), 'warning');
             }
         });
     }
