@@ -137,7 +137,7 @@
 
         .tracking-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.45fr) minmax(300px, 0.82fr);
+            grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.78fr);
             gap: 1.25rem;
             margin-top: 1.25rem;
             align-items: start;
@@ -184,13 +184,6 @@
             line-height: 1.25;
             font-weight: 700;
             color: #0f172a;
-        }
-
-        .tracking-panel-copy {
-            font-size: 0.88rem;
-            line-height: 1.55;
-            color: #475569;
-            max-width: 24rem;
         }
 
         .order-progressbar {
@@ -359,8 +352,18 @@
             color: #1d4ed8;
         }
 
+        .tracking-side-section-title {
+            margin-bottom: 0.75rem;
+            font-size: 0.72rem;
+            font-weight: 700;
+            letter-spacing: 0.08em;
+            text-transform: uppercase;
+            color: #64748b;
+        }
+
         .tracking-actions-grid {
             display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 0.75rem;
         }
 
@@ -709,9 +712,8 @@
                         <div class="tracking-panel-header">
                             <div>
                                 <p class="tracking-panel-kicker">Progresso</p>
-                                <h2 class="tracking-panel-title">Estado atual da encomenda</h2>
+                                <h2 class="tracking-panel-title">Tracking da encomenda</h2>
                             </div>
-                            <p class="tracking-panel-copy">Acompanhe a fase operacional e veja quando a entrega e a faturacao ficam prontas.</p>
                         </div>
                         <div class="order-progress-scroll">
                             <div id="order-progressbar" class="order-progressbar" role="progressbar" aria-label="Progresso da encomenda"></div>
@@ -721,20 +723,9 @@
                     <section class="tracking-panel">
                         <div class="tracking-panel-header">
                             <div>
-                                <p class="tracking-panel-kicker">Proximos passos</p>
-                                <h2 class="tracking-panel-title">O que acontece agora</h2>
-                            </div>
-                        </div>
-                        <div id="order-next-steps" class="tracking-steps-list"></div>
-                    </section>
-
-                    <section class="tracking-panel">
-                        <div class="tracking-panel-header">
-                            <div>
-                                <p class="tracking-panel-kicker">Produtos</p>
+                                <p class="tracking-panel-kicker">Resumo</p>
                                 <h2 class="tracking-panel-title">Resumo da encomenda</h2>
                             </div>
-                            <p class="tracking-panel-copy">Revise as pecas associadas e abra a preview sempre que precisar.</p>
                         </div>
                         <div id="order-items" class="order-items-stack"></div>
                     </section>
@@ -766,42 +757,12 @@
                     <section class="tracking-panel">
                         <div class="tracking-panel-header">
                             <div>
-                                <p class="tracking-panel-kicker">Acoes rapidas</p>
-                                <h2 class="tracking-panel-title">Use o que precisa sem sair da pagina</h2>
-                            </div>
-                        </div>
-                        <div class="tracking-actions-grid">
-                            <button id="order-copy-code-btn" type="button" class="order-plain-btn">
-                                <i data-lucide="copy" class="w-4 h-4"></i>
-                                Copiar codigo
-                            </button>
-                            <button id="order-copy-tracking-btn" type="button" class="order-plain-btn">
-                                <i data-lucide="package-search" class="w-4 h-4"></i>
-                                Copiar tracking
-                            </button>
-                            <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden">
-                                <i data-lucide="file-text" class="w-4 h-4"></i>
-                                Abrir fatura
-                            </a>
-                            <a id="order-contact-support-btn" href="/contacto" class="order-plain-btn order-plain-btn-primary">
-                                <i data-lucide="life-buoy" class="w-4 h-4"></i>
-                                Pedir apoio
-                            </a>
-                            <a href="/encomendas" class="order-plain-btn">
-                                <i data-lucide="search" class="w-4 h-4"></i>
-                                Nova pesquisa
-                            </a>
-                        </div>
-                    </section>
-
-                    <section class="tracking-panel">
-                        <div class="tracking-panel-header">
-                            <div>
-                                <p class="tracking-panel-kicker">Entrega e tracking</p>
-                                <h2 class="tracking-panel-title">Onde esta a encomenda</h2>
+                                <p class="tracking-panel-kicker">Dados</p>
+                                <h2 class="tracking-panel-title">Dados da encomenda</h2>
                             </div>
                         </div>
                         <div class="tracking-info-grid">
+                            <div class="tracking-side-section-title">Tracking</div>
                             <div class="order-info-block">
                                 <div class="order-info-label">Entrega</div>
                                 <div id="order-shipping" class="order-info-value">-</div>
@@ -814,17 +775,7 @@
                                     Abrir tracking
                                 </a>
                             </div>
-                        </div>
-                    </section>
-
-                    <section class="tracking-panel">
-                        <div class="tracking-panel-header">
-                            <div>
-                                <p class="tracking-panel-kicker">Faturacao</p>
-                                <h2 class="tracking-panel-title">Documento e dados fiscais</h2>
-                            </div>
-                        </div>
-                        <div class="tracking-info-grid">
+                            <div class="tracking-side-section-title">Faturacao</div>
                             <div class="order-info-block">
                                 <div class="order-info-label">Estado da fatura</div>
                                 <div class="order-info-value">
@@ -843,6 +794,29 @@
                             <div class="order-info-block">
                                 <div class="order-info-label">Notas da encomenda</div>
                                 <div id="order-notes" class="order-info-value">Sem notas adicionais.</div>
+                            </div>
+                            <div class="tracking-side-section-title">Acoes</div>
+                            <div class="tracking-actions-grid">
+                                <button id="order-copy-code-btn" type="button" class="order-plain-btn">
+                                    <i data-lucide="copy" class="w-4 h-4"></i>
+                                    Copiar codigo
+                                </button>
+                                <button id="order-copy-tracking-btn" type="button" class="order-plain-btn">
+                                    <i data-lucide="package-search" class="w-4 h-4"></i>
+                                    Copiar tracking
+                                </button>
+                                <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden">
+                                    <i data-lucide="file-text" class="w-4 h-4"></i>
+                                    Abrir fatura
+                                </a>
+                                <a id="order-contact-support-btn" href="/contacto" class="order-plain-btn order-plain-btn-primary">
+                                    <i data-lucide="life-buoy" class="w-4 h-4"></i>
+                                    Pedir apoio
+                                </a>
+                                <a href="/encomendas" class="order-plain-btn">
+                                    <i data-lucide="search" class="w-4 h-4"></i>
+                                    Nova pesquisa
+                                </a>
                             </div>
                         </div>
                     </section>
