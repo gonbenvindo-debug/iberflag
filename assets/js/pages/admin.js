@@ -2319,8 +2319,7 @@ async function viewOrder(id) {
         const trackingUrlInput = document.getElementById('order-tracking-url');
         const notesInput = document.getElementById('order-public-notes');
         const statusNoteInput = document.getElementById('order-status-note');
-        const emitFacturalusaBtn = document.getElementById('emit-facturalusa-btn');
-const facturalusaStatus = resolveFiscalDisplayStatus(order);
+        const facturalusaStatus = resolveFiscalDisplayStatus(order);
         const vatValidationStatus = order.vat_validation_status || fiscalSnapshot.vat_validation_status || vatValidation.status || 'not_required';
         const vatValidationNumber = order.vat_validation_number || fiscalSnapshot.vat_validation_number || vatValidation.normalizedTaxId || '';
         const vatRegimeCode = order.vat_regime_code || fiscalSnapshot.vat_regime_code || '';
@@ -2483,14 +2482,6 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
         if (trackingUrlInput) trackingUrlInput.value = tracking.trackingUrl || '';
         if (notesInput) notesInput.value = currentOrderPublicNotes || '';
         if (statusNoteInput) statusNoteInput.value = '';
-
-        if (emitFacturalusaBtn) {
-const canEmit = resolveFacturalusaStatus(order) !== 'emitted'
-    && String(split.meta?.paymentStatus || '').toLowerCase() === 'paid';
-            emitFacturalusaBtn.disabled = !canEmit;
-            emitFacturalusaBtn.classList.toggle('opacity-60', !canEmit);
-            emitFacturalusaBtn.classList.toggle('cursor-not-allowed', !canEmit);
-        }
 
         const items = Array.isArray(itemsData) ? itemsData : [];
         const snapshots = Array.isArray(split.meta?.itemSnapshots) ? split.meta.itemSnapshots : [];
@@ -2963,34 +2954,6 @@ if (saveOrderBtn) {
     });
 }
 
-document.getElementById('emit-facturalusa-btn')?.addEventListener('click', async () => {
-    if (!currentOrderId || !currentOrderData) {
-        showToast('Nenhuma encomenda selecionada', 'warning');
-        return;
-    }
-
-    const button = document.getElementById('emit-facturalusa-btn');
-    try {
-        if (button) {
-            button.disabled = true;
-            button.classList.add('opacity-60', 'cursor-not-allowed');
-        }
-
-        const result = await reemitFacturalusaDocument(currentOrderId);
-        showToast(result?.message || 'Documento fiscal reenviado com sucess?!', 'success');
-        await loadOrders();
-        await viewOrder(currentOrderId);
-    } catch (error) {
-        console.error('Erro ao reenviar documento Facturalusa:', error);
-        showToast(error?.message || 'Não foi possível reenviar o documento fiscal.', 'error');
-    } finally {
-        if (button) {
-            button.disabled = false;
-            button.classList.remove('opacity-60', 'cursor-not-allowed');
-        }
-    }
-});
-
 adminModals.forEach((modal) => {
     modal.addEventListener('mousedown', (event) => {
         if (event.target === modal) {
@@ -3168,27 +3131,6 @@ async function viewClient(id) {
         }
         showToast('Erro ao carregar cliente', 'error');
     }
-}
-
-async function reemitFacturalusaDocument(orderId) {
-    const accessToken = await getAdminAccessToken();
-    const response = await fetch('/api/admin/orders/reemit-facturalusa', {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-            'Authorization': `Bearer ${accessToken}`
-        },
-        body: JSON.stringify({ orderId })
-    });
-
-    const payload = await response.json().catch(() => ({}));
-    if (!response.ok) {
-        const message = payload?.message || payload?.error || 'Não foi possível reenviar o documento.';
-        throw new Error(message);
-    }
-
-    return payload;
 }
 
 async function sendOrderStatusUpdateEmail(orderId, status) {
