@@ -7,6 +7,13 @@ function isAdminAuthError(error) {
     return ['ADMIN_AUTH_REQUIRED', 'ADMIN_UNAUTHORIZED', 'ADMIN_FORBIDDEN', 'ADMIN_AUTH_NOT_CONFIGURED'].includes(error?.code);
 }
 
+function resolveStatusTemplateKey(status) {
+    const normalized = String(status || '').trim();
+    if (normalized === 'expedido') return 'order_status_expedido';
+    if (normalized === 'entregue') return 'order_status_entregue';
+    return '';
+}
+
 async function findOrderById(supabase, orderId) {
     const { data, error } = await supabase
         .from('encomendas')
@@ -48,13 +55,25 @@ module.exports = async function adminSendOrderUpdateEmailHandler(req, res) {
             return;
         }
 
+        const resolvedStatus = status || String(order?.status || '').trim();
+        const templateKey = resolveStatusTemplateKey(resolvedStatus);
+        if (!templateKey) {
+            sendJson(res, 200, {
+                success: true,
+                sent: false,
+                skipped: true,
+                reason: 'STATUS_EMAIL_NOT_ENABLED'
+            });
+            return;
+        }
+
         const result = await sendOrderEmailNotification({
             supabase,
             req,
             order,
-            templateKey: 'order_status_update',
+            templateKey,
             statusOverride: status,
-            dedupeKey: `order_status_update:${order.id}:${status || order.status || 'unknown'}`
+            dedupeKey: `${templateKey}:${order.id}`
         });
 
         sendJson(res, 200, {

@@ -745,8 +745,9 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 supabase,
                                 req,
                                 order: confirmationEmailOrder,
-                                templateKey: 'invoice_document_ready',
-                                dedupeKey: `invoice_document_ready:${invoiceResult.order.id}`
+                                templateKey: 'invoice_issued_with_attachment',
+                                dedupeKey: `invoice_issued_with_attachment:${invoiceResult.order.id}`,
+                                requireInvoiceAttachment: true
                             });
 
                             if (!invoiceEmailResult.sent && invoiceEmailResult.reason !== 'DUPLICATE_EMAIL') {
@@ -766,8 +767,8 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         supabase,
                         req,
                         order: confirmationEmailOrder,
-                        templateKey: 'order_confirmation',
-                        dedupeKey: `order_confirmation:${paidOrder.id}`
+                        templateKey: 'order_confirmation_preparacao',
+                        dedupeKey: `order_confirmation_preparacao:${paidOrder.id}`
                     });
 
                     if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {

@@ -216,8 +216,9 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                     invoice_state: 'emitted',
                     facturalusa_payload: sale || {}
                 },
-                templateKey: 'invoice_document_ready',
-                dedupeKey: `invoice_document_ready:${order.id}`
+                templateKey: 'invoice_issued_with_attachment',
+                dedupeKey: `invoice_issued_with_attachment:${order.id}`,
+                requireInvoiceAttachment: true
             });
 
             if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
