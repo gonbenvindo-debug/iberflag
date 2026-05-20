@@ -355,6 +355,9 @@ let orderFilters = {
     workflowStatus: 'all',
     fiscalStatus: 'all'
 };
+const ORDER_DELETE_CONFIRM_WINDOW_MS = 6000;
+const orderDeleteArmed = new Set();
+const orderDeleteConfirmTimers = new Map();
 const adminDesignCache = new Map();
 let emailTemplatesCache = [];
 let currentEmailTemplate = null;
@@ -2121,6 +2124,67 @@ function getFilteredOperationalOrders() {
     });
 }
 
+function clearOrderDeleteArm(orderId, options = {}) {
+    const normalizedOrderId = String(orderId || '');
+    const { rerender = true } = options;
+    if (!normalizedOrderId) return;
+
+    const existingTimer = orderDeleteConfirmTimers.get(normalizedOrderId);
+    if (existingTimer) {
+        clearTimeout(existingTimer);
+        orderDeleteConfirmTimers.delete(normalizedOrderId);
+    }
+
+    orderDeleteArmed.delete(normalizedOrderId);
+    if (rerender) {
+        applyOrderFilters();
+    }
+}
+
+function armOrderDelete(orderId) {
+    const normalizedOrderId = String(orderId || '');
+    if (!normalizedOrderId) return;
+
+    clearOrderDeleteArm(normalizedOrderId, { rerender: false });
+    orderDeleteArmed.add(normalizedOrderId);
+
+    const timeoutId = window.setTimeout(() => {
+        clearOrderDeleteArm(normalizedOrderId);
+    }, ORDER_DELETE_CONFIRM_WINDOW_MS);
+
+    orderDeleteConfirmTimers.set(normalizedOrderId, timeoutId);
+    applyOrderFilters();
+}
+
+async function deleteOrderById(orderId) {
+    const normalizedOrderId = String(orderId || '');
+    if (!normalizedOrderId) {
+        throw new Error('ID da encomenda inválido.');
+    }
+
+    if (!await ensureAdminWriteSession()) {
+        throw new Error(adminWriteSessionLastError || 'Sessão admin obrigatória.');
+    }
+
+    const { error: deleteItemsError } = await supabaseClient
+        .from('itens_encomenda')
+        .delete()
+        .eq('encomenda_id', normalizedOrderId);
+
+    if (deleteItemsError) {
+        throw deleteItemsError;
+    }
+
+    const { error: deleteOrderError } = await supabaseClient
+        .from('encomendas')
+        .delete()
+        .eq('id', normalizedOrderId);
+
+    if (deleteOrderError) {
+        throw deleteOrderError;
+    }
+}
+
 function renderOrdersMetrics(orders) {
     const list = Array.isArray(orders) ? orders : [];
     const activeCount = list.filter((order) => {
@@ -2173,9 +2237,19 @@ function renderOrdersTable(orders) {
                     </span>
                 </td>
                 <td>
-                    <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
-                        <i data-lucide="eye" class="w-4 h-4"></i>
-                    </button>
+                    <div class="flex items-center gap-2">
+                        <button type="button" class="order-view-btn text-blue-600 hover:text-blue-800" data-order-id="${escapeHtml(String(o.id))}" title="Ver detalhe da encomenda">
+                            <i data-lucide="eye" class="w-4 h-4"></i>
+                        </button>
+                        <button
+                            type="button"
+                            class="order-delete-btn ${orderDeleteArmed.has(String(o.id)) ? 'text-red-700' : 'text-red-500'} hover:text-red-800"
+                            data-order-id="${escapeHtml(String(o.id))}"
+                            title="${orderDeleteArmed.has(String(o.id)) ? 'Clique novamente para apagar encomenda' : 'Apagar encomenda'}"
+                            aria-label="${orderDeleteArmed.has(String(o.id)) ? 'Confirmar apagar encomenda' : 'Armar apagar encomenda'}">
+                            <i data-lucide="${orderDeleteArmed.has(String(o.id)) ? 'x' : 'trash-2'}" class="w-4 h-4"></i>
+                        </button>
+                    </div>
                 </td>
             </tr>
         `).join('');
@@ -2226,6 +2300,12 @@ async function loadOrders() {
         if (error) throw error;
 
         operationalOrdersList = filterOperationalOrders(data);
+        const validOrderIds = new Set(operationalOrdersList.map((order) => String(order.id)));
+        Array.from(orderDeleteArmed).forEach((armedOrderId) => {
+            if (!validOrderIds.has(armedOrderId)) {
+                clearOrderDeleteArm(armedOrderId, { rerender: false });
+            }
+        });
         renderOrdersMetrics(operationalOrdersList);
         applyOrderFilters();
 
@@ -2811,6 +2891,43 @@ document.addEventListener('click', (e) => {
 });
 
 document.addEventListener('click', (event) => {
+    const deleteBtn = event.target.closest('.order-delete-btn');
+    if (deleteBtn) {
+        const orderId = deleteBtn.getAttribute('data-order-id');
+        if (!orderId) {
+            showToast('ID da encomenda invalido', 'warning');
+            return;
+        }
+
+        if (orderDeleteArmed.has(orderId)) {
+            deleteBtn.disabled = true;
+            deleteBtn.classList.add('opacity-60', 'cursor-not-allowed');
+            (async () => {
+                try {
+                    await deleteOrderById(orderId);
+                    clearOrderDeleteArm(orderId, { rerender: false });
+                    if (currentOrderId && String(currentOrderId) === String(orderId)) {
+                        currentOrderId = null;
+                        currentOrderData = null;
+                        currentOrderMeta = null;
+                        currentOrderPublicNotes = '';
+                        closeModal(orderModal);
+                    }
+                    showToast('Encomenda apagada com sucesso!', 'success');
+                    await loadOrders();
+                } catch (error) {
+                    console.error('Erro ao apagar encomenda:', error);
+                    showToast(error?.message || 'Erro ao apagar encomenda', 'error');
+                    clearOrderDeleteArm(orderId);
+                }
+            })();
+        } else {
+            armOrderDelete(orderId);
+            showToast('Clique novamente para confirmar apagar a encomenda', 'warning');
+        }
+        return;
+    }
+
     const viewBtn = event.target.closest('.order-view-btn');
     if (!viewBtn) return;
 
