@@ -11,8 +11,6 @@ const itemPreviewOptions = document.getElementById('item-preview-options');
 const itemPreviewDownload = document.getElementById('item-preview-download');
 const orderCopyCodeBtn = document.getElementById('order-copy-code-btn');
 const orderCopyTrackingBtn = document.getElementById('order-copy-tracking-btn');
-const orderOpenDocumentBtn = document.getElementById('order-open-document-btn');
-const orderContactSupportBtn = document.getElementById('order-contact-support-btn');
 
 let renderedItemPreviews = [];
 const ES_TEXT = {
@@ -119,6 +117,29 @@ function getOrderProgressSteps(workflowStatus, splitMeta) {
     return sourceSteps.filter((step) => ['em_preparacao', 'em_producao', 'expedido', 'entregue'].includes(step.value));
 }
 
+function getOrderStepDateMap(splitMeta) {
+    const history = Array.isArray(splitMeta?.meta?.statusHistory) ? splitMeta.meta.statusHistory : [];
+    const map = new Map();
+
+    history.forEach((entry) => {
+        const normalizedStatus = typeof normalizeWorkflowStatusValue === 'function'
+            ? normalizeWorkflowStatusValue(entry?.status)
+            : String(entry?.status || '').trim().toLowerCase();
+        const rawDate = entry?.at || entry?.date || entry?.created_at || null;
+
+        if (!normalizedStatus || !rawDate) {
+            return;
+        }
+
+        const existing = map.get(normalizedStatus);
+        if (!existing || new Date(rawDate) > new Date(existing)) {
+            map.set(normalizedStatus, rawDate);
+        }
+    });
+
+    return map;
+}
+
 function renderOrderProgress(order, workflowStatus, splitMeta) {
     const progressEl = document.getElementById('order-progressbar');
     const summaryEl = document.getElementById('order-progress-summary');
@@ -131,6 +152,7 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
     }
 
     const steps = getOrderProgressSteps(normalizedStatus, splitMeta);
+    const stepDateMap = getOrderStepDateMap(splitMeta);
     let currentIndex = steps.findIndex((step) => step.value === normalizedStatus);
     if (currentIndex === -1) {
         currentIndex = Math.max(0, steps.findIndex((step) => step.value === 'em_preparacao'));
@@ -156,12 +178,15 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
                 ? 'current'
                 : 'upcoming';
         const label = step.label || (typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(step.value) : step.value);
+        const stepDate = stepDateMap.get(step.value);
+        const stepDateLabel = stepDate ? formatDateTime(stepDate) : '-';
 
         return `
             <div class="order-progress-step is-${status}" data-progress-step="${escapeHtml(step.value)}">
                 <div class="order-progress-marker" aria-hidden="true">${escapeHtml(index + 1)}</div>
                 <div class="order-progress-copy">
                     <span class="order-progress-label">${escapeHtml(label)}</span>
+                    <span class="order-progress-date">${escapeHtml(stepDateLabel)}</span>
                 </div>
             </div>
         `;
@@ -546,33 +571,6 @@ function resolveOrderItemVisual(item, snapshot) {
 
 function renderOrderHeader(order, workflowStatus) {
     const statusLabel = typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(workflowStatus) : workflowStatus;
-    const paymentStatus = String(order.payment_status || '').toLowerCase();
-    const paymentBadge = document.getElementById('order-payment-badge');
-    const facturalusaBadge = document.getElementById('order-facturalusa-badge');
-    const facturalusaStatus = typeof getFacturalusaStatus === 'function'
-        ? getFacturalusaStatus(order)
-        : (order.facturalusa_document_number ? 'emitted' : (paymentStatus === 'paid' ? 'pending' : 'not_required'));
-    const paymentLabelMap = {
-        paid: i18nText('Pagamento confirmado'),
-        processing: i18nText('Pagamento em processamento'),
-        pending: i18nText('A aguardar pagamento'),
-        failed: i18nText('Pagamento falhou'),
-        expired: i18nText('Sessao expirada')
-    };
-    const paymentClassMap = {
-        paid: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-        processing: 'bg-amber-50 border-amber-200 text-amber-700',
-        pending: 'bg-slate-100 border-slate-200 text-slate-700',
-        failed: 'bg-red-50 border-red-200 text-red-700',
-        expired: 'bg-red-50 border-red-200 text-red-700'
-    };
-    const facturalusaClassMap = {
-        emitted: 'bg-emerald-50 border-emerald-200 text-emerald-700',
-        pending: 'bg-amber-50 border-amber-200 text-amber-700',
-        blocked: 'bg-red-50 border-red-200 text-red-700',
-        error: 'bg-red-50 border-red-200 text-red-700',
-        not_required: 'bg-slate-100 border-slate-200 text-slate-700'
-    };
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `${i18nText('Criada em')} ${formatDateTime(order.created_at)}`;
@@ -581,86 +579,6 @@ function renderOrderHeader(order, workflowStatus) {
     if (statusBadgeEl) {
         statusBadgeEl.className = 'inline-flex items-center gap-2 mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700';
         statusBadgeEl.innerHTML = buildWorkflowLabelWithGradeHtml(workflowStatus || statusLabel);
-    }
-    if (paymentBadge) {
-        paymentBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${paymentClassMap[paymentStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
-        paymentBadge.textContent = paymentLabelMap[paymentStatus] || i18nText('Pagamento online');
-    }
-    if (facturalusaBadge) {
-        facturalusaBadge.className = `inline-block mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${facturalusaClassMap[facturalusaStatus] || 'bg-gray-100 border-gray-200 text-gray-700'}`;
-        facturalusaBadge.textContent = typeof getFacturalusaStatusLabel === 'function'
-            ? getFacturalusaStatusLabel(facturalusaStatus)
-            : i18nText('Faturacao');
-    }
-}
-
-function renderOrderSidebar(order, splitMeta) {
-    const tracking = typeof getTrackingDetails === 'function'
-        ? getTrackingDetails(order)
-        : { trackingCode: '', trackingUrl: '' };
-
-    const trackingCodeEl = document.getElementById('order-tracking-code');
-    const trackingLinkEl = document.getElementById('order-tracking-link');
-    const shippingEl = document.getElementById('order-shipping');
-    const notesEl = document.getElementById('order-notes');
-    const nifEl = document.getElementById('order-nif');
-    const facturalusaStatusEl = document.getElementById('order-facturalusa-status');
-    const facturalusaNumberEl = document.getElementById('order-facturalusa-number');
-    const facturalusaLinkEl = document.getElementById('order-facturalusa-link');
-    const facturalusaStatus = typeof getFacturalusaStatus === 'function'
-        ? getFacturalusaStatus(order)
-        : ((order.facturalusa_document_number || splitMeta.meta.facturalusaDocumentNumber) ? 'emitted' : ((order.payment_status || splitMeta.meta.paymentStatus) === 'paid' ? 'pending' : 'not_required'));
-    const invoiceDocument = resolveInvoiceDocumentDetails(order, splitMeta);
-
-    if (trackingCodeEl) {
-        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda nao disponivel');
-    }
-
-    if (trackingLinkEl) {
-        const normalizedTrackingUrl = normalizeExternalUrl(tracking.trackingUrl);
-        if (normalizedTrackingUrl) {
-            trackingLinkEl.href = normalizedTrackingUrl;
-            trackingLinkEl.classList.remove('hidden');
-        } else {
-            trackingLinkEl.classList.add('hidden');
-            trackingLinkEl.removeAttribute('href');
-        }
-    }
-
-    if (shippingEl) {
-        shippingEl.textContent = order.morada_envio || i18nText('Disponivel no email de confirmacao');
-    }
-    if (notesEl) {
-        notesEl.textContent = splitMeta.publicNotes || i18nText('Sem notas adicionais.');
-    }
-
-    if (nifEl) {
-        nifEl.textContent = order.clientes?.nif || i18nText('Disponivel no email de confirmacao');
-    }
-    if (facturalusaStatusEl) {
-        facturalusaStatusEl.textContent = typeof getFacturalusaStatusLabel === 'function'
-            ? getFacturalusaStatusLabel(facturalusaStatus)
-            : facturalusaStatus;
-    }
-    if (facturalusaNumberEl) {
-        const documentNumber = invoiceDocument.documentNumber;
-        facturalusaNumberEl.textContent = documentNumber
-            ? `${i18nText('Documento')} ${documentNumber}`
-            : facturalusaStatus === 'blocked' || facturalusaStatus === 'error'
-                ? i18nText('Em emissao')
-                : facturalusaStatus === 'pending'
-                    ? i18nText('A emitir automaticamente')
-                    : i18nText('Apos pagamento');
-    }
-    if (facturalusaLinkEl) {
-        const url = invoiceDocument.invoiceUrl;
-        if (url) {
-            facturalusaLinkEl.href = url;
-            facturalusaLinkEl.classList.remove('hidden');
-        } else {
-            facturalusaLinkEl.classList.add('hidden');
-            facturalusaLinkEl.removeAttribute('href');
-        }
     }
 }
 
@@ -702,24 +620,13 @@ function buildOrderNextSteps(order, workflowStatus, splitMeta) {
 }
 
 function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
-    const nextStepsEl = document.getElementById('order-next-steps');
     const tracking = typeof getTrackingDetails === 'function'
         ? getTrackingDetails(order)
         : { trackingCode: '', trackingUrl: '' };
     const orderCode = String(order?.numero_encomenda || '').trim();
-    const invoiceDocument = resolveInvoiceDocumentDetails(order, splitMeta);
-    const invoiceUrl = invoiceDocument.invoiceUrl;
-
-    if (nextStepsEl) {
-        const steps = buildOrderNextSteps(order, workflowStatus, splitMeta);
-        nextStepsEl.innerHTML = steps.length > 0
-            ? steps.map((step, index) => `
-                <article class="tracking-step-item">
-                    <span class="tracking-step-marker">${escapeHtml(index + 1)}</span>
-                    <p>${escapeHtml(step)}</p>
-                </article>
-            `).join('')
-            : `<article class="tracking-step-item"><span class="tracking-step-marker">•</span><p>${escapeHtml(i18nText('Sem passos adicionais para mostrar neste momento.'))}</p></article>`;
+    const trackingCodeEl = document.getElementById('order-tracking-code-inline');
+    if (trackingCodeEl) {
+        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda nao disponivel');
     }
 
     if (orderCopyCodeBtn) {
@@ -736,39 +643,6 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
         orderCopyTrackingBtn.setAttribute('aria-disabled', String(!hasTracking));
     }
 
-    if (orderOpenDocumentBtn) {
-        if (invoiceUrl) {
-            orderOpenDocumentBtn.href = invoiceUrl;
-            orderOpenDocumentBtn.classList.remove('hidden');
-            orderOpenDocumentBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            orderOpenDocumentBtn.removeAttribute('aria-disabled');
-            orderOpenDocumentBtn.removeAttribute('title');
-            orderOpenDocumentBtn.innerHTML = `
-                <i data-lucide="file-text" class="w-4 h-4"></i>
-                ${escapeHtml(i18nText('Abrir fatura'))}
-            `;
-        } else {
-            orderOpenDocumentBtn.classList.remove('hidden');
-            orderOpenDocumentBtn.classList.add('opacity-50', 'cursor-not-allowed');
-            orderOpenDocumentBtn.href = '#';
-            orderOpenDocumentBtn.setAttribute('aria-disabled', 'true');
-            orderOpenDocumentBtn.setAttribute('title', i18nText('Documento fiscal indisponivel.'));
-            orderOpenDocumentBtn.innerHTML = `
-                <i data-lucide="clock-3" class="w-4 h-4"></i>
-                ${escapeHtml(i18nText('PDF em emissao'))}
-            `;
-        }
-    }
-
-    if (orderContactSupportBtn) {
-        const params = new URLSearchParams();
-        if (orderCode) params.set('codigo', orderCode);
-        params.set('assunto', i18nText('Apoio a encomenda'));
-        orderContactSupportBtn.href = typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.buildContactPath === 'function'
-            ? SiteRoutes.buildContactPath(Object.fromEntries(params.entries()))
-            : `/contacto?${params.toString()}`;
-    }
-
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();
     }
@@ -776,6 +650,9 @@ function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
 
 function renderStatusTable(order, workflowStatus, splitMeta) {
     const statusTableBody = document.getElementById('order-status-table-body');
+    if (!statusTableBody) {
+        return;
+    }
     const history = Array.isArray(splitMeta?.meta?.statusHistory)
         ? splitMeta.meta.statusHistory
         : [];
@@ -838,44 +715,53 @@ function renderOrderItems(order, items, splitMeta) {
 
     const rowsHtml = listSource.map((item, index) => {
         const snapshot = resolveOrderItemSnapshot(splitMeta.meta, item, index);
-        const visuals = resolveOrderItemVisual(item, snapshot);
         const productName = item?.produtos?.nome || snapshot?.nome || `Produto #${item.produto_id || index + 1}`;
         const quantity = Number(item.quantidade || snapshot?.quantidade || 1);
         const unitPrice = Number(item.preco_unitario || snapshot?.precoUnitario || 0);
         const lineSubtotal = Number(item.subtotal || (quantity * unitPrice));
-        const previewUrl = visuals.previewUrl || '/favicon.svg';
-        const itemOptions = extractOrderItemOptions(item, snapshot);
-        const optionsSummary = buildOptionsSummary(itemOptions);
-        renderedItemPreviews.push({
-            productName,
-            previewUrl,
-            options: itemOptions,
-            hasDesign: visuals.hasDesign
-        });
-
         return `
-            <article class="order-item-card">
-                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="order-item-thumb ${visuals.hasDesign ? 'design-preview-surface order-item-thumb--design' : ''}">
-                <div class="order-item-copy">
-                    <h3 class="order-item-title">${escapeHtml(productName)}</h3>
-                    <div class="order-item-meta">
-                        <span>${escapeHtml(i18nText('Qtd'))} ${quantity}</span>
-                        <span>${escapeHtml(i18nText('/ un.'))} ${formatCurrency(unitPrice)}</span>
-                    </div>
-                    <p class="order-item-options">${escapeHtml(optionsSummary)}</p>
-                </div>
-                <div class="order-item-side">
-                    <div class="order-item-total">${formatCurrency(lineSubtotal)}</div>
-                    <button type="button" data-preview-index="${index}" class="order-plain-btn">
-                        <i data-lucide="eye" class="w-3.5 h-3.5"></i>
-                        Ver
-                    </button>
-                </div>
-            </article>
+            <tr>
+                <td class="order-summary-product">${escapeHtml(productName)}</td>
+                <td class="order-summary-qty">${escapeHtml(quantity)}</td>
+                <td class="order-summary-unit">${escapeHtml(formatCurrency(unitPrice))}</td>
+                <td class="order-summary-line">${escapeHtml(formatCurrency(lineSubtotal))}</td>
+            </tr>
         `;
     }).join('');
 
-    orderItemsEl.innerHTML = rowsHtml;
+    const listTotal = listSource.reduce((sum, item) => {
+        const quantity = Number(item.quantidade || 1);
+        const unitPrice = Number(item.preco_unitario || 0);
+        const lineSubtotal = Number(item.subtotal || (quantity * unitPrice));
+        return sum + (Number.isFinite(lineSubtotal) ? lineSubtotal : 0);
+    }, 0);
+    const finalTotal = Number.isFinite(listTotal)
+        ? listTotal
+        : Number(order?.total || 0);
+
+    orderItemsEl.innerHTML = `
+        <div class="order-summary-table-wrap">
+            <table class="order-summary-table">
+                <thead>
+                    <tr>
+                        <th>Produto</th>
+                        <th>Qtd</th>
+                        <th>Unitario</th>
+                        <th>Subtotal</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    ${rowsHtml}
+                </tbody>
+                <tfoot>
+                    <tr>
+                        <td colspan="3">Total</td>
+                        <td>${escapeHtml(formatCurrency(finalTotal))}</td>
+                    </tr>
+                </tfoot>
+            </table>
+        </div>
+    `;
 }
 
 function renderItemPreviewOptions(options) {
@@ -1036,9 +922,7 @@ async function initOrderPage() {
 
         renderOrderHeader(result.order, workflowStatus);
         renderOrderProgress(result.order, workflowStatus, splitMeta);
-        renderOrderSidebar(result.order, splitMeta);
         renderOrderOperationalPanels(result.order, workflowStatus, splitMeta);
-        renderStatusTable(result.order, workflowStatus, splitMeta);
         renderOrderItems(result.order, result.items, splitMeta);
 
         orderLoading.classList.add('hidden');
@@ -1088,15 +972,6 @@ document.addEventListener('DOMContentLoaded', () => {
             closeItemPreview();
         }
     });
-
-    if (orderOpenDocumentBtn) {
-        orderOpenDocumentBtn.addEventListener('click', (event) => {
-            if (orderOpenDocumentBtn.getAttribute('aria-disabled') === 'true') {
-                event.preventDefault();
-                showToast(i18nText('O PDF da fatura ainda esta a ser preparado.'), 'warning');
-            }
-        });
-    }
 
     initOrderPage();
 });

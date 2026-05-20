@@ -137,21 +137,15 @@
 
         .tracking-layout {
             display: grid;
-            grid-template-columns: minmax(0, 1.7fr) minmax(280px, 0.78fr);
+            grid-template-columns: 1fr;
             gap: 1.25rem;
             margin-top: 1.25rem;
             align-items: start;
         }
 
-        .tracking-main-stack,
-        .tracking-side-stack {
+        .tracking-main-stack {
             display: grid;
             gap: 1.25rem;
-        }
-
-        .tracking-side-stack {
-            position: sticky;
-            top: 5.25rem;
         }
 
         .tracking-panel {
@@ -267,97 +261,11 @@
             color: #1e293b;
         }
 
-        .tracking-steps-list {
-            display: grid;
-            gap: 0.85rem;
-        }
-
-        .tracking-step-item {
-            display: grid;
-            grid-template-columns: 2.25rem minmax(0, 1fr);
-            gap: 0.85rem;
-            align-items: start;
-            padding: 0.9rem 0.95rem;
-            border-radius: 0.95rem;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-        }
-
-        .tracking-step-marker {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            width: 2.25rem;
-            height: 2.25rem;
-            border-radius: 9999px;
-            border: 1px solid #dbeafe;
-            background: #f8fbff;
-            color: #2563eb;
-            font-size: 0.8rem;
-            font-weight: 800;
-        }
-
-        .tracking-step-item p {
-            color: #334155;
-            font-size: 0.92rem;
-            line-height: 1.6;
-        }
-
-        .tracking-info-grid {
-            display: grid;
-            gap: 0.85rem;
-        }
-
-        .order-info-block {
-            border-radius: 0.95rem;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            padding: 0.95rem;
-        }
-
-        .order-info-label {
-            margin-bottom: 0.45rem;
-            font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
-            color: #64748b;
-        }
-
-        .order-info-value {
-            color: #0f172a;
-            font-size: 0.94rem;
-            line-height: 1.65;
-            word-break: break-word;
-        }
-
-        .tracking-value-strong {
+        .order-progress-date {
             display: block;
-            font-size: 1.05rem;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .tracking-link-inline {
-            display: inline-flex;
-            align-items: center;
-            gap: 0.45rem;
-            margin-top: 0.7rem;
-            font-size: 0.82rem;
-            font-weight: 700;
-            color: #2563eb;
-        }
-
-        .tracking-link-inline:hover {
-            color: #1d4ed8;
-        }
-
-        .tracking-side-section-title {
-            margin-bottom: 0.75rem;
+            margin-top: 0.35rem;
             font-size: 0.72rem;
-            font-weight: 700;
-            letter-spacing: 0.08em;
-            text-transform: uppercase;
+            line-height: 1.4;
             color: #64748b;
         }
 
@@ -365,6 +273,57 @@
             display: grid;
             grid-template-columns: repeat(2, minmax(0, 1fr));
             gap: 0.75rem;
+        }
+
+        .tracking-code-inline {
+            margin: 0.25rem 0 0.9rem;
+            color: #334155;
+            font-size: 0.88rem;
+        }
+
+        .order-summary-table-wrap {
+            overflow-x: auto;
+        }
+
+        .order-summary-table {
+            width: 100%;
+            min-width: 34rem;
+            border-collapse: collapse;
+        }
+
+        .order-summary-table th {
+            font-size: 0.74rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: #64748b;
+            text-align: left;
+            padding: 0.7rem 0.5rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+
+        .order-summary-table td {
+            padding: 0.85rem 0.5rem;
+            border-bottom: 1px solid #f1f5f9;
+            color: #0f172a;
+            font-size: 0.9rem;
+        }
+
+        .order-summary-table .order-summary-product {
+            font-weight: 600;
+            min-width: 16rem;
+        }
+
+        .order-summary-table .order-summary-qty,
+        .order-summary-table .order-summary-unit,
+        .order-summary-table .order-summary-line {
+            white-space: nowrap;
+        }
+
+        .order-summary-table tfoot td {
+            border-bottom: 0;
+            border-top: 1px solid #e2e8f0;
+            font-weight: 700;
+            padding-top: 0.9rem;
         }
 
         .order-plain-btn {
@@ -400,113 +359,6 @@
             border-color: #1d4ed8;
         }
 
-        .order-items-stack {
-            display: grid;
-            gap: 1rem;
-        }
-
-        .order-item-card {
-            display: grid;
-            grid-template-columns: 6rem minmax(0, 1fr) auto;
-            gap: 1rem;
-            align-items: start;
-            border-radius: 1rem;
-            border: 1px solid #e2e8f0;
-            background: #ffffff;
-            padding: 1rem;
-        }
-
-        .order-item-thumb {
-            width: 6rem;
-            height: 6rem;
-            object-fit: cover;
-            border-radius: 0.9rem;
-            border: 1px solid #dbe3ef;
-            background: #ffffff;
-        }
-
-        .order-item-thumb--design,
-        #item-preview-image.design-preview-surface {
-            object-fit: contain;
-            background: #ffffff;
-        }
-
-        .order-item-title {
-            font-size: 1.02rem;
-            line-height: 1.25;
-            font-weight: 700;
-            color: #0f172a;
-        }
-
-        .order-item-meta {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 0.55rem 0.9rem;
-            margin-top: 0.45rem;
-            color: #64748b;
-            font-size: 0.84rem;
-        }
-
-        .order-item-options {
-            margin-top: 0.6rem;
-            color: #334155;
-            font-size: 0.86rem;
-            line-height: 1.6;
-        }
-
-        .order-item-side {
-            display: grid;
-            gap: 0.75rem;
-            justify-items: end;
-            align-content: start;
-        }
-
-        .order-item-total {
-            font-size: 1.05rem;
-            line-height: 1;
-            font-weight: 800;
-            color: #0f172a;
-            white-space: nowrap;
-        }
-
-        .order-history-disclosure summary {
-            list-style: none;
-            cursor: pointer;
-            font-size: 0.96rem;
-            font-weight: 800;
-            color: #0f172a;
-        }
-
-        .order-history-disclosure summary::-webkit-details-marker {
-            display: none;
-        }
-
-        .order-history-disclosure-body {
-            margin-top: 1rem;
-            overflow-x: auto;
-        }
-
-        .order-history-disclosure-body table {
-            width: 100%;
-            min-width: 34rem;
-        }
-
-        .order-history-disclosure-body th {
-            font-size: 0.76rem;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
-            color: #64748b;
-            padding: 0.8rem 0.9rem;
-            text-align: left;
-            border-bottom: 1px solid #e2e8f0;
-        }
-
-        .order-history-disclosure-body td {
-            padding: 0.85rem 0.9rem;
-            border-bottom: 1px solid #f1f5f9;
-            vertical-align: top;
-        }
-
         #order-loading,
         #order-not-found,
         #order-error {
@@ -515,10 +367,7 @@
 
         #order-not-found h2,
         #order-error h2,
-        #order-number,
-        #order-tracking-code,
-        #order-facturalusa-number,
-        #order-nif {
+        #order-number {
             overflow-wrap: anywhere;
             word-break: break-word;
         }
@@ -530,16 +379,6 @@
         #item-preview-image {
             max-height: 72vh;
             object-fit: contain;
-        }
-
-        @media (max-width: 1100px) {
-            .tracking-layout {
-                grid-template-columns: 1fr;
-            }
-
-            .tracking-side-stack {
-                position: static;
-            }
         }
 
         @media (max-width: 767px) {
@@ -582,23 +421,6 @@
                 width: 3.2rem;
                 height: 3.2rem;
                 font-size: 0.92rem;
-            }
-
-            .order-item-card {
-                grid-template-columns: 4.6rem minmax(0, 1fr);
-                gap: 0.85rem;
-            }
-
-            .order-item-thumb {
-                width: 4.6rem;
-                height: 4.6rem;
-            }
-
-            .order-item-side {
-                grid-column: 2;
-                grid-auto-flow: column;
-                justify-content: space-between;
-                align-items: center;
             }
 
             .tracking-actions-grid {
@@ -692,8 +514,6 @@
                         <p id="order-created-at" class="tracking-hero-meta">--</p>
                         <div class="tracking-hero-badges">
                             <span id="order-status-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/12 border border-white/15 text-white">--</span>
-                            <span id="order-payment-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/12 border border-white/15 text-white">Pagamento --</span>
-                            <span id="order-facturalusa-badge" class="inline-flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/12 border border-white/15 text-white">Faturacao --</span>
                         </div>
                     </div>
                     <div>
@@ -729,98 +549,26 @@
                         </div>
                         <div id="order-items" class="order-items-stack"></div>
                     </section>
-
-                    <section class="tracking-panel">
-                        <details class="order-history-disclosure">
-                            <summary>Historico operacional</summary>
-                            <div class="order-history-disclosure-body table-container">
-                                <table>
-                                    <thead>
-                                        <tr>
-                                            <th>Estado</th>
-                                            <th>Data</th>
-                                            <th>Nota</th>
-                                        </tr>
-                                    </thead>
-                                    <tbody id="order-status-table-body">
-                                        <tr>
-                                            <td colspan="3" class="text-sm text-gray-400">Sem atualizacoes.</td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </div>
-                        </details>
-                    </section>
-                </div>
-
-                <aside class="tracking-side-stack">
                     <section class="tracking-panel">
                         <div class="tracking-panel-header">
                             <div>
-                                <p class="tracking-panel-kicker">Dados</p>
-                                <h2 class="tracking-panel-title">Dados da encomenda</h2>
+                                <p class="tracking-panel-kicker">Acoes</p>
+                                <h2 class="tracking-panel-title">Acoes rapidas</h2>
                             </div>
                         </div>
-                        <div class="tracking-info-grid">
-                            <div class="tracking-side-section-title">Tracking</div>
-                            <div class="order-info-block">
-                                <div class="order-info-label">Entrega</div>
-                                <div id="order-shipping" class="order-info-value">-</div>
-                            </div>
-                            <div class="order-info-block">
-                                <div class="order-info-label">Tracking</div>
-                                <div id="order-tracking-code" class="order-info-value tracking-value-strong">Ainda nao disponivel</div>
-                                <a id="order-tracking-link" href="#" target="_blank" rel="noreferrer" class="tracking-link-inline hidden">
-                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                                    Abrir tracking
-                                </a>
-                            </div>
-                            <div class="tracking-side-section-title">Faturacao</div>
-                            <div class="order-info-block">
-                                <div class="order-info-label">Estado da fatura</div>
-                                <div class="order-info-value">
-                                    <strong id="order-facturalusa-status" class="tracking-value-strong">-</strong>
-                                    <div id="order-facturalusa-number" class="mt-2 text-sm text-slate-600">-</div>
-                                </div>
-                                <a id="order-facturalusa-link" href="#" target="_blank" rel="noreferrer" class="tracking-link-inline hidden">
-                                    <i data-lucide="external-link" class="w-3.5 h-3.5"></i>
-                                    Abrir PDF da fatura
-                                </a>
-                            </div>
-                            <div class="order-info-block">
-                                <div class="order-info-label">NIF usado</div>
-                                <div id="order-nif" class="order-info-value">-</div>
-                            </div>
-                            <div class="order-info-block">
-                                <div class="order-info-label">Notas da encomenda</div>
-                                <div id="order-notes" class="order-info-value">Sem notas adicionais.</div>
-                            </div>
-                            <div class="tracking-side-section-title">Acoes</div>
-                            <div class="tracking-actions-grid">
-                                <button id="order-copy-code-btn" type="button" class="order-plain-btn">
-                                    <i data-lucide="copy" class="w-4 h-4"></i>
-                                    Copiar codigo
-                                </button>
-                                <button id="order-copy-tracking-btn" type="button" class="order-plain-btn">
-                                    <i data-lucide="package-search" class="w-4 h-4"></i>
-                                    Copiar tracking
-                                </button>
-                                <a id="order-open-document-btn" href="#" target="_blank" rel="noreferrer" class="order-plain-btn hidden">
-                                    <i data-lucide="file-text" class="w-4 h-4"></i>
-                                    Abrir fatura
-                                </a>
-                                <a id="order-contact-support-btn" href="/contacto" class="order-plain-btn order-plain-btn-primary">
-                                    <i data-lucide="life-buoy" class="w-4 h-4"></i>
-                                    Pedir apoio
-                                </a>
-                                <a href="/encomendas" class="order-plain-btn">
-                                    <i data-lucide="search" class="w-4 h-4"></i>
-                                    Nova pesquisa
-                                </a>
-                            </div>
+                        <p class="tracking-code-inline">Tracking: <strong id="order-tracking-code-inline">-</strong></p>
+                        <div class="tracking-actions-grid">
+                            <button id="order-copy-code-btn" type="button" class="order-plain-btn">
+                                <i data-lucide="copy" class="w-4 h-4"></i>
+                                Copiar codigo
+                            </button>
+                            <button id="order-copy-tracking-btn" type="button" class="order-plain-btn">
+                                <i data-lucide="package-search" class="w-4 h-4"></i>
+                                Copiar tracking
+                            </button>
                         </div>
                     </section>
-                </aside>
+                </div>
             </div>
         </div>
     </main>
@@ -896,7 +644,7 @@
  <script src="/assets/js/core/cart-assets.js?v=20260401a"></script>
  <script src="/assets/js/core/logic.js?v=20260429q2"></script>
     <script src="/assets/js/core/order-workflow.js?v=20260408c"></script>
-    <script src="/assets/js/pages/encomenda.js?v=20260519tracking2"></script>
+    <script src="/assets/js/pages/encomenda.js?v=20260520tracking-minimal1"></script>
     <script>lucide.createIcons();</script>
 
 </body></html>
