@@ -543,6 +543,31 @@ function renderDashboardSimpleList(containerId, items, renderItem, emptyMessage)
     container.innerHTML = items.map(renderItem).join('');
 }
 
+function renderDashboardMailHealth(mailHealth) {
+    const container = document.getElementById('dashboard-mail-health');
+    if (!container) return;
+
+    const activeProvider = String(mailHealth?.activeProvider || 'none');
+    const fromEmail = String(mailHealth?.fromEmail || '').trim() || 'nao configurado';
+    const replyTo = String(mailHealth?.replyTo || '').trim() || 'nao configurado';
+    const configured = activeProvider !== 'none';
+    const toneClass = configured
+        ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
+        : 'border-amber-200 bg-amber-50 text-amber-800';
+    const missing = [
+        ...(Array.isArray(mailHealth?.resendMissing) ? mailHealth.resendMissing : []),
+        ...(Array.isArray(mailHealth?.smtpMissing) ? mailHealth.smtpMissing : [])
+    ];
+
+    container.className = `mb-3 rounded-lg border px-3 py-2 text-xs ${toneClass}`;
+    container.innerHTML = `
+        <p><strong>Provider:</strong> ${escapeHtml(activeProvider)}</p>
+        <p class="mt-1"><strong>From:</strong> ${escapeHtml(fromEmail)}</p>
+        <p class="mt-1"><strong>Reply-To:</strong> ${escapeHtml(replyTo)}</p>
+        ${!configured && missing.length ? `<p class="mt-1"><strong>Em falta:</strong> ${escapeHtml(missing.join(', '))}</p>` : ''}
+    `;
+}
+
 async function loadOperationsDashboard() {
     try {
         const payload = await fetchAdminJson('/api/admin/dashboard/operations');
@@ -552,6 +577,7 @@ async function loadOperationsDashboard() {
         setDashboardMetricValue('ops-metric-failed-emails', metrics.failedEmails || 0);
         setDashboardMetricValue('ops-metric-incomplete-products', metrics.incompleteProducts || 0);
         setDashboardMetricValue('ops-metric-sla-breaches', metrics.slaBreaches || 0);
+        renderDashboardMailHealth(payload?.mailHealth || {});
 
         renderDashboardSimpleList(
             'dashboard-review-queue',
@@ -616,6 +642,7 @@ async function loadOperationsDashboard() {
         setDashboardMetricValue('ops-metric-failed-emails', 0);
         setDashboardMetricValue('ops-metric-incomplete-products', 0);
         setDashboardMetricValue('ops-metric-sla-breaches', 0);
+        renderDashboardMailHealth({});
         renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revisão.');
         renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos têm custo, preço e SLA base.');
         renderDashboardSimpleList('dashboard-email-failures', [], () => '', 'Sem falhas recentes de email.');
@@ -1837,6 +1864,23 @@ function formatVatValidationStatusLabel(value) {
 }
 
 function resolveFiscalDisplayStatus(order) {
+    const split = typeof splitOrderNotesAndMeta === 'function'
+        ? splitOrderNotesAndMeta(order?.notas || '')
+        : { meta: {} };
+    const documentNumber = String(
+        order?.facturalusa_document_number
+        || split?.meta?.facturalusaDocumentNumber
+        || ''
+    ).trim();
+    const documentUrl = String(
+        order?.facturalusa_document_url
+        || split?.meta?.facturalusaDocumentUrl
+        || ''
+    ).trim();
+    if (documentNumber || documentUrl) {
+        return 'emitted';
+    }
+
     const invoiceState = String(order?.invoice_state || order?.fiscal_snapshot?.invoice_state || '').trim();
     if (invoiceState === 'pending_manual_review') {
         return 'pending_manual_review';
@@ -2322,6 +2366,7 @@ async function viewOrder(id) {
         }
 
         let itemsData = [];
+        let latestInvoiceEmailLog = null;
         const { data: fetchedItems, error: itemsError } = await supabaseClient
             .from('itens_encomenda')
             .select('*, produtos(*)')
@@ -2332,6 +2377,27 @@ async function viewOrder(id) {
             console.warn('Erro ao carregar itens da encomenda:', itemsError.message);
         } else {
             itemsData = Array.isArray(fetchedItems) ? fetchedItems : [];
+        }
+
+        try {
+            const { data: emailLogRows, error: emailLogError } = await supabaseClient
+                .from('email_delivery_logs')
+                .select('status,error_message,created_at,template_key')
+                .eq('order_id', orderId)
+                .eq('template_key', 'invoice_issued_with_attachment')
+                .order('created_at', { ascending: false })
+                .limit(1);
+
+            if (emailLogError) {
+                const rawEmailError = String(emailLogError?.message || emailLogError?.details || '').toLowerCase();
+                if (emailLogError?.code !== 'PGRST205' && !rawEmailError.includes('email_delivery_logs')) {
+                    console.warn('Erro ao carregar estado de email da fatura:', emailLogError.message || emailLogError);
+                }
+            } else if (Array.isArray(emailLogRows) && emailLogRows.length > 0) {
+                latestInvoiceEmailLog = emailLogRows[0];
+            }
+        } catch (emailLogUnexpectedError) {
+            console.warn('Falha inesperada ao obter estado de email da fatura:', emailLogUnexpectedError);
         }
 
         const split = typeof splitOrderNotesAndMeta === 'function'
@@ -2379,6 +2445,16 @@ async function viewOrder(id) {
         const divergenceMessage = fiscalDivergence?.diverged
             ? (fiscalDivergence.reason || `Dados fiscais alterados: ${(Array.isArray(fiscalDivergence.fields) ? fiscalDivergence.fields.join(', ') : '')}`)
             : '';
+        const invoiceEmailStatus = latestInvoiceEmailLog?.status === 'sent'
+            ? 'Enviado'
+            : latestInvoiceEmailLog?.status === 'failed'
+                ? 'Pendente/falhou'
+                : (facturalusaStatus === 'emitted' ? 'Pendente' : '-');
+        const invoiceEmailStatusColor = latestInvoiceEmailLog?.status === 'sent'
+            ? '#047857'
+            : latestInvoiceEmailLog?.status === 'failed'
+                ? '#b45309'
+                : '#374151';
 
         const metaEl = document.getElementById('order-modal-meta');
         if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} · ${formatDateTime(order.created_at)}`;
@@ -2495,9 +2571,17 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : '—'}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Envio email</span>
+                        <span style="font-size:0.75rem;color:${invoiceEmailStatusColor};text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(invoiceEmailStatus)}</span>
+                    </div>
+                    <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
                         <span style="color:#9ca3af;flex-shrink:0;">Erro</span>
                         <span style="font-size:0.75rem;color:${lastError ? '#b91c1c' : '#374151'};text-align:right;word-break:break-word;max-width:14rem;">${lastError ? escapeHtml(lastError) : 'Sem erro registado'}</span>
                     </div>
+                    ${latestInvoiceEmailLog?.status === 'failed' && latestInvoiceEmailLog?.error_message ? `<div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
+                        <span style="color:#9ca3af;flex-shrink:0;">Erro email</span>
+                        <span style="font-size:0.75rem;color:#b45309;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(String(latestInvoiceEmailLog.error_message))}</span>
+                    </div>` : ''}
                 </div>
                 ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a faturação assim que a conta Facturalusa estiver pronta.</p>' : ''}
             `;

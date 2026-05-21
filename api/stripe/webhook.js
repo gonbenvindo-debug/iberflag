@@ -22,12 +22,12 @@ const {
 } = require('../../lib/server/fiscal-engine');
 const { resolveStoredCheckoutCustomer } = require('../../lib/server/order-flow');
 const { resolveFacturalusaDocumentState, attachIssuedDocumentContext } = require('../../lib/server/invoice-state');
+const { reconcileInvoiceEmissionState } = require('../../lib/server/invoice-reconciliation');
 const {
     logAnalyticsEvent,
     logOperationalEvent,
     recordFiscalDecision,
-    queueReviewItem,
-    resolveReviewItem
+    queueReviewItem
 } = require('../../lib/server/ops');
 const { runNonBlockingAction } = require('../../lib/server/resilience');
 
@@ -604,9 +604,15 @@ module.exports = async function stripeWebhookHandler(req, res) {
                             invoiceResult = await emitFacturalusaDocument(supabase, paidOrderWithFiscal, session);
                         } catch (facturalusaError) {
                             if (facturalusaError?.facturalusaIssuedDocument) {
+                                const recoveredOrder = await reconcileIssuedDocumentState(supabase, facturalusaError.facturalusaIssuedDocument);
+                                const reconciledRecovery = await reconcileInvoiceEmissionState({
+                                    supabase,
+                                    order: recoveredOrder,
+                                    reason: 'Emissao confirmada apos erro parcial no webhook'
+                                });
                                 invoiceResult = {
                                     emitted: true,
-                                    order: await reconcileIssuedDocumentState(supabase, facturalusaError.facturalusaIssuedDocument)
+                                    order: reconciledRecovery.order || recoveredOrder
                                 };
                             } else {
                                 const split = splitOrderNotesAndMeta(paidOrderWithFiscal?.notas || order?.notas || '');
@@ -686,43 +692,29 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         }
 
                         if (invoiceResult?.emitted && invoiceResult.order) {
+                            const reconciledInvoice = await reconcileInvoiceEmissionState({
+                                supabase,
+                                order: invoiceResult.order,
+                                reason: 'Documento emitido no webhook'
+                            });
+                            const emittedOrder = reconciledInvoice.order || invoiceResult.order;
                             confirmationEmailOrder = {
-                                ...invoiceResult.order,
+                                ...emittedOrder,
                                 invoice_state: 'emitted'
                             };
 
                             try {
-                                await updateWithOptionalColumns(
-                                    supabase,
-                                    'encomendas',
-                                    'id',
-                                    invoiceResult.order.id,
-                                    {
-                                        invoice_state: 'emitted'
-                                    }
-                                );
-                            } catch (invoiceStateError) {
-                                console.warn('Nao foi possivel atualizar invoice_state para emitted:', invoiceStateError);
-                            }
-
-                            try {
-                                await resolveReviewItem(supabase, `invoice:${invoiceResult.order.id}`);
-                            } catch (reviewResolveError) {
-                                console.warn('Nao foi possivel resolver item de revisao fiscal:', reviewResolveError);
-                            }
-
-                            try {
                                 const emittedFiscalSnapshot = resolveStoredFiscalSnapshot(
-                                    invoiceResult.order,
-                                    splitOrderNotesAndMeta(invoiceResult.order?.notas || '').meta || {}
+                                    emittedOrder,
+                                    splitOrderNotesAndMeta(emittedOrder?.notas || '').meta || {}
                                 );
                                 await logAnalyticsEvent(supabase, {
                                     event_name: 'invoice_issued',
-                                    order_id: invoiceResult.order.id,
+                                    order_id: emittedOrder.id,
                                     country_code: emittedFiscalSnapshot.customer_fiscal_country,
                                     metadata: {
-                                        orderCode: invoiceResult.order.numero_encomenda || '',
-                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                        orderCode: emittedOrder.numero_encomenda || '',
+                                        documentNumber: emittedOrder.facturalusa_document_number || ''
                                     }
                                 });
                             } catch (analyticsError) {
@@ -733,10 +725,10 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 await logOperationalEvent(supabase, {
                                     event_name: 'invoice_issued',
                                     level: 'info',
-                                    order_id: invoiceResult.order.id,
+                                    order_id: emittedOrder.id,
                                     payload: {
-                                        orderCode: invoiceResult.order.numero_encomenda || '',
-                                        documentNumber: invoiceResult.order.facturalusa_document_number || ''
+                                        orderCode: emittedOrder.numero_encomenda || '',
+                                        documentNumber: emittedOrder.facturalusa_document_number || ''
                                     }
                                 });
                             } catch (opsError) {
@@ -748,12 +740,34 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 req,
                                 order: confirmationEmailOrder,
                                 templateKey: 'invoice_issued_with_attachment',
-                                dedupeKey: `invoice_issued_with_attachment:${invoiceResult.order.id}`,
+                                dedupeKey: `invoice_issued_with_attachment:${emittedOrder.id}`,
                                 requireInvoiceAttachment: true
                             });
 
                             if (!invoiceEmailResult.sent && invoiceEmailResult.reason !== 'DUPLICATE_EMAIL') {
                                 console.warn('Email de documento fiscal nao enviado:', invoiceEmailResult.reason || invoiceEmailResult.message || invoiceEmailResult);
+                                await runNonBlockingAction('Nao foi possivel abrir revisao para retry de email da fatura', () => queueReviewItem(supabase, {
+                                    queue_key: `invoice-email:${emittedOrder.id}`,
+                                    order_id: emittedOrder.id,
+                                    type: 'invoice_email_retry',
+                                    priority: 'high',
+                                    title: 'Email da fatura pendente/falhou',
+                                    details: invoiceEmailResult.message || invoiceEmailResult.reason || 'Falha ao enviar email da fatura.',
+                                    payload: {
+                                        orderCode: emittedOrder.numero_encomenda || '',
+                                        reason: invoiceEmailResult.reason || ''
+                                    }
+                                }));
+                                await runNonBlockingAction('Nao foi possivel registar operational log de invoice_email_failed', () => logOperationalEvent(supabase, {
+                                    event_name: 'invoice_email_failed',
+                                    level: 'warning',
+                                    order_id: emittedOrder.id,
+                                    payload: {
+                                        orderCode: emittedOrder.numero_encomenda || '',
+                                        reason: invoiceEmailResult.reason || '',
+                                        message: invoiceEmailResult.message || ''
+                                    }
+                                }));
                             }
                         }
                     } else {

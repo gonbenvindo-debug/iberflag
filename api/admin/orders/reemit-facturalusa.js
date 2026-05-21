@@ -20,6 +20,7 @@ const { runNonBlockingAction } = require('../../../lib/server/resilience');
 const { updateWithOptionalColumns } = require('../../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../../lib/server/email-notifications');
 const { logAnalyticsEvent, logOperationalEvent, queueReviewItem, resolveReviewItem } = require('../../../lib/server/ops');
+const { reconcileInvoiceEmissionState } = require('../../../lib/server/invoice-reconciliation');
 const { resolveStoredCheckoutCustomer } = require('../../../lib/server/order-flow');
 
 async function findOrderByIdOrCode(supabase, orderId, orderCode) {
@@ -103,11 +104,19 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
         const divergence = detectFiscalSnapshotDivergence(fiscalSnapshot, frozenCustomer);
 
         if (invoiceState.emitted) {
+            const reconciled = await reconcileInvoiceEmissionState({
+                supabase,
+                order,
+                reason: 'Reemissao admin encontrou documento ja emitido'
+            });
+            const reconciledOrder = reconciled.order || order;
+            const reconciledSplit = splitOrderNotesAndMeta(reconciledOrder.notas || '');
+            const reconciledState = resolveFacturalusaDocumentState(reconciledOrder, reconciledSplit.meta);
             sendJson(res, 200, {
                 success: true,
                 alreadyEmitted: true,
-                documentNumber: invoiceState.documentNumber,
-                documentUrl: invoiceState.documentUrl,
+                documentNumber: reconciledState.documentNumber,
+                documentUrl: reconciledState.documentUrl,
                 divergence
             });
             return;
@@ -181,6 +190,26 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 throw updateError;
             }
 
+            const reconciled = await reconcileInvoiceEmissionState({
+                supabase,
+                order: {
+                    ...order,
+                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
+                    payment_provider: 'stripe',
+                    payment_status: 'paid',
+                    stripe_session_id: session.id || null,
+                    stripe_payment_method_type: session.metadata.payment_method || 'card',
+                    facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
+                    facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
+                    facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
+                    facturalusa_last_error: null,
+                    facturalusa_status: 'emitted',
+                    invoice_state: 'emitted',
+                    facturalusa_payload: sale || {}
+                },
+                reason: 'Documento reemitido no admin'
+            });
+
             await runNonBlockingAction('Nao foi possivel resolver a revisao fiscal no admin', () => resolveReviewItem(supabase, `invoice:${order.id}`));
             await runNonBlockingAction('Nao foi possivel registar analytics de invoice_issued no admin', () => logAnalyticsEvent(supabase, {
                 event_name: 'invoice_issued',
@@ -204,18 +233,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 supabase,
                 req,
                 order: {
-                    ...order,
-                    notas: buildOrderNotesWithMeta(split.publicNotes, nextMeta),
-                    payment_provider: 'stripe',
-                    payment_status: 'paid',
-                    stripe_session_id: session.id || null,
-                    stripe_payment_method_type: session.metadata.payment_method || 'card',
-                    facturalusa_customer_code: facturalusaCustomerCode ? String(facturalusaCustomerCode) : null,
-                    facturalusa_document_number: facturalusaDocumentNumber ? String(facturalusaDocumentNumber) : null,
-                    facturalusa_document_url: facturalusaDocumentUrl ? String(facturalusaDocumentUrl) : null,
-                    facturalusa_last_error: null,
-                    facturalusa_status: 'emitted',
-                    invoice_state: 'emitted',
+                    ...(reconciled.order || order),
                     facturalusa_payload: sale || {}
                 },
                 templateKey: 'invoice_issued_with_attachment',
@@ -225,6 +243,28 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
 
             if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
                 console.warn('Email de documento fiscal nao enviado a partir do admin:', emailResult.reason || emailResult.message || emailResult);
+                await runNonBlockingAction('Nao foi possivel abrir revisao para retry de email da fatura no admin', () => queueReviewItem(supabase, {
+                    queue_key: `invoice-email:${order.id}`,
+                    order_id: order.id,
+                    type: 'invoice_email_retry',
+                    priority: 'high',
+                    title: 'Email da fatura pendente/falhou',
+                    details: emailResult.message || emailResult.reason || 'Falha ao enviar email da fatura.',
+                    payload: {
+                        orderCode: order.numero_encomenda || '',
+                        reason: emailResult.reason || ''
+                    }
+                }));
+                await runNonBlockingAction('Nao foi possivel registar operational log de invoice_email_failed_from_admin', () => logOperationalEvent(supabase, {
+                    event_name: 'invoice_email_failed_from_admin',
+                    level: 'warning',
+                    order_id: order.id,
+                    payload: {
+                        orderCode: order.numero_encomenda || '',
+                        reason: emailResult.reason || '',
+                        message: emailResult.message || ''
+                    }
+                }));
             }
 
             sendJson(res, 200, {

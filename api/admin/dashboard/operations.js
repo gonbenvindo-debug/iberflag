@@ -2,6 +2,7 @@ const { requireAdminRequest } = require('../../../lib/server/admin-auth');
 const { sendJson } = require('../../../lib/server/http');
 const { getSupabaseAdmin } = require('../../../lib/server/supabase-admin');
 const { isMissingRelationError } = require('../../../lib/server/ops');
+const { getMailConfigStatus, getMailIdentity } = require('../../../lib/server/mail-config');
 
 async function safeSelect(queryFactory, relationName, fallback) {
     try {
@@ -108,6 +109,8 @@ module.exports = async function adminOperationsDashboardHandler(req, res) {
                 .order('sla_target_at', { ascending: true })
                 .limit(8), 'encomendas', [])
         ]);
+        const mailConfigStatus = getMailConfigStatus();
+        const mailIdentity = getMailIdentity();
 
         sendJson(res, 200, {
             metrics: {
@@ -119,7 +122,16 @@ module.exports = async function adminOperationsDashboardHandler(req, res) {
             reviewQueue: reviewQueue.data || [],
             failedEmails: failedEmails.data || [],
             incompleteProducts: incompleteProducts.data || [],
-            slaBreaches: slaBreaches.data || []
+            slaBreaches: slaBreaches.data || [],
+            mailHealth: {
+                activeProvider: mailConfigStatus.activeProvider || 'none',
+                fromEmail: mailIdentity.fromEmail || '',
+                replyTo: mailIdentity.replyTo || '',
+                resendConfigured: Boolean(mailConfigStatus?.resend?.configured),
+                smtpConfigured: Boolean(mailConfigStatus?.smtp?.configured),
+                resendMissing: Array.isArray(mailConfigStatus?.resend?.missing) ? mailConfigStatus.resend.missing : [],
+                smtpMissing: Array.isArray(mailConfigStatus?.smtp?.missing) ? mailConfigStatus.smtp.missing : []
+            }
         });
     } catch (error) {
         if (error?.statusCode) {
