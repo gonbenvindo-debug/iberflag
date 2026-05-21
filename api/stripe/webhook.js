@@ -9,7 +9,8 @@ const {
 } = require('../../lib/server/checkout');
 const {
     classifyFacturalusaError,
-    issueFacturalusaDocumentForOrder
+    issueFacturalusaDocumentForOrder,
+    resolveFacturalusaSaleDocumentInfo
 } = require('../../lib/server/facturalusa');
 const { updateWithOptionalColumns } = require('../../lib/server/schema-safe');
 const { sendOrderEmailNotification } = require('../../lib/server/email-notifications');
@@ -232,8 +233,9 @@ async function emitFacturalusaDocument(supabase, order, session) {
 
     const sale = invoiceResult.sale;
     const customer = invoiceResult.customer;
-    const facturalusaDocumentNumber = sale?.document_full_number || sale?.number || sale?.reference || null;
-    const facturalusaDocumentUrl = sale?.url_file || sale?.url || null;
+    const saleDocument = resolveFacturalusaSaleDocumentInfo(sale || {});
+    const facturalusaDocumentNumber = saleDocument.documentNumber || null;
+    const facturalusaDocumentUrl = saleDocument.documentUrl || null;
     const facturalusaCustomerCode = customer?.code || customer?.id || null;
 
     const nextMeta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Documento fiscal emitido no Facturalusa');

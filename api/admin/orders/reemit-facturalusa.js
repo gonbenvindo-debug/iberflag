@@ -12,7 +12,8 @@ const {
 } = require('../../../lib/server/fiscal-engine');
 const {
     classifyFacturalusaError,
-    issueFacturalusaDocumentForOrder
+    issueFacturalusaDocumentForOrder,
+    resolveFacturalusaSaleDocumentInfo
 } = require('../../../lib/server/facturalusa');
 const { resolveFacturalusaDocumentState } = require('../../../lib/server/invoice-state');
 const { runNonBlockingAction } = require('../../../lib/server/resilience');
@@ -138,8 +139,9 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
 
             const sale = emissionResult.sale;
             const customer = emissionResult.customer;
-            const facturalusaDocumentNumber = sale?.document_full_number || sale?.number || sale?.reference || '';
-            const facturalusaDocumentUrl = sale?.url_file || sale?.url || '';
+            const saleDocument = resolveFacturalusaSaleDocumentInfo(sale || {});
+            const facturalusaDocumentNumber = saleDocument.documentNumber || '';
+            const facturalusaDocumentUrl = saleDocument.documentUrl || '';
             const facturalusaCustomerCode = customer?.code || customer?.id || '';
 
             const nextMeta = appendWorkflowHistory(split.meta, split.meta.workflowStatus, 'Documento fiscal emitido no Facturalusa');
