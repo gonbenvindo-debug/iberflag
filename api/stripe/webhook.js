@@ -598,7 +598,6 @@ module.exports = async function stripeWebhookHandler(req, res) {
                     }));
 
                     let confirmationEmailOrder = paidOrderWithFiscal;
-                    let confirmationRequiresInvoiceAttachment = false;
 
                     if (
                         fiscalSnapshot.fiscal_decision_mode === 'auto_emit'
@@ -708,7 +707,6 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 ...emittedOrder,
                                 invoice_state: 'emitted'
                             };
-                            confirmationRequiresInvoiceAttachment = true;
 
                             try {
                                 const emittedFiscalSnapshot = resolveStoredFiscalSnapshot(
@@ -810,8 +808,7 @@ module.exports = async function stripeWebhookHandler(req, res) {
                         req,
                         order: confirmationEmailOrder,
                         templateKey: 'order_confirmation_preparacao',
-                        dedupeKey: `order_confirmation_preparacao:${paidOrder.id}`,
-                        requireInvoiceAttachment: confirmationRequiresInvoiceAttachment
+                        dedupeKey: `order_confirmation_preparacao:${paidOrder.id}`
                     });
 
                     if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
