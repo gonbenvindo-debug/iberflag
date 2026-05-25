@@ -1040,6 +1040,7 @@ Object.assign(DesignEditor.prototype, {
             startClientX: e.clientX,
             startClientY: e.clientY,
             bbox,
+            aspectRatio: this.getElementStableAspectRatio?.(this.selectedElement, bbox) || ((bbox.width > 0 && bbox.height > 0) ? (bbox.width / bbox.height) : 1),
             textWidth: this.selectedElement.width,
             textHeight: this.selectedElement.height,
             fontSize: this.selectedElement.size,
@@ -1238,7 +1239,13 @@ Object.assign(DesignEditor.prototype, {
             ? true
             : ((this.keepAspectRatio || e.shiftKey) && this.selectedElement.type !== 'text');
         if (shouldKeepRatio && bbox.height > 0) {
-            const ratio = this.getElementStableAspectRatio?.(this.selectedElement, bbox) || (bbox.width / bbox.height);
+            const ratio = Math.max(
+                0.0001,
+                Number(this.dragStart?.aspectRatio)
+                || Number(this.getElementStableAspectRatio?.(this.selectedElement, bbox))
+                || (bbox.width / bbox.height)
+                || 1
+            );
 
             if (['e', 'w'].includes(this.resizeHandle)) {
                 newHeight = Math.max(minSize, newWidth / ratio);

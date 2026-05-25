@@ -220,13 +220,41 @@ Object.assign(DesignEditor.prototype, {
             return 1;
         }
 
+        const fallbackWidth = Number(fallbackBox?.width);
+        const fallbackHeight = Number(fallbackBox?.height);
+        if (fallbackWidth > 0 && fallbackHeight > 0) {
+            return fallbackWidth / fallbackHeight;
+        }
+
+        if (elementData.type === 'image') {
+            const cropSourceWidth = Number(elementData.cropSourceData?.width);
+            const cropSourceHeight = Number(elementData.cropSourceData?.height);
+            if (cropSourceWidth > 0 && cropSourceHeight > 0) {
+                return cropSourceWidth / cropSourceHeight;
+            }
+
+            const cropWidthRatio = Number(elementData.cropData?.width);
+            const cropHeightRatio = Number(elementData.cropData?.height);
+            const fullWidth = Number(elementData.fullWidth);
+            const fullHeight = Number(elementData.fullHeight);
+            if (cropWidthRatio > 0 && cropHeightRatio > 0 && fullWidth > 0 && fullHeight > 0) {
+                return (cropWidthRatio * fullWidth) / (cropHeightRatio * fullHeight);
+            }
+
+            const baseWidth = Number(elementData.baseWidth);
+            const baseHeight = Number(elementData.baseHeight);
+            if (baseWidth > 0 && baseHeight > 0) {
+                return baseWidth / baseHeight;
+            }
+
+            if (fullWidth > 0 && fullHeight > 0) {
+                return fullWidth / fullHeight;
+            }
+        }
+
         const box = this.getElementGeometryBox?.(elementData, fallbackBox || elementData.element.getBBox?.()) || fallbackBox;
         if (box && box.width > 0 && box.height > 0) {
             return box.width / box.height;
-        }
-
-        if (elementData.type === 'image' && Number(elementData.fullWidth) > 0 && Number(elementData.fullHeight) > 0) {
-            return Number(elementData.fullWidth) / Number(elementData.fullHeight);
         }
 
         return 1;
