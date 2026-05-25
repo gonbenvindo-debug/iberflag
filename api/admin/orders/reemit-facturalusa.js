@@ -64,6 +64,11 @@ async function findCustomerForOrder(supabase, order = {}) {
     return data || null;
 }
 
+function shouldRetryInvoiceEmailWithoutAttachment(reason = '') {
+    const normalized = String(reason || '').trim();
+    return normalized === 'INVOICE_ATTACHMENT_FAILED' || normalized.startsWith('INVOICE_ATTACHMENT_');
+}
+
 module.exports = async function adminReemitFacturalusaHandler(req, res) {
     if (req.method !== 'POST') {
         sendJson(res, 405, { error: 'Method not allowed' }, { Allow: 'POST' });
@@ -229,7 +234,7 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 }
             }));
 
-            const emailResult = await sendOrderEmailNotification({
+            let emailResult = await sendOrderEmailNotification({
                 supabase,
                 req,
                 order: {
@@ -240,6 +245,28 @@ module.exports = async function adminReemitFacturalusaHandler(req, res) {
                 dedupeKey: `invoice_issued_with_attachment:${order.id}`,
                 requireInvoiceAttachment: true
             });
+
+            if (
+                !emailResult.sent
+                && emailResult.reason !== 'DUPLICATE_EMAIL'
+                && shouldRetryInvoiceEmailWithoutAttachment(emailResult.reason)
+            ) {
+                console.warn('Email da fatura com anexo falhou no admin. A tentar fallback sem anexo.', emailResult.reason || emailResult.message || emailResult);
+                const fallbackEmailResult = await sendOrderEmailNotification({
+                    supabase,
+                    req,
+                    order: {
+                        ...(reconciled.order || order),
+                        facturalusa_payload: sale || {}
+                    },
+                    templateKey: 'invoice_document_ready',
+                    dedupeKey: `invoice_document_ready:${order.id}`
+                });
+
+                if (fallbackEmailResult.sent || fallbackEmailResult.reason === 'DUPLICATE_EMAIL') {
+                    emailResult = fallbackEmailResult;
+                }
+            }
 
             if (!emailResult.sent && emailResult.reason !== 'DUPLICATE_EMAIL') {
                 console.warn('Email de documento fiscal nao enviado a partir do admin:', emailResult.reason || emailResult.message || emailResult);

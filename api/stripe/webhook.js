@@ -31,6 +31,11 @@ const {
 } = require('../../lib/server/ops');
 const { runNonBlockingAction } = require('../../lib/server/resilience');
 
+function shouldRetryInvoiceEmailWithoutAttachment(reason = '') {
+    const normalized = String(reason || '').trim();
+    return normalized === 'INVOICE_ATTACHMENT_FAILED' || normalized.startsWith('INVOICE_ATTACHMENT_');
+}
+
 async function claimWebhookEvent(supabase, event) {
     const now = new Date().toISOString();
     let existing = null;
@@ -735,7 +740,7 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 console.warn('Nao foi possivel registar operational log de invoice_issued:', opsError);
                             }
 
-                            const invoiceEmailResult = await sendOrderEmailNotification({
+                            let invoiceEmailResult = await sendOrderEmailNotification({
                                 supabase,
                                 req,
                                 order: confirmationEmailOrder,
@@ -743,6 +748,25 @@ module.exports = async function stripeWebhookHandler(req, res) {
                                 dedupeKey: `invoice_issued_with_attachment:${emittedOrder.id}`,
                                 requireInvoiceAttachment: true
                             });
+
+                            if (
+                                !invoiceEmailResult.sent
+                                && invoiceEmailResult.reason !== 'DUPLICATE_EMAIL'
+                                && shouldRetryInvoiceEmailWithoutAttachment(invoiceEmailResult.reason)
+                            ) {
+                                console.warn('Email da fatura com anexo falhou. A tentar fallback sem anexo.', invoiceEmailResult.reason || invoiceEmailResult.message || invoiceEmailResult);
+                                const fallbackInvoiceEmailResult = await sendOrderEmailNotification({
+                                    supabase,
+                                    req,
+                                    order: confirmationEmailOrder,
+                                    templateKey: 'invoice_document_ready',
+                                    dedupeKey: `invoice_document_ready:${emittedOrder.id}`
+                                });
+
+                                if (fallbackInvoiceEmailResult.sent || fallbackInvoiceEmailResult.reason === 'DUPLICATE_EMAIL') {
+                                    invoiceEmailResult = fallbackInvoiceEmailResult;
+                                }
+                            }
 
                             if (!invoiceEmailResult.sent && invoiceEmailResult.reason !== 'DUPLICATE_EMAIL') {
                                 console.warn('Email de documento fiscal nao enviado:', invoiceEmailResult.reason || invoiceEmailResult.message || invoiceEmailResult);
