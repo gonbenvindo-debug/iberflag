@@ -920,11 +920,49 @@ Object.assign(DesignEditor.prototype, {
             return null;
         }
 
+        const clampRatio = (value, fallback) => {
+            const numeric = Number(value);
+            if (!Number.isFinite(numeric)) {
+                return fallback;
+            }
+            return Math.max(0, Math.min(1, numeric));
+        };
+
+        const cropSelection = {
+            x: clampRatio(normalized.x, 0),
+            y: clampRatio(normalized.y, 0),
+            width: Math.max(0.05, clampRatio(normalized.width, 1)),
+            height: Math.max(0.05, clampRatio(normalized.height, 1))
+        };
+
+        const isFullImageSelection = (
+            cropSelection.x <= 0.0005 &&
+            cropSelection.y <= 0.0005 &&
+            Math.abs(1 - cropSelection.width) <= 0.0005 &&
+            Math.abs(1 - cropSelection.height) <= 0.0005
+        );
+
+        if (isFullImageSelection) {
+            return {
+                dataUrl: this.uploadCropState.imageSrc,
+                width: naturalWidth,
+                height: naturalHeight,
+                fullWidth: naturalWidth,
+                fullHeight: naturalHeight,
+                cropData: {
+                    x: 0,
+                    y: 0,
+                    width: 1,
+                    height: 1
+                }
+            };
+        }
+
         const canvas = document.createElement('canvas');
-        const cropWidth = Math.max(1, Math.round(normalized.width * naturalWidth));
-        const cropHeight = Math.max(1, Math.round(normalized.height * naturalHeight));
-        const sourceX = Math.round(normalized.x * naturalWidth);
-        const sourceY = Math.round(normalized.y * naturalHeight);
+        const cropWidth = Math.max(1, Math.round(cropSelection.width * naturalWidth));
+        const cropHeight = Math.max(1, Math.round(cropSelection.height * naturalHeight));
+        const sourceX = Math.round(cropSelection.x * naturalWidth);
+        const sourceY = Math.round(cropSelection.y * naturalHeight);
 
         canvas.width = cropWidth;
         canvas.height = cropHeight;
@@ -936,21 +974,19 @@ Object.assign(DesignEditor.prototype, {
 
         ctx.imageSmoothingEnabled = true;
         ctx.imageSmoothingQuality = 'high';
-        ctx.fillStyle = '#ffffff';
-        ctx.fillRect(0, 0, cropWidth, cropHeight);
         ctx.drawImage(image, sourceX, sourceY, cropWidth, cropHeight, 0, 0, cropWidth, cropHeight);
 
         return {
-            dataUrl: canvas.toDataURL('image/jpeg', 1),
+            dataUrl: canvas.toDataURL('image/png'),
             width: cropWidth,
             height: cropHeight,
             fullWidth: naturalWidth,
             fullHeight: naturalHeight,
             cropData: {
-                x: normalized.x,
-                y: normalized.y,
-                width: normalized.width,
-                height: normalized.height
+                x: cropSelection.x,
+                y: cropSelection.y,
+                width: cropSelection.width,
+                height: cropSelection.height
             }
         };
     },
