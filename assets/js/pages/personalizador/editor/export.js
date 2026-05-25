@@ -57,6 +57,26 @@ Object.assign(DesignEditor.prototype, {
         };
     },
 
+    resolveImageCropGeometry(referenceBox, previousSourceBox, nextSourceBox) {
+        const fallbackBox = referenceBox || { x: 0, y: 0, width: 20, height: 20 };
+        const previous = previousSourceBox || { x: 0, y: 0, width: 1, height: 1 };
+        const next = nextSourceBox || previous;
+
+        const safeWidth = Math.max(1, Number(fallbackBox.width) || 1);
+        const safeHeight = Math.max(1, Number(fallbackBox.height) || 1);
+        const previousWidth = Math.max(1, Number(previous.width) || 1);
+        const previousHeight = Math.max(1, Number(previous.height) || 1);
+        const scaleX = safeWidth / previousWidth;
+        const scaleY = safeHeight / previousHeight;
+
+        return {
+            x: (Number(fallbackBox.x) || 0) + (((Number(next.x) || 0) - (Number(previous.x) || 0)) * scaleX),
+            y: (Number(fallbackBox.y) || 0) + (((Number(next.y) || 0) - (Number(previous.y) || 0)) * scaleY),
+            width: Math.max(20, (Number(next.width) || 0) * scaleX),
+            height: Math.max(20, (Number(next.height) || 0) * scaleY)
+        };
+    },
+
     startCropMode() {
         if (!this.selectedElement || this.selectedElement.type !== 'image') {
             showToast(window.personalizerI18nText ? window.personalizerI18nText('Selecione uma imagem para cortar') : 'Selecione uma imagem para cortar', 'warning');
@@ -116,29 +136,33 @@ Object.assign(DesignEditor.prototype, {
                     width: 0,
                     height: 0
                 };
+                const currentSourceCropData = this.parseSourceCropData?.(imgElement) || null;
                 imgElement.setAttribute('href', croppedImageData.dataUrl);
 
                 if (croppedImageData.cropData) {
                     const fullWidth = croppedImageData.fullWidth;
                     const fullHeight = croppedImageData.fullHeight;
                     const cropData = croppedImageData.cropData;
-                    const currentX = Number(referenceBox.x || 0) || 0;
-                    const currentY = Number(referenceBox.y || 0) || 0;
-                    const currentWidth = Math.max(20, Number(referenceBox.width || 0) || 20);
-                    const currentHeight = Math.max(20, Number(referenceBox.height || 0) || 20);
-                    const cropXRatio = Math.max(0, Math.min(1, Number(cropData.x) || 0));
-                    const cropYRatio = Math.max(0, Math.min(1, Number(cropData.y) || 0));
-                    const cropWidthRatio = Math.max(0.05, Math.min(1, Number(cropData.width) || 1));
-                    const cropHeightRatio = Math.max(0.05, Math.min(1, Number(cropData.height) || 1));
-                    const nextX = currentX + (currentWidth * cropXRatio);
-                    const nextY = currentY + (currentHeight * cropYRatio);
-                    const nextWidth = Math.max(20, currentWidth * cropWidthRatio);
-                    const nextHeight = Math.max(20, currentHeight * cropHeightRatio);
-
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
                     const viewBoxWidth = cropData.width * fullWidth;
                     const viewBoxHeight = cropData.height * fullHeight;
+                    const previousSourceBox = currentSourceCropData || {
+                        x: 0,
+                        y: 0,
+                        width: fullWidth,
+                        height: fullHeight
+                    };
+                    const nextGeometry = this.resolveImageCropGeometry?.(
+                        referenceBox,
+                        previousSourceBox,
+                        {
+                            x: viewBoxX,
+                            y: viewBoxY,
+                            width: viewBoxWidth,
+                            height: viewBoxHeight
+                        }
+                    ) || referenceBox;
 
                     elementToUpdate.src = croppedImageData.dataUrl;
                     elementToUpdate.cropData = cropData;
@@ -151,10 +175,10 @@ Object.assign(DesignEditor.prototype, {
                         height: viewBoxHeight
                     };
                     this.syncImageGeometryState?.(elementToUpdate, {
-                        x: nextX,
-                        y: nextY,
-                        width: nextWidth,
-                        height: nextHeight
+                        x: nextGeometry.x,
+                        y: nextGeometry.y,
+                        width: nextGeometry.width,
+                        height: nextGeometry.height
                     });
                     this.applyElementRotation(elementToUpdate);
                 }
@@ -162,6 +186,7 @@ Object.assign(DesignEditor.prototype, {
                 showToast(window.personalizerI18nText ? window.personalizerI18nText('Imagem cortada com sucesso!') : 'Imagem cortada com sucesso!', 'success');
                 this.hideResizeHandles();
                 this.showResizeHandles(elementToUpdate);
+                this.updateResizeHandlesPosition?.(elementToUpdate);
                 this.saveHistory();
             }
         }).finally(() => {
