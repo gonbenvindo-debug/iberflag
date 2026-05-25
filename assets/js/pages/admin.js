@@ -2046,17 +2046,12 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
-    // Product store image - last resort fallback only
-    const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
-        .find((value) => typeof value === 'string' && value.trim()) || '';
-
     const designDataUrl = designSvg
         ? (typeof buildSvgDataUrl === 'function' ? (buildSvgDataUrl(designSvg) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`) : '')
         : '';
 
-    const previewUrl = designDataUrl || designPreviewUrl || httpPreview || fallbackImage;
-    // Treat any non-product preview or raw SVG as valid design signal.
-    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview || previewUrl);
+    const previewUrl = designDataUrl || designPreviewUrl || httpPreview;
+    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);
 
     return {
         previewUrl,
@@ -2924,7 +2919,7 @@ function openAdminDesignViewer(designKey) {
     const title = document.getElementById('design-viewer-title');
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
-    img.src = entry.previewUrl || '';
+    img.src = entry.svgDataUrl || entry.previewUrl || '';
     if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         if (entry.svgDataUrl) {
