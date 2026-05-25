@@ -941,6 +941,8 @@ Object.assign(DesignEditor.prototype, {
         if (this.selectedElement) {
             if (this.selectedElement.type === 'image') {
                 this.syncImageGeometryState?.(this.selectedElement, {}, { updateBaseBox: true });
+                this.syncExpandedPropertiesControls?.(this.selectedElement);
+                this.updateContextualToolbar?.(this.selectedElement);
             } else if (this.selectedElement.type === 'text') {
                 this.syncTextMetrics?.(this.selectedElement);
                 this.syncElementMetadata?.(this.selectedElement);
@@ -1284,6 +1286,10 @@ Object.assign(DesignEditor.prototype, {
 
         if (this.selectedElement.type === 'image' || (this.selectedElement.type === 'shape' && this.selectedElement.shapeType === 'rectangle')) {
             if (this.selectedElement.type === 'image') {
+                const shouldStretchImage = !forceKeepAspect && !shouldKeepRatio && this.selectedElement.imageKind !== 'qr';
+                if (shouldStretchImage && this.getImageObjectFitMode?.(this.selectedElement) !== 'fill') {
+                    this.setImageObjectFitMode?.(this.selectedElement, 'fill');
+                }
                 this.syncImageGeometryState?.(this.selectedElement, {
                     x: newX,
                     y: newY,
