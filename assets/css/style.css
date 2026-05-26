@@ -3345,7 +3345,7 @@ a[href="/checkout"].block.w-full:hover {
     .checkout-page > section {
         background: #ffffff;
         padding-top: 0 !important;
-        padding-bottom: 0 !important;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
     }
 
     .checkout-page > section .max-w-7xl {
