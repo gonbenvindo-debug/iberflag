@@ -3338,6 +3338,10 @@ a[href="/checkout"].block.w-full:hover {
 }
 
 @media (max-width: 767px) {
+    .checkout-page {
+        overflow-x: clip;
+    }
+
     .checkout-page > section {
         padding-top: 1rem !important;
         padding-bottom: 1.25rem !important;
@@ -3360,12 +3364,20 @@ a[href="/checkout"].block.w-full:hover {
     }
 
     .checkout-steps {
-        justify-content: space-between;
-        gap: 0.35rem;
+        justify-content: flex-start;
+        gap: 0.45rem;
+        overflow-x: auto;
+        padding-bottom: 0.15rem;
+        scrollbar-width: none;
+        -ms-overflow-style: none;
+    }
+
+    .checkout-steps::-webkit-scrollbar {
+        display: none;
     }
 
     .checkout-step {
-        flex: 0 1 auto;
+        flex: 0 0 auto;
         min-width: 0;
         flex-direction: row;
         justify-content: center;
@@ -3379,17 +3391,17 @@ a[href="/checkout"].block.w-full:hover {
     }
 
     .checkout-step-text {
-        max-width: 4.8rem;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        font-size: 0.72rem;
+        max-width: none;
+        overflow: visible;
+        text-overflow: clip;
+        font-size: 0.74rem;
         line-height: 1;
     }
 
     .checkout-step-line {
-        flex: 1 1 0.9rem;
-        min-width: 0.7rem;
-        max-width: 1.35rem;
+        flex: 0 0 1rem;
+        min-width: 1rem;
+        max-width: 1rem;
         width: auto;
         margin-top: 0;
     }
@@ -3428,7 +3440,7 @@ a[href="/checkout"].block.w-full:hover {
 
     .checkout-main-card .app-section-title,
     .checkout-surface-card .app-section-title {
-        font-size: 1rem;
+        font-size: 1rem !important;
         line-height: 1.25;
     }
 
