@@ -3349,8 +3349,8 @@ a[href="/checkout"].block.w-full:hover {
     }
 
     .checkout-page > section .max-w-7xl {
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding-left: 0.875rem !important;
+        padding-right: 0.875rem !important;
     }
 
     .checkout-page .grid.gap-8 {
@@ -3380,11 +3380,11 @@ a[href="/checkout"].block.w-full:hover {
         flex-direction: row;
         justify-content: center;
         gap: 0.45rem;
-        min-height: 2.2rem;
-        padding: 0.35rem 0.45rem;
-        border: 1px solid #e2e8f0;
-        border-radius: 0.8rem;
-        background: #f8fafc;
+        min-height: 2rem;
+        padding: 0.25rem 0.2rem;
+        border: 0;
+        border-radius: 0;
+        background: transparent;
     }
 
     .checkout-step-number {
@@ -3411,9 +3411,9 @@ a[href="/checkout"].block.w-full:hover {
     }
 
     .checkout-step-active {
-        background: #ffffff;
-        border-color: #cbd5e1;
-        box-shadow: 0 8px 20px rgba(15, 23, 42, 0.08);
+        background: transparent;
+        border-color: transparent;
+        box-shadow: none;
     }
 
     .checkout-main-card {
