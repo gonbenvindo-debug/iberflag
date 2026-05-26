@@ -413,13 +413,21 @@
         }
 
         @media (max-width: 767px) {
+            .order-tracking-compact {
+                background: #ffffff !important;
+            }
+
             .tracking-shell {
-                padding: 1rem 0.85rem 3rem;
+                padding: 0.75rem 0.875rem max(1rem, env(safe-area-inset-bottom));
             }
 
             .tracking-hero {
-                padding: 1.15rem;
-                border-radius: 1rem;
+                padding: 1rem 0;
+                border-radius: 0;
+                border: 0;
+                border-top: 0;
+                box-shadow: none;
+                background: transparent;
             }
 
             .tracking-hero-grid {
@@ -430,10 +438,19 @@
             .tracking-total-card {
                 max-width: none;
                 margin-left: 0;
+                padding: 0;
+                border: 0;
+                border-radius: 0;
+                background: transparent;
+                box-shadow: none;
             }
 
             .tracking-panel {
-                border-radius: 1rem;
+                border-radius: 0;
+                border: 0;
+                border-top: 1px solid #e2e8f0;
+                box-shadow: none;
+                background: transparent;
                 padding: 1rem;
             }
 

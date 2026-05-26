@@ -345,13 +345,22 @@
         }
 
         @media (max-width: 640px) {
+            .order-tracking-compact {
+                background: #ffffff !important;
+            }
+
             .order-tracking-compact main {
                 padding-top: 0.5rem;
-                padding-bottom: 0.85rem;
+                padding-bottom: max(0.85rem, env(safe-area-inset-bottom));
             }
 
             .order-tracking-compact .admin-card {
                 padding: 0.75rem;
+                border: 0;
+                border-radius: 0;
+                box-shadow: none;
+                background: transparent;
+                border-top: 1px solid #e5e7eb;
             }
 
             .order-tracking-compact h1 {
