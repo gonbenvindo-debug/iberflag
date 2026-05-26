@@ -3366,10 +3366,11 @@ a[href="/checkout"].block.w-full:hover {
 
     .checkout-steps {
         display: grid;
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 0.45rem;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 0.28rem;
         align-items: stretch;
-        max-width: 24rem;
+        width: 100%;
+        max-width: 100%;
         margin-inline: auto;
     }
 
@@ -3379,26 +3380,27 @@ a[href="/checkout"].block.w-full:hover {
         min-width: 0;
         flex-direction: row;
         justify-content: center;
-        gap: 0.45rem;
-        min-height: 2rem;
-        padding: 0.25rem 0.2rem;
+        gap: 0.28rem;
+        min-height: 1.85rem;
+        padding: 0.18rem 0.08rem;
         border: 0;
         border-radius: 0;
         background: transparent;
     }
 
     .checkout-step-number {
-        width: 1.45rem;
-        height: 1.45rem;
-        font-size: 0.72rem;
+        width: 1.25rem;
+        height: 1.25rem;
+        font-size: 0.66rem;
     }
 
     .checkout-step-text {
         max-width: none;
         overflow: visible;
         text-overflow: clip;
-        font-size: 0.8rem;
-        line-height: 1.1;
+        white-space: nowrap;
+        font-size: clamp(0.62rem, 2.55vw, 0.78rem);
+        line-height: 1;
     }
 
     .checkout-step-line {
