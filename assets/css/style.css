@@ -4613,6 +4613,12 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
         white-space: nowrap;
     }
 
+    .checkout-place-order-btn.flex.gap-2 > * {
+        width: auto !important;
+        max-width: none !important;
+        flex: 0 0 auto !important;
+    }
+
     /* Form inputs */
     input,
     select,
