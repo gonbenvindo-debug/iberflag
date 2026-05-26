@@ -599,7 +599,48 @@ Object.assign(DesignEditor.prototype, {
     },
 
     generateCartPreviewSVG() {
-        return this.getDesignSVG();
+        const designSvg = this.getDesignSVG();
+        if (!designSvg || typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
+            return designSvg;
+        }
+
+        try {
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(designSvg, 'image/svg+xml');
+            const svgRoot = doc.documentElement;
+            if (!svgRoot || String(svgRoot.tagName || '').toLowerCase() !== 'svg') {
+                return designSvg;
+            }
+
+            const sourceOutline = this.canvas?.querySelector?.('#print-area-shape-outline-border')
+                || this.canvas?.querySelector?.('#print-area-shape-outline')
+                || this.canvas?.querySelector?.('#print-area-outline');
+
+            if (!sourceOutline) {
+                return designSvg;
+            }
+
+            const outline = sourceOutline.cloneNode(true);
+            outline.removeAttribute('id');
+            outline.removeAttribute('class');
+            outline.removeAttribute('style');
+            outline.removeAttribute('data-editable');
+            outline.removeAttribute('data-element-id');
+            outline.setAttribute('fill', 'none');
+            outline.setAttribute('stroke', '#94a3b8');
+            outline.setAttribute('stroke-width', '2');
+            outline.setAttribute('stroke-dasharray', '8 8');
+            outline.setAttribute('stroke-linecap', 'round');
+            outline.setAttribute('stroke-opacity', '0.9');
+            outline.setAttribute('vector-effect', 'non-scaling-stroke');
+            outline.setAttribute('pointer-events', 'none');
+
+            svgRoot.appendChild(outline);
+            return new XMLSerializer().serializeToString(doc);
+        } catch (error) {
+            console.warn('Falha ao gerar preview com contorno tracejado:', error);
+            return designSvg;
+        }
     },
 
     renderCartStepsBaseOptions() {
@@ -672,8 +713,8 @@ Object.assign(DesignEditor.prototype, {
             ? document.activeElement
             : null;
         this.ensureSelectedBase();
-        this.cartStepsDesignSnapshot = this.getDesignSVG();
-        const previewSvg = this.cartStepsDesignSnapshot || this.generateCartPreviewSVG();
+        this.cartStepsDesignSnapshot = this.generateCartPreviewSVG() || this.getDesignSVG();
+        const previewSvg = this.cartStepsDesignSnapshot;
         previewImg.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
         this.cartStepsDesignPreview = previewImg.src;
 
