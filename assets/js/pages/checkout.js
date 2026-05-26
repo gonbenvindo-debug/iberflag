@@ -1862,8 +1862,10 @@ function revealCheckoutField(field = null) {
 function setPlaceOrderLoading(isLoading) {
     if (!placeOrderBtn) return;
     placeOrderBtn.disabled = isLoading;
+    placeOrderBtn.classList.toggle('checkout-btn-loading', isLoading);
+    placeOrderBtn.setAttribute('aria-busy', isLoading ? 'true' : 'false');
     placeOrderBtn.innerHTML = isLoading
-        ? '<div class="spinner mx-auto"></div>'
+        ? `<span class="checkout-btn-spinner" aria-hidden="true"></span><span>${i18nText('A processar...')}</span>`
         : getPlaceOrderDefaultLabel();
 
     if (!isLoading && typeof lucide !== 'undefined') {
