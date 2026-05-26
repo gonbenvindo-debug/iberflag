@@ -3529,6 +3529,16 @@ a[href="/checkout"].block.w-full:hover {
         font-size: 0.9rem;
     }
 
+    .checkout-place-order-btn {
+        height: auto !important;
+        min-height: 2.65rem !important;
+        padding: 0 1rem !important;
+        line-height: 1 !important;
+        border-radius: 0.7rem !important;
+        border-color: #0f172a !important;
+        box-shadow: none !important;
+    }
+
     .checkout-payment-copy {
         align-items: flex-start;
         gap: 0.55rem;
