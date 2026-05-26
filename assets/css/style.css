@@ -3356,6 +3356,40 @@ a[href="/checkout"].block.w-full:hover {
 }
 
 @media (max-width: 767px) {
+    .flat-mobile-page {
+        background: #ffffff !important;
+    }
+
+    .flat-mobile-page main.py-14,
+    .flat-mobile-page section.py-16 {
+        padding-top: 0.75rem !important;
+        padding-bottom: max(1rem, env(safe-area-inset-bottom)) !important;
+    }
+
+    .flat-mobile-page .max-w-5xl.mx-auto.px-4.sm\:px-6.lg\:px-8.space-y-6,
+    .flat-mobile-page .max-w-4xl.mx-auto.px-4.sm\:px-6.lg\:px-8.space-y-8 {
+        row-gap: 0 !important;
+    }
+
+    .flat-mobile-page .bg-white.rounded-2xl.border.border-gray-200.p-7,
+    .flat-mobile-page .bg-white.rounded-xl.p-8.border.border-gray-200,
+    .flat-mobile-page .bg-blue-50.rounded-xl.p-8.border.border-blue-200 {
+        border: 0 !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+        box-shadow: none !important;
+        margin: 0 !important;
+        padding: 1rem 0 !important;
+        border-top: 1px solid #e2e8f0 !important;
+    }
+
+    .flat-mobile-page .max-w-5xl > .bg-white.rounded-2xl.border.border-gray-200.p-7:first-child,
+    .flat-mobile-page .max-w-4xl > .bg-white.rounded-xl.p-8.border.border-gray-200:first-child,
+    .flat-mobile-page .max-w-4xl > .bg-blue-50.rounded-xl.p-8.border.border-blue-200:first-child {
+        border-top: 0 !important;
+        padding-top: 0.25rem !important;
+    }
+
     .checkout-page {
         overflow-x: clip;
     }
