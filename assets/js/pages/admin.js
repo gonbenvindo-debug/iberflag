@@ -6,6 +6,24 @@ let adminWriteSessionLastError = '';
 let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
 const ADMIN_LOGIN_EMAIL = 'admin123@iberflag.pt';
+const FLYBANNER_HEIGHT_NAME_MAP = Object.freeze({
+    'fly-banner-surf-55-x-226-cm': 'Fly Banner Surf 290CM',
+    'fly-banner-surf-65-x-272-cm': 'Fly Banner Surf 340CM',
+    'fly-banner-surf-75-5-x-351-cm': 'Fly Banner Surf 400CM',
+    'fly-banner-surf-75-5-x-417-cm': 'Fly Banner Surf 500CM',
+    'fly-banner-surf-90-x-516-cm': 'Fly Banner Surf 600CM',
+    'fly-banner-drop-75-x-194-cm': 'Fly Banner Drop 245CM',
+    'fly-banner-drop-92-x-228-cm': 'Fly Banner Drop 300CM',
+    'fly-banner-drop-103-x-298-cm': 'Fly Banner Drop 350CM',
+    'fly-banner-drop-132-x-352-cm': 'Fly Banner Drop 440CM',
+    'fly-banner-drop-145-x-446-cm': 'Fly Banner Drop 540CM'
+});
+let flybannerHeightNamesSyncAttempted = false;
+
+function getFlybannerHeightName(slug, fallbackName = '') {
+    const normalizedSlug = String(slug || '').trim().toLowerCase();
+    return FLYBANNER_HEIGHT_NAME_MAP[normalizedSlug] || fallbackName;
+}
 
 function isAdminSupabaseReady() {
     return Boolean(
@@ -1116,6 +1134,70 @@ async function loadDashboard() {
 }
 
 // ===== PRODUCTS =====
+async function syncFlybannerHeightNames(products = []) {
+    if (flybannerHeightNamesSyncAttempted) {
+        return products;
+    }
+    flybannerHeightNamesSyncAttempted = true;
+
+    const candidates = (products || []).filter((product) => {
+        const expectedName = getFlybannerHeightName(product?.slug, '');
+        if (!expectedName) {
+            return false;
+        }
+        return String(product?.nome || '').trim() !== expectedName || String(product?.nome_es || '').trim() !== expectedName;
+    });
+
+    if (candidates.length === 0) {
+        return products;
+    }
+
+    const updateResults = await Promise.all(candidates.map(async (product) => {
+        const expectedName = getFlybannerHeightName(product?.slug, '');
+        if (!expectedName) {
+            return { id: product?.id, updated: false };
+        }
+
+        const { error } = await supabaseClient
+            .from('produtos')
+            .update({
+                nome: expectedName,
+                nome_es: expectedName
+            })
+            .eq('id', product.id);
+
+        if (error) {
+            console.warn('Nao foi possivel sincronizar nome Fly Banner:', product?.id, error);
+            return { id: product?.id, updated: false };
+        }
+
+        return { id: product?.id, updated: true, name: expectedName };
+    }));
+
+    const updatedById = new Map(
+        updateResults
+            .filter((entry) => entry.updated)
+            .map((entry) => [entry.id, entry.name])
+    );
+
+    if (updatedById.size > 0) {
+        showToast('Nomes dos Fly Banner atualizados para formato por altura.', 'success');
+        return (products || []).map((product) => {
+            const nextName = updatedById.get(product.id);
+            if (!nextName) {
+                return product;
+            }
+            return {
+                ...product,
+                nome: nextName,
+                nome_es: nextName
+            };
+        });
+    }
+
+    return products;
+}
+
 async function loadProducts() {
     try {
         const { data, error } = await supabaseClient
@@ -1124,15 +1206,16 @@ async function loadProducts() {
             .order('created_at', { ascending: false });
 
         if (error) throw error;
+        const syncedData = await syncFlybannerHeightNames(data || []);
 
         const tbody = document.getElementById('products-tbody');
 
-        if (data && data.length > 0) {
-            tbody.innerHTML = data.map(p => `
+        if (syncedData && syncedData.length > 0) {
+            tbody.innerHTML = syncedData.map(p => `
                 <tr>
                     <td>${p.id}</td>
                     <td><img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded"></td>
-                    <td class="font-semibold">${p.nome}</td>
+                    <td class="font-semibold">${escapeHtml(getFlybannerHeightName(p.slug, p.nome))}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
                     <td class="font-bold text-blue-600">${p.preco.toFixed(2)}€</td>
                     <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">Não</span>'}</td>
