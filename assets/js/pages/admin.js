@@ -1523,7 +1523,7 @@ if (productForm) {
             nome_es: productNomeEsField?.value || null,
             descricao: productDescricaoField?.value || '',
             descricao_es: productDescricaoEsField?.value || null,
-            preco: parseFloat(productPrecoField?.value || '0'),
+            preco: parseLocaleNumber(productPrecoField?.value || '0'),
             categoria: productCategoriaField?.value || '',
             imagem: productImageValue,
             svg_template: svgTemplateContent || null,
@@ -1729,7 +1729,7 @@ if (baseForm) {
             slug: slugify(nome),
             descricao: document.getElementById('base-descricao').value.trim() || null,
             imagem: baseImageValue,
-            preco_extra: parseFloat(document.getElementById('base-preco-extra').value || '0') || 0,
+            preco_extra: parseLocaleNumber(document.getElementById('base-preco-extra').value || '0'),
             ordem: parseInt(document.getElementById('base-ordem').value || '0', 10) || 0,
             ativo: document.getElementById('base-ativo').checked,
             disponivel: document.getElementById('base-disponivel').checked,
@@ -3796,3 +3796,14 @@ async function saveProductTemplates(productId) {
 window.editProduct = editProduct;
 window.deleteProduct = deleteProduct;
 
+
+
+
+function parseLocaleNumber(value) {
+    const normalized = String(value === undefined || value === null ? '' : value)
+        .trim()
+        .replace(/\s/g, '')
+        .replace(',', '.');
+    const parsed = Number.parseFloat(normalized);
+    return Number.isFinite(parsed) ? parsed : 0;
+}

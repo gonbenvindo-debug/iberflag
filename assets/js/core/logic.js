@@ -1233,6 +1233,124 @@ async function fetchProducts() {
     }
 }
 
+function normalizeComparableText(value) {
+    return String(value || '')
+        .toLowerCase()
+        .normalize('NFD')
+        .replace(/[\u0300-\u036f]/g, '')
+        .trim();
+}
+
+function detectPriceLocale() {
+    const path = String(window.location.pathname || '/');
+    return path.startsWith('/es') ? 'es-ES' : 'pt-PT';
+}
+
+function formatCatalogCurrency(value, locale = 'pt-PT') {
+    const amount = Number(value);
+    if (!Number.isFinite(amount)) {
+        return '0.00€';
+    }
+
+    try {
+        return `${amount.toLocaleString(locale, {
+            minimumFractionDigits: 2,
+            maximumFractionDigits: 2
+        })}€`;
+    } catch {
+        return `${amount.toFixed(2)}€`;
+    }
+}
+
+function updateProductDetailDom(product) {
+    const productId = Number(product?.id || 0);
+    if (!Number.isFinite(productId) || productId <= 0) {
+        return;
+    }
+
+    const locale = detectPriceLocale();
+    const isSpanish = locale === 'es-ES';
+    const localizedName = String((isSpanish ? product?.nome_es : null) || product?.nome || '').trim();
+    const formattedPrice = formatCatalogCurrency(product?.preco, locale);
+
+    if (!localizedName) {
+        return;
+    }
+
+    const pageTitleEl = document.querySelector('.product-page-title');
+    if (pageTitleEl) {
+        pageTitleEl.textContent = localizedName;
+    }
+
+    const breadcrumb = document.querySelector('.product-breadcrumb');
+    if (breadcrumb) {
+        const breadcrumbCurrent = breadcrumb.querySelector('span.text-slate-900');
+        if (breadcrumbCurrent) {
+            breadcrumbCurrent.textContent = localizedName;
+        }
+    }
+
+    const summaryPriceEl = document.querySelector('.product-summary-card .product-purchase-summary .text-4xl');
+    if (summaryPriceEl) {
+        summaryPriceEl.textContent = formattedPrice;
+    }
+
+    document.querySelectorAll('.product-info-panel-body dl dt').forEach((dt) => {
+        const label = normalizeComparableText(dt.textContent);
+        if (!label.includes('preco base') && !label.includes('precio base')) {
+            return;
+        }
+
+        const dd = dt.parentElement?.querySelector('dd');
+        if (dd) {
+            dd.textContent = formattedPrice;
+        }
+    });
+
+    document.querySelectorAll('[data-product-id]').forEach((node) => {
+        if (String(node.getAttribute('data-product-id') || '') !== String(productId)) {
+            return;
+        }
+        node.setAttribute('data-product-name', localizedName);
+    });
+
+    if (document.body) {
+        document.body.setAttribute('data-product-name', localizedName);
+    }
+}
+
+async function hydrateProductDetailPageFromSupabase() {
+    if (!supabaseClient || typeof supabaseClient.from !== 'function') {
+        return;
+    }
+
+    if (!document.querySelector('.product-page-title') || !document.querySelector('.product-summary-card')) {
+        return;
+    }
+
+    const productIdRaw = document.body?.getAttribute('data-product-id');
+    const productId = Number(productIdRaw || 0);
+    if (!Number.isFinite(productId) || productId <= 0) {
+        return;
+    }
+
+    try {
+        const { data, error } = await supabaseClient
+            .from('produtos')
+            .select('id,nome,nome_es,preco')
+            .eq('id', productId)
+            .single();
+
+        if (error || !data) {
+            return;
+        }
+
+        updateProductDetailDom(data);
+    } catch (error) {
+        console.warn('Falha ao atualizar dados live do produto:', error);
+    }
+}
+
 // ===== CART FUNCTIONS =====
 function updateCart() {
     refreshCartDomReferences();
@@ -1515,6 +1633,7 @@ if (cartBtn) {
 // ===== INITIALIZATION =====
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
+    hydrateProductDetailPageFromSupabase();
     initPageUiInteractions();
     scheduleProductCardTitleFit();
 
