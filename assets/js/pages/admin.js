@@ -1741,10 +1741,29 @@ async function deleteProduct(id) {
             .delete()
             .eq('id', id);
 
-        if (error) throw error;
+        if (error) {
+            // Keep order history intact: products referenced by itens_encomenda cannot be hard-deleted.
+            if (error.code === '23503') {
+                const { error: archiveError } = await supabaseClient
+                    .from('produtos')
+                    .update({
+                        ativo: false,
+                        destaque: false
+                    })
+                    .eq('id', id);
+
+                if (archiveError) throw archiveError;
+
+                showToast('Produto com histórico de encomendas: foi marcado como Inativo.', 'warning');
+                await loadProducts();
+                return;
+            }
+
+            throw error;
+        }
 
         showToast('Produto eliminado com sucess?!', 'success');
-        loadProducts();
+        await loadProducts();
 
     } catch (error) {
         console.error('Erro ao eliminar produto:', error);
