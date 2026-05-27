@@ -1,4 +1,4 @@
-// ===== ADMIN PANEL LOGIC =====
+Ôªø// ===== ADMIN PANEL LOGIC =====
 
 // -------- Authentication --------
 
@@ -68,15 +68,15 @@ function setAdminLoginEnabled(enabled) {
 
 function getAdminSupabaseBootstrapError() {
     if (!window.supabase || typeof window.supabase.createClient !== 'function') {
-        return 'SDK do Supabase nao foi carregado.';
+        return 'SDK do Supabase n√£o foi carregado.';
     }
 
     if (!window.APP_CONFIG?.SUPABASE_URL || !window.APP_CONFIG?.SUPABASE_ANON_KEY) {
-        return 'Configuracao do Supabase incompleta em APP_CONFIG.';
+        return 'Configura√ß√£o do Supabase incompleta em APP_CONFIG.';
     }
 
     if (!supabaseClient || typeof supabaseClient.from !== 'function') {
-        return 'N„o foi possÌvel inicializar o cliente Supabase.';
+        return 'N√£o foi poss√≠vel inicializar o cliente Supabase.';
     }
 
     return '';
@@ -91,7 +91,7 @@ function ensureAdminSupabaseReady() {
     }
 
     adminWriteSessionLastError = bootstrapError;
-    setAdminOverlayStatus(`Erro tecnico do admin: ${bootstrapError}`, 'error');
+    setAdminOverlayStatus(`Erro t√©cnico do admin: ${bootstrapError}`, 'error');
     setAdminLoginEnabled(false);
     showLoginOverlay();
     return false;
@@ -118,7 +118,7 @@ function buildAdminCustomizerUrl(productId, extraParams = {}) {
 async function validateAdminSession(session) {
     const accessToken = session?.access_token || '';
     if (!accessToken) {
-        adminWriteSessionLastError = 'Sessao admin invalida.';
+        adminWriteSessionLastError = 'Sess√£o admin inv√°lida.';
         return false;
     }
 
@@ -132,14 +132,14 @@ async function validateAdminSession(session) {
 
         const payload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            adminWriteSessionLastError = payload?.message || payload?.error || 'Utilizador sem permiss?es admin.';
+            adminWriteSessionLastError = payload?.message || payload?.error || 'Utilizador sem permiss√µes admin.';
             return false;
         }
 
         adminWriteSessionLastError = '';
         return true;
     } catch (error) {
-        adminWriteSessionLastError = error?.message || 'Falha ao validar permissao admin.';
+        adminWriteSessionLastError = error?.message || 'Falha ao validar permiss√£o admin.';
         return false;
     }
 }
@@ -162,8 +162,8 @@ async function ensureAdminWriteSession() {
         }
 
         adminWriteSessionLastError = session
-            ? (adminWriteSessionLastError || 'Sessao autenticada nao pertence ao admin autorizado.')
-            : 'Sem sessao autenticada.';
+            ? (adminWriteSessionLastError || 'Sess√£o autenticada n√£o pertence ao admin autorizado.')
+            : 'Sem sess√£o autenticada.';
 
         if (session) {
             await supabaseClient.auth.signOut();
@@ -172,7 +172,7 @@ async function ensureAdminWriteSession() {
         showLoginOverlay();
         return false;
     } catch (error) {
-        adminWriteSessionLastError = error?.message || 'Falha inesperada ao validar sessao.';
+        adminWriteSessionLastError = error?.message || 'Falha inesperada ao validar sess√£o.';
         showLoginOverlay();
         return false;
     }
@@ -180,13 +180,13 @@ async function ensureAdminWriteSession() {
 
 async function getAdminAccessToken() {
     if (!await ensureAdminWriteSession()) {
-        throw new Error(adminWriteSessionLastError || 'Sessao admin obrigatoria.');
+        throw new Error(adminWriteSessionLastError || 'Sess√£o admin obrigat√≥ria.');
     }
 
     const { data: { session } } = await supabaseClient.auth.getSession();
     const accessToken = session?.access_token || '';
     if (!accessToken) {
-        throw new Error('Sessao admin invalida.');
+        throw new Error('Sess√£o admin inv√°lida.');
     }
 
     return accessToken;
@@ -233,7 +233,7 @@ async function postAnalyticsEvent(eventName, payload = {}) {
             })
         });
     } catch (error) {
-        console.warn('N„o foi possÌvel registar evento analÌtico:', error);
+        console.warn('N√£o foi poss√≠vel registar evento anal√≠tico:', error);
     }
 }
 
@@ -289,7 +289,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const errorEl = document.getElementById('admin-login-error');
 
             if (!email) {
-                errorEl.textContent = 'O email interno do admin nao esta configurado.';
+                errorEl.textContent = 'O email interno do admin n√£o est√° configurado.';
                 errorEl.classList.remove('hidden');
                 return;
             }
@@ -317,7 +317,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     failedLoginAttempts = 0;
                 }
 
-                errorEl.textContent = 'Credenciais invalidas. Verifique a password do admin.';
+                errorEl.textContent = 'Credenciais inv√°lidas. Verifique a password do admin.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
@@ -327,7 +327,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const { data: { session } } = await supabaseClient.auth.getSession();
             if (!await validateAdminSession(session)) {
                 await supabaseClient.auth.signOut();
-                errorEl.textContent = adminWriteSessionLastError || 'Acesso nao autorizado para este utilizador.';
+                errorEl.textContent = adminWriteSessionLastError || 'Acesso n√£o autorizado para este utilizador.';
                 errorEl.classList.remove('hidden');
                 btn.disabled = false;
                 btnText.textContent = 'Entrar';
@@ -566,8 +566,8 @@ function renderDashboardMailHealth(mailHealth) {
     if (!container) return;
 
     const activeProvider = String(mailHealth?.activeProvider || 'none');
-    const fromEmail = String(mailHealth?.fromEmail || '').trim() || 'nao configurado';
-    const replyTo = String(mailHealth?.replyTo || '').trim() || 'nao configurado';
+    const fromEmail = String(mailHealth?.fromEmail || '').trim() || 'n√£o configurado';
+    const replyTo = String(mailHealth?.replyTo || '').trim() || 'n√£o configurado';
     const configured = activeProvider !== 'none';
     const toneClass = configured
         ? 'border-emerald-200 bg-emerald-50 text-emerald-800'
@@ -604,14 +604,14 @@ async function loadOperationsDashboard() {
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.title || 'Revis„o manual')}</p>
+                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.title || 'Revis√£o manual')}</p>
                             <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.details || 'Sem detalhe adicional.')}</p>
                         </div>
                         <span class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 rounded-full px-2 py-1">${escapeHtml(item.priority || 'normal')}</span>
                     </div>
                 </div>
             `,
-            'Sem itens em revis„o.'
+            'Sem itens em revis√£o.'
         );
 
         renderDashboardSimpleList(
@@ -620,10 +620,10 @@ async function loadOperationsDashboard() {
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.nome || 'Produto sem nome')}</p>
-                    <p class="mt-1 text-xs text-gray-600">Falta: ${escapeHtml(Array.isArray(item.missing) ? item.missing.join(', ') : 'configuraÁ„o base')}</p>
+                    <p class="mt-1 text-xs text-gray-600">Falta: ${escapeHtml(Array.isArray(item.missing) ? item.missing.join(', ') : 'configura√ß√£o base')}</p>
                 </div>
             `,
-            'Todos os produtos tÍm custo, preÁo e SLA base.'
+            'Todos os produtos t√™m custo, pre√ßo e SLA base.'
         );
 
         renderDashboardSimpleList(
@@ -631,7 +631,7 @@ async function loadOperationsDashboard() {
             payload?.failedEmails || [],
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
-                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.recipient || 'Sem destinat·rio')}</p>
+                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.recipient || 'Sem destinat√°rio')}</p>
                     <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.subject || 'Sem assunto')}</p>
                     <p class="mt-1 text-xs text-red-600">${escapeHtml(item.error_message || 'Falha desconhecida')}</p>
                 </div>
@@ -645,7 +645,7 @@ async function loadOperationsDashboard() {
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.numero_encomenda || 'Encomenda')}</p>
-                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.clientes?.nome || item.clientes?.email || 'Cliente sem identificaÁ„o')}</p>
+                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.clientes?.nome || item.clientes?.email || 'Cliente sem identifica√ß√£o')}</p>
                     <div class="mt-2 flex items-center justify-between gap-3 text-xs text-gray-500">
                         <span>${escapeHtml(formatDateTime(item.sla_target_at))}</span>
                         <span class="font-semibold text-amber-700">${escapeHtml(formatMarginEstimate(item.margin_estimate))}</span>
@@ -655,14 +655,14 @@ async function loadOperationsDashboard() {
             'Sem encomendas fora do prazo alvo.'
         );
     } catch (error) {
-        console.warn('N„o foi possÌvel carregar o dashboard operacional:', error);
+        console.warn('N√£o foi poss√≠vel carregar o dashboard operacional:', error);
         setDashboardMetricValue('ops-metric-review-queue', 0);
         setDashboardMetricValue('ops-metric-failed-emails', 0);
         setDashboardMetricValue('ops-metric-incomplete-products', 0);
         setDashboardMetricValue('ops-metric-sla-breaches', 0);
         renderDashboardMailHealth({});
-        renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revis„o.');
-        renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos tÍm custo, preÁo e SLA base.');
+        renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revis√£o.');
+        renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos t√™m custo, pre√ßo e SLA base.');
         renderDashboardSimpleList('dashboard-email-failures', [], () => '', 'Sem falhas recentes de email.');
         renderDashboardSimpleList('dashboard-sla-breaches', [], () => '', 'Sem encomendas fora do prazo alvo.');
     }
@@ -683,7 +683,7 @@ function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(new Error('N„o foi possÌvel ler o ficheiro.'));
+        reader.onerror = () => reject(new Error('N√£o foi poss√≠vel ler o ficheiro.'));
         reader.readAsDataURL(file);
     });
 }
@@ -692,7 +692,7 @@ function loadImageFromSrc(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('N„o foi possÌvel processar a imagem.'));
+        img.onerror = () => reject(new Error('N√£o foi poss√≠vel processar a imagem.'));
         img.src = src;
     });
 }
@@ -720,7 +720,7 @@ async function convertImageFileToWebPDataUrl(file, options = {}) {
 
     const context = canvas.getContext('2d');
     if (!context) {
-        throw new Error('N„o foi possÌvel preparar o convers?r de imagem.');
+        throw new Error('N√£o foi poss√≠vel preparar o conversor de imagem.');
     }
 
     context.clearRect(0, 0, width, height);
@@ -789,7 +789,7 @@ function bindAdminImageUpload(fileInput, setImageValue, label) {
             setImageValue(webpDataUrl, `${label} pronta em WebP.`, 'success');
         } catch (error) {
             console.error(`Erro ao converter ${label}:`, error);
-            setImageValue('', `N„o foi possÌvel converter ${label}. Tente outro ficheiro.`, 'error');
+            setImageValue('', `N√£o foi poss√≠vel converter ${label}. Tente outro ficheiro.`, 'error');
             showToast(`Erro ao converter ${label} para WebP`, 'error');
         } finally {
             fileInput.value = '';
@@ -841,7 +841,7 @@ async function loadBaseCatalog(force = false) {
 
     if (error) {
         if (isMissingBasesSchema(error)) {
-            console.warn('Schema de bases ainda n„o aplicado:', error.message);
+            console.warn('Schema de bases ainda n√£o aplicado:', error.message);
             baseCatalogCache = [];
             return [];
         }
@@ -864,8 +864,8 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
 
     if (allBases.length === 0) {
         productBasesAssignments.innerHTML = isFlybannerProductCategory(productCategoria)
-            ? '<p class="text-sm text-gray-500">Sem bases flybanner disponÌveis. Crie bases no separador "Bases Flybanner".</p>'
-            : '<p class="text-sm text-gray-500">Sem bases disponÌveis. Crie bases no separador "Bases".</p>';
+            ? '<p class="text-sm text-gray-500">Sem bases flybanner dispon√≠veis. Crie bases no separador "Bases Flybanner".</p>'
+            : '<p class="text-sm text-gray-500">Sem bases dispon√≠veis. Crie bases no separador "Bases".</p>';
         return;
     }
 
@@ -880,7 +880,7 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
                         <input type="checkbox" class="product-base-checkbox mt-1" value="${base.id}" ${checked ? 'checked' : ''}>
                         <div>
                             <p class="text-sm font-semibold text-gray-900">${escapeHtml(base.nome)}</p>
-                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' - Inativa'}${base.disponivel === false ? ' - Indisponivel no cliente' : ''}</p>
+                            <p class="text-xs text-gray-500">+${formatCurrency(base.preco_extra || 0)}${base.ativo ? '' : ' - Inativa'}${base.disponivel === false ? ' - Indispon√≠vel no cliente' : ''}</p>
                         </div>
                     </label>
                     <label class="text-xs text-gray-600 flex items-center gap-1.5">
@@ -993,7 +993,7 @@ async function saveProductBaseAssignments(productId) {
 const FLYBANNER_BASE_SLUGS = new Set([
     'flybanner-cruzeta-com-flutuador',
     'flybanner-base-parede',
-    'flybanner-base-parafus?-roscado',
+    'flybanner-base-parafuso-roscado',
     'flybanner-base-pica',
     'flybanner-base-hercules-12kg',
     'flybanner-base-agua',
@@ -1037,7 +1037,7 @@ function renderBasesTable(tbodyId, items = [], emptyMessage = 'Sem registos.', o
                 <td class="font-semibold">${escapeHtml(base.nome)}${nameBadge}</td>
                 <td class="font-bold text-blue-600">+${formatCurrency(base.preco_extra || 0)}</td>
                 <td>${base.ordem || 0}</td>
-                <td>${base.disponivel === false ? '<span class="badge badge-warning">Indisponivel</span>' : '<span class="badge badge-success">Disponivel</span>'}</td>
+                <td>${base.disponivel === false ? '<span class="badge badge-warning">Indispon√≠vel</span>' : '<span class="badge badge-success">Dispon√≠vel</span>'}</td>
                 <td>${base.ativo ? '<span class="badge badge-success">Ativa</span>' : '<span class="badge badge-danger">Inativa</span>'}</td>
                 <td>
                     <div class="flex gap-2">
@@ -1092,7 +1092,7 @@ async function loadDashboard() {
                     <img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded">
                     <div class="flex-1">
                         <h4 class="font-semibold text-sm">${p.nome}</h4>
-                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}Ä</p>
+                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}‚Ç¨</p>
                     </div>
                     <span class="badge badge-info">${p.categoria}</span>
                 </div>
@@ -1167,7 +1167,7 @@ async function syncFlybannerHeightNames(products = []) {
             .eq('id', product.id);
 
         if (error) {
-            console.warn('Nao foi possivel sincronizar nome Fly Banner:', product?.id, error);
+            console.warn('N√£o foi poss√≠vel sincronizar nome Fly Banner:', product?.id, error);
             return { id: product?.id, updated: false };
         }
 
@@ -1217,8 +1217,8 @@ async function loadProducts() {
                     <td><img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded"></td>
                     <td class="font-semibold">${escapeHtml(getFlybannerHeightName(p.slug, p.nome))}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
-                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}Ä</td>
-                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">N„o</span>'}</td>
+                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}‚Ç¨</td>
+                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">N√£o</span>'}</td>
                     <td>${p.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
                     <td>
                         <div class="flex gap-2">
@@ -1332,7 +1332,7 @@ function parseSvgTemplate(svgText) {
     const root = svgDoc.documentElement;
 
     if (parserError || !root || root.tagName.toLowerCase() !== 'svg') {
-        throw new Error('Ficheiro SVG invalido');
+        throw new Error('Ficheiro SVG inv√°lido');
     }
 
     svgDoc.querySelectorAll('script, foreignObject').forEach((node) => node.remove());
@@ -1452,7 +1452,7 @@ function renderSvgTemplatePreview() {
         openModal(svgPreviewModal, { closeOthers: false });
     } catch (error) {
         console.error('Erro ao renderizar preview SVG:', error);
-        showToast('N„o foi possÌvel gerar o preview do SVG', 'error');
+        showToast('N√£o foi poss√≠vel gerar o preview do SVG', 'error');
     }
 }
 
@@ -1475,7 +1475,7 @@ if (svgUpload) {
             parseSvgTemplate(text);
             setSvgTemplateContent(text, file.name);
 
-            showToast('SVG carregado com sucess?', 'success');
+            showToast('SVG carregado com sucesso.', 'success');
         } catch (error) {
             console.error('Erro ao ler ficheiro SVG:', error);
             showToast('Erro ao ler ficheiro SVG', 'error');
@@ -1511,9 +1511,9 @@ if (productForm) {
 
         const productNomeField = document.getElementById('product-nome');
         const productNomeEsField = document.getElementById('product-nome-es');
-        const productDescricaoField = document.getElementById('product-descricao') || document.getElementById('product-descriÁ„o');
+        const productDescricaoField = document.getElementById('product-descricao') || document.getElementById('product-descri√ß√£o');
         const productDescricaoEsField = document.getElementById('product-descricao-es');
-        const productPrecoField = document.getElementById('product-preco') || document.getElementById('product-preÁo');
+        const productPrecoField = document.getElementById('product-preco') || document.getElementById('product-pre√ßo');
         const productCategoriaField = document.getElementById('product-categoria');
         const productDestaqueField = document.getElementById('product-destaque');
         const productAtivoField = document.getElementById('product-ativo');
@@ -1562,7 +1562,7 @@ if (productForm) {
                 }
             }
 
-            showToast(currentProductId ? 'Produto atualizado com sucess?!' : 'Produto adicionado com sucess?!', 'success');
+            showToast(currentProductId ? 'Produto atualizado com sucesso.' : 'Produto adicionado com sucesso.', 'success');
             closeModal(productModal);
             resetSvgTemplateState();
             loadProducts();
@@ -1603,13 +1603,13 @@ async function editProduct(id) {
         const productNomeEs = el('product-nome-es');
         if (productNomeEs) productNomeEs.value = data.nome_es || '';
 
-        const productDescricao = el('product-descricao') || el('product-descriÁ„o');
+        const productDescricao = el('product-descricao') || el('product-descri√ß√£o');
         if (productDescricao) productDescricao.value = data.descricao || '';
 
         const productDescricaoEs = el('product-descricao-es');
         if (productDescricaoEs) productDescricaoEs.value = data.descricao_es || '';
 
-        const productPreco = el('product-preco') || el('product-preÁo');
+        const productPreco = el('product-preco') || el('product-pre√ßo');
         if (productPreco) productPreco.value = data.preco || '';
 
         const productCategoria = el('product-categoria');
@@ -1634,7 +1634,7 @@ async function editProduct(id) {
         if (modal) {
             openModal(modal);
         } else {
-            console.error('Modal product-modal nao encontrado no DOM');
+            console.error('Modal product-modal n√£o encontrado no DOM');
         }
 
         renderProductBaseAssignments([], null, currentProductCategoria);
@@ -1751,7 +1751,7 @@ if (baseForm) {
 
             if (result.error) throw result.error;
 
-            showToast(currentBaseId ? 'Base atualizada com sucess?!' : 'Base adicionada com sucess?!', 'success');
+            showToast(currentBaseId ? 'Base atualizada com sucesso.' : 'Base adicionada com sucesso.', 'success');
             closeModal(baseModal);
             await loadFlybannerBases();
             await loadBaseCatalog(true);
@@ -1805,7 +1805,7 @@ async function deleteBase(id) {
 
         if (error) throw error;
 
-        showToast('Base eliminada com sucess?!', 'success');
+        showToast('Base eliminada com sucesso.', 'success');
         await loadFlybannerBases();
         await loadBaseCatalog(true);
     } catch (error) {
@@ -1837,7 +1837,7 @@ async function deleteProduct(id) {
 
                 if (archiveError) throw archiveError;
 
-                showToast('Produto com histÛrico de encomendas: foi marcado como Inativo.', 'warning');
+                showToast('Produto com hist√≥rico de encomendas: foi marcado como Inativo.', 'warning');
                 await loadProducts();
                 return;
             }
@@ -1845,7 +1845,7 @@ async function deleteProduct(id) {
             throw error;
         }
 
-        showToast('Produto eliminado com sucess?!', 'success');
+        showToast('Produto eliminado com sucesso.', 'success');
         await loadProducts();
 
     } catch (error) {
@@ -1865,13 +1865,13 @@ function escapeHtml(value) {
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `${amount.toFixed(2)}Ä`;
+    return `${amount.toFixed(2)}‚Ç¨`;
 }
 
 function formatMarginEstimate(value) {
     const amount = Number(value);
     if (!Number.isFinite(amount)) {
-        return 'ó';
+        return '‚Äî';
     }
 
     const sign = amount > 0 ? '+' : '';
@@ -1881,9 +1881,9 @@ function formatMarginEstimate(value) {
 function formatFiscalScenarioLabel(value) {
     switch (String(value || '').trim()) {
         case 'pt_domestic':
-            return 'PT domÈstico';
+            return 'PT dom√©stico';
         case 'es_compatible_manual_review':
-            return 'ES compatÌvel';
+            return 'ES compat√≠vel';
         case 'international_manual_review':
             return 'Internacional';
         default:
@@ -1898,9 +1898,9 @@ function formatInvoiceStateLabel(value) {
         case 'ready_to_emit':
             return 'Pronta a emitir';
         case 'pending_manual_review':
-            return 'Revis„o manual';
+            return 'Revis√£o manual';
         case 'invoice_error':
-            return 'Erro de emiss„o';
+            return 'Erro de emiss√£o';
         case 'emitted':
             return 'Emitida';
         default:
@@ -1911,11 +1911,11 @@ function formatInvoiceStateLabel(value) {
 function formatFiscalScenarioLabel(value) {
     switch (String(value || '').trim()) {
         case 'pt_particular_art53':
-            return 'PT particular ∑ Art. 53';
+            return 'PT particular ¬∑ Art. 53';
         case 'pt_business_art53':
-            return 'PT empresa ∑ Art. 53';
+            return 'PT empresa ¬∑ Art. 53';
         case 'eu_consumer_art53':
-            return 'UE particular ∑ Art. 53';
+            return 'UE particular ¬∑ Art. 53';
         case 'eu_business_vies_valid':
             return 'UE empresa validada em VIES';
         case 'eu_business_vies_invalid_fallback':
@@ -1923,9 +1923,9 @@ function formatFiscalScenarioLabel(value) {
         case 'eu_business_vies_unavailable_fallback':
             return 'UE empresa com VIES indisponivel';
         case 'non_eu_manual_review':
-            return 'Fora UE ∑ Revis„o manual';
+            return 'Fora UE ¬∑ Revis√£o manual';
         case 'profile_override_manual_review':
-            return 'Perfil fiscal nao suportado';
+            return 'Perfil fiscal n√£o suportado';
         default:
             return 'Por definir';
     }
@@ -1938,7 +1938,7 @@ function formatInvoiceStateLabel(value) {
         case 'ready_to_emit':
             return 'Pronta a emitir';
         case 'pending_manual_review':
-            return 'Revisao manual';
+            return 'Revis√£o manual';
         case 'invoice_error':
             return 'Erro de emissao';
         case 'blocked':
@@ -1955,13 +1955,13 @@ function formatVatValidationStatusLabel(value) {
         case 'valid':
             return 'Validado';
         case 'invalid':
-            return 'Invalido';
+            return 'Inv√°lido';
         case 'unavailable':
-            return 'Indisponivel';
+            return 'Indispon√≠vel';
         case 'not_required':
-            return 'Nao aplicavel';
+            return 'N√£o aplic√°vel';
         default:
-            return 'Sem valida??o';
+            return 'Sem valida√ß√£o';
     }
 }
 
@@ -2272,11 +2272,11 @@ function armOrderDelete(orderId) {
 async function deleteOrderById(orderId) {
     const normalizedOrderId = String(orderId || '');
     if (!normalizedOrderId) {
-        throw new Error('ID da encomenda inv·lido.');
+        throw new Error('ID da encomenda inv√°lido.');
     }
 
     if (!await ensureAdminWriteSession()) {
-        throw new Error(adminWriteSessionLastError || 'Sess„o admin obrigatÛria.');
+        throw new Error(adminWriteSessionLastError || 'Sess√£o admin obrigat√≥ria.');
     }
 
     const { error: deleteItemsError } = await supabaseClient
@@ -2458,7 +2458,7 @@ async function viewOrder(id) {
         }
 
         if (!order) {
-            showToast('Encomenda nao encontrada', 'warning');
+            showToast('Encomenda n√£o encontrada', 'warning');
             return;
         }
 
@@ -2554,13 +2554,13 @@ async function viewOrder(id) {
                 : '#374151';
 
         const metaEl = document.getElementById('order-modal-meta');
-        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} ∑ ${formatDateTime(order.created_at)}`;
+        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} ¬∑ ${formatDateTime(order.created_at)}`;
 
         if (summaryBlock) {
             summaryBlock.innerHTML = `
                 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem;">
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">N∫ Encomenda</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">N¬∫ Encomenda</p>
                         <p style="font-size:0.875rem;font-weight:700;color:#111827;margin:0;">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
                     </div>
                     <div>
@@ -2584,11 +2584,11 @@ async function viewOrder(id) {
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;font-family:monospace;">${escapeHtml(tracking.trackingCode)}</p>
                     </div>` : ''}
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">FaturaÁ„o</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Fatura√ß√£o</p>
 <span class="badge badge-${resolveFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(resolveFacturalusaStatusLabel(facturalusaStatus))}</span>
                     </div>
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Decis„o fiscal</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Decis√£o fiscal</p>
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${escapeHtml(formatFiscalScenarioLabel(order.fiscal_scenario))}</p>
                         <p style="font-size:0.6875rem;color:#9ca3af;margin:0.2rem 0 0;">${escapeHtml(formatInvoiceStateLabel(order.invoice_state))}</p>
                     </div>
@@ -2626,7 +2626,7 @@ async function viewOrder(id) {
                         <span style="color:#374151;text-align:right;font-family:monospace;">${nif}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
-                        <span style="color:#9ca3af;flex-shrink:0;">PaÌs fiscal</span>
+                        <span style="color:#9ca3af;flex-shrink:0;">Pa√≠s fiscal</span>
                         <span style="color:#374151;text-align:right;">${escapeHtml(String(fiscalSnapshot.customer_fiscal_country || order.customer_fiscal_country || 'PT'))}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
@@ -2642,7 +2642,7 @@ async function viewOrder(id) {
         }
 
         if (facturalusaBlock) {
-            const documentNumber = escapeHtml(split.meta?.facturalusaDocumentNumber || 'Ainda n„o emitido');
+            const documentNumber = escapeHtml(split.meta?.facturalusaDocumentNumber || 'Ainda n√£o emitido');
             const documentUrl = String(split.meta?.facturalusaDocumentUrl || '').trim();
             const lastError = String(split.meta?.facturalusaLastError || '').trim();
             const lastAttempt = split.meta?.facturalusaLastAttemptAt || '';
@@ -2660,12 +2660,12 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                 </div>
                 <div style="display:grid;gap:0.45rem;font-size:0.8125rem;margin-top:0.75rem;">
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;">
-                        <span style="color:#9ca3af;">N˙mero</span>
+                        <span style="color:#9ca3af;">N√∫mero</span>
                         <span style="font-weight:600;color:#111827;text-align:right;">${documentNumber}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;">
-                        <span style="color:#9ca3af;">⁄ltima tentativa</span>
-                        <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : 'ó'}</span>
+                        <span style="color:#9ca3af;">√öltima tentativa</span>
+                        <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : '‚Äî'}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
                         <span style="color:#9ca3af;flex-shrink:0;">Envio email</span>
@@ -2680,7 +2680,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <span style="font-size:0.75rem;color:#b45309;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(String(latestInvoiceEmailLog.error_message))}</span>
                     </div>` : ''}
                 </div>
-                ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a faturaÁ„o assim que a conta Facturalusa estiver pronta.</p>' : ''}
+                ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a fatura√ß√£o assim que a conta Facturalusa estiver pronta.</p>' : ''}
             `;
         }
 
@@ -2696,12 +2696,12 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <span style="font-weight:600;color:#374151;text-align:right;">${escapeHtml(vatRegimeCode || 'Artigo 53 / sem IVA')}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
-                        <span style="color:#9ca3af;flex-shrink:0;">ValidaÁ„o VAT</span>
-                        <span style="font-size:0.75rem;color:#374151;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(formatVatValidationStatusLabel(vatValidationStatus))}${vatValidationNumber ? ` ∑ ${escapeHtml(vatValidationNumber)}` : ''}</span>
+                        <span style="color:#9ca3af;flex-shrink:0;">Valida√ß√£o VAT</span>
+                        <span style="font-size:0.75rem;color:#374151;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(formatVatValidationStatusLabel(vatValidationStatus))}${vatValidationNumber ? ` ¬∑ ${escapeHtml(vatValidationNumber)}` : ''}</span>
                     </div>
                 </div>
                 ${divergenceMessage ? `<div style="margin-top:0.85rem;border:1px solid #f59e0b;background:#fffbeb;border-radius:0.75rem;padding:0.75rem;">
-                    <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin:0 0 0.25rem;">DivergÍncia fiscal</p>
+                    <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin:0 0 0.25rem;">Diverg√™ncia fiscal</p>
                     <p style="font-size:0.75rem;color:#92400e;margin:0;">${escapeHtml(divergenceMessage)}</p>
                 </div>` : ''}
             `);
@@ -2760,7 +2760,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
 
                     const optionsHtml = itemOptions.length > 0
                         ? `<ul style="margin:0.25rem 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.2rem;">${itemOptions.map((o) => `<li style="font-size:0.75rem;color:#6b7280;"><span style="font-weight:500;color:#374151;">${escapeHtml(o.label)}:</span> ${escapeHtml(o.value)}</li>`).join('')}</ul>`
-                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opÁıes</p>`;
+                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem op√ß√µes</p>`;
 
                     return `<tr style="border-bottom:1px solid #f9fafb;">
                         <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;width:5rem;">${designCell}</td>
@@ -2779,7 +2779,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <thead>
                             <tr style="border-bottom:1px solid #e5e7eb;">
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;width:5rem;">Design</th>
-                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / OpÁıes</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / Op√ß√µes</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:2.5rem;">Qtd</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">P. Unit.</th>
                                 <th style="padding:0 0 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">Subtotal</th>
@@ -2819,7 +2819,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                     }).join('');
                 historyList.innerHTML = `<table style="width:100%;border-collapse:collapse;"><tbody>${historyRows}</tbody></table>`;
             } else {
-                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histÛrico de atualizaÁıes.</p>';
+                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem hist√≥rico de atualiza√ß√µes.</p>';
             }
         }
 
@@ -3052,7 +3052,7 @@ function openAdminDesignViewer(designKey) {
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
     img.src = entry.svgDataUrl || entry.previewUrl || '';
-    if (title) title.textContent = `Design ó ${entry.name || 'Produto'}`;
+    if (title) title.textContent = `Design ‚Äî ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         if (entry.svgDataUrl) {
             downloadBtn.href = entry.svgDataUrl;
@@ -3078,7 +3078,7 @@ document.addEventListener('click', (event) => {
     if (deleteBtn) {
         const orderId = deleteBtn.getAttribute('data-order-id');
         if (!orderId) {
-            showToast('ID da encomenda invalido', 'warning');
+            showToast('ID da encomenda inv√°lido', 'warning');
             return;
         }
 
@@ -3116,7 +3116,7 @@ document.addEventListener('click', (event) => {
 
     const orderId = viewBtn.getAttribute('data-order-id');
     if (!orderId) {
-        showToast('ID da encomenda invalido', 'warning');
+        showToast('ID da encomenda inv√°lido', 'warning');
         return;
     }
 
@@ -3217,19 +3217,19 @@ if (saveOrderBtn) {
 
             if (error) throw error;
 
-            showToast('Encomenda atualizada com sucess?!', 'success');
+            showToast('Encomenda atualizada com sucesso.', 'success');
 
             if (nextWorkflowStatus !== previousWorkflowStatus) {
                 try {
                     const emailResult = await sendOrderStatusUpdateEmail(currentOrderId, nextWorkflowStatus);
                     if (emailResult?.sent) {
-                        showToast('Email de atualizacao enviado ao cliente', 'success');
+                        showToast('Email de atualiza√ß√£o enviado ao cliente', 'success');
                     } else if (emailResult?.reason && !['DUPLICATE_EMAIL', 'STATUS_EMAIL_NOT_ENABLED'].includes(emailResult.reason)) {
-                        showToast(`Email nao enviado: ${emailResult.message || emailResult.reason}`, 'warning');
+                        showToast(`Email n√£o enviado: ${emailResult.message || emailResult.reason}`, 'warning');
                     }
                 } catch (emailError) {
                     console.warn('Encomenda atualizada, mas o email de estado falhou:', emailError);
-                    showToast(`Encomenda atualizada. Email nao enviado: ${emailError?.message || 'erro de email'}`, 'warning');
+                    showToast(`Encomenda atualizada. Email n√£o enviado: ${emailError?.message || 'erro de email'}`, 'warning');
                 }
             }
 
@@ -3309,10 +3309,10 @@ function resolveFacturalusaStatusLabel(status) {
 
     const labels = {
         emitted: 'Fatura emitida',
-        pending: 'FaturaÁ„o pendente',
-        blocked: 'Requer atenÁ„o',
-        error: 'Erro de faturaÁ„o',
-        not_required: 'Ainda n„o aplic·vel'
+        pending: 'Fatura√ß√£o pendente',
+        blocked: 'Requer aten√ß√£o',
+        error: 'Erro de fatura√ß√£o',
+        not_required: 'Ainda n√£o aplic√°vel'
     };
 
     return labels[String(status || '').trim()] || 'Sem estado';
@@ -3350,7 +3350,7 @@ async function deleteClient(id) {
 
         if (error) {
             if (error.code === '23503') {
-                showToast('N„o È possÌvel apagar: cliente com encomendas associadas.', 'warning');
+                showToast('N√£o √© poss√≠vel apagar: cliente com encomendas associadas.', 'warning');
                 return;
             }
             throw error;
@@ -3396,7 +3396,7 @@ async function viewClient(id) {
         if (clientError) throw clientError;
         if (ordersError) throw ordersError;
         if (!client) {
-            throw new Error('Cliente n„o encontrado.');
+            throw new Error('Cliente n√£o encontrado.');
         }
 
         if (titleEl) titleEl.textContent = client.nome || 'Cliente sem nome';
@@ -3407,11 +3407,11 @@ async function viewClient(id) {
                 <tr>
                     <td class="py-2 pr-3 font-semibold text-gray-900">${escapeHtml(order.numero_encomenda || `#${order.id}`)}</td>
                     <td class="py-2 pr-3 text-gray-600">${escapeHtml(order.status || '?')}</td>
-                    <td class="py-2 pr-3 text-gray-600">${Number(order.total || 0).toFixed(2)}Ä</td>
+                    <td class="py-2 pr-3 text-gray-600">${Number(order.total || 0).toFixed(2)}‚Ç¨</td>
                     <td class="py-2 text-gray-500">${escapeHtml(formatDateTime(order.created_at))}</td>
                 </tr>
             `).join('')
-            : '<tr><td colspan="4" class="py-3 text-gray-500">Sem encomendas ass?ciadas.</td></tr>';
+            : '<tr><td colspan="4" class="py-3 text-gray-500">Sem encomendas associadas.</td></tr>';
 
         if (bodyEl) {
             bodyEl.innerHTML = `
@@ -3422,7 +3422,7 @@ async function viewClient(id) {
                         <p class="mt-1 text-gray-700">${escapeHtml(client.telefone || '?')}</p>
                     </div>
                     <div class="rounded-lg bg-white p-4 border border-gray-200">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">FaturaÁ„o</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Fatura√ß√£o</p>
                         <p class="mt-2 text-gray-900">${escapeHtml(client.empresa || 'Particular')}</p>
                         <p class="mt-1 text-gray-700">NIF: ${escapeHtml(client.nif || '?')}</p>
                     </div>
@@ -3438,7 +3438,7 @@ async function viewClient(id) {
                         <table class="w-full text-left text-sm">
                             <thead>
                                 <tr class="text-xs uppercase tracking-wide text-gray-500">
-                                    <th class="pb-2 pr-3">CÛdigo</th>
+                                    <th class="pb-2 pr-3">C√≥digo</th>
                                     <th class="pb-2 pr-3">Estado</th>
                                     <th class="pb-2 pr-3">Total</th>
                                     <th class="pb-2">Data</th>
@@ -3554,7 +3554,7 @@ function confirmTemplateDeleteCard(templateName = '') {
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900">Apagar template</h3>
-                        <p class="text-sm text-gray-600 mt-1">Esta aÁ„o remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e n„o pode ser desfeita.</p>
+                        <p class="text-sm text-gray-600 mt-1">Esta a√ß√£o remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e n√£o pode ser desfeita.</p>
                     </div>
                 </div>
                 <div class="mt-5 flex flex-col-reverse sm:flex-row gap-3 justify-end">
@@ -3605,7 +3605,7 @@ function confirmTemplateDeleteCard(templateName = '') {
 
 async function deleteTemplateFromCard(templateId) {
     if (!templateId) {
-        console.error('ID de template inv·lido:', templateId);
+        console.error('ID de template inv√°lido:', templateId);
         return;
     }
 
@@ -3613,15 +3613,15 @@ async function deleteTemplateFromCard(templateId) {
     const template = templatesCatalogCache.find((item) => item.id === templateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
     if (!confirmed) {
-        console.log('Usu·rio cancelou a exclus„o');
+        console.log('Usu√°rio cancelou a exclus√£o');
         return;
     }
 
     const hasWriteSession = await ensureAdminWriteSession();
     if (!hasWriteSession) {
         const authMsg = adminWriteSessionLastError
-            ? `Sem sess„o de escrita no Supabase: ${adminWriteSessionLastError}`
-            : 'Sem sess„o de escrita no Supabase. Inicie sess„o admin real para apagar templates.';
+            ? `Sem sess√£o de escrita no Supabase: ${adminWriteSessionLastError}`
+            : 'Sem sess√£o de escrita no Supabase. Inicie sess√£o admin real para apagar templates.';
         showToast(authMsg, 'error');
         return;
     }
@@ -3633,7 +3633,7 @@ async function deleteTemplateFromCard(templateId) {
             .eq('template_id', templateId);
 
         if (deleteLinksError) {
-            console.warn('Erro ao remover vÌnculos do template:', deleteLinksError.message);
+            console.warn('Erro ao remover v√≠nculos do template:', deleteLinksError.message);
         }
 
         const { error: deleteTemplateError } = await supabaseClient
@@ -3643,7 +3643,7 @@ async function deleteTemplateFromCard(templateId) {
 
         if (deleteTemplateError) throw deleteTemplateError;
 
-        showToast('Template apagado com sucess?', 'success');
+        showToast('Template apagado com sucesso.', 'success');
         await loadTemplatesCatalog(true);
         renderProductTemplatesGrid();
     } catch (error) {
@@ -3658,12 +3658,12 @@ async function deleteTemplateFromCard(templateId) {
 function renderProductTemplatesGrid() {
     const grid = document.getElementById('product-templates-grid');
     if (!grid) {
-        console.error('Grid de templates n„o encontrado');
+        console.error('Grid de templates n√£o encontrado');
         return;
     }
 
     console.log('Renderizando grid de templates...');
-    console.log('Templates disponÌveis:', templatesCatalogCache.length);
+    console.log('Templates dispon√≠veis:', templatesCatalogCache.length);
 
     // Log para debug dos IDs
     if (templatesCatalogCache.length > 0) {
@@ -3718,17 +3718,17 @@ function renderProductTemplatesGrid() {
     newGrid.addEventListener('click', (event) => {
         const target = event.target;
 
-        // Bot„o de lixo
+        // Bot√£o de lixo
         const deleteBtn = target.closest('.template-edit-btn');
         if (deleteBtn) {
             event.preventDefault();
             event.stopPropagation();
-            console.log('Bot„o apagar clicado:', deleteBtn.dataset.templateId);
+            console.log('Bot√£o apagar clicado:', deleteBtn.dataset.templateId);
             deleteTemplateFromCard(deleteBtn.dataset.templateId);
             return;
         }
 
-        // Clique no card (mas n„o no bot„o)
+        // Clique no card (mas n√£o no bot√£o)
         const card = target.closest('.template-toggle-card');
         if (card) {
             console.log('Card clicado:', card.dataset.templateId);
@@ -3807,3 +3807,4 @@ function parseLocaleNumber(value) {
     const parsed = Number.parseFloat(normalized);
     return Number.isFinite(parsed) ? parsed : 0;
 }
+

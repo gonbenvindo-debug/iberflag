@@ -282,7 +282,7 @@
                     <div class="admin-card">
                         <h3 class="font-bold text-lg mb-4">Emails Falhados</h3>
                         <div id="dashboard-mail-health" class="mb-3 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-xs text-slate-600">
-                            A carregar configuraÃ§Ã£o de email...
+                            A carregar configuração de email...
                         </div>
                         <div id="dashboard-email-failures" class="space-y-3">
                             <p class="text-sm text-gray-400">A carregar...</p>
@@ -426,7 +426,7 @@
                                 <option value="pending">Pendente</option>
                                 <option value="pending_manual_review">Revisão fiscal</option>
                                 <option value="emitted">Emitida</option>
-                                <option value="blocked">Requer aténção</option>
+                                <option value="blocked">Requer atenção</option>
                                 <option value="error">Erro</option>
                             </select>
                         </div>
@@ -543,7 +543,7 @@
 
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="base-descrição" rows="3" class="form-input" placeholder="Descrição da base"></textarea>
+                    <textarea id="base-descricao" rows="3" class="form-input" placeholder="Descrição da base"></textarea>
                 </div>
 
                 <div class="space-y-3">
@@ -559,7 +559,7 @@
                 <div class="grid grid-cols-1 gap-4">
                     <div>
                         <label class="form-label">Preço Extra (€)</label>
-                        <input type="number" id="base-preço-extra" step="0.01" min="0" class="form-input" value="0">
+                        <input type="number" id="base-preco-extra" step="0.01" min="0" class="form-input" value="0">
                     </div>
                     <div>
                         <label class="form-label">Ordem</label>
@@ -574,13 +574,13 @@
 
                 <div class="flex items-center gap-2">
                     <input type="checkbox" id="base-disponivel" checked="" class="custom-checkbox">
-                    <label class="text-sm font-semibold">Disponivel no popup do cliente</label>
+                    <label class="text-sm font-semibold">Disponível no popup do cliente</label>
                 </div>
 
                 <div>
                     <label class="form-label">Nota de indisponibilidade</label>
-                    <input type="text" id="base-nota-indisponibilidade" class="form-input" placeholder="Ex: Indisponivel de momento">
-                    <p class="mt-2 text-xs text-gray-500">Mostrada ao cliente quando a opcao estiver visivel mas desativada.</p>
+                    <input type="text" id="base-nota-indisponibilidade" class="form-input" placeholder="Ex: Indisponível de momento">
+                    <p class="mt-2 text-xs text-gray-500">Mostrada ao cliente quando a opção estiver visível mas desativada.</p>
                 </div>
 
                 <div class="flex gap-3 pt-4 border-t">
@@ -669,7 +669,7 @@
                     </div>
                     <div>
                         <label class="form-label">Preço (€) *</label>
-                        <input type="number" id="product-preço" required="" step="0.01" min="0" class="form-input" placeholder="29.99">
+                        <input type="number" id="product-preco" required="" step="0.01" min="0" class="form-input" placeholder="29.99">
                     </div>
                 </div>
 
@@ -682,7 +682,7 @@
                             <option value="mastros">Mastros</option>
                             <option value="bases">Bases de Fixação</option>
                             <option value="lonas">Lonas e Banners</option>
-                            <option value=" Kits">Kits Completos</option>
+                            <option value="kits">Kits Completos</option>
                             <option value="acessorios">Acessórios</option>
                         </select>
                     </div>
@@ -700,12 +700,12 @@
 
                 <div>
                     <label class="form-label">Descrição</label>
-                    <textarea id="product-descrição" rows="3" class="form-input" placeholder="Descrição detalhada do produto..."></textarea>
+                    <textarea id="product-descricao" rows="3" class="form-input" placeholder="Descrição detalhada do produto..."></textarea>
                 </div>
 
                 <div>
-                    <label class="form-label">DescripciÃ³n (ES)</label>
-                    <textarea id="product-descricao-es" rows="3" class="form-input" placeholder="DescripciÃ³n detallada del producto..."></textarea>
+                    <label class="form-label">Descripción (ES)</label>
+                    <textarea id="product-descricao-es" rows="3" class="form-input" placeholder="Descripción detallada del producto..."></textarea>
                 </div>
 
                 <!-- Checkboxes -->
@@ -720,11 +720,11 @@
                     </div>
                 </div>
 
-                <!-- Formato SVG do Produto (define a zona editavel) -->
+                <!-- Formato SVG do Produto (define a zona editável) -->
                 <div class="border-t pt-6">
                     <div class="mb-4">
                         <h3 class="font-bold text-lg">Formato do Produto (SVG)</h3>
-                        <p class="text-sm text-gray-500 mt-0.5">Ficheiro SVG que define a forma e zona editavel do
+                        <p class="text-sm text-gray-500 mt-0.5">Ficheiro SVG que define a forma e zona editável do
                             produto. Igual para todos os designs.</p>
                     </div>
 
