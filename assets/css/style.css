@@ -1964,6 +1964,25 @@ body[data-analytics-event="view_product"] .product-hero-trust-title {
     letter-spacing: -0.01em;
 }
 
+@media (min-width: 1024px) {
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-media {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-trust {
+        grid-column: 1;
+        grid-row: 2;
+        margin-top: 0.9rem !important;
+        align-self: start;
+    }
+
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-copy {
+        grid-column: 2;
+        grid-row: 1 / span 2;
+    }
+}
+
 .breadcrumb a:hover {
     color: var(--primary);
 }
