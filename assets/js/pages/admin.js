@@ -2797,9 +2797,14 @@ async function loadClients() {
                     <td>${escapeHtml(c.empresa || 'N/A')}</td>
                     <td>${escapeHtml(new Date(c.created_at).toLocaleDateString('pt-PT'))}</td>
                     <td>
-                        <button onclick="viewClient('${escapeHtml(c.id)}')" class="text-blue-600 hover:text-blue-800">
-                            <i data-lucide="eye" class="w-4 h-4"></i>
-                        </button>
+                        <div class="flex items-center gap-2">
+                            <button onclick="viewClient('${escapeHtml(c.id)}')" class="text-blue-600 hover:text-blue-800" title="Ver">
+                                <i data-lucide="eye" class="w-4 h-4"></i>
+                            </button>
+                            <button onclick="deleteClient('${escapeHtml(c.id)}')" class="text-red-600 hover:text-red-800" title="Apagar">
+                                <i data-lucide="trash-2" class="w-4 h-4"></i>
+                            </button>
+                        </div>
                     </td>
                 </tr>
             `).join('');
@@ -3244,6 +3249,36 @@ function resolveFacturalusaStatusColor(status) {
     };
 
     return colors[String(status || '').trim()] || 'info';
+}
+
+async function deleteClient(id) {
+    const clientId = String(id || '').trim();
+    if (!clientId) {
+        return;
+    }
+
+    if (!confirm('Tem a certeza que deseja apagar este cliente?')) return;
+
+    try {
+        const { error } = await supabaseClient
+            .from('clientes')
+            .delete()
+            .eq('id', clientId);
+
+        if (error) {
+            if (error.code === '23503') {
+                showToast('Não é possível apagar: cliente com encomendas associadas.', 'warning');
+                return;
+            }
+            throw error;
+        }
+
+        showToast('Cliente apagado com sucesso.', 'success');
+        await loadClients();
+    } catch (error) {
+        console.error('Erro ao apagar cliente:', error);
+        showToast('Erro ao apagar cliente', 'error');
+    }
 }
 
 async function viewClient(id) {
