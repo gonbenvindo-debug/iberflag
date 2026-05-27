@@ -201,6 +201,106 @@
       "permanent": true
     },
     {
+      "source": "/produto/fly-banner-drop-75-x-194-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-drop-245cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-drop-92-x-228-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-drop-300cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-drop-103-x-298-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-drop-350cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-drop-132-x-352-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-drop-440cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-drop-145-x-446-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-drop-540cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-surf-55-x-226-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-surf-290cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-surf-65-x-272-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-surf-340cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-surf-75-5-x-351-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-surf-400cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-surf-75-5-x-417-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-surf-500cm",
+      "permanent": true
+    },
+    {
+      "source": "/produto/fly-banner-surf-90-x-516-cm",
+      "destination": "https://iberflag.com/produto/fly-banner-surf-600cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-drop-75-x-194-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-drop-245cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-drop-92-x-228-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-drop-300cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-drop-103-x-298-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-drop-350cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-drop-132-x-352-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-drop-440cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-drop-145-x-446-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-drop-540cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-surf-55-x-226-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-surf-290cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-surf-65-x-272-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-surf-340cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-surf-75-5-x-351-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-surf-400cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-surf-75-5-x-417-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-surf-500cm",
+      "permanent": true
+    },
+    {
+      "source": "/es/produto/fly-banner-surf-90-x-516-cm",
+      "destination": "https://iberflag.com/es/produto/fly-banner-surf-600cm",
+      "permanent": true
+    },
+    {
       "source": "/produto/bandeiras-horizontais-tamanho-unico",
       "destination": "https://iberflag.com/produtos/bandeiras",
       "permanent": true

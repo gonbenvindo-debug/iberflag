@@ -88,23 +88,23 @@ const PRODUCT_SEO_OVERRIDES = {
         description: 'Tenda publicitaria personalizada 3 x 6 m de grande formato para eventos, feiras e ativacoes com cobertura ampla e maxima visibilidade.',
         seoDescription: 'Tenda personalizada 3 x 6 m para eventos, feiras e ativacoes de marca de grande formato.'
     },
-    'fly-banner-drop-75-x-194-cm': {
+    'fly-banner-drop-245cm': {
         description: 'Fly Banner Drop personalizado 75 x 194 cm com forma de gota, ideal para promocoes, pontos de venda e eventos com presenca dinamica.',
         seoDescription: 'Fly Banner Drop 75 x 194 cm personalizado para eventos, exterior, promocoes e pontos de venda.'
     },
-    'fly-banner-drop-92-x-228-cm': {
+    'fly-banner-drop-300cm': {
         description: 'Fly Banner Drop personalizado 92 x 228 cm com maior altura, pensado para destacar mensagens de marca em exterior, eventos e acessos.',
         seoDescription: 'Fly Banner Drop 92 x 228 cm personalizado para exterior e eventos com impressao profissional.'
     },
-    'fly-banner-drop-103-x-298-cm': {
+    'fly-banner-drop-350cm': {
         description: 'Fly Banner Drop personalizado 103 x 298 cm de grande visibilidade para campanhas, ativacoes e espacos exteriores com trafego de pessoas.',
         seoDescription: 'Fly Banner Drop 103 x 298 cm personalizado para campanhas, eventos e comunicacao exterior.'
     },
-    'fly-banner-drop-132-x-352-cm': {
+    'fly-banner-drop-440cm': {
         description: 'Fly Banner Drop personalizado 132 x 352 cm de grande formato para reforcar presenca de marca em eventos, acessos e zonas exteriores.',
         seoDescription: 'Fly Banner Drop 132 x 352 cm de grande formato para eventos, promocoes e exterior.'
     },
-    'fly-banner-drop-145-x-446-cm': {
+    'fly-banner-drop-540cm': {
         description: 'Fly Banner Drop personalizado 145 x 446 cm extra alto para maxima presenca visual em exterior, campanhas, eventos e acessos principais.',
         seoDescription: 'Fly Banner Drop 145 x 446 cm extra alto para maxima visibilidade em exterior e eventos.'
     },
@@ -116,23 +116,23 @@ const PRODUCT_SEO_OVERRIDES = {
         description: 'Fly Banner retangular personalizado 70 x 280 cm de maior altura para campanhas que precisam de leitura vertical e presenca de marca.',
         seoDescription: 'Fly Banner retangular 70 x 280 cm personalizado para exterior, feiras e eventos.'
     },
-    'fly-banner-surf-55-x-226-cm': {
+    'fly-banner-surf-290cm': {
         description: 'Fly Banner Surf personalizado 55 x 226 cm com forma de vela, leve e chamativo para campanhas, eventos e comunicacao exterior.',
         seoDescription: 'Fly Banner Surf 55 x 226 cm personalizado com forma de vela para campanhas e eventos.'
     },
-    'fly-banner-surf-65-x-272-cm': {
+    'fly-banner-surf-340cm': {
         description: 'Fly Banner Surf personalizado 65 x 272 cm com presenca vertical e desenho dinamico para eventos, promocoes e sinalizacao exterior.',
         seoDescription: 'Fly Banner Surf 65 x 272 cm personalizado para eventos, promocoes e sinalizacao exterior.'
     },
-    'fly-banner-surf-75-5-x-351-cm': {
+    'fly-banner-surf-400cm': {
         description: 'Fly Banner Surf personalizado 75,5 x 351 cm de grande altura para campanhas com forte presenca visual em exterior e feiras.',
         seoDescription: 'Fly Banner Surf 75,5 x 351 cm personalizado para exterior, feiras e ativacoes de marca.'
     },
-    'fly-banner-surf-75-5-x-417-cm': {
+    'fly-banner-surf-500cm': {
         description: 'Fly Banner Surf personalizado 75,5 x 417 cm extra visivel para eventos e espacos exteriores onde a marca precisa de destaque a distancia.',
         seoDescription: 'Fly Banner Surf 75,5 x 417 cm personalizado para eventos e espacos exteriores.'
     },
-    'fly-banner-surf-90-x-516-cm': {
+    'fly-banner-surf-600cm': {
         description: 'Fly Banner Surf personalizado 90 x 516 cm de formato maximo para campanhas exteriores, acessos, eventos e ativacoes de grande impacto.',
         seoDescription: 'Fly Banner Surf 90 x 516 cm personalizado para campanhas exteriores e eventos de grande impacto.'
     },

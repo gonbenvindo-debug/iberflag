@@ -1,4 +1,4 @@
-ï»¿// ===== ADMIN PANEL LOGIC =====
+// ===== ADMIN PANEL LOGIC =====
 
 // -------- Authentication --------
 
@@ -7,16 +7,16 @@ let failedLoginAttempts = 0;
 let loginBlockedUntil = 0;
 const ADMIN_LOGIN_EMAIL = 'admin123@iberflag.pt';
 const FLYBANNER_HEIGHT_NAME_MAP = Object.freeze({
-    'fly-banner-surf-55-x-226-cm': 'Fly Banner Surf 290CM',
-    'fly-banner-surf-65-x-272-cm': 'Fly Banner Surf 340CM',
-    'fly-banner-surf-75-5-x-351-cm': 'Fly Banner Surf 400CM',
-    'fly-banner-surf-75-5-x-417-cm': 'Fly Banner Surf 500CM',
-    'fly-banner-surf-90-x-516-cm': 'Fly Banner Surf 600CM',
-    'fly-banner-drop-75-x-194-cm': 'Fly Banner Drop 245CM',
-    'fly-banner-drop-92-x-228-cm': 'Fly Banner Drop 300CM',
-    'fly-banner-drop-103-x-298-cm': 'Fly Banner Drop 350CM',
-    'fly-banner-drop-132-x-352-cm': 'Fly Banner Drop 440CM',
-    'fly-banner-drop-145-x-446-cm': 'Fly Banner Drop 540CM'
+    'fly-banner-surf-290cm': 'Fly Banner Surf 290CM',
+    'fly-banner-surf-340cm': 'Fly Banner Surf 340CM',
+    'fly-banner-surf-400cm': 'Fly Banner Surf 400CM',
+    'fly-banner-surf-500cm': 'Fly Banner Surf 500CM',
+    'fly-banner-surf-600cm': 'Fly Banner Surf 600CM',
+    'fly-banner-drop-245cm': 'Fly Banner Drop 245CM',
+    'fly-banner-drop-300cm': 'Fly Banner Drop 300CM',
+    'fly-banner-drop-350cm': 'Fly Banner Drop 350CM',
+    'fly-banner-drop-440cm': 'Fly Banner Drop 440CM',
+    'fly-banner-drop-540cm': 'Fly Banner Drop 540CM'
 });
 let flybannerHeightNamesSyncAttempted = false;
 
@@ -76,7 +76,7 @@ function getAdminSupabaseBootstrapError() {
     }
 
     if (!supabaseClient || typeof supabaseClient.from !== 'function') {
-        return 'NÃ£o foi possÃ­vel inicializar o cliente Supabase.';
+        return 'Não foi possível inicializar o cliente Supabase.';
     }
 
     return '';
@@ -233,7 +233,7 @@ async function postAnalyticsEvent(eventName, payload = {}) {
             })
         });
     } catch (error) {
-        console.warn('NÃ£o foi possÃ­vel registar evento analÃ­tico:', error);
+        console.warn('Não foi possível registar evento analítico:', error);
     }
 }
 
@@ -604,14 +604,14 @@ async function loadOperationsDashboard() {
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <div class="flex items-start justify-between gap-3">
                         <div class="min-w-0">
-                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.title || 'RevisÃ£o manual')}</p>
+                            <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.title || 'Revisão manual')}</p>
                             <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.details || 'Sem detalhe adicional.')}</p>
                         </div>
                         <span class="text-[11px] font-semibold uppercase tracking-wide text-amber-700 bg-amber-100 rounded-full px-2 py-1">${escapeHtml(item.priority || 'normal')}</span>
                     </div>
                 </div>
             `,
-            'Sem itens em revisÃ£o.'
+            'Sem itens em revisão.'
         );
 
         renderDashboardSimpleList(
@@ -620,10 +620,10 @@ async function loadOperationsDashboard() {
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.nome || 'Produto sem nome')}</p>
-                    <p class="mt-1 text-xs text-gray-600">Falta: ${escapeHtml(Array.isArray(item.missing) ? item.missing.join(', ') : 'configuraÃ§Ã£o base')}</p>
+                    <p class="mt-1 text-xs text-gray-600">Falta: ${escapeHtml(Array.isArray(item.missing) ? item.missing.join(', ') : 'configuração base')}</p>
                 </div>
             `,
-            'Todos os produtos tÃªm custo, preÃ§o e SLA base.'
+            'Todos os produtos têm custo, preço e SLA base.'
         );
 
         renderDashboardSimpleList(
@@ -631,7 +631,7 @@ async function loadOperationsDashboard() {
             payload?.failedEmails || [],
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
-                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.recipient || 'Sem destinatÃ¡rio')}</p>
+                    <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.recipient || 'Sem destinatário')}</p>
                     <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.subject || 'Sem assunto')}</p>
                     <p class="mt-1 text-xs text-red-600">${escapeHtml(item.error_message || 'Falha desconhecida')}</p>
                 </div>
@@ -645,7 +645,7 @@ async function loadOperationsDashboard() {
             (item) => `
                 <div class="rounded-lg bg-gray-50 px-3 py-3">
                     <p class="text-sm font-semibold text-gray-900">${escapeHtml(item.numero_encomenda || 'Encomenda')}</p>
-                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.clientes?.nome || item.clientes?.email || 'Cliente sem identificaÃ§Ã£o')}</p>
+                    <p class="mt-1 text-xs text-gray-600">${escapeHtml(item.clientes?.nome || item.clientes?.email || 'Cliente sem identificação')}</p>
                     <div class="mt-2 flex items-center justify-between gap-3 text-xs text-gray-500">
                         <span>${escapeHtml(formatDateTime(item.sla_target_at))}</span>
                         <span class="font-semibold text-amber-700">${escapeHtml(formatMarginEstimate(item.margin_estimate))}</span>
@@ -655,14 +655,14 @@ async function loadOperationsDashboard() {
             'Sem encomendas fora do prazo alvo.'
         );
     } catch (error) {
-        console.warn('NÃ£o foi possÃ­vel carregar o dashboard operacional:', error);
+        console.warn('Não foi possível carregar o dashboard operacional:', error);
         setDashboardMetricValue('ops-metric-review-queue', 0);
         setDashboardMetricValue('ops-metric-failed-emails', 0);
         setDashboardMetricValue('ops-metric-incomplete-products', 0);
         setDashboardMetricValue('ops-metric-sla-breaches', 0);
         renderDashboardMailHealth({});
-        renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revisÃ£o.');
-        renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos tÃªm custo, preÃ§o e SLA base.');
+        renderDashboardSimpleList('dashboard-review-queue', [], () => '', 'Sem itens em revisão.');
+        renderDashboardSimpleList('dashboard-products-missing-setup', [], () => '', 'Todos os produtos têm custo, preço e SLA base.');
         renderDashboardSimpleList('dashboard-email-failures', [], () => '', 'Sem falhas recentes de email.');
         renderDashboardSimpleList('dashboard-sla-breaches', [], () => '', 'Sem encomendas fora do prazo alvo.');
     }
@@ -683,7 +683,7 @@ function readFileAsDataUrl(file) {
     return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.onload = () => resolve(String(reader.result || ''));
-        reader.onerror = () => reject(new Error('NÃ£o foi possÃ­vel ler o ficheiro.'));
+        reader.onerror = () => reject(new Error('Não foi possível ler o ficheiro.'));
         reader.readAsDataURL(file);
     });
 }
@@ -692,7 +692,7 @@ function loadImageFromSrc(src) {
     return new Promise((resolve, reject) => {
         const img = new Image();
         img.onload = () => resolve(img);
-        img.onerror = () => reject(new Error('NÃ£o foi possÃ­vel processar a imagem.'));
+        img.onerror = () => reject(new Error('Não foi possível processar a imagem.'));
         img.src = src;
     });
 }
@@ -720,7 +720,7 @@ async function convertImageFileToWebPDataUrl(file, options = {}) {
 
     const context = canvas.getContext('2d');
     if (!context) {
-        throw new Error('NÃ£o foi possÃ­vel preparar o convers?r de imagem.');
+        throw new Error('Não foi possível preparar o convers?r de imagem.');
     }
 
     context.clearRect(0, 0, width, height);
@@ -789,7 +789,7 @@ function bindAdminImageUpload(fileInput, setImageValue, label) {
             setImageValue(webpDataUrl, `${label} pronta em WebP.`, 'success');
         } catch (error) {
             console.error(`Erro ao converter ${label}:`, error);
-            setImageValue('', `NÃ£o foi possÃ­vel converter ${label}. Tente outro ficheiro.`, 'error');
+            setImageValue('', `Não foi possível converter ${label}. Tente outro ficheiro.`, 'error');
             showToast(`Erro ao converter ${label} para WebP`, 'error');
         } finally {
             fileInput.value = '';
@@ -841,7 +841,7 @@ async function loadBaseCatalog(force = false) {
 
     if (error) {
         if (isMissingBasesSchema(error)) {
-            console.warn('Schema de bases ainda nÃ£o aplicado:', error.message);
+            console.warn('Schema de bases ainda não aplicado:', error.message);
             baseCatalogCache = [];
             return [];
         }
@@ -864,8 +864,8 @@ function renderProductBaseAssignments(assignedBaseIds = [], defaultBaseId = null
 
     if (allBases.length === 0) {
         productBasesAssignments.innerHTML = isFlybannerProductCategory(productCategoria)
-            ? '<p class="text-sm text-gray-500">Sem bases flybanner disponÃ­veis. Crie bases no separador "Bases Flybanner".</p>'
-            : '<p class="text-sm text-gray-500">Sem bases disponÃ­veis. Crie bases no separador "Bases".</p>';
+            ? '<p class="text-sm text-gray-500">Sem bases flybanner disponíveis. Crie bases no separador "Bases Flybanner".</p>'
+            : '<p class="text-sm text-gray-500">Sem bases disponíveis. Crie bases no separador "Bases".</p>';
         return;
     }
 
@@ -1092,7 +1092,7 @@ async function loadDashboard() {
                     <img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded">
                     <div class="flex-1">
                         <h4 class="font-semibold text-sm">${p.nome}</h4>
-                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}â‚¬</p>
+                        <p class="text-xs text-gray-600">${p.preco.toFixed(2)}€</p>
                     </div>
                     <span class="badge badge-info">${p.categoria}</span>
                 </div>
@@ -1217,8 +1217,8 @@ async function loadProducts() {
                     <td><img src="${p.imagem}" alt="${p.nome}" class="w-12 h-12 object-cover rounded"></td>
                     <td class="font-semibold">${escapeHtml(getFlybannerHeightName(p.slug, p.nome))}</td>
                     <td><span class="badge badge-info">${p.categoria}</span></td>
-                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}â‚¬</td>
-                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">NÃ£o</span>'}</td>
+                    <td class="font-bold text-blue-600">${p.preco.toFixed(2)}€</td>
+                    <td>${p.destaque ? '<span class="badge badge-warning">Sim</span>' : '<span class="badge">Não</span>'}</td>
                     <td>${p.ativo ? '<span class="badge badge-success">Ativo</span>' : '<span class="badge badge-danger">Inativo</span>'}</td>
                     <td>
                         <div class="flex gap-2">
@@ -1452,7 +1452,7 @@ function renderSvgTemplatePreview() {
         openModal(svgPreviewModal, { closeOthers: false });
     } catch (error) {
         console.error('Erro ao renderizar preview SVG:', error);
-        showToast('NÃ£o foi possÃ­vel gerar o preview do SVG', 'error');
+        showToast('Não foi possível gerar o preview do SVG', 'error');
     }
 }
 
@@ -1511,9 +1511,9 @@ if (productForm) {
 
         const productNomeField = document.getElementById('product-nome');
         const productNomeEsField = document.getElementById('product-nome-es');
-        const productDescricaoField = document.getElementById('product-descricao') || document.getElementById('product-descriÃ§Ã£o');
+        const productDescricaoField = document.getElementById('product-descricao') || document.getElementById('product-descrição');
         const productDescricaoEsField = document.getElementById('product-descricao-es');
-        const productPrecoField = document.getElementById('product-preco') || document.getElementById('product-preÃ§o');
+        const productPrecoField = document.getElementById('product-preco') || document.getElementById('product-preço');
         const productCategoriaField = document.getElementById('product-categoria');
         const productDestaqueField = document.getElementById('product-destaque');
         const productAtivoField = document.getElementById('product-ativo');
@@ -1603,13 +1603,13 @@ async function editProduct(id) {
         const productNomeEs = el('product-nome-es');
         if (productNomeEs) productNomeEs.value = data.nome_es || '';
 
-        const productDescricao = el('product-descricao') || el('product-descriÃ§Ã£o');
+        const productDescricao = el('product-descricao') || el('product-descrição');
         if (productDescricao) productDescricao.value = data.descricao || '';
 
         const productDescricaoEs = el('product-descricao-es');
         if (productDescricaoEs) productDescricaoEs.value = data.descricao_es || '';
 
-        const productPreco = el('product-preco') || el('product-preÃ§o');
+        const productPreco = el('product-preco') || el('product-preço');
         if (productPreco) productPreco.value = data.preco || '';
 
         const productCategoria = el('product-categoria');
@@ -1837,7 +1837,7 @@ async function deleteProduct(id) {
 
                 if (archiveError) throw archiveError;
 
-                showToast('Produto com histÃ³rico de encomendas: foi marcado como Inativo.', 'warning');
+                showToast('Produto com histórico de encomendas: foi marcado como Inativo.', 'warning');
                 await loadProducts();
                 return;
             }
@@ -1865,13 +1865,13 @@ function escapeHtml(value) {
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return `${amount.toFixed(2)}â‚¬`;
+    return `${amount.toFixed(2)}€`;
 }
 
 function formatMarginEstimate(value) {
     const amount = Number(value);
     if (!Number.isFinite(amount)) {
-        return 'â€”';
+        return '—';
     }
 
     const sign = amount > 0 ? '+' : '';
@@ -1881,9 +1881,9 @@ function formatMarginEstimate(value) {
 function formatFiscalScenarioLabel(value) {
     switch (String(value || '').trim()) {
         case 'pt_domestic':
-            return 'PT domÃ©stico';
+            return 'PT doméstico';
         case 'es_compatible_manual_review':
-            return 'ES compatÃ­vel';
+            return 'ES compatível';
         case 'international_manual_review':
             return 'Internacional';
         default:
@@ -1898,9 +1898,9 @@ function formatInvoiceStateLabel(value) {
         case 'ready_to_emit':
             return 'Pronta a emitir';
         case 'pending_manual_review':
-            return 'RevisÃ£o manual';
+            return 'Revisão manual';
         case 'invoice_error':
-            return 'Erro de emissÃ£o';
+            return 'Erro de emissão';
         case 'emitted':
             return 'Emitida';
         default:
@@ -1911,11 +1911,11 @@ function formatInvoiceStateLabel(value) {
 function formatFiscalScenarioLabel(value) {
     switch (String(value || '').trim()) {
         case 'pt_particular_art53':
-            return 'PT particular Â· Art. 53';
+            return 'PT particular · Art. 53';
         case 'pt_business_art53':
-            return 'PT empresa Â· Art. 53';
+            return 'PT empresa · Art. 53';
         case 'eu_consumer_art53':
-            return 'UE particular Â· Art. 53';
+            return 'UE particular · Art. 53';
         case 'eu_business_vies_valid':
             return 'UE empresa validada em VIES';
         case 'eu_business_vies_invalid_fallback':
@@ -1923,7 +1923,7 @@ function formatFiscalScenarioLabel(value) {
         case 'eu_business_vies_unavailable_fallback':
             return 'UE empresa com VIES indisponivel';
         case 'non_eu_manual_review':
-            return 'Fora UE Â· RevisÃ£o manual';
+            return 'Fora UE · Revisão manual';
         case 'profile_override_manual_review':
             return 'Perfil fiscal nao suportado';
         default:
@@ -2272,11 +2272,11 @@ function armOrderDelete(orderId) {
 async function deleteOrderById(orderId) {
     const normalizedOrderId = String(orderId || '');
     if (!normalizedOrderId) {
-        throw new Error('ID da encomenda invÃ¡lido.');
+        throw new Error('ID da encomenda inválido.');
     }
 
     if (!await ensureAdminWriteSession()) {
-        throw new Error(adminWriteSessionLastError || 'SessÃ£o admin obrigatÃ³ria.');
+        throw new Error(adminWriteSessionLastError || 'Sessão admin obrigatória.');
     }
 
     const { error: deleteItemsError } = await supabaseClient
@@ -2554,13 +2554,13 @@ async function viewOrder(id) {
                 : '#374151';
 
         const metaEl = document.getElementById('order-modal-meta');
-        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} Â· ${formatDateTime(order.created_at)}`;
+        if (metaEl) metaEl.textContent = `${escapeHtml(order.numero_encomenda || '')} · ${formatDateTime(order.created_at)}`;
 
         if (summaryBlock) {
             summaryBlock.innerHTML = `
                 <div style="display:flex;align-items:center;flex-wrap:wrap;gap:1.5rem;">
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">NÂº Encomenda</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Nº Encomenda</p>
                         <p style="font-size:0.875rem;font-weight:700;color:#111827;margin:0;">${escapeHtml(order.numero_encomenda || 'N/A')}</p>
                     </div>
                     <div>
@@ -2584,11 +2584,11 @@ async function viewOrder(id) {
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;font-family:monospace;">${escapeHtml(tracking.trackingCode)}</p>
                     </div>` : ''}
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">FaturaÃ§Ã£o</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.25rem;">Faturação</p>
 <span class="badge badge-${resolveFacturalusaStatusColor(facturalusaStatus)}">${escapeHtml(resolveFacturalusaStatusLabel(facturalusaStatus))}</span>
                     </div>
                     <div>
-                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">DecisÃ£o fiscal</p>
+                        <p style="font-size:0.6875rem;color:#6b7280;margin:0 0 0.125rem;">Decisão fiscal</p>
                         <p style="font-size:0.8125rem;font-weight:600;color:#374151;margin:0;">${escapeHtml(formatFiscalScenarioLabel(order.fiscal_scenario))}</p>
                         <p style="font-size:0.6875rem;color:#9ca3af;margin:0.2rem 0 0;">${escapeHtml(formatInvoiceStateLabel(order.invoice_state))}</p>
                     </div>
@@ -2626,7 +2626,7 @@ async function viewOrder(id) {
                         <span style="color:#374151;text-align:right;font-family:monospace;">${nif}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
-                        <span style="color:#9ca3af;flex-shrink:0;">PaÃ­s fiscal</span>
+                        <span style="color:#9ca3af;flex-shrink:0;">País fiscal</span>
                         <span style="color:#374151;text-align:right;">${escapeHtml(String(fiscalSnapshot.customer_fiscal_country || order.customer_fiscal_country || 'PT'))}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;align-items:baseline;gap:0.5rem;">
@@ -2642,7 +2642,7 @@ async function viewOrder(id) {
         }
 
         if (facturalusaBlock) {
-            const documentNumber = escapeHtml(split.meta?.facturalusaDocumentNumber || 'Ainda nÃ£o emitido');
+            const documentNumber = escapeHtml(split.meta?.facturalusaDocumentNumber || 'Ainda não emitido');
             const documentUrl = String(split.meta?.facturalusaDocumentUrl || '').trim();
             const lastError = String(split.meta?.facturalusaLastError || '').trim();
             const lastAttempt = split.meta?.facturalusaLastAttemptAt || '';
@@ -2660,12 +2660,12 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                 </div>
                 <div style="display:grid;gap:0.45rem;font-size:0.8125rem;margin-top:0.75rem;">
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;">
-                        <span style="color:#9ca3af;">NÃºmero</span>
+                        <span style="color:#9ca3af;">Número</span>
                         <span style="font-weight:600;color:#111827;text-align:right;">${documentNumber}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;">
-                        <span style="color:#9ca3af;">Ãšltima tentativa</span>
-                        <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : 'â€”'}</span>
+                        <span style="color:#9ca3af;">Última tentativa</span>
+                        <span style="font-weight:600;color:#374151;text-align:right;">${lastAttempt ? escapeHtml(formatDateTime(lastAttempt)) : '—'}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
                         <span style="color:#9ca3af;flex-shrink:0;">Envio email</span>
@@ -2680,7 +2680,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <span style="font-size:0.75rem;color:#b45309;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(String(latestInvoiceEmailLog.error_message))}</span>
                     </div>` : ''}
                 </div>
-                ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a faturaÃ§Ã£o assim que a conta Facturalusa estiver pronta.</p>' : ''}
+                ${canRetry ? '<p style="font-size:0.75rem;color:#6b7280;margin:0.75rem 0 0;">Pode reenviar a faturação assim que a conta Facturalusa estiver pronta.</p>' : ''}
             `;
         }
 
@@ -2696,12 +2696,12 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <span style="font-weight:600;color:#374151;text-align:right;">${escapeHtml(vatRegimeCode || 'Artigo 53 / sem IVA')}</span>
                     </div>
                     <div style="display:flex;justify-content:space-between;gap:0.75rem;align-items:flex-start;">
-                        <span style="color:#9ca3af;flex-shrink:0;">ValidaÃ§Ã£o VAT</span>
-                        <span style="font-size:0.75rem;color:#374151;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(formatVatValidationStatusLabel(vatValidationStatus))}${vatValidationNumber ? ` Â· ${escapeHtml(vatValidationNumber)}` : ''}</span>
+                        <span style="color:#9ca3af;flex-shrink:0;">Validação VAT</span>
+                        <span style="font-size:0.75rem;color:#374151;text-align:right;word-break:break-word;max-width:14rem;">${escapeHtml(formatVatValidationStatusLabel(vatValidationStatus))}${vatValidationNumber ? ` · ${escapeHtml(vatValidationNumber)}` : ''}</span>
                     </div>
                 </div>
                 ${divergenceMessage ? `<div style="margin-top:0.85rem;border:1px solid #f59e0b;background:#fffbeb;border-radius:0.75rem;padding:0.75rem;">
-                    <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin:0 0 0.25rem;">DivergÃªncia fiscal</p>
+                    <p style="font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#b45309;margin:0 0 0.25rem;">Divergência fiscal</p>
                     <p style="font-size:0.75rem;color:#92400e;margin:0;">${escapeHtml(divergenceMessage)}</p>
                 </div>` : ''}
             `);
@@ -2760,7 +2760,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
 
                     const optionsHtml = itemOptions.length > 0
                         ? `<ul style="margin:0.25rem 0 0;padding:0;list-style:none;display:flex;flex-direction:column;gap:0.2rem;">${itemOptions.map((o) => `<li style="font-size:0.75rem;color:#6b7280;"><span style="font-weight:500;color:#374151;">${escapeHtml(o.label)}:</span> ${escapeHtml(o.value)}</li>`).join('')}</ul>`
-                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opÃ§Ãµes</p>`;
+                        : `<p style="font-size:0.75rem;color:#9ca3af;margin:0.2rem 0 0;">Sem opções</p>`;
 
                     return `<tr style="border-bottom:1px solid #f9fafb;">
                         <td style="padding:0.75rem 0.75rem 0.75rem 0;vertical-align:top;width:5rem;">${designCell}</td>
@@ -2779,7 +2779,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                         <thead>
                             <tr style="border-bottom:1px solid #e5e7eb;">
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;width:5rem;">Design</th>
-                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / OpÃ§Ãµes</th>
+                                <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:left;">Produto / Opções</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:2.5rem;">Qtd</th>
                                 <th style="padding:0 0.75rem 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">P. Unit.</th>
                                 <th style="padding:0 0 0.625rem 0;font-size:0.625rem;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:#9ca3af;text-align:right;width:5rem;">Subtotal</th>
@@ -2819,7 +2819,7 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                     }).join('');
                 historyList.innerHTML = `<table style="width:100%;border-collapse:collapse;"><tbody>${historyRows}</tbody></table>`;
             } else {
-                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histÃ³rico de atualizaÃ§Ãµes.</p>';
+                historyList.innerHTML = '<p style="font-size:0.875rem;color:#9ca3af;">Sem histórico de atualizações.</p>';
             }
         }
 
@@ -3052,7 +3052,7 @@ function openAdminDesignViewer(designKey) {
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
     img.src = entry.svgDataUrl || entry.previewUrl || '';
-    if (title) title.textContent = `Design â€” ${entry.name || 'Produto'}`;
+    if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         if (entry.svgDataUrl) {
             downloadBtn.href = entry.svgDataUrl;
@@ -3309,10 +3309,10 @@ function resolveFacturalusaStatusLabel(status) {
 
     const labels = {
         emitted: 'Fatura emitida',
-        pending: 'FaturaÃ§Ã£o pendente',
-        blocked: 'Requer atenÃ§Ã£o',
-        error: 'Erro de faturaÃ§Ã£o',
-        not_required: 'Ainda nÃ£o aplicÃ¡vel'
+        pending: 'Faturação pendente',
+        blocked: 'Requer atenção',
+        error: 'Erro de faturação',
+        not_required: 'Ainda não aplicável'
     };
 
     return labels[String(status || '').trim()] || 'Sem estado';
@@ -3350,7 +3350,7 @@ async function deleteClient(id) {
 
         if (error) {
             if (error.code === '23503') {
-                showToast('NÃ£o Ã© possÃ­vel apagar: cliente com encomendas associadas.', 'warning');
+                showToast('Não é possível apagar: cliente com encomendas associadas.', 'warning');
                 return;
             }
             throw error;
@@ -3396,7 +3396,7 @@ async function viewClient(id) {
         if (clientError) throw clientError;
         if (ordersError) throw ordersError;
         if (!client) {
-            throw new Error('Cliente nÃ£o encontrado.');
+            throw new Error('Cliente não encontrado.');
         }
 
         if (titleEl) titleEl.textContent = client.nome || 'Cliente sem nome';
@@ -3407,7 +3407,7 @@ async function viewClient(id) {
                 <tr>
                     <td class="py-2 pr-3 font-semibold text-gray-900">${escapeHtml(order.numero_encomenda || `#${order.id}`)}</td>
                     <td class="py-2 pr-3 text-gray-600">${escapeHtml(order.status || '?')}</td>
-                    <td class="py-2 pr-3 text-gray-600">${Number(order.total || 0).toFixed(2)}â‚¬</td>
+                    <td class="py-2 pr-3 text-gray-600">${Number(order.total || 0).toFixed(2)}€</td>
                     <td class="py-2 text-gray-500">${escapeHtml(formatDateTime(order.created_at))}</td>
                 </tr>
             `).join('')
@@ -3422,7 +3422,7 @@ async function viewClient(id) {
                         <p class="mt-1 text-gray-700">${escapeHtml(client.telefone || '?')}</p>
                     </div>
                     <div class="rounded-lg bg-white p-4 border border-gray-200">
-                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">FaturaÃ§Ã£o</p>
+                        <p class="text-xs font-semibold uppercase tracking-wide text-gray-500">Faturação</p>
                         <p class="mt-2 text-gray-900">${escapeHtml(client.empresa || 'Particular')}</p>
                         <p class="mt-1 text-gray-700">NIF: ${escapeHtml(client.nif || '?')}</p>
                     </div>
@@ -3438,7 +3438,7 @@ async function viewClient(id) {
                         <table class="w-full text-left text-sm">
                             <thead>
                                 <tr class="text-xs uppercase tracking-wide text-gray-500">
-                                    <th class="pb-2 pr-3">CÃ³digo</th>
+                                    <th class="pb-2 pr-3">Código</th>
                                     <th class="pb-2 pr-3">Estado</th>
                                     <th class="pb-2 pr-3">Total</th>
                                     <th class="pb-2">Data</th>
@@ -3554,7 +3554,7 @@ function confirmTemplateDeleteCard(templateName = '') {
                     </div>
                     <div>
                         <h3 class="text-lg font-bold text-gray-900">Apagar template</h3>
-                        <p class="text-sm text-gray-600 mt-1">Esta aÃ§Ã£o remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e nÃ£o pode ser desfeita.</p>
+                        <p class="text-sm text-gray-600 mt-1">Esta ação remove o template <strong>${escapeHtml(templateName || 'sem nome')}</strong> e não pode ser desfeita.</p>
                     </div>
                 </div>
                 <div class="mt-5 flex flex-col-reverse sm:flex-row gap-3 justify-end">
@@ -3605,7 +3605,7 @@ function confirmTemplateDeleteCard(templateName = '') {
 
 async function deleteTemplateFromCard(templateId) {
     if (!templateId) {
-        console.error('ID de template invÃ¡lido:', templateId);
+        console.error('ID de template inválido:', templateId);
         return;
     }
 
@@ -3613,15 +3613,15 @@ async function deleteTemplateFromCard(templateId) {
     const template = templatesCatalogCache.find((item) => item.id === templateId) || null;
     const confirmed = await confirmTemplateDeleteCard(template?.nome || 'Template');
     if (!confirmed) {
-        console.log('UsuÃ¡rio cancelou a exclusÃ£o');
+        console.log('Usuário cancelou a exclusão');
         return;
     }
 
     const hasWriteSession = await ensureAdminWriteSession();
     if (!hasWriteSession) {
         const authMsg = adminWriteSessionLastError
-            ? `Sem sessÃ£o de escrita no Supabase: ${adminWriteSessionLastError}`
-            : 'Sem sessÃ£o de escrita no Supabase. Inicie sessÃ£o admin real para apagar templates.';
+            ? `Sem sessão de escrita no Supabase: ${adminWriteSessionLastError}`
+            : 'Sem sessão de escrita no Supabase. Inicie sessão admin real para apagar templates.';
         showToast(authMsg, 'error');
         return;
     }
@@ -3633,7 +3633,7 @@ async function deleteTemplateFromCard(templateId) {
             .eq('template_id', templateId);
 
         if (deleteLinksError) {
-            console.warn('Erro ao remover vÃ­nculos do template:', deleteLinksError.message);
+            console.warn('Erro ao remover vínculos do template:', deleteLinksError.message);
         }
 
         const { error: deleteTemplateError } = await supabaseClient
@@ -3658,12 +3658,12 @@ async function deleteTemplateFromCard(templateId) {
 function renderProductTemplatesGrid() {
     const grid = document.getElementById('product-templates-grid');
     if (!grid) {
-        console.error('Grid de templates nÃ£o encontrado');
+        console.error('Grid de templates não encontrado');
         return;
     }
 
     console.log('Renderizando grid de templates...');
-    console.log('Templates disponÃ­veis:', templatesCatalogCache.length);
+    console.log('Templates disponíveis:', templatesCatalogCache.length);
 
     // Log para debug dos IDs
     if (templatesCatalogCache.length > 0) {
@@ -3718,17 +3718,17 @@ function renderProductTemplatesGrid() {
     newGrid.addEventListener('click', (event) => {
         const target = event.target;
 
-        // BotÃ£o de lixo
+        // Botão de lixo
         const deleteBtn = target.closest('.template-edit-btn');
         if (deleteBtn) {
             event.preventDefault();
             event.stopPropagation();
-            console.log('BotÃ£o apagar clicado:', deleteBtn.dataset.templateId);
+            console.log('Botão apagar clicado:', deleteBtn.dataset.templateId);
             deleteTemplateFromCard(deleteBtn.dataset.templateId);
             return;
         }
 
-        // Clique no card (mas nÃ£o no botÃ£o)
+        // Clique no card (mas não no botão)
         const card = target.closest('.template-toggle-card');
         if (card) {
             console.log('Card clicado:', card.dataset.templateId);
