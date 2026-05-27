@@ -952,6 +952,26 @@ function renderProductPage(product, categoryEntries, productEntries) {
             <div class="overflow-hidden rounded-lg border border-slate-200 bg-slate-50 p-3 sm:p-5">
               <img src="${escapeHtml(product.imageUrl)}" alt="${escapeHtml(product.nome)}" class="product-main-image mx-auto aspect-[4/3] w-full rounded-md bg-white object-contain p-4 sm:p-8" width="1200" height="900" loading="eager" fetchpriority="high" decoding="async">
             </div>
+            <div class="product-hero-trust mt-4 rounded-lg border border-slate-200 bg-white p-4 sm:p-5" aria-label="Vantagens de envio">
+              <div class="product-hero-trust-item flex items-start gap-3">
+                <span class="product-hero-trust-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-700">
+                  <i data-lucide="truck" class="h-5 w-5" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <p class="product-hero-trust-title text-lg font-semibold leading-tight text-slate-900">Portes sempre grátis.</p>
+                  <p class="product-hero-trust-copy mt-1 text-sm leading-6 text-slate-600">Sem custos de envio para Portugal continental.</p>
+                </div>
+              </div>
+              <div class="product-hero-trust-item mt-4 flex items-start gap-3 border-t border-slate-100 pt-4">
+                <span class="product-hero-trust-icon flex h-10 w-10 shrink-0 items-center justify-center rounded-full border border-slate-200 text-slate-700">
+                  <i data-lucide="timer" class="h-5 w-5" aria-hidden="true"></i>
+                </span>
+                <div>
+                  <p class="product-hero-trust-title text-lg font-semibold leading-tight text-slate-900">Entregas em 24-48H.</p>
+                  <p class="product-hero-trust-copy mt-1 text-sm leading-6 text-slate-600">Produção e expedição rápidas em dias úteis.</p>
+                </div>
+              </div>
+            </div>
           </div>
           <div class="product-hero-copy min-w-0">
             <div class="product-summary-intro-block border-b border-slate-200 pb-5">
