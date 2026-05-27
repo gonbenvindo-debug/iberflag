@@ -2764,7 +2764,32 @@ async function loadClients() {
         const tbody = document.getElementById('clients-tbody');
 
         if (data && data.length > 0) {
-            tbody.innerHTML = data.map(c => `
+            const uniqueClients = [];
+            const seenClientKeys = new Set();
+
+            for (const client of data) {
+                const emailKey = String(client?.email || '').trim().toLowerCase();
+                const phoneKey = String(client?.telefone || '').replace(/[^\d+]/g, '').trim();
+                const identityKeys = [];
+
+                if (emailKey) {
+                    identityKeys.push(`email:${emailKey}`);
+                }
+
+                if (phoneKey) {
+                    identityKeys.push(`phone:${phoneKey}`);
+                }
+
+                const hasSeenIdentity = identityKeys.some((key) => seenClientKeys.has(key));
+                if (hasSeenIdentity) {
+                    continue;
+                }
+
+                uniqueClients.push(client);
+                identityKeys.forEach((key) => seenClientKeys.add(key));
+            }
+
+            tbody.innerHTML = uniqueClients.map(c => `
                 <tr>
                     <td class="font-semibold">${escapeHtml(c.nome || 'N/A')}</td>
                     <td>${escapeHtml(c.email || 'N/A')}</td>
