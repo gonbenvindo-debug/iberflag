@@ -2174,6 +2174,12 @@ function buildCheckoutRequestCart(items) {
         nome: String(item.nome || 'Produto').trim(),
         quantity: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
         customized: Boolean(item.customized),
+        slug: String(item.slug || '').trim() || null,
+        svgTemplate: String(item.svgTemplate || item.svg_template || '').trim() || null,
+        design: typeof item.design === 'string' ? item.design : '',
+        designPreview: typeof item.design === 'string' && item.design.trim() && typeof getCartItemImage === 'function'
+            ? (getCartItemImage(item) || '')
+            : (typeof item.designPreview === 'string' ? item.designPreview : ''),
         baseNome: String(item.baseNome || '').trim(),
         baseId: item.baseId || item.base_id || null,
         designId: item.designId || item.design_id || null

@@ -563,8 +563,10 @@
 
         .cart-design-preview {
             width: 100%;
-            max-height: 52vh;
+            height: 52vh;
             object-fit: contain;
+            object-position: center;
+            display: block;
             border-radius: 12px;
             background: repeating-conic-gradient(#f8fafc 0% 25%, #eef2f7 0% 50%) 50% / 24px 24px;
             border: 1px solid #dbe3ee;

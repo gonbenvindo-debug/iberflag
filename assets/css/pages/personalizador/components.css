@@ -728,8 +728,10 @@
 
         .cart-design-preview {
             width: 100%;
-            max-height: min(48vh, 420px);
+            height: min(48vh, 420px);
             object-fit: contain;
+            object-position: center;
+            display: block;
             border-radius: 10px;
             background-color: #f8fbff;
             background-image:
@@ -922,7 +924,7 @@
             }
 
             .cart-design-preview {
-                max-height: 42dvh;
+                height: 42dvh;
             }
 
             .cart-base-grid {

@@ -934,20 +934,23 @@ function buildAdaptiveCartPreviewDataUrl(item) {
     const fallbackPreview = item.designPreview || (item.design ? buildSvgDataUrl(item.design) : null);
     const designSource = typeof item.design === 'string' && item.design.trim()
         ? item.design
-        : (typeof item.designPreview === 'string' && item.designPreview.trim() ? item.designPreview : '');
+        : '';
     const svgTemplate = getCartItemSvgTemplate(item);
 
-    if (!designSource || !svgTemplate || !window.DesignSvgStore?.buildPreviewSvgMarkup) {
+    if (!designSource || !svgTemplate || !window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
         return fallbackPreview;
     }
 
-    const previewMarkup = window.DesignSvgStore.buildPreviewSvgMarkup(designSource, svgTemplate, {
-        backgroundColor: 'transparent',
-        contentFillRatio: 0.9
+    const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+        designSvg: designSource,
+        productSvg: svgTemplate,
+        fillRatio: 0.9,
+        includeOutline: true,
+        backgroundColor: 'transparent'
     });
 
-    if (typeof previewMarkup === 'string' && previewMarkup.trim().startsWith('<svg')) {
-        return buildSvgDataUrl(previewMarkup);
+    if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+        return previewDataUrl;
     }
 
     return fallbackPreview;

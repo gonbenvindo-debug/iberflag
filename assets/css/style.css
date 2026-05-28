@@ -241,10 +241,8 @@ body {
 
 .cart-item-preview-image {
     display: block;
-    width: auto;
-    height: auto;
-    max-width: calc(100% - (var(--cart-item-preview-inset) * 2));
-    max-height: calc(100% - (var(--cart-item-preview-inset) * 2));
+    width: 100%;
+    height: 100%;
     object-fit: contain;
     object-position: center;
     flex: 0 0 auto;
@@ -3253,7 +3251,8 @@ body[data-analytics-event="view_product"] .product-hero-trust-title {
     flex: 0 0 4rem;
     width: 4rem;
     height: 4rem;
-    object-fit: cover;
+    object-fit: contain;
+    object-position: center;
     border-radius: 0.65rem;
     border: 1px solid #e2e8f0;
     background: #f8fafc;
@@ -3726,6 +3725,8 @@ a[href="/checkout"].block.w-full:hover {
     .checkout-summary #order-items img {
         width: 3.25rem !important;
         height: 3.25rem !important;
+        object-fit: contain !important;
+        object-position: center !important;
         border-radius: 0.55rem !important;
     }
 

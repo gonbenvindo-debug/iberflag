@@ -576,7 +576,7 @@ function buildBlankTemplatePreviewMarkup() {
     const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
         blankSvg,
         currentProduct?.svg_template || null,
-        { backgroundColor: 'transparent' }
+        { backgroundColor: 'transparent', contentFillRatio: 0.9, includeOutline: false }
     );
 
     if (previewMarkup) {
@@ -591,7 +591,7 @@ function buildTemplatePreviewMarkup(template) {
     const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
         previewUrl,
         currentProduct?.svg_template || null,
-        { backgroundColor: '#f8fafc' }
+        { backgroundColor: '#f8fafc', contentFillRatio: 0.9, includeOutline: false }
     );
 
     if (previewMarkup) {

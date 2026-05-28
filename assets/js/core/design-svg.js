@@ -20,7 +20,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v4';
+    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v5';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
 
@@ -990,7 +990,8 @@
             serialize(maskValue),
             serialize({
                 backgroundColor: options.backgroundColor || '',
-                contentFillRatio: Number(options.contentFillRatio) || ''
+                contentFillRatio: Number(options.contentFillRatio) || '',
+                includeOutline: options.includeOutline === false ? '0' : '1'
             })
         ].join('||');
     }
@@ -1010,81 +1011,50 @@
         PREVIEW_MARKUP_CACHE.set(cacheKey, markup);
     }
 
-    function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
-        const cacheKey = buildPreviewCacheKey(previewValue, maskValue, options);
-        if (PREVIEW_MARKUP_CACHE.has(cacheKey)) {
-            return PREVIEW_MARKUP_CACHE.get(cacheKey);
-        }
-
-        const previewMarkup = extractTemplateSvg(previewValue, options);
-        const previewSource = toPreviewImageSource(previewValue, options);
+    function buildNormalizedProductPreviewSvg({
+        designSvg,
+        productSvg,
+        fillRatio = 0.9,
+        includeOutline = true,
+        backgroundColor = 'transparent'
+    } = {}) {
+        const previewMarkup = extractTemplateSvg(designSvg, {});
+        const previewSource = toPreviewImageSource(designSvg, {});
         const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
-        const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
-
-        if (!maskMarkup) {
-            if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
-            }
-
-            if (previewSource) {
-                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
-                cachePreviewMarkup(cacheKey, fallbackMarkup);
-                return fallbackMarkup;
-            }
-
-            return '';
-        }
-
-        const maskRoot = parseSvgMarkup(maskMarkup);
+        const maskMarkup = extractTemplateSvg(productSvg, {});
+        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
         const previewHref = previewMarkup
             ? toDataUrlFromSvgMarkup(previewMarkup)
             : previewSource;
 
         if (!maskRoot || !previewHref) {
-            if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
-            }
-
-            if (previewSource) {
-                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
-                cachePreviewMarkup(cacheKey, fallbackMarkup);
-                return fallbackMarkup;
-            }
-
             return '';
         }
 
-        const maskSourceBounds = getSvgSourceBounds(maskRoot, options);
         const maskNode = pickMaskNode(maskRoot);
         if (!maskNode) {
-            if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
-            }
-
-            const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
-            cachePreviewMarkup(cacheKey, fallbackMarkup);
-            return fallbackMarkup;
+            return '';
         }
 
+        const maskSourceBounds = getSvgSourceBounds(maskRoot, DEFAULT_SIZE);
+        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
         const previewSourceBounds = previewRoot
             ? (
                 (isMaskedExportSvgRoot(previewRoot)
-                    ? getMaskedExportClipBounds(previewRoot, maskSourceBounds)
+                    ? getMaskedExportClipBounds(previewRoot, printAreaBounds)
                     : null)
-                || getSvgSourceBounds(previewRoot, maskSourceBounds)
+                || getSvgSourceBounds(previewRoot, printAreaBounds)
             )
-            : maskSourceBounds;
-        const previewGeometry = buildPreviewCanvasGeometry(maskSourceBounds, options);
+            : printAreaBounds;
+
+        const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
         const previewTargetBounds = {
             x: previewGeometry.x,
             y: previewGeometry.y,
             width: previewGeometry.width,
             height: previewGeometry.height
         };
-        const maskTransform = buildContainTransform(maskSourceBounds, previewTargetBounds);
+        const maskTransform = buildContainTransform(printAreaBounds, previewTargetBounds);
         const previewTransform = buildContainTransform(previewSourceBounds, previewTargetBounds);
         const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
         const wrapper = document.createElementNS(SVG_NS, 'svg');
@@ -1098,7 +1068,7 @@
             width: '100%',
             height: '100%',
             overflow: 'hidden',
-            'background-color': options.backgroundColor || 'transparent'
+            'background-color': backgroundColor || 'transparent'
         }));
 
         const background = document.createElementNS(SVG_NS, 'rect');
@@ -1106,7 +1076,7 @@
         background.setAttribute('y', '0');
         background.setAttribute('width', String(previewGeometry.canvasWidth));
         background.setAttribute('height', String(previewGeometry.canvasHeight));
-        background.setAttribute('fill', options.backgroundColor || 'transparent');
+        background.setAttribute('fill', backgroundColor || 'transparent');
         wrapper.appendChild(background);
 
         const defs = document.createElementNS(SVG_NS, 'defs');
@@ -1173,12 +1143,86 @@
             wrapper.appendChild(image);
         }
 
-        const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
-        const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
-        wrapper.appendChild(previewOutlineHaloNode);
-        wrapper.appendChild(previewOutlineNode);
+        if (includeOutline) {
+            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
+            const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
+            wrapper.appendChild(previewOutlineHaloNode);
+            wrapper.appendChild(previewOutlineNode);
+        }
 
-        const serialized = new XMLSerializer().serializeToString(wrapper);
+        return new XMLSerializer().serializeToString(wrapper);
+    }
+
+    function buildNormalizedProductPreviewDataUrl(options = {}) {
+        const markup = buildNormalizedProductPreviewSvg(options);
+        return markup ? toDataUrlFromSvgMarkup(markup) : '';
+    }
+
+    function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
+        const cacheKey = buildPreviewCacheKey(previewValue, maskValue, options);
+        if (PREVIEW_MARKUP_CACHE.has(cacheKey)) {
+            return PREVIEW_MARKUP_CACHE.get(cacheKey);
+        }
+
+        const previewMarkup = extractTemplateSvg(previewValue, options);
+        const previewSource = toPreviewImageSource(previewValue, options);
+        const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
+        const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
+
+        if (!maskMarkup) {
+            if (previewMarkup) {
+                cachePreviewMarkup(cacheKey, previewMarkup);
+                return previewMarkup;
+            }
+
+            if (previewSource) {
+                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+                cachePreviewMarkup(cacheKey, fallbackMarkup);
+                return fallbackMarkup;
+            }
+
+            return '';
+        }
+
+        const maskRoot = parseSvgMarkup(maskMarkup);
+        const previewHref = previewMarkup
+            ? toDataUrlFromSvgMarkup(previewMarkup)
+            : previewSource;
+
+        if (!maskRoot || !previewHref) {
+            if (previewMarkup) {
+                cachePreviewMarkup(cacheKey, previewMarkup);
+                return previewMarkup;
+            }
+
+            if (previewSource) {
+                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+                cachePreviewMarkup(cacheKey, fallbackMarkup);
+                return fallbackMarkup;
+            }
+
+            return '';
+        }
+
+        const serialized = buildNormalizedProductPreviewSvg({
+            designSvg: previewValue,
+            productSvg: maskValue,
+            fillRatio: Number(options.contentFillRatio) || 0.9,
+            includeOutline: options.includeOutline !== false,
+            backgroundColor: options.backgroundColor || 'transparent'
+        });
+
+        if (!serialized) {
+            if (previewMarkup) {
+                cachePreviewMarkup(cacheKey, previewMarkup);
+                return previewMarkup;
+            }
+
+            const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+            cachePreviewMarkup(cacheKey, fallbackMarkup);
+            return fallbackMarkup;
+        }
+
         cachePreviewMarkup(cacheKey, serialized);
         return serialized;
     }
@@ -1254,6 +1298,8 @@
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
         getSvgAspectRatio,
+        buildNormalizedProductPreviewSvg,
+        buildNormalizedProductPreviewDataUrl,
         buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,

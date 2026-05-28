@@ -558,7 +558,27 @@ function resolveOrderItemVisual(item, snapshot) {
     const fallbackImage = [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
-    const designDataUrl = (designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '';
+    const productSvgTemplate = [
+        item?.produtos?.svg_template,
+        snapshot?.svgTemplate,
+        snapshot?.svg_template
+    ].find((value) => typeof value === 'string' && value.trim()) || '';
+
+    const normalizedPreviewUrl = (
+        designSvg
+        && productSvgTemplate
+        && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
+    )
+        ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+            designSvg,
+            productSvg: productSvgTemplate,
+            fillRatio: 0.9,
+            includeOutline: true,
+            backgroundColor: 'transparent'
+        })
+        : '';
+
+    const designDataUrl = normalizedPreviewUrl || ((designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '');
     const hasDesign = Boolean(designSvg || explicitPreview);
 
     // Priority: SVG design -> explicit preview -> product image fallback.

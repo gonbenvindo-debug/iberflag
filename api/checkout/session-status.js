@@ -60,7 +60,7 @@ async function fetchPublicOrderItems(supabase, orderId) {
     try {
         const { data, error } = await supabase
             .from('itens_encomenda')
-            .select('*, produtos(id,nome,imagem,preco)')
+            .select('*, produtos(id,nome,imagem,preco,svg_template)')
             .eq('encomenda_id', orderId);
 
         if (error) {

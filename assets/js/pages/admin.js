@@ -2148,9 +2148,31 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
-    const designDataUrl = designSvg
-        ? (typeof buildSvgDataUrl === 'function' ? (buildSvgDataUrl(designSvg) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`) : '')
+    const productSvgTemplate = [
+        item?.produtos?.svg_template,
+        snapshot?.svgTemplate,
+        snapshot?.svg_template
+    ].find((value) => typeof value === 'string' && value.trim()) || '';
+
+    const normalizedPreviewUrl = (
+        designSvg
+        && productSvgTemplate
+        && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
+    )
+        ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+            designSvg,
+            productSvg: productSvgTemplate,
+            fillRatio: 0.9,
+            includeOutline: true,
+            backgroundColor: 'transparent'
+        })
         : '';
+
+    const designDataUrl = normalizedPreviewUrl || (
+        designSvg
+            ? (typeof buildSvgDataUrl === 'function' ? (buildSvgDataUrl(designSvg) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`) : '')
+            : ''
+    );
 
     const previewUrl = designDataUrl || designPreviewUrl || httpPreview;
     const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);

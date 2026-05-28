@@ -649,18 +649,17 @@ Object.assign(DesignEditor.prototype, {
             : this.getDesignSVG();
         const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
 
-        if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildPreviewSvgMarkup) {
-            const previewMarkup = window.DesignSvgStore.buildPreviewSvgMarkup(
-                previewSvg,
-                this.currentProduct.svg_template,
-                {
-                    backgroundColor: 'transparent',
-                    contentFillRatio: 0.9
-                }
-            );
+        if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
+            const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+                designSvg: previewSvg,
+                productSvg: this.currentProduct.svg_template,
+                fillRatio: 0.9,
+                includeOutline: false,
+                backgroundColor: 'transparent'
+            });
 
-            if (typeof previewMarkup === 'string' && previewMarkup.trim().startsWith('<svg')) {
-                return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewMarkup)}`;
+            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                return previewDataUrl;
             }
         }
 
@@ -822,6 +821,8 @@ Object.assign(DesignEditor.prototype, {
                 quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
                 customized: Boolean(item?.customized),
                 designId: item?.designId ? String(item.designId).trim() : null,
+                slug: item?.slug ? String(item.slug).trim() : null,
+                svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
                 baseId: item?.baseId || item?.base_id || null,
                 baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
                 baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
@@ -856,6 +857,8 @@ Object.assign(DesignEditor.prototype, {
                 quantity: item.quantity,
                 customized: item.customized,
                 designId: item.designId,
+                slug: item.slug,
+                svgTemplate: item.svgTemplate,
                 baseId: item.baseId,
                 baseNome: item.baseNome,
                 basePrecoExtra: item.basePrecoExtra
