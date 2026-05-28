@@ -1084,11 +1084,6 @@
         if (rootDefs) {
             const defs = document.createElementNS(SVG_NS, 'defs');
             Array.from(rootDefs.children || []).forEach((child) => {
-                const tagName = String(child?.tagName || '').toLowerCase();
-                const childId = String(child?.getAttribute?.('id') || '');
-                if (tagName === 'clippath' && childId.startsWith('design-export-clip')) {
-                    return;
-                }
                 defs.appendChild(document.importNode(child, true));
             });
 
@@ -1097,13 +1092,7 @@
             }
         }
 
-        Array.from(clippedGroup.children || []).forEach((child) => {
-            const tagName = String(child?.tagName || '').toLowerCase();
-            if (!tagName || tagName === 'title' || tagName === 'desc' || tagName === 'metadata') {
-                return;
-            }
-            previewSvg.appendChild(document.importNode(child, true));
-        });
+        previewSvg.appendChild(document.importNode(clippedGroup, true));
 
         return new XMLSerializer().serializeToString(previewSvg);
     }
