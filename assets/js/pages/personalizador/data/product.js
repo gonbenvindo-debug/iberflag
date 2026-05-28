@@ -604,70 +604,34 @@ Object.assign(DesignEditor.prototype, {
 
     generateCartPreviewSVG(designSvgOverride = null) {
         const designSvg = designSvgOverride || this.getDesignSVG();
-        if (!designSvg || typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
+        if (!designSvg) {
             return designSvg;
         }
 
         try {
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(designSvg, 'image/svg+xml');
-            const svgRoot = doc.documentElement;
-            if (!svgRoot || String(svgRoot.tagName || '').toLowerCase() !== 'svg') {
-                return designSvg;
-            }
-
             const sourceOutline = this.canvas?.querySelector?.('#print-area-shape-outline-border')
                 || this.canvas?.querySelector?.('#print-area-shape-outline')
                 || this.canvas?.querySelector?.('#print-area-outline');
 
-            if (!sourceOutline) {
-                return designSvg;
+            if (window.DesignSvgStore?.buildFramedPreviewSvgMarkup) {
+                const measuredBounds = sourceOutline
+                    ? (this.getTransformedSvgBounds?.(sourceOutline) || sourceOutline.getBBox?.() || null)
+                    : null;
+                const framedPreview = window.DesignSvgStore.buildFramedPreviewSvgMarkup(designSvg, {
+                    backgroundColor: 'transparent',
+                    contentFillRatio: 0.9,
+                    sourceBounds: measuredBounds || undefined,
+                    includeOutline: Boolean(sourceOutline),
+                    outlineNode: sourceOutline || null
+                });
+                if (framedPreview) {
+                    return framedPreview;
+                }
             }
 
-            const outline = sourceOutline.cloneNode(true);
-            outline.removeAttribute('id');
-            outline.removeAttribute('class');
-            outline.removeAttribute('style');
-            outline.removeAttribute('data-editable');
-            outline.removeAttribute('data-element-id');
-            outline.setAttribute('fill', 'none');
-            outline.setAttribute('stroke', '#94a3b8');
-            outline.setAttribute('stroke-width', '2');
-            outline.setAttribute('stroke-dasharray', '8 8');
-            outline.setAttribute('stroke-linecap', 'round');
-            outline.setAttribute('stroke-opacity', '0.9');
-            outline.setAttribute('vector-effect', 'non-scaling-stroke');
-            outline.setAttribute('pointer-events', 'none');
-
-            svgRoot.appendChild(outline);
-
-            // Center preview around the real product area so modal alignment is stable on any monitor.
-            const measuredBounds = this.getTransformedSvgBounds?.(sourceOutline)
-                || sourceOutline.getBBox?.()
-                || null;
-            if (measuredBounds) {
-                const boundsX = Number(measuredBounds.x) || 0;
-                const boundsY = Number(measuredBounds.y) || 0;
-                const boundsWidth = Math.max(1, Number(measuredBounds.width) || 1);
-                const boundsHeight = Math.max(1, Number(measuredBounds.height) || 1);
-                const centerX = boundsX + (boundsWidth / 2);
-                const centerY = boundsY + (boundsHeight / 2);
-                const maxSide = Math.max(boundsWidth, boundsHeight);
-                const padding = Math.max(24, maxSide * 0.35);
-                const framedWidth = boundsWidth + (padding * 2);
-                const framedHeight = boundsHeight + (padding * 2);
-                const viewBoxX = centerX - (framedWidth / 2);
-                const viewBoxY = centerY - (framedHeight / 2);
-
-                svgRoot.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${framedWidth} ${framedHeight}`);
-                svgRoot.setAttribute('width', String(framedWidth));
-                svgRoot.setAttribute('height', String(framedHeight));
-                svgRoot.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            }
-
-            return new XMLSerializer().serializeToString(doc);
+            return designSvg;
         } catch (error) {
-            console.warn('Falha ao gerar preview com contorno tracejado:', error);
+            console.warn('Falha ao gerar preview com contorno laranja:', error);
             return designSvg;
         }
     },

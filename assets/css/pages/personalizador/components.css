@@ -733,12 +733,8 @@
             object-position: center;
             display: block;
             border-radius: 10px;
-            background-color: #f8fbff;
-            background-image:
-                linear-gradient(rgba(148, 163, 184, 0.16) 1px, transparent 1px),
-                linear-gradient(90deg, rgba(148, 163, 184, 0.16) 1px, transparent 1px);
-            background-size: 24px 24px;
-            background-position: center center;
+            background-color: #f8fafc;
+            background-image: none;
             border: 1px solid rgba(148, 163, 184, 0.28);
         }
 

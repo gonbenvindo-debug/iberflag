@@ -20,7 +20,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v6';
+    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v7';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
     const DESIGN_DOCUMENT_V2_FORMAT = 'design-document-v2';
@@ -1708,9 +1708,8 @@
         outlineNode.removeAttribute?.('stroke-width');
         outlineNode.removeAttribute?.('stroke-dasharray');
         outlineNode.setAttribute?.('fill', 'none');
-        outlineNode.setAttribute?.('stroke', '#94a3b8');
-        outlineNode.setAttribute?.('stroke-width', '1.5');
-        outlineNode.setAttribute?.('stroke-dasharray', '8 8');
+        outlineNode.setAttribute?.('stroke', '#ef4825');
+        outlineNode.setAttribute?.('stroke-width', '2');
         outlineNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
         outlineNode.setAttribute?.('opacity', '0.9');
         outlineNode.setAttribute?.('stroke-linecap', 'round');
@@ -1903,6 +1902,80 @@
         return trimmed;
     }
 
+    function buildFramedPreviewSvgMarkup(previewValue, options = {}) {
+        const previewMarkup = extractTemplateSvg(previewValue, options);
+        const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
+        if (!previewRoot) {
+            return '';
+        }
+
+        const fallbackSourceBounds = getSvgSourceBounds(previewRoot, DEFAULT_SIZE);
+        const sourceBounds = normalizeBounds(options.sourceBounds || fallbackSourceBounds, fallbackSourceBounds);
+        const fillRatioCandidate = Number(options.contentFillRatio);
+        const fillRatio = fillRatioCandidate > 0 && fillRatioCandidate < 1
+            ? fillRatioCandidate
+            : 0.9;
+        const previewGeometry = buildPreviewCanvasGeometry(sourceBounds, { contentFillRatio: fillRatio });
+        const previewTargetBounds = {
+            x: previewGeometry.x,
+            y: previewGeometry.y,
+            width: previewGeometry.width,
+            height: previewGeometry.height
+        };
+        const previewTransform = buildContainTransform(sourceBounds, previewTargetBounds);
+        const wrapper = document.createElementNS(SVG_NS, 'svg');
+        const defs = document.createElementNS(SVG_NS, 'defs');
+
+        wrapper.setAttribute('xmlns', SVG_NS);
+        wrapper.setAttribute('viewBox', `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`);
+        wrapper.setAttribute('width', '100%');
+        wrapper.setAttribute('height', '100%');
+        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        wrapper.setAttribute('style', buildStyleString({
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            'background-color': options.backgroundColor || 'transparent'
+        }));
+
+        const background = document.createElementNS(SVG_NS, 'rect');
+        background.setAttribute('x', '0');
+        background.setAttribute('y', '0');
+        background.setAttribute('width', String(previewGeometry.canvasWidth));
+        background.setAttribute('height', String(previewGeometry.canvasHeight));
+        background.setAttribute('fill', options.backgroundColor || 'transparent');
+        wrapper.appendChild(background);
+
+        const previewDefs = previewRoot.querySelector('defs');
+        if (previewDefs) {
+            Array.from(previewDefs.children || []).forEach((child) => {
+                defs.appendChild(document.importNode(child, true));
+            });
+        }
+        if (defs.children.length > 0) {
+            wrapper.appendChild(defs);
+        }
+
+        const previewGroup = document.createElementNS(SVG_NS, 'g');
+        previewGroup.setAttribute('transform', previewTransform);
+        Array.from(previewRoot.children || []).forEach((child) => {
+            const tagName = String(child.tagName || '').toLowerCase();
+            if (tagName === 'defs' || tagName === 'title' || tagName === 'desc') {
+                return;
+            }
+            previewGroup.appendChild(document.importNode(child, true));
+        });
+        wrapper.appendChild(previewGroup);
+
+        if (options.includeOutline && options.outlineNode?.cloneNode) {
+            const outlineNode = buildPreviewOutlineNode(options.outlineNode, previewTransform);
+            wrapper.appendChild(outlineNode);
+        }
+
+        return new XMLSerializer().serializeToString(wrapper);
+    }
+
     function buildPreviewCacheKey(previewValue, maskValue, options = {}) {
         const serialize = (value) => {
             if (typeof value === 'string') return value;
@@ -2093,9 +2166,7 @@
         }
 
         if (includeOutline) {
-            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
             const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
-            wrapper.appendChild(previewOutlineHaloNode);
             wrapper.appendChild(previewOutlineNode);
         }
 
@@ -2195,7 +2266,6 @@
         wrapper.appendChild(contentGroup);
 
         if (includeOutline) {
-            wrapper.appendChild(buildPreviewOutlineHaloNode(maskNode, sourceTransform));
             wrapper.appendChild(buildPreviewOutlineNode(maskNode, sourceTransform));
         }
 
@@ -2215,12 +2285,17 @@
 
         if (!maskMarkup) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const framedPreviewMarkup = buildFramedPreviewSvgMarkup(previewMarkup, {
+                    backgroundColor: options.backgroundColor || 'transparent',
+                    contentFillRatio: Number(options.contentFillRatio) || 0.9,
+                    includeOutline: false
+                }) || previewMarkup;
+                cachePreviewMarkup(cacheKey, framedPreviewMarkup);
+                return framedPreviewMarkup;
             }
 
             if (previewSource) {
-                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:90%;height:90%;margin:5%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
                 cachePreviewMarkup(cacheKey, fallbackMarkup);
                 return fallbackMarkup;
             }
@@ -2235,12 +2310,17 @@
 
         if (!maskRoot || !previewHref) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const framedPreviewMarkup = buildFramedPreviewSvgMarkup(previewMarkup, {
+                    backgroundColor: options.backgroundColor || 'transparent',
+                    contentFillRatio: Number(options.contentFillRatio) || 0.9,
+                    includeOutline: false
+                }) || previewMarkup;
+                cachePreviewMarkup(cacheKey, framedPreviewMarkup);
+                return framedPreviewMarkup;
             }
 
             if (previewSource) {
-                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+                const fallbackMarkup = `<img src="${escapeXml(previewSource)}" alt="" style="display:block;width:90%;height:90%;margin:5%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
                 cachePreviewMarkup(cacheKey, fallbackMarkup);
                 return fallbackMarkup;
             }
@@ -2258,11 +2338,16 @@
 
         if (!serialized) {
             if (previewMarkup) {
-                cachePreviewMarkup(cacheKey, previewMarkup);
-                return previewMarkup;
+                const framedPreviewMarkup = buildFramedPreviewSvgMarkup(previewMarkup, {
+                    backgroundColor: options.backgroundColor || 'transparent',
+                    contentFillRatio: Number(options.contentFillRatio) || 0.9,
+                    includeOutline: false
+                }) || previewMarkup;
+                cachePreviewMarkup(cacheKey, framedPreviewMarkup);
+                return framedPreviewMarkup;
             }
 
-            const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:100%;height:100%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
+            const fallbackMarkup = `<img src="${escapeXml(previewHref)}" alt="" style="display:block;width:90%;height:90%;margin:5%;object-fit:contain;background-color:${escapeXml(options.backgroundColor || 'transparent')};" loading="lazy">`;
             cachePreviewMarkup(cacheKey, fallbackMarkup);
             return fallbackMarkup;
         }
@@ -2480,6 +2565,7 @@
         buildMaskedExportPreviewDataUrl,
         buildNormalizedProductPreviewSvg,
         buildNormalizedProductPreviewDataUrl,
+        buildFramedPreviewSvgMarkup,
         buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,

@@ -937,6 +937,14 @@ function buildAdaptiveCartPreviewDataUrl(item) {
     const fallbackPreview = item.designPreview || (designSource ? buildSvgDataUrl(designSource) : null);
 
     if (designSource) {
+        const framedPreviewMarkup = window.DesignSvgStore?.buildFramedPreviewSvgMarkup?.(designSource, {
+            backgroundColor: 'transparent',
+            contentFillRatio: 0.9,
+            includeOutline: false
+        });
+        if (typeof framedPreviewMarkup === 'string' && framedPreviewMarkup.includes('<svg')) {
+            return buildSvgDataUrl(framedPreviewMarkup);
+        }
         return buildSvgDataUrl(designSource);
     }
 

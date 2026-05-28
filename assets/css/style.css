@@ -202,16 +202,10 @@ body {
 }
 
 .design-preview-surface {
-    --design-preview-grid-size: 24px;
-    --design-preview-grid-color: rgba(148, 163, 184, 0.16);
     --design-preview-surface-color: #f8fafc;
 
     background-color: var(--design-preview-surface-color);
-    background-image:
-        linear-gradient(var(--design-preview-grid-color) 1px, transparent 1px),
-        linear-gradient(90deg, var(--design-preview-grid-color) 1px, transparent 1px);
-    background-size: var(--design-preview-grid-size) var(--design-preview-grid-size);
-    background-position: center center;
+    background-image: none;
 }
 
 .cart-item-preview-frame {
@@ -2376,30 +2370,25 @@ body[data-analytics-event="view_product"] .product-hero-trust-title {
     align-items: center;
     justify-content: center;
     overflow: hidden;
-    background:
-        linear-gradient(45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%);
-    background-size: 16px 16px;
-    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    background: #f8fafc;
 }
 
 #templates-modal-grid .template-gallery-card__preview-surface--blank {
-    background:
-        linear-gradient(45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
-        linear-gradient(-45deg, rgba(148, 163, 184, 0.14) 25%, transparent 25%),
-        linear-gradient(45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%),
-        linear-gradient(-45deg, transparent 75%, rgba(148, 163, 184, 0.14) 75%);
-    background-size: 16px 16px;
-    background-position: 0 0, 0 8px, 8px -8px, -8px 0px;
+    background: #f8fafc;
 }
 
-#templates-modal-grid .template-gallery-card__preview-content,
-#templates-modal-grid .template-gallery-card__preview-image {
+#templates-modal-grid .template-gallery-card__preview-content {
     display: block;
     height: 100%;
     max-width: 100%;
+}
+
+#templates-modal-grid .template-gallery-card__preview-image {
+    display: block;
+    width: 90%;
+    height: 90%;
+    margin: 5%;
+    object-fit: contain;
 }
 
 #templates-modal-grid .template-gallery-card__preview-content svg {
