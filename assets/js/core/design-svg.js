@@ -1928,8 +1928,8 @@
 
         wrapper.setAttribute('xmlns', SVG_NS);
         wrapper.setAttribute('viewBox', `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`);
-        wrapper.setAttribute('width', '100%');
-        wrapper.setAttribute('height', '100%');
+        wrapper.setAttribute('width', String(previewGeometry.canvasWidth));
+        wrapper.setAttribute('height', String(previewGeometry.canvasHeight));
         wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
         wrapper.setAttribute('style', buildStyleString({
             display: 'block',
