@@ -614,13 +614,9 @@ Object.assign(DesignEditor.prototype, {
                 || this.canvas?.querySelector?.('#print-area-outline');
 
             if (window.DesignSvgStore?.buildFramedPreviewSvgMarkup) {
-                const measuredBounds = sourceOutline
-                    ? (this.getTransformedSvgBounds?.(sourceOutline) || sourceOutline.getBBox?.() || null)
-                    : null;
                 const framedPreview = window.DesignSvgStore.buildFramedPreviewSvgMarkup(designSvg, {
                     backgroundColor: 'transparent',
                     contentFillRatio: 0.9,
-                    sourceBounds: measuredBounds || undefined,
                     includeOutline: Boolean(sourceOutline),
                     outlineNode: sourceOutline || null
                 });
