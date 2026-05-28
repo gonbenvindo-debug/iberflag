@@ -609,47 +609,52 @@ Object.assign(DesignEditor.prototype, {
         }
 
         try {
-            const sourceOutline = this.canvas?.querySelector?.('#print-area-shape-outline-border')
-                || this.canvas?.querySelector?.('#print-area-shape-outline')
-                || this.canvas?.querySelector?.('#print-area-outline');
-            const sourceBounds = (() => {
-                if (!sourceOutline || typeof sourceOutline.getBBox !== 'function') {
-                    return null;
-                }
-                try {
-                    const box = sourceOutline.getBBox();
-                    const width = Number(box?.width);
-                    const height = Number(box?.height);
-                    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
-                        return null;
-                    }
-                    return {
-                        x: Number(box.x) || 0,
-                        y: Number(box.y) || 0,
-                        width,
-                        height
-                    };
-                } catch {
-                    return null;
-                }
-            })();
+            const fallbackBounds = this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 };
+            const croppedDataUrl = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(designSvg, fallbackBounds) || '';
 
-            if (window.DesignSvgStore?.buildFramedPreviewSvgMarkup) {
-                const framedPreview = window.DesignSvgStore.buildFramedPreviewSvgMarkup(designSvg, {
-                    backgroundColor: 'transparent',
-                    contentFillRatio: 0.9,
-                    sourceBounds: sourceBounds || undefined,
-                    includeOutline: Boolean(sourceOutline),
-                    outlineNode: sourceOutline || null
-                });
-                if (framedPreview) {
-                    return framedPreview;
+            if (typeof croppedDataUrl === 'string' && croppedDataUrl.startsWith('data:image/svg+xml')) {
+                const commaIndex = croppedDataUrl.indexOf(',');
+                if (commaIndex > -1) {
+                    const encodedSvg = croppedDataUrl.slice(commaIndex + 1);
+                    if (encodedSvg) {
+                        try {
+                            return decodeURIComponent(encodedSvg);
+                        } catch {
+                            // Keep fallback below when decoding fails.
+                        }
+                    }
                 }
             }
 
-            return designSvg;
+            if (typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
+                return designSvg;
+            }
+
+            const parser = new DOMParser();
+            const doc = parser.parseFromString(designSvg, 'image/svg+xml');
+            const svgRoot = doc.documentElement;
+            if (!svgRoot || String(svgRoot.tagName || '').toLowerCase() !== 'svg') {
+                return designSvg;
+            }
+
+            const rootStyle = String(svgRoot.getAttribute('style') || '');
+            if (rootStyle) {
+                const sanitized = rootStyle
+                    .split(';')
+                    .map((chunk) => chunk.trim())
+                    .filter(Boolean)
+                    .filter((chunk) => !chunk.toLowerCase().startsWith('background-color:'))
+                    .join(';');
+                if (sanitized) {
+                    svgRoot.setAttribute('style', sanitized);
+                } else {
+                    svgRoot.removeAttribute('style');
+                }
+            }
+
+            return new XMLSerializer().serializeToString(doc);
         } catch (error) {
-            console.warn('Falha ao gerar preview com contorno laranja:', error);
+            console.warn('Falha ao gerar preview recortado:', error);
             return designSvg;
         }
     },
