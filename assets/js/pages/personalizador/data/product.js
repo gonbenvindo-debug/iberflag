@@ -609,6 +609,92 @@ Object.assign(DesignEditor.prototype, {
         }
 
         try {
+            const presentPreviewSvg = (svgMarkup) => {
+                if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
+                    return svgMarkup;
+                }
+
+                if (typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
+                    return svgMarkup;
+                }
+
+                const parser = new DOMParser();
+                const doc = parser.parseFromString(svgMarkup, 'image/svg+xml');
+                const svgRoot = doc.documentElement;
+                if (!svgRoot || String(svgRoot.tagName || '').toLowerCase() !== 'svg') {
+                    return svgMarkup;
+                }
+
+                const rootStyle = String(svgRoot.getAttribute('style') || '');
+                if (rootStyle) {
+                    const sanitized = rootStyle
+                        .split(';')
+                        .map((chunk) => chunk.trim())
+                        .filter(Boolean)
+                        .filter((chunk) => !chunk.toLowerCase().startsWith('background-color:'))
+                        .join(';');
+                    if (sanitized) {
+                        svgRoot.setAttribute('style', sanitized);
+                    } else {
+                        svgRoot.removeAttribute('style');
+                    }
+                }
+
+                const viewBoxParts = String(svgRoot.getAttribute('viewBox') || '')
+                    .trim()
+                    .split(/\s+/)
+                    .map(Number);
+                const hasViewBox = viewBoxParts.length === 4
+                    && viewBoxParts.every(Number.isFinite)
+                    && viewBoxParts[2] > 0
+                    && viewBoxParts[3] > 0;
+                if (!hasViewBox) {
+                    return new XMLSerializer().serializeToString(doc);
+                }
+
+                const vbY = viewBoxParts[1];
+                const vbHeight = viewBoxParts[3];
+                const centerY = vbY + (vbHeight / 2);
+                const verticalInsetTransform = `translate(0 ${centerY}) scale(1 0.9) translate(0 ${-centerY})`;
+
+                const clipPath = svgRoot.querySelector('clipPath[id^="design-export-clip"], clipPath#design-export-clip');
+                const clipShape = clipPath
+                    ? Array.from(clipPath.children || []).find((child) => {
+                        const tagName = String(child?.tagName || '').toLowerCase();
+                        return tagName && tagName !== 'title' && tagName !== 'desc' && tagName !== 'metadata';
+                    })
+                    : null;
+                const clippedGroup = svgRoot.querySelector('g[clip-path*="design-export-clip"]');
+
+                if (clipShape && clippedGroup && clippedGroup.parentNode) {
+                    const previewLayer = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
+                    previewLayer.setAttribute('transform', verticalInsetTransform);
+
+                    clippedGroup.parentNode.insertBefore(previewLayer, clippedGroup);
+                    previewLayer.appendChild(clippedGroup);
+
+                    const outlineNode = clipShape.cloneNode(true);
+                    outlineNode.removeAttribute('id');
+                    outlineNode.removeAttribute('pointer-events');
+                    outlineNode.removeAttribute('opacity');
+                    outlineNode.removeAttribute('fill');
+                    outlineNode.removeAttribute('stroke');
+                    outlineNode.removeAttribute('stroke-width');
+                    outlineNode.removeAttribute('stroke-dasharray');
+                    outlineNode.setAttribute('fill', 'none');
+                    outlineNode.setAttribute('stroke', '#ef4825');
+                    outlineNode.setAttribute('stroke-width', '2');
+                    outlineNode.setAttribute('stroke-opacity', '0.9');
+                    outlineNode.setAttribute('vector-effect', 'non-scaling-stroke');
+                    outlineNode.setAttribute('stroke-linecap', 'round');
+                    outlineNode.setAttribute('stroke-linejoin', 'round');
+                    outlineNode.setAttribute('pointer-events', 'none');
+                    previewLayer.appendChild(outlineNode);
+                }
+
+                return new XMLSerializer().serializeToString(doc);
+            };
+
             const fallbackBounds = this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 };
             const croppedDataUrl = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(designSvg, fallbackBounds) || '';
 
@@ -618,7 +704,7 @@ Object.assign(DesignEditor.prototype, {
                     const encodedSvg = croppedDataUrl.slice(commaIndex + 1);
                     if (encodedSvg) {
                         try {
-                            return decodeURIComponent(encodedSvg);
+                            return presentPreviewSvg(decodeURIComponent(encodedSvg));
                         } catch {
                             // Keep fallback below when decoding fails.
                         }
@@ -626,33 +712,7 @@ Object.assign(DesignEditor.prototype, {
                 }
             }
 
-            if (typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
-                return designSvg;
-            }
-
-            const parser = new DOMParser();
-            const doc = parser.parseFromString(designSvg, 'image/svg+xml');
-            const svgRoot = doc.documentElement;
-            if (!svgRoot || String(svgRoot.tagName || '').toLowerCase() !== 'svg') {
-                return designSvg;
-            }
-
-            const rootStyle = String(svgRoot.getAttribute('style') || '');
-            if (rootStyle) {
-                const sanitized = rootStyle
-                    .split(';')
-                    .map((chunk) => chunk.trim())
-                    .filter(Boolean)
-                    .filter((chunk) => !chunk.toLowerCase().startsWith('background-color:'))
-                    .join(';');
-                if (sanitized) {
-                    svgRoot.setAttribute('style', sanitized);
-                } else {
-                    svgRoot.removeAttribute('style');
-                }
-            }
-
-            return new XMLSerializer().serializeToString(doc);
+            return presentPreviewSvg(designSvg);
         } catch (error) {
             console.warn('Falha ao gerar preview recortado:', error);
             return designSvg;
