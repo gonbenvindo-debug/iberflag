@@ -1074,11 +1074,11 @@
 
         const previewSvg = document.createElementNS(SVG_NS, 'svg');
         previewSvg.setAttribute('xmlns', SVG_NS);
-        previewSvg.setAttribute('viewBox', `0 0 ${clipBounds.width} ${clipBounds.height}`);
+        previewSvg.setAttribute('viewBox', `${clipBounds.x} ${clipBounds.y} ${clipBounds.width} ${clipBounds.height}`);
         previewSvg.setAttribute('width', String(Math.max(1, clipBounds.width)));
         previewSvg.setAttribute('height', String(Math.max(1, clipBounds.height)));
         previewSvg.setAttribute('preserveAspectRatio', 'none');
-        previewSvg.setAttribute('data-personalizable-bounds', `0 0 ${clipBounds.width} ${clipBounds.height}`);
+        previewSvg.setAttribute('data-personalizable-bounds', `${clipBounds.x} ${clipBounds.y} ${clipBounds.width} ${clipBounds.height}`);
 
         const rootDefs = root.querySelector('defs');
         if (rootDefs) {
@@ -1097,18 +1097,13 @@
             }
         }
 
-        const normalizedGroup = document.createElementNS(SVG_NS, 'g');
-        normalizedGroup.setAttribute('transform', `translate(${-clipBounds.x} ${-clipBounds.y})`);
-
         Array.from(clippedGroup.children || []).forEach((child) => {
             const tagName = String(child?.tagName || '').toLowerCase();
             if (!tagName || tagName === 'title' || tagName === 'desc' || tagName === 'metadata') {
                 return;
             }
-            normalizedGroup.appendChild(document.importNode(child, true));
+            previewSvg.appendChild(document.importNode(child, true));
         });
-
-        previewSvg.appendChild(normalizedGroup);
 
         return new XMLSerializer().serializeToString(previewSvg);
     }
