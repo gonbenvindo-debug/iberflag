@@ -71,6 +71,9 @@
             id,
             svg,
             preview: String(meta.preview || '').trim() || '',
+            designDocumentV2: meta.document && typeof meta.document === 'object'
+                ? meta.document
+                : null,
             createdAt: Number(meta.createdAt || Date.now()),
             updatedAt: Date.now(),
             productId: Number.isFinite(Number(meta.productId)) ? Number(meta.productId) : null
@@ -169,6 +172,9 @@
                     if (!next.designPreview) {
                         next.designPreview = record.preview || buildSvgDataUrl(record.svg);
                     }
+                    if (!next.designDocumentV2 && record.designDocumentV2) {
+                        next.designDocumentV2 = record.designDocumentV2;
+                    }
                 }
             }
 
@@ -191,7 +197,8 @@
             if (designId && typeof next.design === 'string' && next.design.trim()) {
                 await saveDesign(designId, next.design, {
                     preview: next.designPreview || '',
-                    productId: next.id || null
+                    productId: next.id || null,
+                    document: next.designDocumentV2 || next.design_document_v2 || null
                 });
             }
 

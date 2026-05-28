@@ -1792,14 +1792,14 @@ Object.assign(DesignEditor.prototype, {
     
     autoSave() {
         const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
+        const designDocument = this.getDesignDocumentV2?.() || null;
         const svgDesign = this.getDesignSVG();
         const payload = {
-            format: 'elements-v1',
+            format: window.DesignSvgStore?.DESIGN_DOCUMENT_V2_FORMAT || 'design-document-v2',
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
-            elements: this.elements.map((elementData) => {
-                return this.buildSerializableElementData?.(elementData) || null;
-            }).filter(Boolean)
+            design_document_v2: designDocument,
+            design_svg: svgDesign
         };
         const compactDesign = JSON.stringify(payload);
 

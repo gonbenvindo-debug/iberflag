@@ -352,6 +352,19 @@ Object.assign(DesignEditor.prototype, {
     },
 
     getDesignSVG() {
+        const designDocument = this.getDesignDocumentV2?.();
+        if (designDocument && window.DesignSvgStore?.renderDesignDocumentV2ToSvg) {
+            const rendered = window.DesignSvgStore.renderDesignDocumentV2ToSvg(designDocument, {
+                productSvg: this.currentProduct?.svg_template || '',
+                viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
+                printAreaBounds: this.printAreaBounds || null,
+                maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
+            });
+            if (rendered) {
+                return rendered;
+            }
+        }
+
         if (window.DesignSvgStore?.serializeEditorToSvg) {
             return window.DesignSvgStore.serializeEditorToSvg(this);
         }
@@ -397,8 +410,19 @@ Object.assign(DesignEditor.prototype, {
         return new XMLSerializer().serializeToString(exportSvg);
     },
 
+    getDesignDocumentV2() {
+        if (window.DesignSvgStore?.serializeDesignDocumentV2) {
+            return window.DesignSvgStore.serializeDesignDocumentV2(this);
+        }
+
+        return null;
+    },
+
     // ===== ADD TO CART =====
-    async addToCart(designOverride = null) {
+    async addToCart(designOverride = null, options = {}) {
+        const designDocument = options?.designDocument
+            || this.getDesignDocumentV2?.()
+            || null;
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
@@ -437,6 +461,7 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
+            designDocumentV2: designDocument,
             designPreview: null,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
@@ -452,7 +477,8 @@ Object.assign(DesignEditor.prototype, {
         if (window.CartAssetStore?.saveDesign && designId) {
             await window.CartAssetStore.saveDesign(designId, design, {
                 productId: this.currentProduct?.id,
-                preview: cartItem.designPreview
+                preview: cartItem.designPreview,
+                document: designDocument
             });
         }
 

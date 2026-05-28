@@ -932,16 +932,18 @@ function buildAdaptiveCartPreviewDataUrl(item) {
     }
 
     const fallbackPreview = item.designPreview || (item.design ? buildSvgDataUrl(item.design) : null);
+    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
     const designSource = typeof item.design === 'string' && item.design.trim()
         ? item.design
         : '';
     const svgTemplate = getCartItemSvgTemplate(item);
 
-    if (!designSource || !svgTemplate || !window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
+    if ((!designSource && !designDocument) || !svgTemplate || !window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
         return fallbackPreview;
     }
 
     const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+        designDocument,
         designSvg: designSource,
         productSvg: svgTemplate,
         fillRatio: 0.9,

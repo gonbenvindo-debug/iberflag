@@ -606,8 +606,12 @@ Object.assign(DesignEditor.prototype, {
             sourceItem = hydrated[0] || sourceItem;
         }
 
-        if (targetIndex >= 0 && sourceItem && sourceItem.design) {
+        if (targetIndex >= 0 && sourceItem && (sourceItem.designDocumentV2 || sourceItem.design_document_v2 || sourceItem.design)) {
             try {
+                const designDocument = sourceItem.designDocumentV2 || sourceItem.design_document_v2 || null;
+                if (designDocument && window.DesignSvgStore?.importDesignDocumentV2IntoEditor) {
+                    window.DesignSvgStore.importDesignDocumentV2IntoEditor(this, designDocument);
+                } else {
                 const parser = new DOMParser();
                 const svgDoc = parser.parseFromString(sourceItem.design, 'image/svg+xml');
                 const designElements = svgDoc.documentElement.querySelectorAll('[data-editable="true"]');
@@ -624,6 +628,7 @@ Object.assign(DesignEditor.prototype, {
 
                 this.updateLayers();
                 this.saveHistory();
+                }
 
                 this.editIndex = String(targetIndex);
                 this.editDesignId = String(sourceItem.designId || sourceItem.design_id || this.editDesignId || '');
@@ -691,9 +696,20 @@ Object.assign(DesignEditor.prototype, {
         try {
             if (raw.startsWith('{')) {
                 const parsed = JSON.parse(raw);
+                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
                 const elements = Array.isArray(parsed?.elements)
                     ? parsed.elements.filter(Boolean)
                     : [];
+
+                if (designDocument && Array.isArray(designDocument.elements) && designDocument.elements.length > 0) {
+                    return {
+                        key,
+                        raw,
+                        parsed,
+                        format: 'design-document-v2',
+                        elementCount: designDocument.elements.length
+                    };
+                }
 
                 if (parsed?.format === 'elements-v1' && elements.length > 0) {
                     return {
@@ -766,6 +782,19 @@ Object.assign(DesignEditor.prototype, {
     buildAutosavePreviewSvg(record) {
         const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
+        const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(record?.parsed);
+
+        if (designDocument && this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewSvg) {
+            const previewSvg = window.DesignSvgStore.buildNormalizedProductPreviewSvg({
+                designDocument,
+                designSvg: record?.parsed?.design_svg || '',
+                productSvg: this.currentProduct.svg_template,
+                fillRatio: 0.9,
+                includeOutline: true,
+                backgroundColor: 'transparent'
+            });
+            if (previewSvg) return previewSvg;
+        }
 
         if (record?.parsed?.format === 'elements-v1' && Array.isArray(record.parsed.elements)) {
             const svg = window.DesignSvgStore?.extractTemplateSvg?.(record.parsed.elements, {
@@ -880,6 +909,25 @@ Object.assign(DesignEditor.prototype, {
             const trimmed = String(autosave).trim();
             if (trimmed.startsWith('{')) {
                 const parsed = JSON.parse(trimmed);
+                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
+                if (designDocument && window.DesignSvgStore?.importDesignDocumentV2IntoEditor) {
+                    const imported = window.DesignSvgStore.importDesignDocumentV2IntoEditor(this, designDocument, {
+                        skipHistory: true
+                    });
+                    if (imported) {
+                        if (this.elements.length > 0) {
+                            this.updateLayers();
+                            showToast(
+                                window.personalizerI18nText
+                                    ? window.personalizerI18nText('Design recuperado automaticamente')
+                                    : 'Design recuperado automaticamente',
+                                'info'
+                            );
+                            this.saveHistory();
+                        }
+                        return this.elements.length > 0;
+                    }
+                }
                 if (parsed && parsed.format === 'elements-v1' && Array.isArray(parsed.elements)) {
                     this.clearCanvas?.();
                     parsed.elements.forEach((savedElement) => {

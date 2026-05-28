@@ -23,6 +23,19 @@
     const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v6';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
+    const DESIGN_DOCUMENT_V2_FORMAT = 'design-document-v2';
+    const SUPPORTED_V2_SHAPES = new Set([
+        'rectangle',
+        'rounded',
+        'pill',
+        'line',
+        'circle',
+        'triangle',
+        'diamond',
+        'hexagon',
+        'arrow',
+        'star'
+    ]);
 
     function toNumber(value, fallback = 0) {
         const parsed = Number(value);
@@ -411,10 +424,631 @@
         return new XMLSerializer().serializeToString(svg);
     }
 
+    function roundNumber(value, precision = 6) {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+            return 0;
+        }
+        const factor = 10 ** precision;
+        return Math.round(numeric * factor) / factor;
+    }
+
+    function normalizeBounds(bounds, fallback = DEFAULT_SIZE) {
+        const safeFallback = {
+            x: Number.isFinite(Number(fallback?.x)) ? Number(fallback.x) : 0,
+            y: Number.isFinite(Number(fallback?.y)) ? Number(fallback.y) : 0,
+            width: Math.max(1, Number(fallback?.width) || DEFAULT_SIZE.width),
+            height: Math.max(1, Number(fallback?.height) || DEFAULT_SIZE.height)
+        };
+
+        if (!bounds) {
+            return safeFallback;
+        }
+
+        const width = Number(bounds.width);
+        const height = Number(bounds.height);
+        if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+            return safeFallback;
+        }
+
+        return {
+            x: Number.isFinite(Number(bounds.x)) ? Number(bounds.x) : safeFallback.x,
+            y: Number.isFinite(Number(bounds.y)) ? Number(bounds.y) : safeFallback.y,
+            width,
+            height
+        };
+    }
+
+    function getEditorPrintAreaBounds(editor, fallback = null) {
+        const fallbackBounds = fallback || getCanvasViewBoxBounds(editor, {});
+        const preferred = normalizeBounds(editor?.printAreaBounds, fallbackBounds);
+        if (preferred.width > 0 && preferred.height > 0) {
+            return preferred;
+        }
+
+        const outline = editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline');
+        if (outline && typeof outline.getBBox === 'function') {
+            try {
+                return normalizeBounds(outline.getBBox(), fallbackBounds);
+            } catch (error) {
+                console.warn('Falha ao medir print area do editor:', error);
+            }
+        }
+
+        return fallbackBounds;
+    }
+
+    function normalizeFrameToBounds(frame, bounds) {
+        const safeBounds = normalizeBounds(bounds, DEFAULT_SIZE);
+        const source = normalizeBounds(frame, { x: safeBounds.x, y: safeBounds.y, width: 1, height: 1 });
+        return {
+            x: roundNumber((source.x - safeBounds.x) / safeBounds.width),
+            y: roundNumber((source.y - safeBounds.y) / safeBounds.height),
+            width: roundNumber(source.width / safeBounds.width),
+            height: roundNumber(source.height / safeBounds.height)
+        };
+    }
+
+    function resolveFrameFromBounds(frame, bounds) {
+        const safeBounds = normalizeBounds(bounds, DEFAULT_SIZE);
+        const safeFrame = frame && typeof frame === 'object' ? frame : {};
+        return {
+            x: safeBounds.x + (toNumber(safeFrame.x, 0) * safeBounds.width),
+            y: safeBounds.y + (toNumber(safeFrame.y, 0) * safeBounds.height),
+            width: Math.max(1, toNumber(safeFrame.width, 0) * safeBounds.width),
+            height: Math.max(1, toNumber(safeFrame.height, 0) * safeBounds.height)
+        };
+    }
+
+    function serializeTextDecoration(node, fallback = '') {
+        return String(node?.getAttribute?.('text-decoration') || fallback || '').trim();
+    }
+
+    function getElementFrameForDocument(editor, elementData) {
+        if (!elementData?.element) {
+            return null;
+        }
+
+        if (elementData.type === 'text') {
+            const metrics = editor?.syncTextMetrics?.(elementData, { syncDataset: false });
+            const boundsX = Number.isFinite(Number(elementData.boundsX)) ? Number(elementData.boundsX) : Number(metrics?.x);
+            const boundsY = Number.isFinite(Number(elementData.boundsY)) ? Number(elementData.boundsY) : Number(metrics?.y);
+            const width = Math.max(1, Number(elementData.width) || Number(metrics?.width) || 1);
+            const height = Math.max(1, Number(elementData.height) || Number(metrics?.height) || 1);
+            return {
+                x: Number.isFinite(boundsX) ? boundsX : 0,
+                y: Number.isFinite(boundsY) ? boundsY : 0,
+                width,
+                height
+            };
+        }
+
+        if (elementData.type === 'image' || (elementData.type === 'shape' && ['rectangle', 'rounded', 'pill', 'line'].includes(String(elementData.shapeType || '').toLowerCase()))) {
+            return {
+                x: Number(elementData.x) || 0,
+                y: Number(elementData.y) || 0,
+                width: Math.max(1, Number(elementData.width) || 1),
+                height: Math.max(1, Number(elementData.height) || 1)
+            };
+        }
+
+        if (elementData.type === 'shape' && String(elementData.shapeType || '').toLowerCase() === 'circle') {
+            const radius = Math.max(1, Number(elementData.r || elementData.radius || 0));
+            const cx = Number(elementData.cx ?? elementData.x) || 0;
+            const cy = Number(elementData.cy ?? elementData.y) || 0;
+            return {
+                x: cx - radius,
+                y: cy - radius,
+                width: radius * 2,
+                height: radius * 2
+            };
+        }
+
+        if (elementData.type === 'shape' && typeof editor?.isPolygonShapeType === 'function' && editor.isPolygonShapeType(elementData.shapeType)) {
+            return {
+                x: Number(elementData.x) || 0,
+                y: Number(elementData.y) || 0,
+                width: Math.max(1, Number(elementData.width) || 1),
+                height: Math.max(1, Number(elementData.height) || 1)
+            };
+        }
+
+        return null;
+    }
+
+    function serializeElementToDesignDocument(editor, elementData, printAreaBounds, index) {
+        if (!elementData?.element) {
+            return null;
+        }
+
+        const type = String(elementData.type || '').toLowerCase();
+        const frame = getElementFrameForDocument(editor, elementData);
+        if (!frame) {
+            return null;
+        }
+
+        const normalizedFrame = normalizeFrameToBounds(frame, printAreaBounds);
+        const baseRecord = {
+            id: String(elementData.id || elementData.element.dataset?.elementId || `element-${index + 1}`),
+            type,
+            frame: normalizedFrame,
+            rotationDeg: roundNumber(Number(elementData.rotation) || 0, 3),
+            flipX: Boolean(elementData.flipX),
+            flipY: Boolean(elementData.flipY),
+            zIndex: index
+        };
+
+        if (type === 'text') {
+            const anchorX = Number(elementData.x) || 0;
+            const anchorY = Number(elementData.y) || 0;
+            const width = Math.max(1, frame.width || 1);
+            const height = Math.max(1, frame.height || 1);
+            const fontSize = Math.max(1, Number(elementData.size) || Number(elementData.element.getAttribute('font-size')) || 24);
+            return {
+                ...baseRecord,
+                rawContent: String(elementData.rawContent ?? elementData.content ?? elementData.element.dataset?.rawContent ?? ''),
+                content: String(elementData.content ?? elementData.rawContent ?? elementData.element.dataset?.rawContent ?? ''),
+                capsLock: String(elementData.element.dataset?.capsLock || 'false') === 'true' || elementData.capsLock === true,
+                fontFamily: String(elementData.font || elementData.element.getAttribute('font-family') || 'Arial'),
+                fontSizeRatio: roundNumber(fontSize / Math.max(1, printAreaBounds.height)),
+                fontWeight: String(elementData.bold ? 'bold' : (elementData.element.getAttribute('font-weight') || 'normal')),
+                fontStyle: String(elementData.italic ? 'italic' : (elementData.element.getAttribute('font-style') || 'normal')),
+                textDecoration: serializeTextDecoration(elementData.element, elementData.underline ? 'underline' : ''),
+                fill: String(elementData.color || elementData.element.getAttribute('fill') || '#000000'),
+                textAnchor: String(elementData.textAnchor || elementData.element.getAttribute('text-anchor') || 'start'),
+                dominantBaseline: String(elementData.dominantBaseline || elementData.element.getAttribute('dominant-baseline') || ''),
+                anchorOffset: {
+                    xRatio: roundNumber((anchorX - frame.x) / width),
+                    yRatio: roundNumber((anchorY - frame.y) / height)
+                },
+                lineHeightRatio: 1.2
+            };
+        }
+
+        if (type === 'image') {
+            const crop = elementData.cropData && typeof elementData.cropData === 'object'
+                ? {
+                    x: roundNumber(toNumber(elementData.cropData.x, 0)),
+                    y: roundNumber(toNumber(elementData.cropData.y, 0)),
+                    width: roundNumber(toNumber(elementData.cropData.width, 1)),
+                    height: roundNumber(toNumber(elementData.cropData.height, 1))
+                }
+                : null;
+
+            return {
+                ...baseRecord,
+                src: String(elementData.src || elementData.element.getAttribute('href') || ''),
+                name: String(elementData.name || elementData.element.dataset?.name || 'Imagem'),
+                imageKind: String(elementData.imageKind || elementData.element.dataset?.imageKind || 'image'),
+                opacity: roundNumber(toNumber(elementData.opacity, 1), 4),
+                objectFit: String(elementData.objectFit || elementData.element.dataset?.objectFit || 'contain'),
+                borderRadius: roundNumber(toNumber(elementData.borderRadius ?? elementData.element.dataset?.borderRadius, 0)),
+                crop,
+                fullWidth: Number(elementData.fullWidth) || null,
+                fullHeight: Number(elementData.fullHeight) || null,
+                qrContent: String(elementData.qrContent || elementData.element.dataset?.qrContent || ''),
+                qrColor: String(elementData.qrColor || elementData.element.dataset?.qrColor || '#111827'),
+                originalSrc: String(elementData.originalSrc || elementData.element.dataset?.originalSrc || ''),
+                layerLabel: String(elementData.layerLabel || elementData.element.dataset?.layerLabel || '')
+            };
+        }
+
+        if (type === 'shape') {
+            const shapeType = String(elementData.shapeType || '').toLowerCase();
+            if (!SUPPORTED_V2_SHAPES.has(shapeType)) {
+                console.warn('Elemento ignorado no design-document-v2 por shapeType nao suportado:', shapeType, elementData);
+                return null;
+            }
+
+            return {
+                ...baseRecord,
+                shapeType,
+                fill: String(elementData.fill || elementData.element.getAttribute('fill') || '#3b82f6'),
+                stroke: String(elementData.stroke || elementData.element.getAttribute('stroke') || 'none'),
+                strokeWidth: roundNumber(toNumber(elementData.strokeWidth || elementData.element.getAttribute('stroke-width'), 0), 4)
+            };
+        }
+
+        console.warn('Elemento ignorado no design-document-v2 por tipo nao suportado:', type, elementData);
+        return null;
+    }
+
+    function serializeDesignDocumentV2(editor, options = {}) {
+        const canvas = editor?.canvas || editor;
+        if (!canvas) {
+            return null;
+        }
+
+        const viewBoxBounds = getCanvasViewBoxBounds(editor, options);
+        const printAreaBounds = getEditorPrintAreaBounds(editor, viewBoxBounds);
+        const elements = Array.from(editor?.elements || [])
+            .map((elementData, index) => serializeElementToDesignDocument(editor, elementData, printAreaBounds, index))
+            .filter(Boolean);
+
+        return {
+            format: DESIGN_DOCUMENT_V2_FORMAT,
+            version: 2,
+            productId: editor?.productId ? String(editor.productId) : null,
+            selectedBaseId: Number.isFinite(Number(editor?.selectedBaseId)) ? Number(editor.selectedBaseId) : null,
+            viewBox: {
+                x: roundNumber(viewBoxBounds.x),
+                y: roundNumber(viewBoxBounds.y),
+                width: roundNumber(viewBoxBounds.width),
+                height: roundNumber(viewBoxBounds.height)
+            },
+            printAreaRef: {
+                x: roundNumber(printAreaBounds.x),
+                y: roundNumber(printAreaBounds.y),
+                width: roundNumber(printAreaBounds.width),
+                height: roundNumber(printAreaBounds.height)
+            },
+            elements
+        };
+    }
+
+    function unwrapDesignDocumentV2(input) {
+        if (!input) {
+            return null;
+        }
+
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (!trimmed) return null;
+            try {
+                return unwrapDesignDocumentV2(JSON.parse(trimmed));
+            } catch (error) {
+                return null;
+            }
+        }
+
+        if (typeof input !== 'object') {
+            return null;
+        }
+
+        if (input.format === DESIGN_DOCUMENT_V2_FORMAT && Array.isArray(input.elements)) {
+            return input;
+        }
+
+        if (input.design_document_v2) {
+            return unwrapDesignDocumentV2(input.design_document_v2);
+        }
+
+        if (input.designDocumentV2) {
+            return unwrapDesignDocumentV2(input.designDocumentV2);
+        }
+
+        return null;
+    }
+
+    function getRenderedTextValue(rawText, capsLock) {
+        const content = String(rawText || '');
+        return capsLock ? content.toLocaleUpperCase() : content;
+    }
+
+    function buildDesignElementTransform(bounds, rotationDeg = 0, flipX = false, flipY = false) {
+        const safeRotation = Number(rotationDeg) || 0;
+        if (!safeRotation && !flipX && !flipY) {
+            return '';
+        }
+
+        const centerX = bounds.x + (bounds.width / 2);
+        const centerY = bounds.y + (bounds.height / 2);
+        const scaleX = flipX ? -1 : 1;
+        const scaleY = flipY ? -1 : 1;
+
+        return [
+            `translate(${centerX} ${centerY})`,
+            safeRotation ? `rotate(${safeRotation})` : '',
+            (flipX || flipY) ? `scale(${scaleX} ${scaleY})` : '',
+            `translate(${-centerX} ${-centerY})`
+        ].filter(Boolean).join(' ');
+    }
+
+    function buildAbsoluteTextNode(element, printAreaBounds) {
+        const frame = resolveFrameFromBounds(element.frame, printAreaBounds);
+        const anchorOffset = element.anchorOffset && typeof element.anchorOffset === 'object'
+            ? element.anchorOffset
+            : {};
+        const anchorX = frame.x + (frame.width * toNumber(anchorOffset.xRatio, 0));
+        const anchorY = frame.y + (frame.height * toNumber(anchorOffset.yRatio, 1));
+        const fontSize = Math.max(1, toNumber(element.fontSizeRatio, 24 / Math.max(1, printAreaBounds.height)) * printAreaBounds.height);
+        const lineHeightRatio = Math.max(0.8, toNumber(element.lineHeightRatio, 1.2));
+        const lines = getRenderedTextValue(element.rawContent ?? element.content ?? '', element.capsLock)
+            .split(/\r?\n/);
+        const textNode = document.createElementNS(SVG_NS, 'text');
+
+        textNode.setAttribute('data-editable', 'true');
+        textNode.setAttribute('data-element-id', String(element.id || ''));
+        textNode.setAttribute('x', String(anchorX));
+        textNode.setAttribute('y', String(anchorY));
+        textNode.setAttribute('font-family', String(element.fontFamily || 'Arial'));
+        textNode.setAttribute('font-size', String(fontSize));
+        textNode.setAttribute('fill', String(element.fill || '#000000'));
+        textNode.setAttribute('font-weight', String(element.fontWeight || 'normal'));
+        textNode.setAttribute('font-style', String(element.fontStyle || 'normal'));
+        textNode.setAttribute('text-anchor', String(element.textAnchor || 'start'));
+        textNode.setAttribute('dominant-baseline', String(element.dominantBaseline || ''));
+        textNode.setAttribute('xml:space', 'preserve');
+        if (element.textDecoration) {
+            textNode.setAttribute('text-decoration', String(element.textDecoration));
+        }
+
+        if (lines.length <= 1) {
+            textNode.textContent = lines[0] || '';
+        } else {
+            const lineHeight = fontSize * lineHeightRatio;
+            lines.forEach((line, index) => {
+                const tspan = document.createElementNS(SVG_NS, 'tspan');
+                tspan.setAttribute('x', String(anchorX));
+                tspan.setAttribute('dy', index === 0 ? '0' : String(lineHeight));
+                tspan.textContent = line;
+                textNode.appendChild(tspan);
+            });
+        }
+
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        if (transform) {
+            textNode.setAttribute('transform', transform);
+        }
+
+        return textNode;
+    }
+
+    function buildAbsoluteImageNode(element, printAreaBounds) {
+        const frame = resolveFrameFromBounds(element.frame, printAreaBounds);
+        const imageNode = document.createElementNS(SVG_NS, 'image');
+        const href = String(element.src || '');
+        const objectFit = String(element.objectFit || 'contain').toLowerCase();
+
+        imageNode.setAttribute('data-editable', 'true');
+        imageNode.setAttribute('data-element-id', String(element.id || ''));
+        imageNode.setAttribute('x', String(frame.x));
+        imageNode.setAttribute('y', String(frame.y));
+        imageNode.setAttribute('width', String(frame.width));
+        imageNode.setAttribute('height', String(frame.height));
+        imageNode.setAttribute('href', href);
+        imageNode.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', href);
+        imageNode.setAttribute('opacity', String(toNumber(element.opacity, 1)));
+        imageNode.setAttribute('preserveAspectRatio', objectFit === 'contain' ? 'xMidYMid meet' : objectFit === 'fill' ? 'none' : 'xMidYMid slice');
+
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        if (transform) {
+            imageNode.setAttribute('transform', transform);
+        }
+
+        return imageNode;
+    }
+
+    function buildShapePointsWithinFrame(shapeType, frame) {
+        const cx = frame.x + (frame.width / 2);
+        const cy = frame.y + (frame.height / 2);
+        const halfWidth = frame.width / 2;
+        const halfHeight = frame.height / 2;
+
+        if (shapeType === 'triangle') {
+            return `${cx},${frame.y} ${frame.x},${frame.y + frame.height} ${frame.x + frame.width},${frame.y + frame.height}`;
+        }
+
+        if (shapeType === 'diamond') {
+            return `${cx},${frame.y} ${frame.x + frame.width},${cy} ${cx},${frame.y + frame.height} ${frame.x},${cy}`;
+        }
+
+        if (shapeType === 'hexagon') {
+            const inset = frame.width * 0.22;
+            return `${frame.x + inset},${frame.y} ${frame.x + frame.width - inset},${frame.y} ${frame.x + frame.width},${cy} ${frame.x + frame.width - inset},${frame.y + frame.height} ${frame.x + inset},${frame.y + frame.height} ${frame.x},${cy}`;
+        }
+
+        if (shapeType === 'arrow') {
+            const shaftWidth = frame.width * 0.55;
+            const shaftTop = frame.y + (frame.height * 0.3);
+            const shaftBottom = frame.y + (frame.height * 0.7);
+            return `${frame.x},${shaftTop} ${frame.x + shaftWidth},${shaftTop} ${frame.x + shaftWidth},${frame.y} ${frame.x + frame.width},${cy} ${frame.x + shaftWidth},${frame.y + frame.height} ${frame.x + shaftWidth},${shaftBottom} ${frame.x},${shaftBottom}`;
+        }
+
+        if (shapeType === 'star') {
+            const outer = Math.min(halfWidth, halfHeight);
+            const inner = outer * 0.45;
+            const points = [];
+            for (let i = 0; i < 10; i += 1) {
+                const angle = (-90 + (i * 36)) * (Math.PI / 180);
+                const radius = i % 2 === 0 ? outer : inner;
+                points.push(`${cx + (Math.cos(angle) * radius)},${cy + (Math.sin(angle) * radius)}`);
+            }
+            return points.join(' ');
+        }
+
+        return `${cx},${frame.y} ${frame.x + frame.width},${frame.y + frame.height} ${frame.x},${frame.y + frame.height}`;
+    }
+
+    function buildAbsoluteShapeNode(element, printAreaBounds) {
+        const frame = resolveFrameFromBounds(element.frame, printAreaBounds);
+        const shapeType = String(element.shapeType || 'rectangle').toLowerCase();
+        let node = null;
+
+        if (shapeType === 'circle') {
+            const radius = Math.min(frame.width, frame.height) / 2;
+            node = document.createElementNS(SVG_NS, 'circle');
+            node.setAttribute('cx', String(frame.x + (frame.width / 2)));
+            node.setAttribute('cy', String(frame.y + (frame.height / 2)));
+            node.setAttribute('r', String(radius));
+        } else if (['triangle', 'diamond', 'hexagon', 'arrow', 'star'].includes(shapeType)) {
+            node = document.createElementNS(SVG_NS, 'polygon');
+            node.setAttribute('points', buildShapePointsWithinFrame(shapeType, frame));
+        } else {
+            node = document.createElementNS(SVG_NS, 'rect');
+            node.setAttribute('x', String(frame.x));
+            node.setAttribute('y', String(frame.y));
+            node.setAttribute('width', String(frame.width));
+            node.setAttribute('height', String(frame.height));
+            if (shapeType === 'rounded' || shapeType === 'pill' || shapeType === 'line') {
+                const radius = shapeType === 'line'
+                    ? Math.max(1, frame.height / 2)
+                    : Math.max(1, Math.min(frame.width, frame.height) / (shapeType === 'pill' ? 2 : 4));
+                node.setAttribute('rx', String(radius));
+                node.setAttribute('ry', String(radius));
+            }
+        }
+
+        node.setAttribute('data-editable', 'true');
+        node.setAttribute('data-element-id', String(element.id || ''));
+        node.setAttribute('fill', String(element.fill || '#3b82f6'));
+        node.setAttribute('stroke', String(element.stroke || 'none'));
+        node.setAttribute('stroke-width', String(toNumber(element.strokeWidth, 0)));
+
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        if (transform) {
+            node.setAttribute('transform', transform);
+        }
+
+        return node;
+    }
+
+    function buildAbsoluteNodeFromDesignElement(element, printAreaBounds) {
+        const type = String(element?.type || '').toLowerCase();
+        if (type === 'text') {
+            return buildAbsoluteTextNode(element, printAreaBounds);
+        }
+        if (type === 'image') {
+            return buildAbsoluteImageNode(element, printAreaBounds);
+        }
+        if (type === 'shape') {
+            return buildAbsoluteShapeNode(element, printAreaBounds);
+        }
+        return null;
+    }
+
+    function appendDesignDocumentElements(parentNode, designDocument, printAreaBounds) {
+        const elements = Array.isArray(designDocument?.elements) ? [...designDocument.elements] : [];
+        elements
+            .sort((left, right) => toNumber(left?.zIndex, 0) - toNumber(right?.zIndex, 0))
+            .forEach((element) => {
+                const node = buildAbsoluteNodeFromDesignElement(element, printAreaBounds);
+                if (node) {
+                    parentNode.appendChild(node);
+                }
+            });
+    }
+
+    function resolveMaskShapeSource(productContext = {}, printAreaBounds) {
+        if (productContext.maskNode?.cloneNode) {
+            return {
+                maskNode: productContext.maskNode.cloneNode(true),
+                sourceBounds: normalizeBounds(productContext.viewBoxBounds || printAreaBounds, printAreaBounds)
+            };
+        }
+
+        const productMarkup = extractTemplateSvg(productContext.productSvg || productContext.svgTemplate || '', {});
+        const productRoot = productMarkup ? parseSvgMarkup(productMarkup) : null;
+        if (productRoot) {
+            const maskNode = pickMaskNode(productRoot);
+            if (maskNode) {
+                const sourceBounds = getSvgSourceBounds(productRoot, printAreaBounds);
+                return {
+                    maskNode,
+                    sourceBounds
+                };
+            }
+        }
+
+        const fallbackMask = document.createElementNS(SVG_NS, 'rect');
+        fallbackMask.setAttribute('x', String(printAreaBounds.x));
+        fallbackMask.setAttribute('y', String(printAreaBounds.y));
+        fallbackMask.setAttribute('width', String(printAreaBounds.width));
+        fallbackMask.setAttribute('height', String(printAreaBounds.height));
+        return {
+            maskNode: fallbackMask,
+            sourceBounds: normalizeBounds(productContext.viewBoxBounds || printAreaBounds, printAreaBounds)
+        };
+    }
+
+    function resolveViewBoxBoundsForDocument(designDocument, productContext = {}, printAreaBounds) {
+        if (productContext.viewBoxBounds) {
+            return normalizeBounds(productContext.viewBoxBounds, printAreaBounds);
+        }
+
+        const productMarkup = extractTemplateSvg(productContext.productSvg || productContext.svgTemplate || '', {});
+        const productRoot = productMarkup ? parseSvgMarkup(productMarkup) : null;
+        if (productRoot) {
+            return normalizeBounds(getSvgSourceBounds(productRoot, printAreaBounds), printAreaBounds);
+        }
+
+        return normalizeBounds(designDocument?.viewBox || designDocument?.printAreaRef, printAreaBounds);
+    }
+
+    function renderDesignDocumentV2ToSvg(designDocumentInput, productContext = {}) {
+        const designDocument = unwrapDesignDocumentV2(designDocumentInput);
+        if (!designDocument) {
+            return '';
+        }
+
+        const fallbackPrintArea = normalizeBounds(designDocument.printAreaRef, DEFAULT_SIZE);
+        const printAreaBounds = normalizeBounds(productContext.printAreaBounds || designDocument.printAreaRef, fallbackPrintArea);
+        const viewBoxBounds = resolveViewBoxBoundsForDocument(designDocument, productContext, printAreaBounds);
+        const maskSource = resolveMaskShapeSource(productContext, printAreaBounds);
+        const svg = document.createElementNS(SVG_NS, 'svg');
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        const clipPath = document.createElementNS(SVG_NS, 'clipPath');
+        const clipPathId = `design-document-clip-${Math.random().toString(36).slice(2, 10)}`;
+
+        svg.setAttribute('xmlns', SVG_NS);
+        svg.setAttribute('viewBox', `${viewBoxBounds.x} ${viewBoxBounds.y} ${viewBoxBounds.width} ${viewBoxBounds.height}`);
+        svg.setAttribute('width', String(viewBoxBounds.width));
+        svg.setAttribute('height', String(viewBoxBounds.height));
+        svg.setAttribute('preserveAspectRatio', 'none');
+        svg.setAttribute('data-design-document-format', DESIGN_DOCUMENT_V2_FORMAT);
+        svg.setAttribute('data-print-area-bounds', `${printAreaBounds.x} ${printAreaBounds.y} ${printAreaBounds.width} ${printAreaBounds.height}`);
+
+        clipPath.setAttribute('id', clipPathId);
+        clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
+        clipPath.appendChild(buildEditorExportMaskShape({ querySelector: () => null }, printAreaBounds.width, printAreaBounds.height, printAreaBounds));
+        if (maskSource.maskNode) {
+            const shape = maskSource.maskNode.cloneNode(true);
+            shape.removeAttribute?.('id');
+            shape.removeAttribute?.('class');
+            shape.removeAttribute?.('opacity');
+            shape.removeAttribute?.('stroke');
+            shape.removeAttribute?.('stroke-width');
+            shape.removeAttribute?.('stroke-dasharray');
+            shape.setAttribute?.('fill', '#ffffff');
+            clipPath.replaceChildren(shape);
+        }
+        defs.appendChild(clipPath);
+        svg.appendChild(defs);
+
+        const group = document.createElementNS(SVG_NS, 'g');
+        group.setAttribute('clip-path', `url(#${clipPathId})`);
+
+        const whiteBase = document.createElementNS(SVG_NS, 'rect');
+        whiteBase.setAttribute('x', String(printAreaBounds.x));
+        whiteBase.setAttribute('y', String(printAreaBounds.y));
+        whiteBase.setAttribute('width', String(printAreaBounds.width));
+        whiteBase.setAttribute('height', String(printAreaBounds.height));
+        whiteBase.setAttribute('fill', '#ffffff');
+        group.appendChild(whiteBase);
+
+        appendDesignDocumentElements(group, designDocument, printAreaBounds);
+        svg.appendChild(group);
+
+        return new XMLSerializer().serializeToString(svg);
+    }
+
     function serializeEditorToSvg(editor, options = {}) {
         const canvas = editor?.canvas || editor;
         if (!canvas) {
             return '';
+        }
+
+        const designDocument = serializeDesignDocumentV2(editor, options);
+        if (designDocument) {
+            const rendered = renderDesignDocumentV2ToSvg(designDocument, {
+                productSvg: editor?.currentProduct?.svg_template || '',
+                viewBoxBounds: getCanvasViewBoxBounds(editor, options),
+                printAreaBounds: getEditorPrintAreaBounds(editor),
+                maskNode: editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
+            });
+            if (rendered) {
+                return rendered;
+            }
         }
 
         const { x, y, width, height } = getCanvasViewBoxBounds(editor, options);
@@ -1195,11 +1829,23 @@
 
     function buildNormalizedProductPreviewSvg({
         designSvg,
+        designDocument,
         productSvg,
         fillRatio = 0.9,
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
+        const normalizedDocument = unwrapDesignDocumentV2(designDocument || designSvg);
+        if (normalizedDocument) {
+            return buildMaskedProductPreview({
+                designDocument: normalizedDocument,
+                productSvg,
+                fillRatio,
+                includeOutline,
+                backgroundColor
+            });
+        }
+
         const extractedPreviewMarkup = extractTemplateSvg(designSvg, {});
         const extractedPreviewRoot = extractedPreviewMarkup ? parseSvgMarkup(extractedPreviewMarkup) : null;
         const isPreClippedPreview = Boolean(extractedPreviewRoot && isMaskedExportSvgRoot(extractedPreviewRoot));
@@ -1344,6 +1990,99 @@
         return markup ? toDataUrlFromSvgMarkup(markup) : '';
     }
 
+    function buildMaskedProductPreview({
+        designDocument,
+        productSvg,
+        fillRatio = 0.9,
+        includeOutline = true,
+        backgroundColor = 'transparent'
+    } = {}) {
+        const normalizedDocument = unwrapDesignDocumentV2(designDocument);
+        if (!normalizedDocument) {
+            return '';
+        }
+
+        const fallbackPrintArea = normalizeBounds(normalizedDocument.printAreaRef, DEFAULT_SIZE);
+        const maskMarkup = extractTemplateSvg(productSvg, {});
+        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
+        const maskNode = maskRoot ? pickMaskNode(maskRoot) : null;
+        if (!maskNode) {
+            return '';
+        }
+
+        const maskSourceBounds = getSvgSourceBounds(maskRoot, fallbackPrintArea);
+        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
+        const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
+        const previewTargetBounds = {
+            x: previewGeometry.x,
+            y: previewGeometry.y,
+            width: previewGeometry.width,
+            height: previewGeometry.height
+        };
+        const maskTransform = buildContainTransform(printAreaBounds, previewTargetBounds);
+        const wrapper = document.createElementNS(SVG_NS, 'svg');
+        const defs = document.createElementNS(SVG_NS, 'defs');
+        const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
+        const mask = document.createElementNS(SVG_NS, 'mask');
+
+        wrapper.setAttribute('xmlns', SVG_NS);
+        wrapper.setAttribute('viewBox', `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`);
+        wrapper.setAttribute('width', '100%');
+        wrapper.setAttribute('height', '100%');
+        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        wrapper.setAttribute('style', buildStyleString({
+            display: 'block',
+            width: '100%',
+            height: '100%',
+            overflow: 'hidden',
+            'background-color': backgroundColor || 'transparent'
+        }));
+
+        const background = document.createElementNS(SVG_NS, 'rect');
+        background.setAttribute('x', '0');
+        background.setAttribute('y', '0');
+        background.setAttribute('width', String(previewGeometry.canvasWidth));
+        background.setAttribute('height', String(previewGeometry.canvasHeight));
+        background.setAttribute('fill', backgroundColor || 'transparent');
+        wrapper.appendChild(background);
+
+        mask.setAttribute('id', maskId);
+        mask.setAttribute('maskUnits', 'userSpaceOnUse');
+        mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+
+        const blackRect = document.createElementNS(SVG_NS, 'rect');
+        blackRect.setAttribute('x', '0');
+        blackRect.setAttribute('y', '0');
+        blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
+        blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
+        blackRect.setAttribute('fill', '#000000');
+        mask.appendChild(blackRect);
+        mask.appendChild(buildPreviewMaskNode(maskNode, maskTransform));
+        defs.appendChild(mask);
+        wrapper.appendChild(defs);
+
+        const whiteBase = document.createElementNS(SVG_NS, 'rect');
+        whiteBase.setAttribute('x', '0');
+        whiteBase.setAttribute('y', '0');
+        whiteBase.setAttribute('width', String(previewGeometry.canvasWidth));
+        whiteBase.setAttribute('height', String(previewGeometry.canvasHeight));
+        whiteBase.setAttribute('fill', '#ffffff');
+        whiteBase.setAttribute('mask', `url(#${maskId})`);
+        wrapper.appendChild(whiteBase);
+
+        const contentGroup = document.createElementNS(SVG_NS, 'g');
+        contentGroup.setAttribute('mask', `url(#${maskId})`);
+        appendDesignDocumentElements(contentGroup, normalizedDocument, previewTargetBounds);
+        wrapper.appendChild(contentGroup);
+
+        if (includeOutline) {
+            wrapper.appendChild(buildPreviewOutlineHaloNode(maskNode, maskTransform));
+            wrapper.appendChild(buildPreviewOutlineNode(maskNode, maskTransform));
+        }
+
+        return new XMLSerializer().serializeToString(wrapper);
+    }
+
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
         const cacheKey = buildPreviewCacheKey(previewValue, maskValue, options);
         if (PREVIEW_MARKUP_CACHE.has(cacheKey)) {
@@ -1478,18 +2217,155 @@
         return true;
     }
 
+    function buildTemplateDataFromDesignDocumentElement(element, printAreaBounds) {
+        const frame = resolveFrameFromBounds(element?.frame, printAreaBounds);
+        const rotation = toNumber(element?.rotationDeg, 0);
+        const flipX = Boolean(element?.flipX);
+        const flipY = Boolean(element?.flipY);
+        const type = String(element?.type || '').toLowerCase();
+
+        if (type === 'text') {
+            const anchorOffset = element.anchorOffset && typeof element.anchorOffset === 'object'
+                ? element.anchorOffset
+                : {};
+            const fontSize = Math.max(1, toNumber(element.fontSizeRatio, 24 / Math.max(1, printAreaBounds.height)) * printAreaBounds.height);
+            return {
+                id: element.id,
+                type: 'text',
+                x: frame.x + (frame.width * toNumber(anchorOffset.xRatio, 0)),
+                y: frame.y + (frame.height * toNumber(anchorOffset.yRatio, 1)),
+                width: frame.width,
+                height: frame.height,
+                rotation,
+                flipX,
+                flipY,
+                rawContent: String(element.rawContent ?? element.content ?? ''),
+                content: String(element.content ?? element.rawContent ?? ''),
+                capsLock: Boolean(element.capsLock),
+                font: String(element.fontFamily || 'Arial'),
+                size: fontSize,
+                color: String(element.fill || '#000000'),
+                bold: String(element.fontWeight || '').toLowerCase() === 'bold',
+                italic: String(element.fontStyle || '').toLowerCase() === 'italic',
+                underline: String(element.textDecoration || '').toLowerCase().includes('underline'),
+                textAnchor: String(element.textAnchor || 'start'),
+                dominantBaseline: String(element.dominantBaseline || '')
+            };
+        }
+
+        if (type === 'image') {
+            return {
+                id: element.id,
+                type: 'image',
+                x: frame.x,
+                y: frame.y,
+                width: frame.width,
+                height: frame.height,
+                rotation,
+                flipX,
+                flipY,
+                src: String(element.src || ''),
+                name: String(element.name || 'Imagem'),
+                imageKind: String(element.imageKind || 'image'),
+                opacity: toNumber(element.opacity, 1),
+                objectFit: String(element.objectFit || 'contain'),
+                borderRadius: toNumber(element.borderRadius, 0),
+                cropData: element.crop && typeof element.crop === 'object' ? element.crop : null,
+                fullWidth: Number(element.fullWidth) || 0,
+                fullHeight: Number(element.fullHeight) || 0,
+                qrContent: String(element.qrContent || ''),
+                qrColor: String(element.qrColor || '#111827'),
+                originalSrc: String(element.originalSrc || element.src || ''),
+                layerLabel: String(element.layerLabel || '')
+            };
+        }
+
+        if (type === 'shape') {
+            return {
+                id: element.id,
+                type: 'shape',
+                shapeType: String(element.shapeType || 'rectangle'),
+                x: frame.x,
+                y: frame.y,
+                width: frame.width,
+                height: frame.height,
+                rotation,
+                flipX,
+                flipY,
+                fill: String(element.fill || '#3b82f6'),
+                stroke: String(element.stroke || 'none'),
+                strokeWidth: toNumber(element.strokeWidth, 0)
+            };
+        }
+
+        return null;
+    }
+
+    function importDesignDocumentV2IntoEditor(editor, designDocumentInput, options = {}) {
+        const designDocument = unwrapDesignDocumentV2(designDocumentInput);
+        if (!editor?.canvas || !designDocument) {
+            return false;
+        }
+
+        const printAreaBounds = getEditorPrintAreaBounds(editor);
+        if (typeof editor.clearCanvas === 'function') {
+            editor.clearCanvas();
+        }
+
+        const elements = Array.isArray(designDocument.elements) ? [...designDocument.elements] : [];
+        elements
+            .sort((left, right) => toNumber(left?.zIndex, 0) - toNumber(right?.zIndex, 0))
+            .forEach((element) => {
+                const templateData = buildTemplateDataFromDesignDocumentElement(element, printAreaBounds);
+                if (!templateData || typeof editor.createElementFromTemplate !== 'function') {
+                    return;
+                }
+
+                const created = editor.createElementFromTemplate(templateData, {
+                    skipHistory: true,
+                    skipSelection: true
+                });
+                if (created) {
+                    created.flipX = Boolean(templateData.flipX);
+                    created.flipY = Boolean(templateData.flipY);
+                    editor.syncElementMetadata?.(created);
+                    editor.applyElementRotation?.(created, created.rotation || 0);
+                }
+            });
+
+        if (Number.isFinite(Number(designDocument.selectedBaseId))) {
+            editor.selectedBaseId = Number(designDocument.selectedBaseId);
+            editor.renderProductBaseOptions?.();
+            editor.updateProductPriceDisplay?.();
+        }
+
+        editor.bringPrintAreaOverlaysToFront?.();
+        editor.updateLayers?.();
+        if (!options.skipHistory) {
+            editor.saveHistory?.();
+        }
+
+        return true;
+    }
+
     window.DesignSvgStore = {
         DEFAULT_SIZE,
+        DESIGN_DOCUMENT_V2_FORMAT,
         escapeXml,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
         getSvgAspectRatio,
+        serializeDesignDocumentV2,
+        renderDesignDocumentV2ToSvg,
+        buildMaskedProductPreview,
         buildMaskedExportPreviewDataUrl,
         buildNormalizedProductPreviewSvg,
         buildNormalizedProductPreviewDataUrl,
         buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,
-        importSvgIntoEditor
+        importSvgIntoEditor,
+        importDesignDocumentV2IntoEditor,
+        unwrapDesignDocumentV2
     };
 }());

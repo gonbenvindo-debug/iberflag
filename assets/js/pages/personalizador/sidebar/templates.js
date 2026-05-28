@@ -337,23 +337,25 @@ Object.assign(DesignEditor.prototype, {
         return normalized;
     },
 
-    createElementFromTemplate(data) {
+    createElementFromTemplate(data, options = {}) {
         const normalized = this.normalizeTemplateElement(data);
 
         if (normalized.type === 'text') {
-            this.addTextFromTemplate(normalized);
+            return this.addTextFromTemplate(normalized, options);
         } else if (normalized.type === 'shape') {
-            this.addShapeFromTemplate(normalized);
+            return this.addShapeFromTemplate(normalized, options);
         } else if (normalized.type === 'image') {
-            this.addImageFromTemplate(normalized);
+            return this.addImageFromTemplate(normalized, options);
         } else if (normalized.type === 'qrcode') {
-            this.addQrFromTemplate(normalized);
+            return this.addQrFromTemplate(normalized, options);
         }
+
+        return null;
     },
 
-    addTextFromTemplate(data) {
+    addTextFromTemplate(data, options = {}) {
         const textElement = document.createElementNS('http://www.w3.org/2000/svg', 'text');
-        const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+        const id = data.id || ('el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
         const capsLockEnabled = String(data.capsLock || 'false') === 'true' || data.capsLock === true;
         const rawText = String(data.rawContent || data.content || '');
         const renderedText = this.getRenderedTextValue?.(rawText, capsLockEnabled) || rawText;
@@ -367,10 +369,19 @@ Object.assign(DesignEditor.prototype, {
         textElement.setAttribute('font-weight', data.bold ? 'bold' : 'normal');
         textElement.setAttribute('font-style', data.italic ? 'italic' : 'normal');
         textElement.setAttribute('text-anchor', data.textAnchor || 'start');
+        if (data.dominantBaseline) {
+            textElement.setAttribute('dominant-baseline', data.dominantBaseline);
+        }
+        if (data.underline) {
+            textElement.setAttribute('text-decoration', 'underline');
+        }
+        textElement.setAttribute('xml:space', 'preserve');
+        textElement.setAttribute('data-editable', 'true');
         textElement.setAttribute('data-element-id', id);
         textElement.dataset.rawContent = rawText;
         textElement.dataset.capsLock = capsLockEnabled ? 'true' : 'false';
         textElement.textContent = renderedText;
+        textElement.style.cursor = 'move';
 
         // Apply rotation
         if (data.rotation) {
@@ -382,11 +393,14 @@ Object.assign(DesignEditor.prototype, {
         const elementData = this.buildElementDataFromNode(textElement);
         this.elements.push(elementData);
         this.makeElementInteractive(elementData);
-        this.selectElement(elementData);
+        if (options.skipSelection !== true) {
+            this.selectElement(elementData);
+        }
+        return elementData;
     },
 
-    addShapeFromTemplate(data) {
-        const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    addShapeFromTemplate(data, options = {}) {
+        const id = data.id || ('el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
         const shapeElement = this.createShapeElementFromDescriptor({
             ...data,
             x: data.x,
@@ -404,12 +418,17 @@ Object.assign(DesignEditor.prototype, {
             const elementData = this.buildElementDataFromNode(shapeElement);
             this.elements.push(elementData);
             this.makeElementInteractive(elementData);
-            this.selectElement(elementData);
+            if (options.skipSelection !== true) {
+                this.selectElement(elementData);
+            }
+            return elementData;
         }
+
+        return null;
     },
 
-    addImageFromTemplate(data) {
-        const id = 'el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    addImageFromTemplate(data, options = {}) {
+        const id = data.id || ('el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
         const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
         const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
         const cropData = this.normalizeCropSelectionData?.(data.cropData, data.cropSourceData, data.fullWidth, data.fullHeight) || data.cropData || null;
@@ -489,17 +508,20 @@ Object.assign(DesignEditor.prototype, {
         });
         this.elements.push(elementData);
         this.makeElementInteractive(elementData);
-        this.selectElement(elementData);
+        if (options.skipSelection !== true) {
+            this.selectElement(elementData);
+        }
+        return elementData;
     },
 
-    addQrFromTemplate(data) {
+    addQrFromTemplate(data, options = {}) {
         const qrDataUrl = this.generateQRCodeDataUrl(data.qrContent || '', data.qrColor || '#111827');
-        this.addImageFromTemplate({
+        return this.addImageFromTemplate({
             ...data,
             type: 'image',
             imageKind: 'qr',
             src: qrDataUrl
-        });
+        }, options);
     },
 
     clearCanvas() {
