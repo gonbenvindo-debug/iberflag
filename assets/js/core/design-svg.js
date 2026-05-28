@@ -1152,16 +1152,19 @@
             return '';
         }
 
-        const designDocument = serializeDesignDocumentV2(editor, options);
-        if (designDocument) {
-            const rendered = renderDesignDocumentV2ToSvg(designDocument, {
-                productSvg: editor?.currentProduct?.svg_template || '',
-                viewBoxBounds: getCanvasViewBoxBounds(editor, options),
-                printAreaBounds: getEditorPrintAreaBounds(editor),
-                maskNode: editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
-            });
-            if (rendered) {
-                return rendered;
+        const useDesignDocument = options?.forceLiveSnapshot !== true;
+        if (useDesignDocument) {
+            const designDocument = serializeDesignDocumentV2(editor, options);
+            if (designDocument) {
+                const rendered = renderDesignDocumentV2ToSvg(designDocument, {
+                    productSvg: editor?.currentProduct?.svg_template || '',
+                    viewBoxBounds: getCanvasViewBoxBounds(editor, options),
+                    printAreaBounds: getEditorPrintAreaBounds(editor),
+                    maskNode: editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
+                });
+                if (rendered) {
+                    return rendered;
+                }
             }
         }
 

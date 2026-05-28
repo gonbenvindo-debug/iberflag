@@ -648,25 +648,9 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designDocument = null, designSvgMarkup = '') {
-        const rawDesignDocument = designDocument || this.getDesignDocumentV2?.() || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
-            : this.getDesignSVG();
-
-        if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
-            const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
-                designDocument: rawDesignDocument,
-                designSvg: rawDesignSvg,
-                productSvg: this.currentProduct.svg_template,
-                fillRatio: 0.9,
-                includeOutline: true,
-                backgroundColor: 'transparent'
-            });
-
-            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                return previewDataUrl;
-            }
-        }
+            : this.getDesignSVG({ preferLiveSnapshot: true });
 
         const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
@@ -743,7 +727,7 @@ Object.assign(DesignEditor.prototype, {
             : null;
         this.ensureSelectedBase();
         this.cartStepsDesignDocumentSnapshot = this.getDesignDocumentV2?.() || null;
-        this.cartStepsDesignSnapshot = this.getDesignSVG();
+        this.cartStepsDesignSnapshot = this.getDesignSVG({ preferLiveSnapshot: true });
         previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignDocumentSnapshot, this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 

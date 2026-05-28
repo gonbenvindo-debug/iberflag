@@ -351,21 +351,27 @@ Object.assign(DesignEditor.prototype, {
         return maskShape;
     },
 
-    getDesignSVG() {
-        const designDocument = this.getDesignDocumentV2?.();
-        if (designDocument && window.DesignSvgStore?.renderDesignDocumentV2ToSvg) {
-            const rendered = window.DesignSvgStore.renderDesignDocumentV2ToSvg(designDocument, {
-                productSvg: this.currentProduct?.svg_template || '',
-                viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
-                maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
-            });
-            if (rendered) {
-                return rendered;
+    getDesignSVG(options = {}) {
+        const preferLiveSnapshot = options?.preferLiveSnapshot !== false;
+
+        if (!preferLiveSnapshot) {
+            const designDocument = this.getDesignDocumentV2?.();
+            if (designDocument && window.DesignSvgStore?.renderDesignDocumentV2ToSvg) {
+                const rendered = window.DesignSvgStore.renderDesignDocumentV2ToSvg(designDocument, {
+                    productSvg: this.currentProduct?.svg_template || '',
+                    viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
+                    maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
+                });
+                if (rendered) {
+                    return rendered;
+                }
             }
         }
 
         if (window.DesignSvgStore?.serializeEditorToSvg) {
-            return window.DesignSvgStore.serializeEditorToSvg(this);
+            return window.DesignSvgStore.serializeEditorToSvg(this, {
+                forceLiveSnapshot: preferLiveSnapshot
+            });
         }
 
         const vb = this.getCanvasViewBoxSize();

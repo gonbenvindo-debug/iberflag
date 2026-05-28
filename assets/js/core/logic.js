@@ -931,11 +931,16 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         return null;
     }
 
-    const fallbackPreview = item.designPreview || (item.design ? buildSvgDataUrl(item.design) : null);
-    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
     const designSource = typeof item.design === 'string' && item.design.trim()
         ? item.design
         : '';
+    const fallbackPreview = item.designPreview || (designSource ? buildSvgDataUrl(designSource) : null);
+
+    if (designSource) {
+        return buildSvgDataUrl(designSource);
+    }
+
+    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
     const svgTemplate = getCartItemSvgTemplate(item);
 
     if ((!designSource && !designDocument) || !svgTemplate || !window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
