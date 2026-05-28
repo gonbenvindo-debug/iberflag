@@ -20,7 +20,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v3';
+    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v4';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
 
@@ -904,6 +904,28 @@
         return Boolean(clip && clippedGroup);
     }
 
+    function getMaskedExportClipBounds(root, fallback = null) {
+        if (!root) {
+            return fallback;
+        }
+
+        const clip = root.querySelector('clipPath[id^="design-export-clip"], clipPath#design-export-clip');
+        if (!clip) {
+            return fallback;
+        }
+
+        const clipShape = Array.from(clip.children || []).find((child) => {
+            const tagName = String(child?.tagName || '').toLowerCase();
+            return tagName && tagName !== 'title' && tagName !== 'desc' && tagName !== 'metadata';
+        });
+
+        if (!clipShape) {
+            return fallback;
+        }
+
+        return getSvgNodeBounds(clipShape, fallback || DEFAULT_SIZE);
+    }
+
     function getSvgAspectRatio(svgMarkup, fallback = 1) {
         const root = parseSvgMarkup(typeof svgMarkup === 'string' ? svgMarkup : '');
         if (!root) {
@@ -999,11 +1021,6 @@
         const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
         const maskMarkup = maskValue ? extractTemplateSvg(maskValue, options) : '';
 
-        if (previewRoot && isMaskedExportSvgRoot(previewRoot)) {
-            cachePreviewMarkup(cacheKey, previewMarkup);
-            return previewMarkup;
-        }
-
         if (!maskMarkup) {
             if (previewMarkup) {
                 cachePreviewMarkup(cacheKey, previewMarkup);
@@ -1052,7 +1069,14 @@
             return fallbackMarkup;
         }
 
-        const previewSourceBounds = previewRoot ? getSvgSourceBounds(previewRoot, maskSourceBounds) : maskSourceBounds;
+        const previewSourceBounds = previewRoot
+            ? (
+                (isMaskedExportSvgRoot(previewRoot)
+                    ? getMaskedExportClipBounds(previewRoot, maskSourceBounds)
+                    : null)
+                || getSvgSourceBounds(previewRoot, maskSourceBounds)
+            )
+            : maskSourceBounds;
         const previewGeometry = buildPreviewCanvasGeometry(maskSourceBounds, options);
         const previewTargetBounds = {
             x: previewGeometry.x,
