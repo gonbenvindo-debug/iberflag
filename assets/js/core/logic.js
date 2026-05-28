@@ -941,13 +941,6 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         return fallbackPreview;
     }
 
-    if (window.DesignSvgStore?.buildMaskedExportPreviewDataUrl) {
-        const exactPreviewDataUrl = window.DesignSvgStore.buildMaskedExportPreviewDataUrl(designSource);
-        if (typeof exactPreviewDataUrl === 'string' && exactPreviewDataUrl.trim()) {
-            return exactPreviewDataUrl;
-        }
-    }
-
     const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
         designSvg: designSource,
         productSvg: svgTemplate,

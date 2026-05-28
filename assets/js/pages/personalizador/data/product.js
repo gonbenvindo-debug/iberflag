@@ -648,13 +648,6 @@ Object.assign(DesignEditor.prototype, {
             ? designSvgMarkup
             : this.getDesignSVG();
 
-        if (window.DesignSvgStore?.buildMaskedExportPreviewDataUrl) {
-            const exactPreviewDataUrl = window.DesignSvgStore.buildMaskedExportPreviewDataUrl(rawDesignSvg);
-            if (typeof exactPreviewDataUrl === 'string' && exactPreviewDataUrl.trim()) {
-                return exactPreviewDataUrl;
-            }
-        }
-
         if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
             const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
                 designSvg: rawDesignSvg,
