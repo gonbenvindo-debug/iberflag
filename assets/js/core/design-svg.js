@@ -2188,9 +2188,7 @@
         const contentGroup = document.createElementNS(SVG_NS, 'g');
         contentGroup.setAttribute('mask', `url(#${maskId})`);
         contentGroup.setAttribute('transform', sourceTransform);
-        // Frames in design-document-v2 are normalized to the print area, not the full source bounds.
-        // Using printAreaBounds keeps preview/export stable across viewport resolutions.
-        appendDesignDocumentElements(contentGroup, normalizedDocument, printAreaBounds);
+        appendDesignDocumentElements(contentGroup, normalizedDocument, sourceBounds);
         wrapper.appendChild(contentGroup);
 
         if (includeOutline) {
