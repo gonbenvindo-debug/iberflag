@@ -759,12 +759,18 @@
         };
     }
 
-    function buildPreviewCanvasGeometry(sourceBounds) {
+    function buildPreviewCanvasGeometry(sourceBounds, options = {}) {
         const safeWidth = Math.max(1, Number(sourceBounds?.width) || DEFAULT_SIZE.width);
         const safeHeight = Math.max(1, Number(sourceBounds?.height) || DEFAULT_SIZE.height);
         const ratio = safeWidth / safeHeight;
-        const margin = PREVIEW_CANVAS_MARGIN;
         const contentLongestSide = PREVIEW_CONTENT_LONGEST_SIDE;
+        const requestedFillRatio = Number(options?.contentFillRatio);
+        const fillRatio = requestedFillRatio > 0 && requestedFillRatio < 1
+            ? requestedFillRatio
+            : null;
+        const margin = fillRatio
+            ? Math.max(12, (contentLongestSide * ((1 / fillRatio) - 1)) / 2)
+            : PREVIEW_CANVAS_MARGIN;
 
         let contentWidth = contentLongestSide;
         let contentHeight = contentLongestSide;
@@ -961,7 +967,8 @@
             serialize(previewValue),
             serialize(maskValue),
             serialize({
-                backgroundColor: options.backgroundColor || ''
+                backgroundColor: options.backgroundColor || '',
+                contentFillRatio: Number(options.contentFillRatio) || ''
             })
         ].join('||');
     }
@@ -1046,7 +1053,7 @@
         }
 
         const previewSourceBounds = previewRoot ? getSvgSourceBounds(previewRoot, maskSourceBounds) : maskSourceBounds;
-        const previewGeometry = buildPreviewCanvasGeometry(maskSourceBounds);
+        const previewGeometry = buildPreviewCanvasGeometry(maskSourceBounds, options);
         const previewTargetBounds = {
             x: previewGeometry.x,
             y: previewGeometry.y,

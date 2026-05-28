@@ -877,7 +877,9 @@ function normalizeCartItem(item) {
         customized: Boolean(item.customized),
         designId,
         design: item.design || null,
-        designPreview: item.designPreview || null
+        designPreview: item.designPreview || null,
+        svgTemplate: item.svgTemplate || item.svg_template || fallbackProduct?.svg_template || null,
+        slug: item.slug || fallbackProduct?.slug || null
     };
 }
 
@@ -889,9 +891,122 @@ function buildSvgDataUrl(svgMarkup) {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
 }
 
+function getCartItemSvgTemplate(item) {
+    if (!item || typeof item !== 'object') {
+        return '';
+    }
+
+    const directTemplate = String(item.svgTemplate || item.svg_template || '').trim();
+    if (directTemplate) {
+        return directTemplate;
+    }
+
+    const productPools = [];
+    if (Array.isArray(initialProducts)) {
+        productPools.push(initialProducts);
+    }
+    if (Array.isArray(window.initialProducts) && window.initialProducts !== initialProducts) {
+        productPools.push(window.initialProducts);
+    }
+
+    const itemId = Number(item.id || 0);
+    const itemSlug = String(item.slug || '').trim();
+
+    for (const pool of productPools) {
+        const match = pool.find((product) => (
+            (itemId > 0 && Number(product?.id || 0) === itemId)
+            || (itemSlug && String(product?.slug || '').trim() === itemSlug)
+        ));
+        const svgTemplate = String(match?.svg_template || '').trim();
+        if (svgTemplate) {
+            return svgTemplate;
+        }
+    }
+
+    return '';
+}
+
+function buildAdaptiveCartPreviewDataUrl(item) {
+    if (!item || typeof item !== 'object') {
+        return null;
+    }
+
+    const fallbackPreview = item.designPreview || (item.design ? buildSvgDataUrl(item.design) : null);
+    const designSource = typeof item.design === 'string' && item.design.trim()
+        ? item.design
+        : (typeof item.designPreview === 'string' && item.designPreview.trim() ? item.designPreview : '');
+    const svgTemplate = getCartItemSvgTemplate(item);
+
+    if (!designSource || !svgTemplate || !window.DesignSvgStore?.buildPreviewSvgMarkup) {
+        return fallbackPreview;
+    }
+
+    const previewMarkup = window.DesignSvgStore.buildPreviewSvgMarkup(designSource, svgTemplate, {
+        backgroundColor: 'transparent',
+        contentFillRatio: 0.9
+    });
+
+    if (typeof previewMarkup === 'string' && previewMarkup.trim().startsWith('<svg')) {
+        return buildSvgDataUrl(previewMarkup);
+    }
+
+    return fallbackPreview;
+}
+
+window.buildAdaptiveCartPreviewDataUrl = buildAdaptiveCartPreviewDataUrl;
+
+function hydrateCartSvgTemplatesFromProducts(products) {
+    if (!Array.isArray(products) || products.length === 0 || !Array.isArray(cart) || cart.length === 0) {
+        return;
+    }
+
+    const productMap = new Map(
+        products
+            .filter((product) => product && Number(product.id || 0) > 0)
+            .map((product) => [Number(product.id), product])
+    );
+
+    let changed = false;
+    cart = cart.map((item) => {
+        const product = productMap.get(Number(item?.id || 0));
+        if (!product) {
+            return item;
+        }
+
+        const nextSvgTemplate = String(item?.svgTemplate || item?.svg_template || product?.svg_template || '').trim();
+        const nextSlug = String(item?.slug || product?.slug || '').trim();
+        const nextPreview = buildAdaptiveCartPreviewDataUrl({
+            ...item,
+            svgTemplate: nextSvgTemplate,
+            slug: nextSlug
+        });
+
+        if (nextSvgTemplate === String(item?.svgTemplate || '').trim() && nextSlug === String(item?.slug || '').trim() && nextPreview === item?.designPreview) {
+            return item;
+        }
+
+        changed = true;
+        return {
+            ...item,
+            svgTemplate: nextSvgTemplate || null,
+            slug: nextSlug || null,
+            designPreview: nextPreview || item?.designPreview || null
+        };
+    });
+
+    if (changed) {
+        updateCart();
+    }
+}
+
 function getCartItemImage(item) {
     if (!item || typeof item !== 'object') {
         return '';
+    }
+
+    const adaptivePreview = buildAdaptiveCartPreviewDataUrl(item);
+    if (adaptivePreview) {
+        return adaptivePreview;
     }
 
     if (item.designPreview) {
@@ -1052,6 +1167,8 @@ function compactCartItems(items) {
             quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
             customized: Boolean(item?.customized),
             designId: item?.designId ? String(item.designId).trim() : null,
+            slug: item?.slug ? String(item.slug).trim() : null,
+            svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
             baseId: item?.baseId || item?.base_id || null,
             baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
             baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
@@ -1220,6 +1337,7 @@ async function fetchProducts() {
         if (error) throw error;
 
         if (data && data.length > 0) {
+            hydrateCartSvgTemplatesFromProducts(data);
             renderProducts(data);
             updateHomepageCategoryCards(data);
         } else {

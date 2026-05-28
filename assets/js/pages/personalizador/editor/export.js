@@ -428,18 +428,24 @@ Object.assign(DesignEditor.prototype, {
         const cartItem = {
             id: this.currentProduct.id,
             nome: this.currentProduct.nome,
+            slug: this.currentProduct.slug || null,
             preco: Number(finalPrice.toFixed(2)),
             imagem: this.currentProduct.imagem,
             quantity: Math.min(999, Math.max(1, Number.parseInt(existingCartItem?.quantity ?? initialQuantity, 10) || 1)),
             customized: true,
             designId,
             design: design,
-            designPreview: `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`,
+            designPreview: null,
+            svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
             baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
+
+        cartItem.designPreview = window.buildAdaptiveCartPreviewDataUrl
+            ? window.buildAdaptiveCartPreviewDataUrl(cartItem)
+            : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`;
 
         if (window.CartAssetStore?.saveDesign && designId) {
             await window.CartAssetStore.saveDesign(designId, design, {
