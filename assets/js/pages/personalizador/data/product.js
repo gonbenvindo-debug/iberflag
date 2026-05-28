@@ -612,11 +612,33 @@ Object.assign(DesignEditor.prototype, {
             const sourceOutline = this.canvas?.querySelector?.('#print-area-shape-outline-border')
                 || this.canvas?.querySelector?.('#print-area-shape-outline')
                 || this.canvas?.querySelector?.('#print-area-outline');
+            const sourceBounds = (() => {
+                if (!sourceOutline || typeof sourceOutline.getBBox !== 'function') {
+                    return null;
+                }
+                try {
+                    const box = sourceOutline.getBBox();
+                    const width = Number(box?.width);
+                    const height = Number(box?.height);
+                    if (!Number.isFinite(width) || !Number.isFinite(height) || width <= 0 || height <= 0) {
+                        return null;
+                    }
+                    return {
+                        x: Number(box.x) || 0,
+                        y: Number(box.y) || 0,
+                        width,
+                        height
+                    };
+                } catch {
+                    return null;
+                }
+            })();
 
             if (window.DesignSvgStore?.buildFramedPreviewSvgMarkup) {
                 const framedPreview = window.DesignSvgStore.buildFramedPreviewSvgMarkup(designSvg, {
                     backgroundColor: 'transparent',
                     contentFillRatio: 0.9,
+                    sourceBounds: sourceBounds || undefined,
                     includeOutline: Boolean(sourceOutline),
                     outlineNode: sourceOutline || null
                 });
