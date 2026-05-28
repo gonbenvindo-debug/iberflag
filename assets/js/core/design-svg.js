@@ -459,19 +459,93 @@
         };
     }
 
-    function getEditorPrintAreaBounds(editor, fallback = null) {
-        const fallbackBounds = fallback || getCanvasViewBoxBounds(editor, {});
-        const preferred = normalizeBounds(editor?.printAreaBounds, fallbackBounds);
-        if (preferred.width > 0 && preferred.height > 0) {
-            return preferred;
+    function isUsableBounds(bounds) {
+        return Boolean(
+            bounds
+            && Number.isFinite(Number(bounds.x))
+            && Number.isFinite(Number(bounds.y))
+            && Number.isFinite(Number(bounds.width))
+            && Number.isFinite(Number(bounds.height))
+            && Number(bounds.width) > 0
+            && Number(bounds.height) > 0
+        );
+    }
+
+    function measureSvgNodeBounds(node, fallbackBounds = null) {
+        if (!node || typeof node.getBBox !== 'function') {
+            return fallbackBounds;
         }
 
-        const outline = editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline');
-        if (outline && typeof outline.getBBox === 'function') {
-            try {
-                return normalizeBounds(outline.getBBox(), fallbackBounds);
-            } catch (error) {
-                console.warn('Falha ao medir print area do editor:', error);
+        try {
+            const bbox = node.getBBox();
+            if (!isUsableBounds(bbox)) {
+                return fallbackBounds;
+            }
+
+            const ctm = typeof node.getCTM === 'function' ? node.getCTM() : null;
+            if (!ctm || typeof DOMPoint !== 'function') {
+                return normalizeBounds(bbox, fallbackBounds || DEFAULT_SIZE);
+            }
+
+            const corners = [
+                new DOMPoint(bbox.x, bbox.y).matrixTransform(ctm),
+                new DOMPoint(bbox.x + bbox.width, bbox.y).matrixTransform(ctm),
+                new DOMPoint(bbox.x + bbox.width, bbox.y + bbox.height).matrixTransform(ctm),
+                new DOMPoint(bbox.x, bbox.y + bbox.height).matrixTransform(ctm)
+            ];
+
+            const xs = corners.map((point) => point.x);
+            const ys = corners.map((point) => point.y);
+            const measured = {
+                x: Math.min(...xs),
+                y: Math.min(...ys),
+                width: Math.max(...xs) - Math.min(...xs),
+                height: Math.max(...ys) - Math.min(...ys)
+            };
+
+            return isUsableBounds(measured)
+                ? normalizeBounds(measured, fallbackBounds || DEFAULT_SIZE)
+                : fallbackBounds;
+        } catch (error) {
+            return fallbackBounds;
+        }
+    }
+
+    function getEditorPrintAreaBounds(editor, fallback = null) {
+        const fallbackBounds = fallback || getCanvasViewBoxBounds(editor, {});
+        const projectGuideBounds = editor?.getProjectGuideFrame?.()?.bounds;
+        if (isUsableBounds(projectGuideBounds)) {
+            return normalizeBounds(projectGuideBounds, fallbackBounds);
+        }
+
+        const outlineCandidates = [
+            '#print-area-shape-outline-border',
+            '#print-area-shape-outline',
+            '#print-area-outline'
+        ];
+        for (const selector of outlineCandidates) {
+            const outline = editor?.canvas?.querySelector?.(selector);
+            const measured = measureSvgNodeBounds(outline, null);
+            if (isUsableBounds(measured)) {
+                return normalizeBounds(measured, fallbackBounds);
+            }
+        }
+
+        const sourceBounds = editor?.printAreaBounds;
+        if (isUsableBounds(sourceBounds)) {
+            return normalizeBounds(sourceBounds, fallbackBounds);
+        }
+
+        const printAreaNode = editor?.printArea || editor?.canvas?.querySelector?.('#print-area-outline');
+        if (printAreaNode) {
+            const nodeBounds = {
+                x: Number(printAreaNode.getAttribute?.('x')),
+                y: Number(printAreaNode.getAttribute?.('y')),
+                width: Number(printAreaNode.getAttribute?.('width')),
+                height: Number(printAreaNode.getAttribute?.('height'))
+            };
+            if (isUsableBounds(nodeBounds)) {
+                return normalizeBounds(nodeBounds, fallbackBounds);
             }
         }
 
@@ -505,37 +579,54 @@
     }
 
     function getElementFrameForDocument(editor, elementData) {
-        if (!elementData?.element) {
+        const node = elementData?.element || null;
+        if (!node) {
             return null;
         }
 
-        if (elementData.type === 'text') {
-            const metrics = editor?.syncTextMetrics?.(elementData, { syncDataset: false });
-            const boundsX = Number.isFinite(Number(elementData.boundsX)) ? Number(elementData.boundsX) : Number(metrics?.x);
-            const boundsY = Number.isFinite(Number(elementData.boundsY)) ? Number(elementData.boundsY) : Number(metrics?.y);
-            const width = Math.max(1, Number(elementData.width) || Number(metrics?.width) || 1);
-            const height = Math.max(1, Number(elementData.height) || Number(metrics?.height) || 1);
+        const tagName = String(node.tagName || '').toLowerCase();
+        if (tagName === 'text') {
+            try {
+                const bbox = typeof node.getBBox === 'function' ? node.getBBox() : null;
+                if (bbox && Number.isFinite(Number(bbox.width)) && Number.isFinite(Number(bbox.height)) && Number(bbox.width) > 0 && Number(bbox.height) > 0) {
+                    return {
+                        x: Number(bbox.x) || 0,
+                        y: Number(bbox.y) || 0,
+                        width: Math.max(1, Number(bbox.width) || 1),
+                        height: Math.max(1, Number(bbox.height) || 1)
+                    };
+                }
+            } catch (error) {
+                // fall through to attribute-based fallback
+            }
+
+            const xAttr = toNumber(node.getAttribute('x'), 0);
+            const yAttr = toNumber(node.getAttribute('y'), 0);
+            const fallbackWidth = Math.max(1, toNumber(elementData?.width, 120));
+            const fallbackHeight = Math.max(1, toNumber(elementData?.height, 40));
             return {
-                x: Number.isFinite(boundsX) ? boundsX : 0,
-                y: Number.isFinite(boundsY) ? boundsY : 0,
+                x: xAttr,
+                y: yAttr - fallbackHeight,
+                width: fallbackWidth,
+                height: fallbackHeight
+            };
+        }
+
+        if (tagName === 'image' || tagName === 'rect') {
+            const width = Math.max(1, toNumber(node.getAttribute('width'), toNumber(elementData?.width, 1)));
+            const height = Math.max(1, toNumber(node.getAttribute('height'), toNumber(elementData?.height, 1)));
+            return {
+                x: toNumber(node.getAttribute('x'), toNumber(elementData?.x, 0)),
+                y: toNumber(node.getAttribute('y'), toNumber(elementData?.y, 0)),
                 width,
                 height
             };
         }
 
-        if (elementData.type === 'image' || (elementData.type === 'shape' && ['rectangle', 'rounded', 'pill', 'line'].includes(String(elementData.shapeType || '').toLowerCase()))) {
-            return {
-                x: Number(elementData.x) || 0,
-                y: Number(elementData.y) || 0,
-                width: Math.max(1, Number(elementData.width) || 1),
-                height: Math.max(1, Number(elementData.height) || 1)
-            };
-        }
-
-        if (elementData.type === 'shape' && String(elementData.shapeType || '').toLowerCase() === 'circle') {
-            const radius = Math.max(1, Number(elementData.r || elementData.radius || 0));
-            const cx = Number(elementData.cx ?? elementData.x) || 0;
-            const cy = Number(elementData.cy ?? elementData.y) || 0;
+        if (tagName === 'circle') {
+            const radius = Math.max(1, toNumber(node.getAttribute('r'), toNumber(elementData?.r || elementData?.radius, 1)));
+            const cx = toNumber(node.getAttribute('cx'), toNumber(elementData?.cx ?? elementData?.x, 0));
+            const cy = toNumber(node.getAttribute('cy'), toNumber(elementData?.cy ?? elementData?.y, 0));
             return {
                 x: cx - radius,
                 y: cy - radius,
@@ -544,16 +635,38 @@
             };
         }
 
-        if (elementData.type === 'shape' && typeof editor?.isPolygonShapeType === 'function' && editor.isPolygonShapeType(elementData.shapeType)) {
+        if (tagName === 'polygon' || tagName === 'path') {
+            try {
+                const bbox = typeof node.getBBox === 'function' ? node.getBBox() : null;
+                if (bbox && Number.isFinite(Number(bbox.width)) && Number.isFinite(Number(bbox.height)) && Number(bbox.width) > 0 && Number(bbox.height) > 0) {
+                    return {
+                        x: Number(bbox.x) || 0,
+                        y: Number(bbox.y) || 0,
+                        width: Math.max(1, Number(bbox.width) || 1),
+                        height: Math.max(1, Number(bbox.height) || 1)
+                    };
+                }
+            } catch (error) {
+                // ignore and use elementData fallback
+            }
             return {
-                x: Number(elementData.x) || 0,
-                y: Number(elementData.y) || 0,
-                width: Math.max(1, Number(elementData.width) || 1),
-                height: Math.max(1, Number(elementData.height) || 1)
+                x: toNumber(elementData?.x, 0),
+                y: toNumber(elementData?.y, 0),
+                width: Math.max(1, toNumber(elementData?.width, 1)),
+                height: Math.max(1, toNumber(elementData?.height, 1))
             };
         }
 
         return null;
+    }
+
+    function parseRotationFromTransformValue(transformValue) {
+        const transform = String(transformValue || '');
+        const match = transform.match(/rotate\(([-\d.]+)/);
+        if (!match) {
+            return 0;
+        }
+        return toNumber(match[1], 0);
     }
 
     function serializeElementToDesignDocument(editor, elementData, printAreaBounds, index) {
@@ -568,22 +681,23 @@
         }
 
         const normalizedFrame = normalizeFrameToBounds(frame, printAreaBounds);
+        const rotationFromNode = parseRotationFromTransformValue(elementData.element.getAttribute?.('transform'));
         const baseRecord = {
             id: String(elementData.id || elementData.element.dataset?.elementId || `element-${index + 1}`),
             type,
             frame: normalizedFrame,
-            rotationDeg: roundNumber(Number(elementData.rotation) || 0, 3),
+            rotationDeg: roundNumber(Number(elementData.rotation ?? rotationFromNode) || rotationFromNode || 0, 3),
             flipX: Boolean(elementData.flipX),
             flipY: Boolean(elementData.flipY),
             zIndex: index
         };
 
         if (type === 'text') {
-            const anchorX = Number(elementData.x) || 0;
-            const anchorY = Number(elementData.y) || 0;
+            const anchorX = toNumber(elementData.element.getAttribute('x'), toNumber(elementData.x, frame.x));
+            const anchorY = toNumber(elementData.element.getAttribute('y'), toNumber(elementData.y, frame.y + frame.height));
             const width = Math.max(1, frame.width || 1);
             const height = Math.max(1, frame.height || 1);
-            const fontSize = Math.max(1, Number(elementData.size) || Number(elementData.element.getAttribute('font-size')) || 24);
+            const fontSize = Math.max(1, toNumber(elementData.element.getAttribute('font-size'), toNumber(elementData.size, 24)));
             return {
                 ...baseRecord,
                 rawContent: String(elementData.rawContent ?? elementData.content ?? elementData.element.dataset?.rawContent ?? ''),

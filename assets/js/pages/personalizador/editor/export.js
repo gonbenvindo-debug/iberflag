@@ -357,7 +357,6 @@ Object.assign(DesignEditor.prototype, {
             const rendered = window.DesignSvgStore.renderDesignDocumentV2ToSvg(designDocument, {
                 productSvg: this.currentProduct?.svg_template || '',
                 viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
-                printAreaBounds: this.printAreaBounds || null,
                 maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
             });
             if (rendered) {
