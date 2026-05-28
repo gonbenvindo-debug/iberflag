@@ -2126,14 +2126,15 @@
 
         const maskSourceBounds = getSvgSourceBounds(maskRoot, fallbackPrintArea);
         const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
-        const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
+        const sourceBounds = normalizeBounds(maskSourceBounds, fallbackPrintArea);
+        const previewGeometry = buildPreviewCanvasGeometry(sourceBounds, { contentFillRatio: fillRatio });
         const previewTargetBounds = {
             x: previewGeometry.x,
             y: previewGeometry.y,
             width: previewGeometry.width,
             height: previewGeometry.height
         };
-        const maskTransform = buildContainTransform(printAreaBounds, previewTargetBounds);
+        const sourceTransform = buildContainTransform(sourceBounds, previewTargetBounds);
         const wrapper = document.createElementNS(SVG_NS, 'svg');
         const defs = document.createElementNS(SVG_NS, 'defs');
         const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
@@ -2171,7 +2172,7 @@
         blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
         blackRect.setAttribute('fill', '#000000');
         mask.appendChild(blackRect);
-        mask.appendChild(buildPreviewMaskNode(maskNode, maskTransform));
+        mask.appendChild(buildPreviewMaskNode(maskNode, sourceTransform));
         defs.appendChild(mask);
         wrapper.appendChild(defs);
 
@@ -2186,12 +2187,13 @@
 
         const contentGroup = document.createElementNS(SVG_NS, 'g');
         contentGroup.setAttribute('mask', `url(#${maskId})`);
-        appendDesignDocumentElements(contentGroup, normalizedDocument, previewTargetBounds);
+        contentGroup.setAttribute('transform', sourceTransform);
+        appendDesignDocumentElements(contentGroup, normalizedDocument, sourceBounds);
         wrapper.appendChild(contentGroup);
 
         if (includeOutline) {
-            wrapper.appendChild(buildPreviewOutlineHaloNode(maskNode, maskTransform));
-            wrapper.appendChild(buildPreviewOutlineNode(maskNode, maskTransform));
+            wrapper.appendChild(buildPreviewOutlineHaloNode(maskNode, sourceTransform));
+            wrapper.appendChild(buildPreviewOutlineNode(maskNode, sourceTransform));
         }
 
         return new XMLSerializer().serializeToString(wrapper);
