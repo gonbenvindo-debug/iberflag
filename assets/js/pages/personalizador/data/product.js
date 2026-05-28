@@ -640,6 +640,31 @@ Object.assign(DesignEditor.prototype, {
             outline.setAttribute('pointer-events', 'none');
 
             svgRoot.appendChild(outline);
+
+            // Center preview around the real product area so modal alignment is stable on any monitor.
+            const measuredBounds = this.getTransformedSvgBounds?.(sourceOutline)
+                || sourceOutline.getBBox?.()
+                || null;
+            if (measuredBounds) {
+                const boundsX = Number(measuredBounds.x) || 0;
+                const boundsY = Number(measuredBounds.y) || 0;
+                const boundsWidth = Math.max(1, Number(measuredBounds.width) || 1);
+                const boundsHeight = Math.max(1, Number(measuredBounds.height) || 1);
+                const centerX = boundsX + (boundsWidth / 2);
+                const centerY = boundsY + (boundsHeight / 2);
+                const maxSide = Math.max(boundsWidth, boundsHeight);
+                const padding = Math.max(24, maxSide * 0.35);
+                const framedWidth = boundsWidth + (padding * 2);
+                const framedHeight = boundsHeight + (padding * 2);
+                const viewBoxX = centerX - (framedWidth / 2);
+                const viewBoxY = centerY - (framedHeight / 2);
+
+                svgRoot.setAttribute('viewBox', `${viewBoxX} ${viewBoxY} ${framedWidth} ${framedHeight}`);
+                svgRoot.setAttribute('width', String(framedWidth));
+                svgRoot.setAttribute('height', String(framedHeight));
+                svgRoot.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            }
+
             return new XMLSerializer().serializeToString(doc);
         } catch (error) {
             console.warn('Falha ao gerar preview com contorno tracejado:', error);
