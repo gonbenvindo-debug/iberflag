@@ -598,8 +598,8 @@ Object.assign(DesignEditor.prototype, {
         this.updateCartStepActionState();
     },
 
-    generateCartPreviewSVG() {
-        const designSvg = this.getDesignSVG();
+    generateCartPreviewSVG(designSvgOverride = null) {
+        const designSvg = designSvgOverride || this.getDesignSVG();
         if (!designSvg || typeof DOMParser === 'undefined' || typeof XMLSerializer === 'undefined') {
             return designSvg;
         }
@@ -641,6 +641,30 @@ Object.assign(DesignEditor.prototype, {
             console.warn('Falha ao gerar preview com contorno tracejado:', error);
             return designSvg;
         }
+    },
+
+    buildCartStepsPreviewDataUrl(designSvgMarkup = '') {
+        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
+            ? designSvgMarkup
+            : this.getDesignSVG();
+        const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
+
+        if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildPreviewSvgMarkup) {
+            const previewMarkup = window.DesignSvgStore.buildPreviewSvgMarkup(
+                previewSvg,
+                this.currentProduct.svg_template,
+                {
+                    backgroundColor: 'transparent',
+                    contentFillRatio: 0.9
+                }
+            );
+
+            if (typeof previewMarkup === 'string' && previewMarkup.trim().startsWith('<svg')) {
+                return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewMarkup)}`;
+            }
+        }
+
+        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
     },
 
     renderCartStepsBaseOptions() {
@@ -713,9 +737,8 @@ Object.assign(DesignEditor.prototype, {
             ? document.activeElement
             : null;
         this.ensureSelectedBase();
-        this.cartStepsDesignSnapshot = this.generateCartPreviewSVG() || this.getDesignSVG();
-        const previewSvg = this.cartStepsDesignSnapshot;
-        previewImg.src = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+        this.cartStepsDesignSnapshot = this.getDesignSVG();
+        previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 
         this.renderCartStepsBaseOptions();
