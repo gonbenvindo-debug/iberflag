@@ -647,14 +647,13 @@ Object.assign(DesignEditor.prototype, {
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
             : this.getDesignSVG();
-        const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
 
         if (this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
             const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
-                designSvg: previewSvg,
+                designSvg: rawDesignSvg,
                 productSvg: this.currentProduct.svg_template,
                 fillRatio: 0.9,
-                includeOutline: false,
+                includeOutline: true,
                 backgroundColor: 'transparent'
             });
 
@@ -663,6 +662,7 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
+        const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
     },
 

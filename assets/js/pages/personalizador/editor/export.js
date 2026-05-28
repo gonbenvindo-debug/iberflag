@@ -334,8 +334,8 @@ Object.assign(DesignEditor.prototype, {
 
         if (!shapeOutline) {
             const vb = this.getCanvasViewBoxSize();
-            maskShape.setAttribute('x', '0');
-            maskShape.setAttribute('y', '0');
+            maskShape.setAttribute('x', String(Number(vb.x) || 0));
+            maskShape.setAttribute('y', String(Number(vb.y) || 0));
             maskShape.setAttribute('width', String(vb.width));
             maskShape.setAttribute('height', String(vb.height));
         }
@@ -357,12 +357,14 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const vb = this.getCanvasViewBoxSize();
+        const exportX = Number(vb.x) || 0;
+        const exportY = Number(vb.y) || 0;
         const exportWidth = Math.max(1, Math.round(vb.width));
         const exportHeight = Math.max(1, Math.round(vb.height));
 
         const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
         exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        exportSvg.setAttribute('viewBox', `0 0 ${exportWidth} ${exportHeight}`);
+        exportSvg.setAttribute('viewBox', `${exportX} ${exportY} ${exportWidth} ${exportHeight}`);
         exportSvg.setAttribute('width', String(exportWidth));
         exportSvg.setAttribute('height', String(exportHeight));
         exportSvg.setAttribute('preserveAspectRatio', 'none');

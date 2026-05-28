@@ -573,7 +573,7 @@ function resolveOrderItemVisual(item, snapshot) {
             designSvg,
             productSvg: productSvgTemplate,
             fillRatio: 0.9,
-            includeOutline: true,
+            includeOutline: false,
             backgroundColor: 'transparent'
         })
         : '';

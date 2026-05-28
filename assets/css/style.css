@@ -203,8 +203,8 @@ body {
 
 .design-preview-surface {
     --design-preview-grid-size: 24px;
-    --design-preview-grid-color: rgba(37, 99, 235, 0.14);
-    --design-preview-surface-color: #f8fbff;
+    --design-preview-grid-color: rgba(148, 163, 184, 0.16);
+    --design-preview-surface-color: #f8fafc;
 
     background-color: var(--design-preview-surface-color);
     background-image:
@@ -226,16 +226,8 @@ body {
     min-height: 0;
     padding: var(--cart-item-preview-inset);
     border-radius: var(--cart-item-preview-radius);
-    border: 1px solid rgba(37, 99, 235, 0.18);
-    background-color: #f8fbff;
-    background-image:
-        linear-gradient(rgba(37, 99, 235, 0.14) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(37, 99, 235, 0.14) 1px, transparent 1px);
-    background-size: 24px 24px;
-    background-position: center center;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    border: 1px solid rgba(148, 163, 184, 0.28);
+    background: #ffffff;
     overflow: hidden;
 }
 
@@ -327,8 +319,7 @@ body {
 
     #cart-sidebar .cart-item-preview-frame {
         --cart-item-preview-radius: 0.78rem;
-        background-color: #f8fafc;
-        background-image: none;
+        background: #ffffff;
     }
 
     #cart-sidebar .cart-item-details {

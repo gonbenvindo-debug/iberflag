@@ -20,7 +20,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v5';
+    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v6';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
 
@@ -131,6 +131,34 @@
         return {
             width: Math.max(1, Math.round(width)),
             height: Math.max(1, Math.round(height))
+        };
+    }
+
+    function getCanvasViewBoxBounds(editor, options = {}) {
+        const canvas = editor?.canvas || editor;
+        const editorViewBox = typeof editor?.getCanvasViewBoxSize === 'function'
+            ? editor.getCanvasViewBoxSize()
+            : null;
+        const viewBoxAttr = String(canvas?.getAttribute?.('viewBox') || '').trim();
+        const parsedViewBox = viewBoxAttr
+            ? viewBoxAttr.split(/\s+/).map(Number)
+            : [];
+        const size = getCanvasSize(editor, options);
+
+        if (parsedViewBox.length === 4 && parsedViewBox.every(Number.isFinite) && parsedViewBox[2] > 0 && parsedViewBox[3] > 0) {
+            return {
+                x: parsedViewBox[0],
+                y: parsedViewBox[1],
+                width: parsedViewBox[2],
+                height: parsedViewBox[3]
+            };
+        }
+
+        return {
+            x: Number(options.x ?? options.viewBoxX ?? editorViewBox?.x) || 0,
+            y: Number(options.y ?? options.viewBoxY ?? editorViewBox?.y) || 0,
+            width: Math.max(1, Number(options.width ?? options.viewBoxWidth ?? editorViewBox?.width ?? size.width) || size.width),
+            height: Math.max(1, Number(options.height ?? options.viewBoxHeight ?? editorViewBox?.height ?? size.height) || size.height)
         };
     }
 
@@ -389,10 +417,10 @@
             return '';
         }
 
-        const { width, height } = getCanvasSize(editor, options);
+        const { x, y, width, height } = getCanvasViewBoxBounds(editor, options);
         const svg = document.createElementNS(SVG_NS, 'svg');
         svg.setAttribute('xmlns', SVG_NS);
-        svg.setAttribute('viewBox', `0 0 ${width} ${height}`);
+        svg.setAttribute('viewBox', `${x} ${y} ${width} ${height}`);
         svg.setAttribute('width', String(width));
         svg.setAttribute('height', String(height));
         svg.setAttribute('preserveAspectRatio', 'none');
@@ -409,7 +437,7 @@
         const clipPath = document.createElementNS(SVG_NS, 'clipPath');
         clipPath.setAttribute('id', clipPathId);
         clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-        clipPath.appendChild(buildEditorExportMaskShape(canvas, width, height));
+        clipPath.appendChild(buildEditorExportMaskShape(canvas, width, height, { x, y }));
         defs.appendChild(clipPath);
         svg.appendChild(defs);
 
@@ -417,8 +445,8 @@
         clippedGroup.setAttribute('clip-path', `url(#${clipPathId})`);
 
         const whiteBase = document.createElementNS(SVG_NS, 'rect');
-        whiteBase.setAttribute('x', '0');
-        whiteBase.setAttribute('y', '0');
+        whiteBase.setAttribute('x', String(x));
+        whiteBase.setAttribute('y', String(y));
         whiteBase.setAttribute('width', String(width));
         whiteBase.setAttribute('height', String(height));
         whiteBase.setAttribute('fill', '#ffffff');
@@ -443,7 +471,7 @@
         return new XMLSerializer().serializeToString(svg);
     }
 
-    function buildEditorExportMaskShape(canvas, width, height) {
+    function buildEditorExportMaskShape(canvas, width, height, origin = {}) {
         const shapeOutline = canvas.querySelector?.('#print-area-shape-outline');
         const printOutline = canvas.querySelector?.('#print-area-outline');
         let maskShape = null;
@@ -454,8 +482,8 @@
             maskShape = printOutline.cloneNode(true);
         } else {
             maskShape = document.createElementNS(SVG_NS, 'rect');
-            maskShape.setAttribute('x', '0');
-            maskShape.setAttribute('y', '0');
+            maskShape.setAttribute('x', String(Number(origin.x) || 0));
+            maskShape.setAttribute('y', String(Number(origin.y) || 0));
             maskShape.setAttribute('width', String(width));
             maskShape.setAttribute('height', String(height));
         }
@@ -559,6 +587,89 @@
         return { x, y, width, height };
     }
 
+    function multiplySvgMatrix(left, right) {
+        return {
+            a: (left.a * right.a) + (left.c * right.b),
+            b: (left.b * right.a) + (left.d * right.b),
+            c: (left.a * right.c) + (left.c * right.d),
+            d: (left.b * right.c) + (left.d * right.d),
+            e: (left.a * right.e) + (left.c * right.f) + left.e,
+            f: (left.b * right.e) + (left.d * right.f) + left.f
+        };
+    }
+
+    function parseSvgTransformMatrix(transformValue) {
+        const transform = String(transformValue || '').trim();
+        if (!transform) {
+            return null;
+        }
+
+        let matrix = { a: 1, b: 0, c: 0, d: 1, e: 0, f: 0 };
+        const transformPattern = /([a-z]+)\(([^)]*)\)/gi;
+        let match = null;
+
+        while ((match = transformPattern.exec(transform))) {
+            const type = String(match[1] || '').toLowerCase();
+            const values = String(match[2] || '').trim().split(/[\s,]+/).filter(Boolean).map(Number);
+            if (!values.every(Number.isFinite)) {
+                continue;
+            }
+
+            let next = null;
+            if (type === 'matrix' && values.length >= 6) {
+                next = { a: values[0], b: values[1], c: values[2], d: values[3], e: values[4], f: values[5] };
+            } else if (type === 'translate') {
+                next = { a: 1, b: 0, c: 0, d: 1, e: values[0] || 0, f: values.length > 1 ? values[1] || 0 : 0 };
+            } else if (type === 'scale') {
+                const sx = values[0] || 1;
+                const sy = values.length > 1 ? values[1] || 1 : sx;
+                next = { a: sx, b: 0, c: 0, d: sy, e: 0, f: 0 };
+            }
+
+            if (next) {
+                matrix = multiplySvgMatrix(matrix, next);
+            }
+        }
+
+        return matrix;
+    }
+
+    function applyTransformToBounds(bounds, transformValue) {
+        const matrix = parseSvgTransformMatrix(transformValue);
+        if (!matrix || !bounds) {
+            return bounds;
+        }
+
+        const x = Number(bounds.x) || 0;
+        const y = Number(bounds.y) || 0;
+        const width = Math.max(1, Number(bounds.width) || 1);
+        const height = Math.max(1, Number(bounds.height) || 1);
+        const points = [
+            { x, y },
+            { x: x + width, y },
+            { x, y: y + height },
+            { x: x + width, y: y + height }
+        ].map((point) => ({
+            x: (matrix.a * point.x) + (matrix.c * point.y) + matrix.e,
+            y: (matrix.b * point.x) + (matrix.d * point.y) + matrix.f
+        }));
+        const xs = points.map((point) => point.x);
+        const ys = points.map((point) => point.y);
+        const left = Math.min(...xs);
+        const top = Math.min(...ys);
+
+        return {
+            x: left,
+            y: top,
+            width: Math.max(1, Math.max(...xs) - left),
+            height: Math.max(1, Math.max(...ys) - top)
+        };
+    }
+
+    function finalizeNodeBounds(node, bounds) {
+        return applyTransformToBounds(bounds, node?.getAttribute?.('transform'));
+    }
+
     function pickMaskNode(root) {
         if (!root) return null;
 
@@ -638,12 +749,12 @@
         const heightAttr = Number.parseFloat(node.getAttribute?.('height') || '');
 
         if (tagName === 'rect') {
-            return {
+            return finalizeNodeBounds(node, {
                 x: Number.isFinite(xAttr) ? xAttr : 0,
                 y: Number.isFinite(yAttr) ? yAttr : 0,
                 width: Math.max(1, Number.isFinite(widthAttr) ? widthAttr : Number(fallback.width) || DEFAULT_SIZE.width),
                 height: Math.max(1, Number.isFinite(heightAttr) ? heightAttr : Number(fallback.height) || DEFAULT_SIZE.height)
-            };
+            });
         }
 
         if (tagName === 'circle') {
@@ -651,12 +762,12 @@
             const cy = Number.parseFloat(node.getAttribute?.('cy') || '');
             const radius = Number.parseFloat(node.getAttribute?.('r') || '');
             if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(radius)) {
-                return {
+                return finalizeNodeBounds(node, {
                     x: cx - radius,
                     y: cy - radius,
                     width: Math.max(1, radius * 2),
                     height: Math.max(1, radius * 2)
-                };
+                });
             }
         }
 
@@ -666,12 +777,12 @@
             const rx = Number.parseFloat(node.getAttribute?.('rx') || '');
             const ry = Number.parseFloat(node.getAttribute?.('ry') || '');
             if (Number.isFinite(cx) && Number.isFinite(cy) && Number.isFinite(rx) && Number.isFinite(ry)) {
-                return {
+                return finalizeNodeBounds(node, {
                     x: cx - rx,
                     y: cy - ry,
                     width: Math.max(1, rx * 2),
                     height: Math.max(1, ry * 2)
-                };
+                });
             }
         }
 
@@ -697,24 +808,24 @@
                 tempSvg.remove();
 
                 if (box && Number.isFinite(box.x) && Number.isFinite(box.y) && Number.isFinite(box.width) && Number.isFinite(box.height) && box.width > 0 && box.height > 0) {
-                    return {
+                    return finalizeNodeBounds(node, {
                         x: box.x,
                         y: box.y,
                         width: box.width,
                         height: box.height
-                    };
+                    });
                 }
             } catch (error) {
                 // Fallback below.
             }
         }
 
-        return {
+        return finalizeNodeBounds(node, {
             x: 0,
             y: 0,
             width: Math.max(1, Number(fallback.width) || DEFAULT_SIZE.width),
             height: Math.max(1, Number(fallback.height) || DEFAULT_SIZE.height)
-        };
+        });
     }
 
     function getSvgSourceBounds(root, fallback = DEFAULT_SIZE) {
@@ -828,8 +939,16 @@
         return `translate(${offsetX} ${offsetY}) scale(${scale} ${scale})`;
     }
 
+    function composeSvgTransforms(outerTransform, innerTransform) {
+        return [outerTransform, innerTransform]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean)
+            .join(' ');
+    }
+
     function buildPreviewOutlineNode(maskNode, transform) {
         const outlineNode = maskNode.cloneNode(true);
+        const originalTransform = outlineNode.getAttribute?.('transform') || '';
         outlineNode.removeAttribute?.('id');
         outlineNode.removeAttribute?.('pointer-events');
         outlineNode.removeAttribute?.('opacity');
@@ -838,15 +957,17 @@
         outlineNode.removeAttribute?.('stroke-width');
         outlineNode.removeAttribute?.('stroke-dasharray');
         outlineNode.setAttribute?.('fill', 'none');
-        outlineNode.setAttribute?.('stroke', '#3b82f6');
+        outlineNode.setAttribute?.('stroke', '#94a3b8');
         outlineNode.setAttribute?.('stroke-width', '1.5');
+        outlineNode.setAttribute?.('stroke-dasharray', '8 8');
         outlineNode.setAttribute?.('vector-effect', 'non-scaling-stroke');
-        outlineNode.setAttribute?.('opacity', '0.75');
+        outlineNode.setAttribute?.('opacity', '0.9');
         outlineNode.setAttribute?.('stroke-linecap', 'round');
         outlineNode.setAttribute?.('stroke-linejoin', 'round');
         outlineNode.setAttribute?.('pointer-events', 'none');
-        if (transform) {
-            outlineNode.setAttribute?.('transform', transform);
+        const combinedTransform = composeSvgTransforms(transform, originalTransform);
+        if (combinedTransform) {
+            outlineNode.setAttribute?.('transform', combinedTransform);
         } else {
             outlineNode.removeAttribute?.('transform');
         }
@@ -855,6 +976,7 @@
 
     function buildPreviewOutlineHaloNode(maskNode, transform) {
         const haloNode = maskNode.cloneNode(true);
+        const originalTransform = haloNode.getAttribute?.('transform') || '';
         haloNode.removeAttribute?.('id');
         haloNode.removeAttribute?.('pointer-events');
         haloNode.removeAttribute?.('opacity');
@@ -870,8 +992,9 @@
         haloNode.setAttribute?.('stroke-linecap', 'round');
         haloNode.setAttribute?.('stroke-linejoin', 'round');
         haloNode.setAttribute?.('pointer-events', 'none');
-        if (transform) {
-            haloNode.setAttribute?.('transform', transform);
+        const combinedTransform = composeSvgTransforms(transform, originalTransform);
+        if (combinedTransform) {
+            haloNode.setAttribute?.('transform', combinedTransform);
         } else {
             haloNode.removeAttribute?.('transform');
         }
@@ -880,6 +1003,7 @@
 
     function buildPreviewMaskNode(maskNode, transform) {
         const maskNodeClone = maskNode.cloneNode(true);
+        const originalTransform = maskNodeClone.getAttribute?.('transform') || '';
         maskNodeClone.removeAttribute?.('id');
         maskNodeClone.removeAttribute?.('pointer-events');
         maskNodeClone.removeAttribute?.('opacity');
@@ -889,8 +1013,9 @@
         maskNodeClone.setAttribute?.('fill', '#ffffff');
         maskNodeClone.setAttribute?.('stroke', 'none');
         maskNodeClone.setAttribute?.('pointer-events', 'none');
-        if (transform) {
-            maskNodeClone.setAttribute?.('transform', transform);
+        const combinedTransform = composeSvgTransforms(transform, originalTransform);
+        if (combinedTransform) {
+            maskNodeClone.setAttribute?.('transform', combinedTransform);
         } else {
             maskNodeClone.removeAttribute?.('transform');
         }
@@ -904,26 +1029,27 @@
         return Boolean(clip && clippedGroup);
     }
 
-    function getMaskedExportClipBounds(root, fallback = null) {
+    function getMaskedExportClipNode(root) {
         if (!root) {
-            return fallback;
+            return null;
         }
 
         const clip = root.querySelector('clipPath[id^="design-export-clip"], clipPath#design-export-clip');
         if (!clip) {
-            return fallback;
+            return null;
         }
 
-        const clipShape = Array.from(clip.children || []).find((child) => {
+        return Array.from(clip.children || []).find((child) => {
             const tagName = String(child?.tagName || '').toLowerCase();
             return tagName && tagName !== 'title' && tagName !== 'desc' && tagName !== 'metadata';
-        });
+        }) || null;
+    }
 
-        if (!clipShape) {
-            return fallback;
-        }
-
-        return getSvgNodeBounds(clipShape, fallback || DEFAULT_SIZE);
+    function getMaskedExportClipBounds(root, fallback = null) {
+        const clipShape = getMaskedExportClipNode(root);
+        return clipShape
+            ? getSvgNodeBounds(clipShape, fallback || DEFAULT_SIZE)
+            : fallback;
     }
 
     function getSvgAspectRatio(svgMarkup, fallback = 1) {
@@ -1037,13 +1163,19 @@
         }
 
         const maskSourceBounds = getSvgSourceBounds(maskRoot, DEFAULT_SIZE);
-        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
+        const exportClipNode = isMaskedExportSvgRoot(previewRoot)
+            ? getMaskedExportClipNode(previewRoot)
+            : null;
+        const activeMaskNode = exportClipNode || maskNode;
+        const activeMaskSourceBounds = exportClipNode
+            ? getSvgSourceBounds(previewRoot, maskSourceBounds)
+            : maskSourceBounds;
+        const printAreaBounds = getSvgNodeBounds(activeMaskNode, activeMaskSourceBounds);
         const previewSourceBounds = previewRoot
             ? (
-                (isMaskedExportSvgRoot(previewRoot)
-                    ? getMaskedExportClipBounds(previewRoot, printAreaBounds)
-                    : null)
-                || getSvgSourceBounds(previewRoot, printAreaBounds)
+                exportClipNode
+                    ? printAreaBounds
+                    : getSvgSourceBounds(previewRoot, printAreaBounds)
             )
             : printAreaBounds;
 
@@ -1094,7 +1226,7 @@
         blackRect.setAttribute('fill', '#000000');
         mask.appendChild(blackRect);
 
-        const previewMaskNode = buildPreviewMaskNode(maskNode, maskTransform);
+        const previewMaskNode = buildPreviewMaskNode(activeMaskNode, maskTransform);
         mask.appendChild(previewMaskNode);
         defs.appendChild(mask);
         wrapper.appendChild(defs);
@@ -1144,8 +1276,8 @@
         }
 
         if (includeOutline) {
-            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
-            const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
+            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(activeMaskNode, maskTransform);
+            const previewOutlineNode = buildPreviewOutlineNode(activeMaskNode, maskTransform);
             wrapper.appendChild(previewOutlineHaloNode);
             wrapper.appendChild(previewOutlineNode);
         }

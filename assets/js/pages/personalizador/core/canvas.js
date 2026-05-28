@@ -138,6 +138,58 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+    centerCameraOnPrintArea(options = {}) {
+        const stageRect = this.canvasStage?.getBoundingClientRect?.();
+        const projectRect = this.getProjectViewportRect();
+        if (!stageRect || !projectRect || stageRect.width <= 0 || stageRect.height <= 0 || projectRect.width <= 0 || projectRect.height <= 0) {
+            return false;
+        }
+
+        const stageCenterX = stageRect.left + (stageRect.width / 2);
+        const stageCenterY = stageRect.top + (stageRect.height / 2);
+        const projectCenterX = projectRect.left + (projectRect.width / 2);
+        const projectCenterY = projectRect.top + (projectRect.height / 2);
+        const deltaX = stageCenterX - projectCenterX;
+        const deltaY = stageCenterY - projectCenterY;
+
+        if (Math.abs(deltaX) < 0.5 && Math.abs(deltaY) < 0.5) {
+            return true;
+        }
+
+        this.cameraOffset = {
+            x: (Number(this.cameraOffset?.x) || 0) + deltaX,
+            y: (Number(this.cameraOffset?.y) || 0) + deltaY
+        };
+        this.applyCameraTransform?.();
+        if (options.refreshHandles && this.selectedElement) {
+            this.requestHandlesRefresh?.();
+        }
+        this.updateDesktopFloatingToolbarPosition?.();
+        this.updateResetViewButtonVisibility?.();
+        return true;
+    },
+
+    requestCenterCameraOnPrintArea(options = {}) {
+        if (this.centerPrintAreaRaf) {
+            cancelAnimationFrame(this.centerPrintAreaRaf);
+        }
+
+        let pass = 0;
+        const runCenterPass = () => {
+            this.centerCameraOnPrintArea?.(options);
+            pass += 1;
+            if (pass < 3) {
+                this.centerPrintAreaRaf = requestAnimationFrame(runCenterPass);
+                return;
+            }
+            this.centerPrintAreaRaf = null;
+        };
+
+        this.centerPrintAreaRaf = requestAnimationFrame(() => {
+            this.centerPrintAreaRaf = requestAnimationFrame(runCenterPass);
+        });
+    },
+
     updateZoomLevelDisplay() {
         const zoomLevel = document.getElementById('zoom-level');
         if (zoomLevel) {
@@ -151,6 +203,7 @@ Object.assign(DesignEditor.prototype, {
         this.cameraOffset = { x: 0, y: 0 };
         this.syncCanvasViewport?.();
         this.applyCameraTransform?.();
+        this.requestCenterCameraOnPrintArea?.({ refreshHandles: Boolean(this.selectedElement) });
         this.updateZoomLevelDisplay?.();
         if (this.selectedElement) {
             this.requestHandlesRefresh?.();

@@ -477,6 +477,7 @@ Object.assign(DesignEditor.prototype, {
         this.removePrintAreaBackground?.();
         this.canvas.appendChild(visualArea);
         this.bringPrintAreaOverlaysToFront();
+        this.requestCenterCameraOnPrintArea?.();
     },
 
     getTemplateElementArea(element) {
@@ -648,6 +649,7 @@ Object.assign(DesignEditor.prototype, {
 
             if (!areaElement) {
                 this.setDefaultPrintArea();
+                this.requestCenterCameraOnPrintArea?.();
                 return;
             }
 
@@ -655,6 +657,7 @@ Object.assign(DesignEditor.prototype, {
         } catch (error) {
             console.error('Error loading SVG template:', error);
             this.setDefaultPrintArea();
+            this.requestCenterCameraOnPrintArea?.();
         }
     }
 

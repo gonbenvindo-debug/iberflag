@@ -945,7 +945,7 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         designSvg: designSource,
         productSvg: svgTemplate,
         fillRatio: 0.9,
-        includeOutline: true,
+        includeOutline: false,
         backgroundColor: 'transparent'
     });
 
