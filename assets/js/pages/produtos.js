@@ -201,15 +201,11 @@ async function loadAllProducts() {
         if (data && data.length > 0) {
             allProducts = data;
         } else {
-            allProducts = Array.isArray(initialProducts) ? [...initialProducts] : [];
+            allProducts = initialProducts || [];
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error?.message || error);
-        allProducts = Array.isArray(initialProducts) ? [...initialProducts] : [];
-    }
-
-    if (window.applySupplierSvgTemplates) {
-        await window.applySupplierSvgTemplates(allProducts);
+        allProducts = initialProducts || [];
     }
 
     buildDynamicCategoryFilters();

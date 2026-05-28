@@ -99,10 +99,6 @@ Object.assign(DesignEditor.prototype, {
             || initialProducts.find((product) => typeof SiteRoutes !== 'undefined' && SiteRoutes.inferProductSlug(product) === productSlug);
         this.currentProduct = i18nProduct(this.currentProduct);
 
-        if (this.currentProduct && window.applySupplierSvgTemplate) {
-            await window.applySupplierSvgTemplate(this.currentProduct);
-        }
-
         if (!this.currentProduct) {
             showToast(i18nText('Produto não encontrado'), 'error');
             setTimeout(() => {

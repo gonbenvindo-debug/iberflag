@@ -42,112 +42,6 @@ function i18nProduct(product) {
         : product;
 }
 
-const SUPPLIER_PRODUCT_SVG_PATHS = Object.freeze({
-    'bandeiras-para-despacho-150-x-100-cm': '/assets/images/product-svg/bandeiras-para-despacho-150-x-100-cm-print-area.svg',
-    'bandeiras-para-manifestacoes-20-x-30-cm': '/assets/images/product-svg/bandeiras-para-manifestacoes-20-x-30-cm-print-area.svg',
-    'bandeiras-para-manifestacoes-30-x-45-cm': '/assets/images/product-svg/bandeiras-para-manifestacoes-30-x-45-cm-print-area.svg',
-    'bandeiras-para-manifestacoes-45-x-70-cm': '/assets/images/product-svg/bandeiras-para-manifestacoes-45-x-70-cm-print-area.svg',
-    'bandeiras-para-manifestacoes-70-x-100-cm': '/assets/images/product-svg/bandeiras-para-manifestacoes-70-x-100-cm-print-area.svg',
-    'bandeiras-para-manifestacoes-100-x-150-cm': '/assets/images/product-svg/bandeiras-para-manifestacoes-100-x-150-cm-print-area.svg',
-    'fly-banner-drop-245cm': '/assets/images/product-svg/fly-banner-drop-245cm-print-area.svg',
-    'fly-banner-drop-300cm': '/assets/images/product-svg/fly-banner-drop-300cm-print-area.svg',
-    'fly-banner-drop-350cm': '/assets/images/product-svg/fly-banner-drop-350cm-print-area.svg',
-    'fly-banner-drop-440cm': '/assets/images/product-svg/fly-banner-drop-440cm-print-area.svg',
-    'fly-banner-drop-540cm': '/assets/images/product-svg/fly-banner-drop-540cm-print-area.svg',
-    'fly-banner-retangular-70-x-180-cm': '/assets/images/product-svg/fly-banner-retangular-70-x-180-cm-print-area.svg',
-    'fly-banner-retangular-70-x-280-cm': '/assets/images/product-svg/fly-banner-retangular-70-x-280-cm-print-area.svg',
-    'fly-banner-surf-290cm': '/assets/images/product-svg/fly-banner-surf-290cm-print-area.svg',
-    'fly-banner-surf-340cm': '/assets/images/product-svg/fly-banner-surf-340cm-print-area.svg',
-    'fly-banner-surf-400cm': '/assets/images/product-svg/fly-banner-surf-400cm-print-area.svg',
-    'fly-banner-surf-500cm': '/assets/images/product-svg/fly-banner-surf-500cm-print-area.svg',
-    'fly-banner-surf-600cm': '/assets/images/product-svg/fly-banner-surf-600cm-print-area.svg',
-    'photocall-286-x-217-cm': '/assets/images/product-svg/photocall-286-x-217-cm-print-area.svg',
-    'roll-up-85-x-200-cm': '/assets/images/product-svg/roll-up-85-x-200-cm-print-area.svg',
-    'wall-banner-60-x-230-cm': '/assets/images/product-svg/wall-banner-60-x-230-cm-print-area.svg',
-    'wall-banner-90-x-230-cm': '/assets/images/product-svg/wall-banner-90-x-230-cm-print-area.svg',
-    'wall-banner-120-x-230-cm': '/assets/images/product-svg/wall-banner-120-x-230-cm-print-area.svg',
-    'wall-banner-150-x-230-cm': '/assets/images/product-svg/wall-banner-150-x-230-cm-print-area.svg',
-    'x-banner-80-x-180-cm': '/assets/images/product-svg/x-banner-80-x-180-cm-print-area.svg'
-});
-
-const supplierProductSvgTemplateCache = new Map();
-
-function inferProductSlugForSupplierSvg(product) {
-    if (!product || typeof product !== 'object') {
-        return '';
-    }
-
-    const directSlug = String(product.slug || '').trim();
-    if (directSlug) {
-        return directSlug;
-    }
-
-    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.inferProductSlug === 'function') {
-        return String(SiteRoutes.inferProductSlug(product) || '').trim();
-    }
-
-    return '';
-}
-
-async function loadSupplierSvgTemplateBySlug(slug) {
-    const normalizedSlug = String(slug || '').trim();
-    const assetPath = SUPPLIER_PRODUCT_SVG_PATHS[normalizedSlug];
-
-    if (!normalizedSlug || !assetPath) {
-        return null;
-    }
-
-    if (supplierProductSvgTemplateCache.has(normalizedSlug)) {
-        return supplierProductSvgTemplateCache.get(normalizedSlug);
-    }
-
-    try {
-        const response = await fetch(assetPath, { cache: 'force-cache' });
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        const svgMarkup = await response.text();
-        supplierProductSvgTemplateCache.set(normalizedSlug, svgMarkup);
-        return svgMarkup;
-    } catch (error) {
-        console.warn('Falha ao carregar SVG do fornecedor:', normalizedSlug, error);
-        supplierProductSvgTemplateCache.set(normalizedSlug, null);
-        return null;
-    }
-}
-
-async function applySupplierSvgTemplate(product) {
-    if (!product || typeof product !== 'object') {
-        return product;
-    }
-
-    const slug = inferProductSlugForSupplierSvg(product);
-    if (!slug || !SUPPLIER_PRODUCT_SVG_PATHS[slug]) {
-        return product;
-    }
-
-    const svgMarkup = await loadSupplierSvgTemplateBySlug(slug);
-    if (svgMarkup) {
-        product.svg_template = svgMarkup;
-        product.svg_template_source = 'supplier-asset';
-    }
-
-    return product;
-}
-
-async function applySupplierSvgTemplates(products) {
-    if (!Array.isArray(products) || products.length === 0) {
-        return products;
-    }
-
-    await Promise.all(products.map((product) => applySupplierSvgTemplate(product)));
-    return products;
-}
-
-window.loadSupplierSvgTemplateBySlug = loadSupplierSvgTemplateBySlug;
-window.applySupplierSvgTemplate = applySupplierSvgTemplate;
-window.applySupplierSvgTemplates = applySupplierSvgTemplates;
-
 function cartControlIcon(name, className = 'cart-control-icon') {
     const paths = {
         'trash-2': '<path d="M3 6h18"></path><path d="M8 6V4c0-1 1-2 2-2h4c1 0 2 1 2 2v2"></path><path d="M19 6l-1 14c-.1 1.1-.9 2-2 2H8c-1.1 0-1.9-.9-2-2L5 6"></path><path d="M10 11v6"></path><path d="M14 11v6"></path>',
@@ -1311,10 +1205,8 @@ function renderProducts(products) {
 // ===== FETCH PRODUCTS FROM SUPABASE =====
 async function fetchProducts() {
     if (!supabaseClient || typeof supabaseClient.from !== 'function') {
-        const fallbackProducts = Array.isArray(initialProducts) ? [...initialProducts] : [];
-        await applySupplierSvgTemplates(fallbackProducts);
-        renderProducts(fallbackProducts);
-        updateHomepageCategoryCards(fallbackProducts);
+        renderProducts(initialProducts);
+        updateHomepageCategoryCards(initialProducts);
         return;
     }
 
@@ -1328,21 +1220,16 @@ async function fetchProducts() {
         if (error) throw error;
 
         if (data && data.length > 0) {
-            await applySupplierSvgTemplates(data);
             renderProducts(data);
             updateHomepageCategoryCards(data);
         } else {
-            const fallbackProducts = Array.isArray(initialProducts) ? [...initialProducts] : [];
-            await applySupplierSvgTemplates(fallbackProducts);
-            renderProducts(fallbackProducts);
-            updateHomepageCategoryCards(fallbackProducts);
+            renderProducts(initialProducts);
+            updateHomepageCategoryCards(initialProducts);
         }
     } catch (error) {
         console.error('Erro ao carregar produtos:', error.message);
-        const fallbackProducts = Array.isArray(initialProducts) ? [...initialProducts] : [];
-        await applySupplierSvgTemplates(fallbackProducts);
-        renderProducts(fallbackProducts);
-        updateHomepageCategoryCards(fallbackProducts);
+        renderProducts(initialProducts);
+        updateHomepageCategoryCards(initialProducts);
     }
 }
 
