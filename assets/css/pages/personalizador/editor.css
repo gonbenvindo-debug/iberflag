@@ -569,7 +569,7 @@
             display: block;
             border-radius: 12px;
             background: #f8fafc;
-            border: 1px solid #dbe3ee;
+            border: 1px solid rgba(239, 72, 37, 0.45);
         }
 
         .cart-base-grid {

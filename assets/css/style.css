@@ -206,6 +206,8 @@ body {
 
     background-color: var(--design-preview-surface-color);
     background-image: none;
+    border: 1px solid rgba(239, 72, 37, 0.45);
+    border-radius: 0.75rem;
 }
 
 .cart-item-preview-frame {
@@ -220,7 +222,7 @@ body {
     min-height: 0;
     padding: var(--cart-item-preview-inset);
     border-radius: var(--cart-item-preview-radius);
-    border: 1px solid rgba(148, 163, 184, 0.28);
+    border: 1px solid rgba(239, 72, 37, 0.45);
     background: #ffffff;
     overflow: hidden;
 }
@@ -2371,6 +2373,7 @@ body[data-analytics-event="view_product"] .product-hero-trust-title {
     justify-content: center;
     overflow: hidden;
     background: #f8fafc;
+    box-shadow: inset 0 0 0 1px rgba(239, 72, 37, 0.45);
 }
 
 #templates-modal-grid .template-gallery-card__preview-surface--blank {
