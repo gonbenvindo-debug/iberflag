@@ -1045,11 +1045,72 @@
         }) || null;
     }
 
+    function getMaskedExportClippedGroup(root) {
+        if (!root) {
+            return null;
+        }
+
+        return root.querySelector('g[clip-path*="design-export-clip"]');
+    }
+
     function getMaskedExportClipBounds(root, fallback = null) {
         const clipShape = getMaskedExportClipNode(root);
         return clipShape
             ? getSvgNodeBounds(clipShape, fallback || DEFAULT_SIZE)
             : fallback;
+    }
+
+    function buildMaskedExportPreviewMarkup(root, fallback = DEFAULT_SIZE) {
+        if (!root || typeof document === 'undefined' || typeof XMLSerializer === 'undefined') {
+            return '';
+        }
+
+        const clippedGroup = getMaskedExportClippedGroup(root);
+        const clipBounds = getMaskedExportClipBounds(root, fallback || DEFAULT_SIZE);
+
+        if (!clippedGroup || !clipBounds) {
+            return '';
+        }
+
+        const previewSvg = document.createElementNS(SVG_NS, 'svg');
+        previewSvg.setAttribute('xmlns', SVG_NS);
+        previewSvg.setAttribute('viewBox', `0 0 ${clipBounds.width} ${clipBounds.height}`);
+        previewSvg.setAttribute('width', String(Math.max(1, clipBounds.width)));
+        previewSvg.setAttribute('height', String(Math.max(1, clipBounds.height)));
+        previewSvg.setAttribute('preserveAspectRatio', 'none');
+        previewSvg.setAttribute('data-personalizable-bounds', `0 0 ${clipBounds.width} ${clipBounds.height}`);
+
+        const rootDefs = root.querySelector('defs');
+        if (rootDefs) {
+            const defs = document.createElementNS(SVG_NS, 'defs');
+            Array.from(rootDefs.children || []).forEach((child) => {
+                const tagName = String(child?.tagName || '').toLowerCase();
+                const childId = String(child?.getAttribute?.('id') || '');
+                if (tagName === 'clippath' && childId.startsWith('design-export-clip')) {
+                    return;
+                }
+                defs.appendChild(document.importNode(child, true));
+            });
+
+            if (defs.children.length > 0) {
+                previewSvg.appendChild(defs);
+            }
+        }
+
+        const normalizedGroup = document.createElementNS(SVG_NS, 'g');
+        normalizedGroup.setAttribute('transform', `translate(${-clipBounds.x} ${-clipBounds.y})`);
+
+        Array.from(clippedGroup.children || []).forEach((child) => {
+            const tagName = String(child?.tagName || '').toLowerCase();
+            if (!tagName || tagName === 'title' || tagName === 'desc' || tagName === 'metadata') {
+                return;
+            }
+            normalizedGroup.appendChild(document.importNode(child, true));
+        });
+
+        previewSvg.appendChild(normalizedGroup);
+
+        return new XMLSerializer().serializeToString(previewSvg);
     }
 
     function getSvgAspectRatio(svgMarkup, fallback = 1) {
@@ -1144,9 +1205,17 @@
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
-        const previewMarkup = extractTemplateSvg(designSvg, {});
-        const previewSource = toPreviewImageSource(designSvg, {});
+        const extractedPreviewMarkup = extractTemplateSvg(designSvg, {});
+        const extractedPreviewRoot = extractedPreviewMarkup ? parseSvgMarkup(extractedPreviewMarkup) : null;
+        // Editor exports keep original canvas coordinates plus a clipPath; crop them to the print area first
+        // so downstream thumbnail scaling works from the visible design bounds instead of the full canvas.
+        const previewMarkup = extractedPreviewRoot && isMaskedExportSvgRoot(extractedPreviewRoot)
+            ? (buildMaskedExportPreviewMarkup(extractedPreviewRoot, DEFAULT_SIZE) || extractedPreviewMarkup)
+            : extractedPreviewMarkup;
         const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
+        const previewSource = previewMarkup
+            ? toDataUrlFromSvgMarkup(previewMarkup)
+            : toPreviewImageSource(designSvg, {});
         const maskMarkup = extractTemplateSvg(productSvg, {});
         const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
         const previewHref = previewMarkup
@@ -1163,20 +1232,9 @@
         }
 
         const maskSourceBounds = getSvgSourceBounds(maskRoot, DEFAULT_SIZE);
-        const exportClipNode = isMaskedExportSvgRoot(previewRoot)
-            ? getMaskedExportClipNode(previewRoot)
-            : null;
-        const activeMaskNode = exportClipNode || maskNode;
-        const activeMaskSourceBounds = exportClipNode
-            ? getSvgSourceBounds(previewRoot, maskSourceBounds)
-            : maskSourceBounds;
-        const printAreaBounds = getSvgNodeBounds(activeMaskNode, activeMaskSourceBounds);
+        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
         const previewSourceBounds = previewRoot
-            ? (
-                exportClipNode
-                    ? printAreaBounds
-                    : getSvgSourceBounds(previewRoot, printAreaBounds)
-            )
+            ? getSvgSourceBounds(previewRoot, printAreaBounds)
             : printAreaBounds;
 
         const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
@@ -1226,7 +1284,7 @@
         blackRect.setAttribute('fill', '#000000');
         mask.appendChild(blackRect);
 
-        const previewMaskNode = buildPreviewMaskNode(activeMaskNode, maskTransform);
+        const previewMaskNode = buildPreviewMaskNode(maskNode, maskTransform);
         mask.appendChild(previewMaskNode);
         defs.appendChild(mask);
         wrapper.appendChild(defs);
@@ -1276,8 +1334,8 @@
         }
 
         if (includeOutline) {
-            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(activeMaskNode, maskTransform);
-            const previewOutlineNode = buildPreviewOutlineNode(activeMaskNode, maskTransform);
+            const previewOutlineHaloNode = buildPreviewOutlineHaloNode(maskNode, maskTransform);
+            const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
             wrapper.appendChild(previewOutlineHaloNode);
             wrapper.appendChild(previewOutlineNode);
         }
