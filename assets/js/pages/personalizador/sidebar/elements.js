@@ -1202,7 +1202,7 @@ Object.assign(DesignEditor.prototype, {
         document.addEventListener('keydown', (e) => this.handleKeyDown(e));
         const syncViewportAndHandles = (options = {}) => {
             const shouldResetViewportCache = options.resetViewportCache !== false;
-            const shouldReflowTemplate = options.reflowTemplate !== false;
+            const shouldReflowTemplate = options.reflowTemplate === true;
 
             if (shouldResetViewportCache) {
                 this._lastViewportStageWidth = null;
@@ -1218,10 +1218,14 @@ Object.assign(DesignEditor.prototype, {
             }
         };
 
-        window.addEventListener('resize', syncViewportAndHandles);
+        window.addEventListener('resize', () => syncViewportAndHandles({
+            reflowTemplate: false
+        }));
 
         if (window.visualViewport) {
-            window.visualViewport.addEventListener('resize', syncViewportAndHandles, { passive: true });
+            window.visualViewport.addEventListener('resize', () => syncViewportAndHandles({
+                reflowTemplate: false
+            }), { passive: true });
             window.visualViewport.addEventListener('scroll', () => syncViewportAndHandles({
                 resetViewportCache: false,
                 reflowTemplate: false
@@ -1231,7 +1235,9 @@ Object.assign(DesignEditor.prototype, {
         // ResizeObserver: recalcula canvas quando o stage muda de tamanho
         if (this.canvasStage && typeof ResizeObserver !== 'undefined') {
             new ResizeObserver(() => {
-                syncViewportAndHandles();
+                syncViewportAndHandles({
+                    reflowTemplate: false
+                });
             }).observe(this.canvasStage);
         }
 
