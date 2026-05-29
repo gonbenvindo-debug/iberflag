@@ -790,6 +790,8 @@ Object.assign(DesignEditor.prototype, {
     },
 
     processMouseMove(e) {
+        this.updateBackgroundSelectionClearMovement?.(e || {});
+
         if (this.isPanningCamera && this.cameraPanStart) {
             const deltaX = e.clientX - this.cameraPanStart.clientX;
             const deltaY = e.clientY - this.cameraPanStart.clientY;
@@ -896,6 +898,8 @@ Object.assign(DesignEditor.prototype, {
         } else {
             this.pendingMoveEvent = null;
         }
+
+        const shouldClearSelection = this.shouldClearSelectionFromBackgroundClick?.();
         
         if (this.isDragging || this.isResizing || this.isRotating) {
             this.commitHistoryGesture();
@@ -939,6 +943,10 @@ Object.assign(DesignEditor.prototype, {
             );
         }
 
+        if (shouldClearSelection) {
+            this.clearSelection();
+        }
+
         if (this.selectedElement) {
             if (this.selectedElement.type === 'image') {
                 this.syncImageGeometryState?.(this.selectedElement, {}, { updateBaseBox: true });
@@ -980,6 +988,50 @@ Object.assign(DesignEditor.prototype, {
         );
     },
 
+    queueBackgroundSelectionClear(target, pointer = {}) {
+        if (!(target instanceof Element) || !this.isCanvasBackgroundClickTarget(target)) {
+            this.pendingBackgroundSelectionClear = null;
+            return;
+        }
+
+        this.pendingBackgroundSelectionClear = {
+            target,
+            clientX: Number(pointer.clientX),
+            clientY: Number(pointer.clientY),
+            movementThreshold: this._touchGestureActive ? 6 : 4,
+            moved: false
+        };
+    },
+
+    updateBackgroundSelectionClearMovement(pointer = {}) {
+        const pending = this.pendingBackgroundSelectionClear;
+        if (!pending || pending.moved) {
+            return;
+        }
+
+        const x = Number(pointer.clientX);
+        const y = Number(pointer.clientY);
+        if (!Number.isFinite(x) || !Number.isFinite(y) || !Number.isFinite(pending.clientX) || !Number.isFinite(pending.clientY)) {
+            return;
+        }
+
+        const deltaX = Math.abs(x - pending.clientX);
+        const deltaY = Math.abs(y - pending.clientY);
+        const threshold = Number.isFinite(pending.movementThreshold) ? pending.movementThreshold : 4;
+        if (deltaX >= threshold || deltaY >= threshold) {
+            pending.moved = true;
+        }
+    },
+
+    shouldClearSelectionFromBackgroundClick() {
+        const pending = this.pendingBackgroundSelectionClear;
+        this.pendingBackgroundSelectionClear = null;
+        if (!pending || pending.moved || !this.selectedElement) {
+            return false;
+        }
+        return this.isCanvasBackgroundClickTarget?.(pending.target);
+    },
+
     isEditorElementTarget(target) {
         if (!(target instanceof Element)) return false;
         if (target.closest('[data-element-id], [data-editable="true"]')) {
@@ -992,9 +1044,7 @@ Object.assign(DesignEditor.prototype, {
     },
 
     handleCanvasMouseDown(e) {
-        if (this.isCanvasBackgroundClickTarget(e?.target)) {
-            this.clearSelection();
-        }
+        this.queueBackgroundSelectionClear?.(e?.target, e || {});
     },
 
     handleDocumentMouseDown(e) {

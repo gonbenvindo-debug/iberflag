@@ -1275,9 +1275,7 @@ Object.assign(DesignEditor.prototype, {
 
             stage.addEventListener('mousedown', (event) => {
                 if (!shouldStartCameraPan(event)) return;
-                if (this.selectedElement && this.isCanvasBackgroundClickTarget?.(event.target)) {
-                    this.clearSelection();
-                }
+                this.handleCanvasMouseDown?.(event);
                 event.preventDefault();
                 event.stopPropagation();
                 this.isPanningCamera = true;
@@ -1320,9 +1318,11 @@ Object.assign(DesignEditor.prototype, {
                     return;
                 }
                 if (e.touches.length === 1 && shouldStartCameraPan(e)) {
-                    if (this.selectedElement && this.isCanvasBackgroundClickTarget?.(e.target)) {
-                        this.clearSelection();
-                    }
+                    this.handleCanvasMouseDown?.({
+                        target: e.target,
+                        clientX: e.touches[0]?.clientX,
+                        clientY: e.touches[0]?.clientY
+                    });
                     const t = e.touches[0];
                     this._lastTouchInteractionAt = Date.now();
                     this._touchGestureActive = true;
