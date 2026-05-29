@@ -666,24 +666,6 @@ Object.assign(DesignEditor.prototype, {
 
                     clippedGroup.parentNode.insertBefore(previewLayer, clippedGroup);
                     previewLayer.appendChild(clippedGroup);
-
-                    const outlineNode = clipShape.cloneNode(true);
-                    outlineNode.removeAttribute('id');
-                    outlineNode.removeAttribute('pointer-events');
-                    outlineNode.removeAttribute('opacity');
-                    outlineNode.removeAttribute('fill');
-                    outlineNode.removeAttribute('stroke');
-                    outlineNode.removeAttribute('stroke-width');
-                    outlineNode.removeAttribute('stroke-dasharray');
-                    outlineNode.setAttribute('fill', 'none');
-                    outlineNode.setAttribute('stroke', '#ef4825');
-                    outlineNode.setAttribute('stroke-width', '2');
-                    outlineNode.setAttribute('stroke-opacity', '0.9');
-                    outlineNode.setAttribute('vector-effect', 'non-scaling-stroke');
-                    outlineNode.setAttribute('stroke-linecap', 'round');
-                    outlineNode.setAttribute('stroke-linejoin', 'round');
-                    outlineNode.setAttribute('pointer-events', 'none');
-                    previewLayer.appendChild(outlineNode);
                 }
 
                 return new XMLSerializer().serializeToString(doc);
