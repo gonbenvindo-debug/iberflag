@@ -982,9 +982,46 @@
         const viewBoxBounds = getCanvasViewBoxBounds(editor, options);
         const printAreaBounds = getEditorPrintAreaBounds(editor, viewBoxBounds);
         const productSvg = options.productSvg || editor?.currentProduct?.svg_template || '';
+        const editorMaskNode = editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null;
+        const normalizedEditorMaskNode = editorMaskNode?.cloneNode
+            ? editorMaskNode.cloneNode(true)
+            : null;
+        if (normalizedEditorMaskNode) {
+            normalizedEditorMaskNode.removeAttribute?.('id');
+            normalizedEditorMaskNode.removeAttribute?.('class');
+            normalizedEditorMaskNode.removeAttribute?.('pointer-events');
+            normalizedEditorMaskNode.removeAttribute?.('opacity');
+            normalizedEditorMaskNode.removeAttribute?.('stroke');
+            normalizedEditorMaskNode.removeAttribute?.('stroke-width');
+            normalizedEditorMaskNode.removeAttribute?.('stroke-dasharray');
+            normalizedEditorMaskNode.setAttribute?.('fill', '#ffffff');
+        }
+        const editorMaskBounds = normalizedEditorMaskNode
+            ? normalizeBounds(getSvgNodeBounds(normalizedEditorMaskNode, printAreaBounds), printAreaBounds)
+            : normalizeBounds(printAreaBounds, viewBoxBounds);
+        const editorMaskMarkup = normalizedEditorMaskNode
+            ? new XMLSerializer().serializeToString(normalizedEditorMaskNode)
+            : '';
+        const fallbackGeometry = resolveTemplateGeometry(productSvg, { viewBoxBounds });
+        const preferredGeometry = (normalizedEditorMaskNode || isUsableBounds(editorMaskBounds))
+            ? {
+                format: TEMPLATE_GEOMETRY_V1_FORMAT,
+                version: 1,
+                viewBoxBounds,
+                printAreaBounds: editorMaskBounds,
+                maskShapeBounds: editorMaskBounds,
+                maskShapeMarkup: editorMaskMarkup,
+                templateSourceHash: hashString(productSvg || editorMaskMarkup || `${viewBoxBounds.width}x${viewBoxBounds.height}`)
+            }
+            : fallbackGeometry;
         const templateGeometry = normalizeTemplateGeometryV1(
-            options.templateGeometry || resolveTemplateGeometry(productSvg, { viewBoxBounds }),
-            { viewBoxBounds, printAreaBounds }
+            options.templateGeometry
+            || preferredGeometry
+            || fallbackGeometry,
+            {
+                viewBoxBounds,
+                printAreaBounds: editorMaskBounds
+            }
         );
         const elements = Array.from(editor?.elements || [])
             .map((elementData, index) => serializeElementToDesignDocument(editor, elementData, templateGeometry.printAreaBounds, index))
