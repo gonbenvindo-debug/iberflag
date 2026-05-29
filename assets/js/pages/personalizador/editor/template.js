@@ -139,23 +139,20 @@ Object.assign(DesignEditor.prototype, {
     configureCanvasFromSourceBounds(sourceBounds) {
         const canvasWidth = Math.max(1, Math.round(Number(sourceBounds?.width) || 800));
         const canvasHeight = Math.max(1, Math.round(Number(sourceBounds?.height) || 600));
-        const workspaceBounds = this.getInitialCanvasWrapperBounds?.({
-            x: 0,
-            y: 0,
-            width: canvasWidth,
-            height: canvasHeight
-        }) || {
-            x: 0,
-            y: 0,
-            width: canvasWidth,
-            height: canvasHeight
-        };
+        const sourceX = Number.isFinite(Number(sourceBounds?.x)) ? Number(sourceBounds.x) : 0;
+        const sourceY = Number.isFinite(Number(sourceBounds?.y)) ? Number(sourceBounds.y) : 0;
 
-        this.setCanvasViewBoxFromBounds?.(workspaceBounds);
+        // Canonical geometry must stay tied to the template SVG coordinate space.
+        this.setCanvasViewBoxFromBounds?.({
+            x: sourceX,
+            y: sourceY,
+            width: canvasWidth,
+            height: canvasHeight
+        });
 
         this.templateSourceBounds = {
-            x: 0,
-            y: 0,
+            x: sourceX,
+            y: sourceY,
             width: canvasWidth,
             height: canvasHeight
         };
@@ -408,32 +405,33 @@ Object.assign(DesignEditor.prototype, {
         }
 
         this.configureCanvasFromSourceBounds(sourceBounds);
-        // Fit the full SVG source box to the workspace height.
-        // The measured outline is useful for diagnostics, but it is too tight
-        // for sizing because it can inflate the rendered item and clip it.
-        const visibleBounds = this.getEditableBounds?.()
-            || this.getWorkspaceBounds?.()
-            || this.getCanvasBounds();
-        const preferredBounds = window.DesignEditorPrintAreaLayout.getPreferredPrintAreaBounds(
-            visibleBounds,
-            sourceBounds,
-            { heightRatio: 0.9 }
-        );
-        const contentBounds = preferredBounds.frameBounds;
-        this.printAreaBounds = contentBounds;
-        const { targetHeight: targetOutlineHeight, uniformScale, renderedWidth, renderedHeight, offsetX, offsetY } = preferredBounds;
+        const measuredBounds = (
+            outlineBounds &&
+            Number.isFinite(Number(outlineBounds.x)) &&
+            Number.isFinite(Number(outlineBounds.y)) &&
+            Number.isFinite(Number(outlineBounds.width)) &&
+            Number.isFinite(Number(outlineBounds.height)) &&
+            Number(outlineBounds.width) > 0 &&
+            Number(outlineBounds.height) > 0
+        )
+            ? {
+                x: Number(outlineBounds.x),
+                y: Number(outlineBounds.y),
+                width: Number(outlineBounds.width),
+                height: Number(outlineBounds.height)
+            }
+            : {
+                x: Number(sourceBounds.x) || 0,
+                y: Number(sourceBounds.y) || 0,
+                width: Number(sourceBounds.width) || 800,
+                height: Number(sourceBounds.height) || 600
+            };
+        this.printAreaBounds = measuredBounds;
 
         logTemplateDebug('print-area-geometry', {
             sourceBounds,
-            workspaceBounds: preferredBounds.workspaceBounds,
-            outlineBounds: preferredBounds.sourceBounds,
-            contentBounds,
-            targetOutlineHeight,
-            uniformScale,
-            renderedWidth,
-            renderedHeight,
-            offsetX,
-            offsetY,
+            outlineBounds: measuredBounds,
+            contentBounds: measuredBounds,
             areaElement: {
                 tag: String(areaElement.tagName || '').toLowerCase(),
                 id: areaElement.getAttribute?.('id') || '',
@@ -467,12 +465,12 @@ Object.assign(DesignEditor.prototype, {
         visualArea.removeAttribute('vector-effect');
         visualArea.setAttribute('opacity', '1');
         visualArea.setAttribute('pointer-events', 'none');
-        visualArea.setAttribute('transform', `translate(${offsetX} ${offsetY}) scale(${uniformScale} ${uniformScale})`);
+        visualArea.removeAttribute('transform');
 
-        this.printArea.setAttribute('x', String(contentBounds.x));
-        this.printArea.setAttribute('y', String(contentBounds.y));
-        this.printArea.setAttribute('width', String(contentBounds.width));
-        this.printArea.setAttribute('height', String(contentBounds.height));
+        this.printArea.setAttribute('x', String(measuredBounds.x));
+        this.printArea.setAttribute('y', String(measuredBounds.y));
+        this.printArea.setAttribute('width', String(measuredBounds.width));
+        this.printArea.setAttribute('height', String(measuredBounds.height));
 
         this.removePrintAreaBackground?.();
         this.canvas.appendChild(visualArea);

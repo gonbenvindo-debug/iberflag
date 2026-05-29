@@ -23,12 +23,17 @@
         if (!id || !svg) {
             return null;
         }
+        const explicitV3 = record?.designDocumentV3 || record?.design_document_v3 || null;
+        const explicitV2 = record?.designDocumentV2 || record?.design_document_v2 || null;
+        const designDocumentV3 = explicitV3 || window.DesignSvgStore?.unwrapDesignDocumentV3?.(explicitV2) || null;
+        const designDocumentV2 = explicitV2 || window.DesignSvgStore?.unwrapDesignDocumentV2?.(explicitV3) || null;
 
         return {
             id,
             svg,
             preview: String(record?.preview || record?.design_preview || '').trim() || '',
-            designDocumentV2: record?.designDocumentV2 || record?.design_document_v2 || null,
+            designDocumentV3,
+            designDocumentV2,
             createdAt: Number(record?.createdAt || Date.now()),
             updatedAt: Number(record?.updatedAt || Date.now()),
             productId: Number.isFinite(Number(record?.productId || record?.product_id))
@@ -109,6 +114,7 @@
                 designId: normalized.id,
                 designSvg: normalized.svg,
                 preview: normalized.preview,
+                designDocumentV3: normalized.designDocumentV3,
                 designDocumentV2: normalized.designDocumentV2,
                 productId: normalized.productId
             })
@@ -139,13 +145,18 @@
     }
 
     async function saveDesign(designId, svgMarkup, meta = {}) {
+        const documentV3 = meta.documentV3 && typeof meta.documentV3 === 'object'
+            ? meta.documentV3
+            : (meta.document && typeof meta.document === 'object' ? meta.document : null);
+        const documentV2 = meta.document && typeof meta.document === 'object'
+            ? meta.document
+            : (window.DesignSvgStore?.unwrapDesignDocumentV2?.(documentV3) || null);
         const record = normalizeDesignRecord({
             id: designId,
             svg: svgMarkup,
             preview: String(meta.preview || '').trim() || '',
-            designDocumentV2: meta.document && typeof meta.document === 'object'
-                ? meta.document
-                : null,
+            designDocumentV3: documentV3,
+            designDocumentV2: documentV2,
             createdAt: Number(meta.createdAt || Date.now()),
             updatedAt: Date.now(),
             productId: Number.isFinite(Number(meta.productId)) ? Number(meta.productId) : null
@@ -265,6 +276,9 @@
                     if (!next.designDocumentV2 && record.designDocumentV2) {
                         next.designDocumentV2 = record.designDocumentV2;
                     }
+                    if (!next.designDocumentV3 && record.designDocumentV3) {
+                        next.designDocumentV3 = record.designDocumentV3;
+                    }
                 }
             }
 
@@ -288,6 +302,7 @@
                 await saveDesign(designId, next.design, {
                     preview: next.designPreview || '',
                     productId: next.id || null,
+                    documentV3: next.designDocumentV3 || next.design_document_v3 || null,
                     document: next.designDocumentV2 || next.design_document_v2 || null
                 });
             }
@@ -308,4 +323,3 @@
         migrateLegacyCartItems
     };
 })(window);
-

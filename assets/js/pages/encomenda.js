@@ -563,13 +563,23 @@ function resolveOrderItemVisual(item, snapshot) {
         snapshot?.svgTemplate,
         snapshot?.svg_template
     ].find((value) => typeof value === 'string' && value.trim()) || '';
+    const designDocument = item?.design_document_v3
+        || item?.designDocumentV3
+        || item?.design_document_v2
+        || item?.designDocumentV2
+        || snapshot?.designDocumentV3
+        || snapshot?.design_document_v3
+        || snapshot?.designDocumentV2
+        || snapshot?.design_document_v2
+        || null;
 
     const normalizedPreviewUrl = (
-        designSvg
+        (designSvg || designDocument)
         && productSvgTemplate
-        && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
+        && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
     )
-        ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+        ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
+            designDocument,
             designSvg,
             productSvg: productSvgTemplate,
             fillRatio: 0.9,

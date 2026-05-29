@@ -2177,6 +2177,8 @@ function buildCheckoutRequestCart(items) {
         slug: String(item.slug || '').trim() || null,
         svgTemplate: String(item.svgTemplate || item.svg_template || '').trim() || null,
         design: typeof item.design === 'string' ? item.design : '',
+        designDocumentV3: item.designDocumentV3 || item.design_document_v3 || null,
+        designDocumentV2: item.designDocumentV2 || item.design_document_v2 || null,
         designPreview: typeof item.design === 'string' && item.design.trim() && typeof getCartItemImage === 'function'
             ? (getCartItemImage(item) || '')
             : (typeof item.designPreview === 'string' ? item.designPreview : ''),

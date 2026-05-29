@@ -606,11 +606,15 @@ Object.assign(DesignEditor.prototype, {
             sourceItem = hydrated[0] || sourceItem;
         }
 
-        if (targetIndex >= 0 && sourceItem && (sourceItem.designDocumentV2 || sourceItem.design_document_v2 || sourceItem.design)) {
+        if (targetIndex >= 0 && sourceItem && (sourceItem.designDocumentV3 || sourceItem.design_document_v3 || sourceItem.designDocumentV2 || sourceItem.design_document_v2 || sourceItem.design)) {
             try {
-                const designDocument = sourceItem.designDocumentV2 || sourceItem.design_document_v2 || null;
-                if (designDocument && window.DesignSvgStore?.importDesignDocumentV2IntoEditor) {
-                    window.DesignSvgStore.importDesignDocumentV2IntoEditor(this, designDocument);
+                const designDocument = sourceItem.designDocumentV3
+                    || sourceItem.design_document_v3
+                    || sourceItem.designDocumentV2
+                    || sourceItem.design_document_v2
+                    || null;
+                if (designDocument && window.DesignSvgStore?.importDesignDocumentToEditor) {
+                    window.DesignSvgStore.importDesignDocumentToEditor(this, designDocument);
                 } else {
                 const parser = new DOMParser();
                 const svgDoc = parser.parseFromString(sourceItem.design, 'image/svg+xml');
@@ -909,9 +913,10 @@ Object.assign(DesignEditor.prototype, {
             const trimmed = String(autosave).trim();
             if (trimmed.startsWith('{')) {
                 const parsed = JSON.parse(trimmed);
-                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
-                if (designDocument && window.DesignSvgStore?.importDesignDocumentV2IntoEditor) {
-                    const imported = window.DesignSvgStore.importDesignDocumentV2IntoEditor(this, designDocument, {
+                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV3?.(parsed)
+                    || window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
+                if (designDocument && window.DesignSvgStore?.importDesignDocumentToEditor) {
+                    const imported = window.DesignSvgStore.importDesignDocumentToEditor(this, designDocument, {
                         skipHistory: true
                     });
                     if (imported) {

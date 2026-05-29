@@ -24,6 +24,8 @@
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
     const DESIGN_DOCUMENT_V2_FORMAT = 'design-document-v2';
+    const DESIGN_DOCUMENT_V3_FORMAT = 'design-document-v3';
+    const DESIGN_COORDINATE_UNIT = 'template-svg-unit';
     const SUPPORTED_V2_SHAPES = new Set([
         'rectangle',
         'rounded',
@@ -682,10 +684,17 @@
 
         const normalizedFrame = normalizeFrameToBounds(frame, printAreaBounds);
         const rotationFromNode = parseRotationFromTransformValue(elementData.element.getAttribute?.('transform'));
+        const pivot = elementData?.pivot && typeof elementData.pivot === 'object'
+            ? {
+                x: roundNumber(toNumber(elementData.pivot.x, 0.5)),
+                y: roundNumber(toNumber(elementData.pivot.y, 0.5))
+            }
+            : { x: 0.5, y: 0.5 };
         const baseRecord = {
             id: String(elementData.id || elementData.element.dataset?.elementId || `element-${index + 1}`),
             type,
             frame: normalizedFrame,
+            pivot,
             rotationDeg: roundNumber(Number(elementData.rotation ?? rotationFromNode) || rotationFromNode || 0, 3),
             flipX: Boolean(elementData.flipX),
             flipY: Boolean(elementData.flipY),
@@ -800,6 +809,102 @@
         };
     }
 
+    function convertDesignDocumentV2ToV3(designDocumentV2) {
+        const source = designDocumentV2 && typeof designDocumentV2 === 'object'
+            ? designDocumentV2
+            : null;
+        if (!source) {
+            return null;
+        }
+
+        const printAreaRef = normalizeBounds(source.printAreaRef, DEFAULT_SIZE);
+        const viewBoxRef = normalizeBounds(source.viewBox || source.viewBoxRef || printAreaRef, printAreaRef);
+        const elements = Array.isArray(source.elements)
+            ? source.elements.map((element) => {
+                if (!element || typeof element !== 'object') {
+                    return element;
+                }
+
+                const pivotCandidate = element.pivot && typeof element.pivot === 'object'
+                    ? {
+                        x: roundNumber(toNumber(element.pivot.x, 0.5)),
+                        y: roundNumber(toNumber(element.pivot.y, 0.5))
+                    }
+                    : { x: 0.5, y: 0.5 };
+                return {
+                    ...element,
+                    pivot: pivotCandidate
+                };
+            })
+            : [];
+
+        return {
+            format: DESIGN_DOCUMENT_V3_FORMAT,
+            version: 3,
+            coordinateSpace: {
+                unit: DESIGN_COORDINATE_UNIT
+            },
+            productId: source?.productId ? String(source.productId) : null,
+            selectedBaseId: Number.isFinite(Number(source?.selectedBaseId)) ? Number(source.selectedBaseId) : null,
+            viewBoxRef: {
+                x: roundNumber(viewBoxRef.x),
+                y: roundNumber(viewBoxRef.y),
+                width: roundNumber(viewBoxRef.width),
+                height: roundNumber(viewBoxRef.height)
+            },
+            // Keep legacy key for compatibility with older readers.
+            viewBox: {
+                x: roundNumber(viewBoxRef.x),
+                y: roundNumber(viewBoxRef.y),
+                width: roundNumber(viewBoxRef.width),
+                height: roundNumber(viewBoxRef.height)
+            },
+            printAreaRef: {
+                x: roundNumber(printAreaRef.x),
+                y: roundNumber(printAreaRef.y),
+                width: roundNumber(printAreaRef.width),
+                height: roundNumber(printAreaRef.height)
+            },
+            elements
+        };
+    }
+
+    function convertDesignDocumentV3ToV2(designDocumentV3) {
+        const source = designDocumentV3 && typeof designDocumentV3 === 'object'
+            ? designDocumentV3
+            : null;
+        if (!source) {
+            return null;
+        }
+
+        const printAreaRef = normalizeBounds(source.printAreaRef, DEFAULT_SIZE);
+        const viewBox = normalizeBounds(source.viewBoxRef || source.viewBox || printAreaRef, printAreaRef);
+        return {
+            format: DESIGN_DOCUMENT_V2_FORMAT,
+            version: 2,
+            productId: source?.productId ? String(source.productId) : null,
+            selectedBaseId: Number.isFinite(Number(source?.selectedBaseId)) ? Number(source.selectedBaseId) : null,
+            viewBox: {
+                x: roundNumber(viewBox.x),
+                y: roundNumber(viewBox.y),
+                width: roundNumber(viewBox.width),
+                height: roundNumber(viewBox.height)
+            },
+            printAreaRef: {
+                x: roundNumber(printAreaRef.x),
+                y: roundNumber(printAreaRef.y),
+                width: roundNumber(printAreaRef.width),
+                height: roundNumber(printAreaRef.height)
+            },
+            elements: Array.isArray(source.elements) ? source.elements : []
+        };
+    }
+
+    function serializeDesignDocumentV3(editor, options = {}) {
+        const v2 = serializeDesignDocumentV2(editor, options);
+        return convertDesignDocumentV2ToV3(v2);
+    }
+
     function unwrapDesignDocumentV2(input) {
         if (!input) {
             return null;
@@ -823,6 +928,10 @@
             return input;
         }
 
+        if (input.format === DESIGN_DOCUMENT_V3_FORMAT && Array.isArray(input.elements)) {
+            return convertDesignDocumentV3ToV2(input);
+        }
+
         if (input.design_document_v2) {
             return unwrapDesignDocumentV2(input.design_document_v2);
         }
@@ -831,7 +940,50 @@
             return unwrapDesignDocumentV2(input.designDocumentV2);
         }
 
+        if (input.design_document_v3) {
+            return unwrapDesignDocumentV2(input.design_document_v3);
+        }
+
+        if (input.designDocumentV3) {
+            return unwrapDesignDocumentV2(input.designDocumentV3);
+        }
+
         return null;
+    }
+
+    function unwrapDesignDocumentV3(input) {
+        if (!input) {
+            return null;
+        }
+
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (!trimmed) return null;
+            try {
+                return unwrapDesignDocumentV3(JSON.parse(trimmed));
+            } catch (error) {
+                return null;
+            }
+        }
+
+        if (typeof input !== 'object') {
+            return null;
+        }
+
+        if (input.format === DESIGN_DOCUMENT_V3_FORMAT && Array.isArray(input.elements)) {
+            return input;
+        }
+
+        if (input.design_document_v3) {
+            return unwrapDesignDocumentV3(input.design_document_v3);
+        }
+
+        if (input.designDocumentV3) {
+            return unwrapDesignDocumentV3(input.designDocumentV3);
+        }
+
+        const v2 = unwrapDesignDocumentV2(input);
+        return v2 ? convertDesignDocumentV2ToV3(v2) : null;
     }
 
     function getRenderedTextValue(rawText, capsLock) {
@@ -839,14 +991,20 @@
         return capsLock ? content.toLocaleUpperCase() : content;
     }
 
-    function buildDesignElementTransform(bounds, rotationDeg = 0, flipX = false, flipY = false) {
+    function buildDesignElementTransform(bounds, rotationDeg = 0, flipX = false, flipY = false, pivot = null) {
         const safeRotation = Number(rotationDeg) || 0;
         if (!safeRotation && !flipX && !flipY) {
             return '';
         }
 
-        const centerX = bounds.x + (bounds.width / 2);
-        const centerY = bounds.y + (bounds.height / 2);
+        const normalizedPivot = pivot && typeof pivot === 'object'
+            ? {
+                x: Math.min(1, Math.max(0, toNumber(pivot.x, 0.5))),
+                y: Math.min(1, Math.max(0, toNumber(pivot.y, 0.5)))
+            }
+            : { x: 0.5, y: 0.5 };
+        const centerX = bounds.x + (bounds.width * normalizedPivot.x);
+        const centerY = bounds.y + (bounds.height * normalizedPivot.y);
         const scaleX = flipX ? -1 : 1;
         const scaleY = flipY ? -1 : 1;
 
@@ -900,7 +1058,7 @@
             });
         }
 
-        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY, element.pivot);
         if (transform) {
             textNode.setAttribute('transform', transform);
         }
@@ -925,7 +1083,7 @@
         imageNode.setAttribute('opacity', String(toNumber(element.opacity, 1)));
         imageNode.setAttribute('preserveAspectRatio', objectFit === 'contain' ? 'xMidYMid meet' : objectFit === 'fill' ? 'none' : 'xMidYMid slice');
 
-        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY, element.pivot);
         if (transform) {
             imageNode.setAttribute('transform', transform);
         }
@@ -1009,7 +1167,7 @@
         node.setAttribute('stroke', String(element.stroke || 'none'));
         node.setAttribute('stroke-width', String(toNumber(element.strokeWidth, 0)));
 
-        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY);
+        const transform = buildDesignElementTransform(frame, element.rotationDeg, element.flipX, element.flipY, element.pivot);
         if (transform) {
             node.setAttribute('transform', transform);
         }
@@ -1089,15 +1247,21 @@
         return normalizeBounds(designDocument?.viewBox || designDocument?.printAreaRef, printAreaBounds);
     }
 
-    function renderDesignDocumentV2ToSvg(designDocumentInput, productContext = {}) {
-        const designDocument = unwrapDesignDocumentV2(designDocumentInput);
+    function renderDesignDocumentToSvg(designDocumentInput, productContext = {}) {
+        const designDocument = unwrapDesignDocumentV3(designDocumentInput);
         if (!designDocument) {
             return '';
         }
 
         const fallbackPrintArea = normalizeBounds(designDocument.printAreaRef, DEFAULT_SIZE);
         const printAreaBounds = normalizeBounds(productContext.printAreaBounds || designDocument.printAreaRef, fallbackPrintArea);
-        const viewBoxBounds = resolveViewBoxBoundsForDocument(designDocument, productContext, printAreaBounds);
+        const viewBoxBounds = normalizeBounds(
+            productContext.viewBoxBounds
+            || designDocument.viewBoxRef
+            || designDocument.viewBox
+            || resolveViewBoxBoundsForDocument(designDocument, productContext, printAreaBounds),
+            printAreaBounds
+        );
         const maskSource = resolveMaskShapeSource(productContext, printAreaBounds);
         const svg = document.createElementNS(SVG_NS, 'svg');
         const defs = document.createElementNS(SVG_NS, 'defs');
@@ -1108,8 +1272,9 @@
         svg.setAttribute('viewBox', `${viewBoxBounds.x} ${viewBoxBounds.y} ${viewBoxBounds.width} ${viewBoxBounds.height}`);
         svg.setAttribute('width', String(viewBoxBounds.width));
         svg.setAttribute('height', String(viewBoxBounds.height));
-        svg.setAttribute('preserveAspectRatio', 'none');
-        svg.setAttribute('data-design-document-format', DESIGN_DOCUMENT_V2_FORMAT);
+        svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+        svg.setAttribute('data-design-document-format', DESIGN_DOCUMENT_V3_FORMAT);
+        svg.setAttribute('data-coordinate-unit', DESIGN_COORDINATE_UNIT);
         svg.setAttribute('data-print-area-bounds', `${printAreaBounds.x} ${printAreaBounds.y} ${printAreaBounds.width} ${printAreaBounds.height}`);
 
         clipPath.setAttribute('id', clipPathId);
@@ -1146,6 +1311,15 @@
         return new XMLSerializer().serializeToString(svg);
     }
 
+    function renderDesignDocumentV2ToSvg(designDocumentInput, productContext = {}) {
+        const v3 = unwrapDesignDocumentV3(designDocumentInput);
+        if (v3) {
+            return renderDesignDocumentToSvg(v3, productContext);
+        }
+
+        return '';
+    }
+
     function serializeEditorToSvg(editor, options = {}) {
         const canvas = editor?.canvas || editor;
         if (!canvas) {
@@ -1154,9 +1328,9 @@
 
         const useDesignDocument = options?.forceLiveSnapshot !== true;
         if (useDesignDocument) {
-            const designDocument = serializeDesignDocumentV2(editor, options);
+            const designDocument = serializeDesignDocumentV3(editor, options);
             if (designDocument) {
-                const rendered = renderDesignDocumentV2ToSvg(designDocument, {
+                const rendered = renderDesignDocumentToSvg(designDocument, {
                     productSvg: editor?.currentProduct?.svg_template || '',
                     viewBoxBounds: getCanvasViewBoxBounds(editor, options),
                     printAreaBounds: getEditorPrintAreaBounds(editor),
@@ -2025,7 +2199,7 @@
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
-        const normalizedDocument = unwrapDesignDocumentV2(designDocument || designSvg);
+        const normalizedDocument = unwrapDesignDocumentV3(designDocument || designSvg);
         if (normalizedDocument) {
             return buildMaskedProductPreview({
                 designDocument: normalizedDocument,
@@ -2178,6 +2352,44 @@
         return markup ? toDataUrlFromSvgMarkup(markup) : '';
     }
 
+    function buildCanonicalProductPreviewDataUrl(options = {}) {
+        const designDocument = unwrapDesignDocumentV3(
+            options.designDocument
+            || options.designDocumentV3
+            || options.design_document_v3
+            || options.designDocumentV2
+            || options.design_document_v2
+            || null
+        );
+        const designSvg = typeof options.designSvg === 'string' ? options.designSvg : '';
+        const productSvg = typeof options.productSvg === 'string' ? options.productSvg : (typeof options.svgTemplate === 'string' ? options.svgTemplate : '');
+
+        const normalizedPreview = buildNormalizedProductPreviewDataUrl({
+            designDocument,
+            designSvg,
+            productSvg,
+            fillRatio: Number.isFinite(Number(options.fillRatio)) ? Number(options.fillRatio) : 1,
+            includeOutline: options.includeOutline === true,
+            backgroundColor: options.backgroundColor || 'transparent'
+        });
+
+        if (typeof normalizedPreview === 'string' && normalizedPreview.trim()) {
+            return normalizedPreview;
+        }
+
+        if (designSvg.trim()) {
+            return toDataUrlFromSvgMarkup(designSvg);
+        }
+
+        const renderedSvg = designDocument
+            ? renderDesignDocumentToSvg(designDocument, {
+                productSvg,
+                viewBoxBounds: designDocument.viewBoxRef || designDocument.viewBox || null
+            })
+            : '';
+        return renderedSvg ? toDataUrlFromSvgMarkup(renderedSvg) : '';
+    }
+
     function buildMaskedProductPreview({
         designDocument,
         productSvg,
@@ -2185,7 +2397,7 @@
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
-        const normalizedDocument = unwrapDesignDocumentV2(designDocument);
+        const normalizedDocument = unwrapDesignDocumentV3(designDocument);
         if (!normalizedDocument) {
             return '';
         }
@@ -2426,6 +2638,12 @@
         const rotation = toNumber(element?.rotationDeg, 0);
         const flipX = Boolean(element?.flipX);
         const flipY = Boolean(element?.flipY);
+        const pivot = element?.pivot && typeof element.pivot === 'object'
+            ? {
+                x: roundNumber(toNumber(element.pivot.x, 0.5)),
+                y: roundNumber(toNumber(element.pivot.y, 0.5))
+            }
+            : { x: 0.5, y: 0.5 };
         const type = String(element?.type || '').toLowerCase();
 
         if (type === 'text') {
@@ -2440,6 +2658,7 @@
                 y: frame.y + (frame.height * toNumber(anchorOffset.yRatio, 1)),
                 width: frame.width,
                 height: frame.height,
+                pivot,
                 rotation,
                 flipX,
                 flipY,
@@ -2465,6 +2684,7 @@
                 y: frame.y,
                 width: frame.width,
                 height: frame.height,
+                pivot,
                 rotation,
                 flipX,
                 flipY,
@@ -2493,6 +2713,7 @@
                 y: frame.y,
                 width: frame.width,
                 height: frame.height,
+                pivot,
                 rotation,
                 flipX,
                 flipY,
@@ -2506,7 +2727,7 @@
     }
 
     function importDesignDocumentV2IntoEditor(editor, designDocumentInput, options = {}) {
-        const designDocument = unwrapDesignDocumentV2(designDocumentInput);
+        const designDocument = unwrapDesignDocumentV3(designDocumentInput);
         if (!editor?.canvas || !designDocument) {
             return false;
         }
@@ -2530,6 +2751,7 @@
                     skipSelection: true
                 });
                 if (created) {
+                    created.pivot = templateData.pivot || { x: 0.5, y: 0.5 };
                     created.flipX = Boolean(templateData.flipX);
                     created.flipY = Boolean(templateData.flipY);
                     editor.syncElementMetadata?.(created);
@@ -2552,25 +2774,36 @@
         return true;
     }
 
+    function importDesignDocumentToEditor(editor, designDocumentInput, options = {}) {
+        return importDesignDocumentV2IntoEditor(editor, designDocumentInput, options);
+    }
+
     window.DesignSvgStore = {
         DEFAULT_SIZE,
         DESIGN_DOCUMENT_V2_FORMAT,
+        DESIGN_DOCUMENT_V3_FORMAT,
+        DESIGN_COORDINATE_UNIT,
         escapeXml,
         normalizeTemplateElement,
         buildTemplateSvgFromElements,
         getSvgAspectRatio,
         serializeDesignDocumentV2,
+        serializeDesignDocumentV3,
+        renderDesignDocumentToSvg,
         renderDesignDocumentV2ToSvg,
         buildMaskedProductPreview,
         buildMaskedExportPreviewDataUrl,
         buildNormalizedProductPreviewSvg,
         buildNormalizedProductPreviewDataUrl,
+        buildCanonicalProductPreviewDataUrl,
         buildFramedPreviewSvgMarkup,
         buildPreviewSvgMarkup,
         serializeEditorToSvg,
         extractTemplateSvg,
         importSvgIntoEditor,
+        importDesignDocumentToEditor,
         importDesignDocumentV2IntoEditor,
-        unwrapDesignDocumentV2
+        unwrapDesignDocumentV2,
+        unwrapDesignDocumentV3
     };
 }());

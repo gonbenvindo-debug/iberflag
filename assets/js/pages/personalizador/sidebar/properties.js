@@ -1449,7 +1449,7 @@ Object.assign(DesignEditor.prototype, {
         const viewBoxHeight = Math.max(1, Number(viewBox.height) || 600);
         // Wrapper deve ocupar todo o stage; por iss? usamos o aspeto do próprio stage.
         const stageAspectRatio = availableWidth / Math.max(1, availableHeight);
-        const canvasAspectRatio = stageAspectRatio;
+        const canvasAspectRatio = viewBoxWidth / Math.max(1, viewBoxHeight);
 
         if (!availableWidth || !availableHeight) {
             if (!this.initialCanvasSize) {
@@ -1792,13 +1792,15 @@ Object.assign(DesignEditor.prototype, {
     
     autoSave() {
         const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
-        const designDocument = this.getDesignDocumentV2?.() || null;
+        const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
+        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
         const svgDesign = this.getDesignSVG();
         const payload = {
-            format: window.DesignSvgStore?.DESIGN_DOCUMENT_V2_FORMAT || 'design-document-v2',
+            format: window.DesignSvgStore?.DESIGN_DOCUMENT_V3_FORMAT || 'design-document-v3',
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
-            design_document_v2: designDocument,
+            design_document_v3: designDocument,
+            design_document_v2: legacyDesignDocumentV2,
             design_svg: svgDesign
         };
         const compactDesign = JSON.stringify(payload);

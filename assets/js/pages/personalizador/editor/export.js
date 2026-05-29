@@ -352,12 +352,12 @@ Object.assign(DesignEditor.prototype, {
     },
 
     getDesignSVG(options = {}) {
-        const preferLiveSnapshot = options?.preferLiveSnapshot !== false;
+        const preferLiveSnapshot = options?.preferLiveSnapshot === true;
 
         if (!preferLiveSnapshot) {
-            const designDocument = this.getDesignDocumentV2?.();
-            if (designDocument && window.DesignSvgStore?.renderDesignDocumentV2ToSvg) {
-                const rendered = window.DesignSvgStore.renderDesignDocumentV2ToSvg(designDocument, {
+            const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.();
+            if (designDocument && window.DesignSvgStore?.renderDesignDocumentToSvg) {
+                const rendered = window.DesignSvgStore.renderDesignDocumentToSvg(designDocument, {
                     productSvg: this.currentProduct?.svg_template || '',
                     viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
                     maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
@@ -423,11 +423,26 @@ Object.assign(DesignEditor.prototype, {
         return null;
     },
 
+    getDesignDocumentV3() {
+        if (window.DesignSvgStore?.serializeDesignDocumentV3) {
+            return window.DesignSvgStore.serializeDesignDocumentV3(this);
+        }
+
+        if (window.DesignSvgStore?.serializeDesignDocumentV2) {
+            const legacy = window.DesignSvgStore.serializeDesignDocumentV2(this);
+            return window.DesignSvgStore?.unwrapDesignDocumentV3?.(legacy) || legacy;
+        }
+
+        return null;
+    },
+
     // ===== ADD TO CART =====
     async addToCart(designOverride = null, options = {}) {
         const designDocument = options?.designDocument
+            || this.getDesignDocumentV3?.()
             || this.getDesignDocumentV2?.()
             || null;
+        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
@@ -466,9 +481,10 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
-            designDocumentV2: designDocument,
+            designDocumentV3: designDocument,
+            designDocumentV2: legacyDesignDocumentV2,
             designPreview: null,
-            designPreviewVersion: 4,
+            designPreviewVersion: 5,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
@@ -502,7 +518,8 @@ Object.assign(DesignEditor.prototype, {
             await window.CartAssetStore.saveDesign(designId, design, {
                 productId: this.currentProduct?.id,
                 preview: cartItem.designPreview,
-                document: designDocument
+                document: legacyDesignDocumentV2,
+                documentV3: designDocument
             });
         }
 

@@ -20,7 +20,7 @@ window.supabaseClient = supabaseClient;
 // ===== CART MANAGEMENT =====
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
-var CART_PREVIEW_VERSION = 4;
+var CART_PREVIEW_VERSION = 5;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -880,6 +880,8 @@ function normalizeCartItem(item) {
         design: item.design || null,
         designPreview: item.designPreview || null,
         designPreviewVersion: Number(item.designPreviewVersion || 0) || 0,
+        designDocumentV3: item.designDocumentV3 || item.design_document_v3 || null,
+        designDocumentV2: item.designDocumentV2 || item.design_document_v2 || null,
         svgTemplate: item.svgTemplate || item.svg_template || fallbackProduct?.svg_template || null,
         slug: item.slug || fallbackProduct?.slug || null
     };
@@ -946,21 +948,24 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         : '';
     const fallbackPreview = designSource ? buildSvgDataUrl(designSource) : null;
 
+    const designDocument = item?.designDocumentV3
+        || item?.design_document_v3
+        || item?.designDocumentV2
+        || item?.design_document_v2
+        || null;
+    const canonicalPreview = window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl?.({
+        designDocument,
+        designSvg: designSource,
+        productSvg: String(item?.svgTemplate || item?.svg_template || '').trim(),
+        fillRatio: 1,
+        includeOutline: false,
+        backgroundColor: 'transparent'
+    }) || '';
+    if (typeof canonicalPreview === 'string' && canonicalPreview.trim()) {
+        return canonicalPreview;
+    }
+
     if (designSource) {
-        const maskedExportPreview = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(designSource, { x: 0, y: 0, width: 800, height: 600 });
-        if (typeof maskedExportPreview === 'string' && maskedExportPreview.trim()) {
-            return maskedExportPreview;
-        }
-
-        const framedPreviewMarkup = window.DesignSvgStore?.buildFramedPreviewSvgMarkup?.(designSource, {
-            backgroundColor: 'transparent',
-            contentFillRatio: 0.9,
-            includeOutline: false
-        });
-        if (typeof framedPreviewMarkup === 'string' && framedPreviewMarkup.includes('<svg')) {
-            return buildSvgDataUrl(framedPreviewMarkup);
-        }
-
         return buildSvgDataUrl(designSource);
     }
 
@@ -1202,6 +1207,7 @@ function compactCartItems(items) {
             design: item?.design ? String(item.design).trim() : null,
             designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
             designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
+            designDocumentV3: item?.designDocumentV3 || item?.design_document_v3 || null,
             designDocumentV2: item?.designDocumentV2 || item?.design_document_v2 || null,
             slug: item?.slug ? String(item.slug).trim() : null,
             svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),

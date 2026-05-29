@@ -698,11 +698,11 @@ Object.assign(DesignEditor.prototype, {
     buildCartStepsPreviewDataUrl(designDocument = null, designSvgMarkup = '') {
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
-            : this.getDesignSVG({ preferLiveSnapshot: true });
+            : this.getDesignSVG();
 
-        const normalizedPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
-            ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
-                designDocument: designDocument || this.getDesignDocumentV2?.() || null,
+        const normalizedPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
+            ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
+                designDocument: designDocument || this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null,
                 designSvg: rawDesignSvg,
                 productSvg: this.currentProduct.svg_template,
                 fillRatio: 1,
@@ -714,8 +714,8 @@ Object.assign(DesignEditor.prototype, {
             return normalizedPreview;
         }
 
-        const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
-        return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+        const previewSvg = rawDesignSvg || this.generateCartPreviewSVG(rawDesignSvg);
+        return previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '';
     },
 
     renderCartStepsBaseOptions() {
@@ -788,8 +788,8 @@ Object.assign(DesignEditor.prototype, {
             ? document.activeElement
             : null;
         this.ensureSelectedBase();
-        this.cartStepsDesignDocumentSnapshot = this.getDesignDocumentV2?.() || null;
-        this.cartStepsDesignSnapshot = this.getDesignSVG({ preferLiveSnapshot: true });
+        this.cartStepsDesignDocumentSnapshot = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
+        this.cartStepsDesignSnapshot = this.getDesignSVG();
         previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignDocumentSnapshot, this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 
@@ -876,6 +876,7 @@ Object.assign(DesignEditor.prototype, {
                 designId: item?.designId ? String(item.designId).trim() : null,
                 designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
                 designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
+                designDocumentV3: item?.designDocumentV3 || item?.design_document_v3 || null,
                 designDocumentV2: item?.designDocumentV2 || item?.design_document_v2 || null,
                 slug: item?.slug ? String(item.slug).trim() : null,
                 svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
@@ -966,10 +967,11 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const designDocument = this.getDesignDocumentV2?.() || null;
+        const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
+        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
         const designSvg = this.getDesignSVG();
-        const designPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
-            ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+        const designPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
+            ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
                 designDocument,
                 designSvg,
                 productSvg: this.currentProduct.svg_template,
@@ -1003,8 +1005,9 @@ Object.assign(DesignEditor.prototype, {
             categoria: templateCategory,
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
             elementos: {
-                format: window.DesignSvgStore?.DESIGN_DOCUMENT_V2_FORMAT || 'design-document-v2',
-                design_document_v2: designDocument,
+                format: window.DesignSvgStore?.DESIGN_DOCUMENT_V3_FORMAT || 'design-document-v3',
+                design_document_v3: designDocument,
+                design_document_v2: legacyDesignDocumentV2,
                 svg: designSvg,
                 design_svg: designSvg,
                 elements: serializableElements
