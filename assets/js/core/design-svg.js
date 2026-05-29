@@ -20,7 +20,7 @@
     ]);
     const PREVIEW_MARKUP_CACHE = new Map();
     const PREVIEW_MARKUP_CACHE_LIMIT = 200;
-    const PREVIEW_MARKUP_CACHE_VERSION = 'outline-v7';
+    const PREVIEW_MARKUP_CACHE_VERSION = 'vector-v8';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
     const DESIGN_DOCUMENT_V2_FORMAT = 'design-document-v2';
@@ -2021,6 +2021,40 @@
         return new XMLSerializer().serializeToString(previewSvg);
     }
 
+    function appendSvgRootDefs(targetDefs, sourceRoot) {
+        if (!targetDefs || !sourceRoot) {
+            return;
+        }
+
+        const sourceDefs = sourceRoot.querySelector?.('defs');
+        if (!sourceDefs) {
+            return;
+        }
+
+        Array.from(sourceDefs.children || []).forEach((child) => {
+            targetDefs.appendChild(document.importNode(child, true));
+        });
+    }
+
+    function appendSvgRootGraphicChildren(targetGroup, sourceRoot) {
+        if (!targetGroup || !sourceRoot) {
+            return false;
+        }
+
+        let appended = false;
+        Array.from(sourceRoot.children || []).forEach((child) => {
+            const tagName = String(child.tagName || '').toLowerCase();
+            if (tagName === 'defs' || tagName === 'title' || tagName === 'desc' || tagName === 'metadata') {
+                return;
+            }
+
+            targetGroup.appendChild(document.importNode(child, true));
+            appended = true;
+        });
+
+        return appended;
+    }
+
     function buildMaskedExportPreviewDataUrl(designSvg, fallback = DEFAULT_SIZE) {
         const previewMarkup = extractTemplateSvg(designSvg, {});
         const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
@@ -2304,28 +2338,16 @@
         maskedWhiteBase.setAttribute('mask', `url(#${maskId})`);
         wrapper.appendChild(maskedWhiteBase);
 
-        if (previewRoot && !isPreClippedPreview) {
-            const previewDefs = previewRoot.querySelector('defs');
-            if (previewDefs) {
-                Array.from(previewDefs.children || []).forEach((child) => {
-                    defs.appendChild(document.importNode(child, true));
-                });
-            }
-
+        if (previewRoot) {
+            appendSvgRootDefs(defs, previewRoot);
             const previewGroup = document.createElementNS(SVG_NS, 'g');
             previewGroup.setAttribute('mask', `url(#${maskId})`);
             previewGroup.setAttribute('transform', previewTransform);
 
-            Array.from(previewRoot.children || []).forEach((child) => {
-                const tagName = String(child.tagName || '').toLowerCase();
-                if (tagName === 'defs' || tagName === 'title' || tagName === 'desc') {
-                    return;
-                }
-                previewGroup.appendChild(document.importNode(child, true));
-            });
-
-            wrapper.appendChild(previewGroup);
-        } else {
+            if (appendSvgRootGraphicChildren(previewGroup, previewRoot)) {
+                wrapper.appendChild(previewGroup);
+            }
+        } else if (previewHref) {
             const image = document.createElementNS(SVG_NS, 'image');
             image.setAttribute('href', previewHref);
             image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
@@ -2352,7 +2374,7 @@
         return markup ? toDataUrlFromSvgMarkup(markup) : '';
     }
 
-    function buildCanonicalProductPreviewDataUrl(options = {}) {
+    function buildCanonicalProductPreviewSvg(options = {}) {
         const designDocument = unwrapDesignDocumentV3(
             options.designDocument
             || options.designDocumentV3
@@ -2364,7 +2386,7 @@
         const designSvg = typeof options.designSvg === 'string' ? options.designSvg : '';
         const productSvg = typeof options.productSvg === 'string' ? options.productSvg : (typeof options.svgTemplate === 'string' ? options.svgTemplate : '');
 
-        const normalizedPreview = buildNormalizedProductPreviewDataUrl({
+        const normalizedPreview = buildNormalizedProductPreviewSvg({
             designDocument,
             designSvg,
             productSvg,
@@ -2377,17 +2399,27 @@
             return normalizedPreview;
         }
 
-        if (designSvg.trim()) {
-            return toDataUrlFromSvgMarkup(designSvg);
-        }
-
         const renderedSvg = designDocument
             ? renderDesignDocumentToSvg(designDocument, {
                 productSvg,
                 viewBoxBounds: designDocument.viewBoxRef || designDocument.viewBox || null
             })
             : '';
-        return renderedSvg ? toDataUrlFromSvgMarkup(renderedSvg) : '';
+        if (typeof renderedSvg === 'string' && renderedSvg.trim()) {
+            return renderedSvg;
+        }
+
+        const extractedSvg = extractTemplateSvg(designSvg, {});
+        if (typeof extractedSvg === 'string' && extractedSvg.trim()) {
+            return extractedSvg;
+        }
+
+        return typeof designSvg === 'string' && designSvg.trim() ? designSvg.trim() : '';
+    }
+
+    function buildCanonicalProductPreviewDataUrl(options = {}) {
+        const markup = buildCanonicalProductPreviewSvg(options);
+        return markup ? toDataUrlFromSvgMarkup(markup) : '';
     }
 
     function buildMaskedProductPreview({
@@ -2795,6 +2827,7 @@
         buildMaskedExportPreviewDataUrl,
         buildNormalizedProductPreviewSvg,
         buildNormalizedProductPreviewDataUrl,
+        buildCanonicalProductPreviewSvg,
         buildCanonicalProductPreviewDataUrl,
         buildFramedPreviewSvgMarkup,
         buildPreviewSvgMarkup,

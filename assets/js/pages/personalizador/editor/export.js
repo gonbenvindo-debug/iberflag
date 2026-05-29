@@ -484,7 +484,7 @@ Object.assign(DesignEditor.prototype, {
             designDocumentV3: designDocument,
             designDocumentV2: legacyDesignDocumentV2,
             designPreview: null,
-            designPreviewVersion: 5,
+            designPreviewVersion: Number(window.CART_PREVIEW_VERSION || 6) || 6,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
