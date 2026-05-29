@@ -499,6 +499,7 @@ Object.assign(DesignEditor.prototype, {
         handlesContainer.classList.remove('hidden');
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
+        this.renderHandleOutlineOverlay?.(handlesContainer, { tl, tr, br, bl });
 
         const forceCornerOnly = elementData.type === 'text' || this.isAspectRatioLockedElement?.(elementData);
         const handlePositions = forceCornerOnly
@@ -561,12 +562,57 @@ Object.assign(DesignEditor.prototype, {
         handlesContainer.appendChild(rotateHandle);
     },
 
+    renderHandleOutlineOverlay(handlesContainer, points) {
+        if (!handlesContainer || !points) return;
+
+        const svgNS = 'http://www.w3.org/2000/svg';
+        const viewportWidth = Math.max(1, window.innerWidth || document.documentElement?.clientWidth || 1);
+        const viewportHeight = Math.max(1, window.innerHeight || document.documentElement?.clientHeight || 1);
+
+        const overlay = document.createElementNS(svgNS, 'svg');
+        overlay.setAttribute('class', 'resize-handles-outline-svg');
+        overlay.setAttribute('width', '100%');
+        overlay.setAttribute('height', '100%');
+        overlay.setAttribute('viewBox', `0 0 ${viewportWidth} ${viewportHeight}`);
+        overlay.setAttribute('preserveAspectRatio', 'none');
+        overlay.setAttribute('aria-hidden', 'true');
+        overlay.style.position = 'fixed';
+        overlay.style.inset = '0';
+        overlay.style.pointerEvents = 'none';
+        overlay.style.overflow = 'visible';
+        overlay.style.zIndex = '0';
+
+        const outline = document.createElementNS(svgNS, 'polyline');
+        outline.setAttribute('class', 'resize-handles-outline-polyline');
+        outline.setAttribute('fill', 'none');
+        outline.setAttribute('stroke', '#93c5fd');
+        outline.setAttribute('stroke-width', '1.5');
+        outline.setAttribute('vector-effect', 'non-scaling-stroke');
+        outline.setAttribute('stroke-linejoin', 'round');
+        outline.setAttribute('stroke-linecap', 'round');
+
+        const pointsList = [points.tl, points.tr, points.br, points.bl, points.tl]
+            .map((p) => `${Number(p.x) || 0},${Number(p.y) || 0}`)
+            .join(' ');
+        outline.setAttribute('points', pointsList);
+
+        overlay.appendChild(outline);
+        handlesContainer.appendChild(overlay);
+    },
+
     updateResizeHandlesPosition(elementData) {
         const handlesContainer = document.getElementById('resize-handles');
         if (!handlesContainer || handlesContainer.classList.contains('hidden')) return;
         if (!elementData || !elementData.element) return;
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
+        const outlinePolyline = handlesContainer.querySelector('.resize-handles-outline-polyline');
+        if (outlinePolyline) {
+            outlinePolyline.setAttribute(
+                'points',
+                [tl, tr, br, bl, tl].map((p) => `${Number(p.x) || 0},${Number(p.y) || 0}`).join(' ')
+            );
+        }
 
         const forceCornerOnly = elementData.type === 'text' || this.isAspectRatioLockedElement?.(elementData);
         const handlePositions = forceCornerOnly
