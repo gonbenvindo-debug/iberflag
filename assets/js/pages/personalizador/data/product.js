@@ -454,12 +454,12 @@ Object.assign(DesignEditor.prototype, {
             }
 
             this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG(), {
-                designDocument: this.cartStepsDesignDocumentSnapshot || this.getDesignDocumentV2?.() || null
+                designScene: this.cartStepsDesignSceneSnapshot || this.getDesignSceneV1?.() || null
             });
         });
         confirmBtn.addEventListener('click', () => {
             this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG(), {
-                designDocument: this.cartStepsDesignDocumentSnapshot || this.getDesignDocumentV2?.() || null
+                designScene: this.cartStepsDesignSceneSnapshot || this.getDesignSceneV1?.() || null
             });
         });
 
@@ -695,27 +695,25 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
-    buildCartStepsPreviewDataUrl(designDocument = null, designSvgMarkup = '') {
-        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
-            ? designSvgMarkup
-            : this.getDesignSVG();
-
-        const normalizedPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
-            ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
-                designDocument: designDocument || this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null,
-                designSvg: rawDesignSvg,
-                productSvg: this.currentProduct.svg_template,
+    buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
+        const renderEngine = window.DesignRenderEngine;
+        const scene = designScene || this.getDesignSceneV1?.() || null;
+        if (scene && renderEngine?.buildPreviewDataUrl) {
+            const preview = renderEngine.buildPreviewDataUrl(scene, {
+                productSvg: this.currentProduct?.svg_template || '',
                 fillRatio: 1,
                 includeOutline: false,
                 backgroundColor: 'transparent'
-            })
-            : '';
-        if (typeof normalizedPreview === 'string' && normalizedPreview.trim()) {
-            return normalizedPreview;
+            });
+            if (typeof preview === 'string' && preview.trim()) {
+                return preview;
+            }
         }
 
-        const previewSvg = rawDesignSvg || this.generateCartPreviewSVG(rawDesignSvg);
-        return previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '';
+        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
+            ? designSvgMarkup
+            : this.getDesignSVG();
+        return rawDesignSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(rawDesignSvg)}` : '';
     },
 
     renderCartStepsBaseOptions() {
@@ -788,9 +786,9 @@ Object.assign(DesignEditor.prototype, {
             ? document.activeElement
             : null;
         this.ensureSelectedBase();
-        this.cartStepsDesignDocumentSnapshot = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
+        this.cartStepsDesignSceneSnapshot = this.getDesignSceneV1?.() || null;
         this.cartStepsDesignSnapshot = this.getDesignSVG();
-        previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignDocumentSnapshot, this.cartStepsDesignSnapshot);
+        previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignSceneSnapshot, this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 
         this.renderCartStepsBaseOptions();
@@ -876,8 +874,7 @@ Object.assign(DesignEditor.prototype, {
                 designId: item?.designId ? String(item.designId).trim() : null,
                 designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
                 designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
-                designDocumentV3: item?.designDocumentV3 || item?.design_document_v3 || null,
-                designDocumentV2: item?.designDocumentV2 || item?.design_document_v2 || null,
+                designSceneV1: item?.designSceneV1 || item?.design_scene_v1 || null,
                 slug: item?.slug ? String(item.slug).trim() : null,
                 svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
                 baseId: item?.baseId || item?.base_id || null,
@@ -967,18 +964,17 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
-        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
+        const designScene = this.getDesignSceneV1?.() || null;
         const designSvg = this.getDesignSVG();
-        const designPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
-            ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
-                designDocument,
-                designSvg,
-                productSvg: this.currentProduct.svg_template,
-                fillRatio: 0.9,
-                includeOutline: true,
-                backgroundColor: 'transparent'
-            }) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
+        const designPreview = window.DesignRenderEngine?.buildPreviewDataUrl
+            ? (
+                window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
+                    productSvg: this.currentProduct?.svg_template || '',
+                    fillRatio: 0.9,
+                    includeOutline: true,
+                    backgroundColor: 'transparent'
+                }) || `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`
+            )
             : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(designSvg)}`;
 
         const nome = prompt(i18nText('Nome do design:'));
@@ -1005,9 +1001,8 @@ Object.assign(DesignEditor.prototype, {
             categoria: templateCategory,
             descricao: `Design para ${this.currentProduct?.nome || 'produto'}`,
             elementos: {
-                format: window.DesignSvgStore?.DESIGN_DOCUMENT_V3_FORMAT || 'design-document-v3',
-                design_document_v3: designDocument,
-                design_document_v2: legacyDesignDocumentV2,
+                format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
+                design_scene_v1: designScene,
                 svg: designSvg,
                 design_svg: designSvg,
                 elements: serializableElements

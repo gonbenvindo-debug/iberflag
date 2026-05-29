@@ -1792,15 +1792,13 @@ Object.assign(DesignEditor.prototype, {
     
     autoSave() {
         const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
-        const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.() || null;
-        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
+        const designScene = this.getDesignSceneV1?.() || null;
         const svgDesign = this.getDesignSVG();
         const payload = {
-            format: window.DesignSvgStore?.DESIGN_DOCUMENT_V3_FORMAT || 'design-document-v3',
+            format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
-            design_document_v3: designDocument,
-            design_document_v2: legacyDesignDocumentV2,
+            design_scene_v1: designScene,
             design_svg: svgDesign
         };
         const compactDesign = JSON.stringify(payload);

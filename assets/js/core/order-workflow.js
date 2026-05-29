@@ -132,7 +132,10 @@
                     precoUnitario: Number(entry.precoUnitario || 0),
                     imagem: entry.imagem ? String(entry.imagem) : '',
                     designPreview: entry.designPreview ? String(entry.designPreview) : '',
-                    design: entry.design ? String(entry.design) : ''
+                    design: entry.design ? String(entry.design) : '',
+                    designSceneV1: entry.designSceneV1 && typeof entry.designSceneV1 === 'object'
+                        ? entry.designSceneV1
+                        : (entry.design_scene_v1 && typeof entry.design_scene_v1 === 'object' ? entry.design_scene_v1 : null)
                 }))
             : [];
 

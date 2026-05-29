@@ -23,17 +23,19 @@
         if (!id || !svg) {
             return null;
         }
-        const explicitV3 = record?.designDocumentV3 || record?.design_document_v3 || null;
-        const explicitV2 = record?.designDocumentV2 || record?.design_document_v2 || null;
-        const designDocumentV3 = explicitV3 || window.DesignSvgStore?.unwrapDesignDocumentV3?.(explicitV2) || null;
-        const designDocumentV2 = explicitV2 || window.DesignSvgStore?.unwrapDesignDocumentV2?.(explicitV3) || null;
+        const designSceneV1 = (record?.designSceneV1 && typeof record.designSceneV1 === 'object')
+            ? record.designSceneV1
+            : (record?.design_scene_v1 && typeof record.design_scene_v1 === 'object')
+                ? record.design_scene_v1
+                : (record?.design_document_v3 && typeof record.design_document_v3 === 'object')
+                    ? record.design_document_v3
+                    : null;
 
         return {
             id,
             svg,
             preview: String(record?.preview || record?.design_preview || '').trim() || '',
-            designDocumentV3,
-            designDocumentV2,
+            designSceneV1,
             createdAt: Number(record?.createdAt || Date.now()),
             updatedAt: Number(record?.updatedAt || Date.now()),
             productId: Number.isFinite(Number(record?.productId || record?.product_id))
@@ -114,8 +116,8 @@
                 designId: normalized.id,
                 designSvg: normalized.svg,
                 preview: normalized.preview,
-                designDocumentV3: normalized.designDocumentV3,
-                designDocumentV2: normalized.designDocumentV2,
+                designSceneV1: normalized.designSceneV1,
+                design_scene_v1: normalized.designSceneV1,
                 productId: normalized.productId
             })
         });
@@ -145,18 +147,14 @@
     }
 
     async function saveDesign(designId, svgMarkup, meta = {}) {
-        const documentV3 = meta.documentV3 && typeof meta.documentV3 === 'object'
-            ? meta.documentV3
-            : (meta.document && typeof meta.document === 'object' ? meta.document : null);
-        const documentV2 = meta.document && typeof meta.document === 'object'
-            ? meta.document
-            : (window.DesignSvgStore?.unwrapDesignDocumentV2?.(documentV3) || null);
+        const designSceneV1 = meta.scene && typeof meta.scene === 'object'
+            ? meta.scene
+            : null;
         const record = normalizeDesignRecord({
             id: designId,
             svg: svgMarkup,
             preview: String(meta.preview || '').trim() || '',
-            designDocumentV3: documentV3,
-            designDocumentV2: documentV2,
+            designSceneV1,
             createdAt: Number(meta.createdAt || Date.now()),
             updatedAt: Date.now(),
             productId: Number.isFinite(Number(meta.productId)) ? Number(meta.productId) : null
@@ -273,11 +271,9 @@
                     if (!next.designPreview) {
                         next.designPreview = record.preview || buildSvgDataUrl(record.svg);
                     }
-                    if (!next.designDocumentV2 && record.designDocumentV2) {
-                        next.designDocumentV2 = record.designDocumentV2;
-                    }
-                    if (!next.designDocumentV3 && record.designDocumentV3) {
-                        next.designDocumentV3 = record.designDocumentV3;
+                    if (!next.designSceneV1 && record.designSceneV1) {
+                        next.designSceneV1 = record.designSceneV1;
+                        next.design_scene_v1 = record.designSceneV1;
                     }
                 }
             }
@@ -302,8 +298,9 @@
                 await saveDesign(designId, next.design, {
                     preview: next.designPreview || '',
                     productId: next.id || null,
-                    documentV3: next.designDocumentV3 || next.design_document_v3 || null,
-                    document: next.designDocumentV2 || next.design_document_v2 || null
+                    scene: next.designSceneV1
+                        || next.design_scene_v1
+                        || null
                 });
             }
 

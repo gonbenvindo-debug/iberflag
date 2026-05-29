@@ -79,12 +79,9 @@ module.exports = async function designsHandler(req, res) {
         const designSvg = normalizeSvg(body.design || body.designSvg || body.design_svg);
         const designPreview = normalizePreview(body.preview || body.designPreview || body.design_preview);
         const productId = normalizeProductId(body.productId || body.product_id);
-        const designDocumentV3 = body.designDocumentV3 && typeof body.designDocumentV3 === 'object'
-            ? body.designDocumentV3
-            : (body.design_document_v3 && typeof body.design_document_v3 === 'object' ? body.design_document_v3 : null);
-        const designDocumentV2 = body.designDocumentV2 && typeof body.designDocumentV2 === 'object'
-            ? body.designDocumentV2
-            : (body.design_document_v2 && typeof body.design_document_v2 === 'object' ? body.design_document_v2 : null);
+        const designSceneV1 = body.designSceneV1 && typeof body.designSceneV1 === 'object'
+            ? body.designSceneV1
+            : (body.design_scene_v1 && typeof body.design_scene_v1 === 'object' ? body.design_scene_v1 : null);
 
         if (!designId || !designSvg) {
             sendJson(res, 400, {
@@ -98,8 +95,8 @@ module.exports = async function designsHandler(req, res) {
             design_id: designId,
             design_svg: designSvg,
             design_preview: designPreview || null,
-            design_document_v3: designDocumentV3 || null,
-            design_document_v2: designDocumentV2 || null,
+            design_document_v3: designSceneV1 || null,
+            design_document_v2: null,
             product_id: productId,
             updated_at: new Date().toISOString()
         };

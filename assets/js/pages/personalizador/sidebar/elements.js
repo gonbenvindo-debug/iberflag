@@ -606,15 +606,13 @@ Object.assign(DesignEditor.prototype, {
             sourceItem = hydrated[0] || sourceItem;
         }
 
-        if (targetIndex >= 0 && sourceItem && (sourceItem.designDocumentV3 || sourceItem.design_document_v3 || sourceItem.designDocumentV2 || sourceItem.design_document_v2 || sourceItem.design)) {
+        if (targetIndex >= 0 && sourceItem && (sourceItem.designSceneV1 || sourceItem.design_scene_v1 || sourceItem.design)) {
             try {
-                const designDocument = sourceItem.designDocumentV3
-                    || sourceItem.design_document_v3
-                    || sourceItem.designDocumentV2
-                    || sourceItem.design_document_v2
+                const designScene = sourceItem.designSceneV1
+                    || sourceItem.design_scene_v1
                     || null;
-                if (designDocument && window.DesignSvgStore?.importDesignDocumentToEditor) {
-                    window.DesignSvgStore.importDesignDocumentToEditor(this, designDocument);
+                if (designScene && window.DesignSvgStore?.importDesignDocumentToEditor) {
+                    window.DesignSvgStore.importDesignDocumentToEditor(this, designScene);
                 } else {
                 const parser = new DOMParser();
                 const svgDoc = parser.parseFromString(sourceItem.design, 'image/svg+xml');
@@ -700,18 +698,20 @@ Object.assign(DesignEditor.prototype, {
         try {
             if (raw.startsWith('{')) {
                 const parsed = JSON.parse(raw);
-                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
+                const designScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+                    parsed?.design_scene_v1 || parsed
+                ) || null;
                 const elements = Array.isArray(parsed?.elements)
                     ? parsed.elements.filter(Boolean)
                     : [];
 
-                if (designDocument && Array.isArray(designDocument.elements) && designDocument.elements.length > 0) {
+                if (designScene && Array.isArray(designScene.elements) && designScene.elements.length > 0) {
                     return {
                         key,
                         raw,
                         parsed,
-                        format: 'design-document-v2',
-                        elementCount: designDocument.elements.length
+                        format: 'design-scene-v1',
+                        elementCount: designScene.elements.length
                     };
                 }
 
@@ -786,12 +786,12 @@ Object.assign(DesignEditor.prototype, {
     buildAutosavePreviewSvg(record) {
         const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
-        const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV2?.(record?.parsed);
+        const designScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+            record?.parsed?.design_scene_v1 || record?.parsed || null
+        ) || null;
 
-        if (designDocument && this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewSvg) {
-            const previewSvg = window.DesignSvgStore.buildNormalizedProductPreviewSvg({
-                designDocument,
-                designSvg: record?.parsed?.design_svg || '',
+        if (designScene && this.currentProduct?.svg_template && window.DesignRenderEngine?.buildPreviewSvg) {
+            const previewSvg = window.DesignRenderEngine.buildPreviewSvg(designScene, {
                 productSvg: this.currentProduct.svg_template,
                 fillRatio: 0.9,
                 includeOutline: true,
@@ -913,10 +913,11 @@ Object.assign(DesignEditor.prototype, {
             const trimmed = String(autosave).trim();
             if (trimmed.startsWith('{')) {
                 const parsed = JSON.parse(trimmed);
-                const designDocument = window.DesignSvgStore?.unwrapDesignDocumentV3?.(parsed)
-                    || window.DesignSvgStore?.unwrapDesignDocumentV2?.(parsed);
-                if (designDocument && window.DesignSvgStore?.importDesignDocumentToEditor) {
-                    const imported = window.DesignSvgStore.importDesignDocumentToEditor(this, designDocument, {
+                const designScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+                    parsed?.design_scene_v1 || parsed
+                ) || null;
+                if (designScene && window.DesignSvgStore?.importDesignDocumentToEditor) {
+                    const imported = window.DesignSvgStore.importDesignDocumentToEditor(this, designScene, {
                         skipHistory: true
                     });
                     if (imported) {

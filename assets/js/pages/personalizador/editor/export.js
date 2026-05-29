@@ -353,18 +353,16 @@ Object.assign(DesignEditor.prototype, {
 
     getDesignSVG(options = {}) {
         const preferLiveSnapshot = options?.preferLiveSnapshot === true;
+        const renderEngine = window.DesignRenderEngine;
+        const scene = !preferLiveSnapshot ? this.getDesignSceneV1?.() : null;
 
-        if (!preferLiveSnapshot) {
-            const designDocument = this.getDesignDocumentV3?.() || this.getDesignDocumentV2?.();
-            if (designDocument && window.DesignSvgStore?.renderDesignDocumentToSvg) {
-                const rendered = window.DesignSvgStore.renderDesignDocumentToSvg(designDocument, {
-                    productSvg: this.currentProduct?.svg_template || '',
-                    viewBoxBounds: this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width: 800, height: 600 },
-                    maskNode: this.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
-                });
-                if (rendered) {
-                    return rendered;
-                }
+        if (scene && renderEngine?.renderSceneToSvg) {
+            const rendered = renderEngine.renderSceneToSvg(scene, {
+                productSvg: this.currentProduct?.svg_template || '',
+                mode: 'final'
+            });
+            if (rendered) {
+                return rendered;
             }
         }
 
@@ -374,75 +372,32 @@ Object.assign(DesignEditor.prototype, {
             });
         }
 
-        const vb = this.getCanvasViewBoxSize();
-        const exportX = Number(vb.x) || 0;
-        const exportY = Number(vb.y) || 0;
-        const exportWidth = Math.max(1, Math.round(vb.width));
-        const exportHeight = Math.max(1, Math.round(vb.height));
+        return '';
+    },
 
-        const exportSvg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-        exportSvg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
-        exportSvg.setAttribute('viewBox', `${exportX} ${exportY} ${exportWidth} ${exportHeight}`);
-        exportSvg.setAttribute('width', String(exportWidth));
-        exportSvg.setAttribute('height', String(exportHeight));
-        exportSvg.setAttribute('preserveAspectRatio', 'none');
-
-        const defs = document.createElementNS('http://www.w3.org/2000/svg', 'defs');
-        const clipPath = document.createElementNS('http://www.w3.org/2000/svg', 'clipPath');
-        clipPath.setAttribute('id', 'design-export-clip');
-        clipPath.appendChild(this.createExportMaskShape());
-        defs.appendChild(clipPath);
-        exportSvg.appendChild(defs);
-
-        const clippedGroup = document.createElementNS('http://www.w3.org/2000/svg', 'g');
-        clippedGroup.setAttribute('clip-path', 'url(#design-export-clip)');
-
-        Array.from(this.canvas.children)
-            .filter((node) => {
-                const id = node.getAttribute('id');
-                return id !== 'print-area-outline'
-                    && id !== 'print-area-shape-outline'
-                    && id !== 'print-area-shape-outline-border'
-                    && id !== 'print-area-background'
-                    && id !== 'print-area-outside-overlay'
-                    && id !== 'print-area-outside-grid';
-            })
-            .forEach((node) => {
-                clippedGroup.appendChild(node.cloneNode(true));
+    getDesignSceneV1() {
+        const renderEngine = window.DesignRenderEngine;
+        if (renderEngine?.serializeEditorScene) {
+            return renderEngine.serializeEditorScene(this, {
+                productSvg: this.currentProduct?.svg_template || ''
             });
-
-        exportSvg.appendChild(clippedGroup);
-        return new XMLSerializer().serializeToString(exportSvg);
+        }
+        return null;
     },
 
     getDesignDocumentV2() {
-        if (window.DesignSvgStore?.serializeDesignDocumentV2) {
-            return window.DesignSvgStore.serializeDesignDocumentV2(this);
-        }
-
-        return null;
+        return this.getDesignSceneV1?.() || null;
     },
 
     getDesignDocumentV3() {
-        if (window.DesignSvgStore?.serializeDesignDocumentV3) {
-            return window.DesignSvgStore.serializeDesignDocumentV3(this);
-        }
-
-        if (window.DesignSvgStore?.serializeDesignDocumentV2) {
-            const legacy = window.DesignSvgStore.serializeDesignDocumentV2(this);
-            return window.DesignSvgStore?.unwrapDesignDocumentV3?.(legacy) || legacy;
-        }
-
-        return null;
+        return this.getDesignSceneV1?.() || null;
     },
 
     // ===== ADD TO CART =====
     async addToCart(designOverride = null, options = {}) {
-        const designDocument = options?.designDocument
-            || this.getDesignDocumentV3?.()
-            || this.getDesignDocumentV2?.()
+        const designScene = options?.designScene
+            || this.getDesignSceneV1?.()
             || null;
-        const legacyDesignDocumentV2 = window.DesignSvgStore?.unwrapDesignDocumentV2?.(designDocument) || null;
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
@@ -481,10 +436,10 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
-            designDocumentV3: designDocument,
-            designDocumentV2: legacyDesignDocumentV2,
+            designSceneV1: designScene,
+            design_scene_v1: designScene,
             designPreview: null,
-            designPreviewVersion: Number(window.CART_PREVIEW_VERSION || 6) || 6,
+            designPreviewVersion: Number(window.CART_PREVIEW_VERSION || 7) || 7,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
@@ -502,7 +457,7 @@ Object.assign(DesignEditor.prototype, {
             ? this.cartStepsDesignPreview
             : (
                 typeof this.buildCartStepsPreviewDataUrl === 'function'
-                    ? this.buildCartStepsPreviewDataUrl(designDocument, design)
+                    ? this.buildCartStepsPreviewDataUrl(designScene, design)
                     : ''
             );
 
@@ -518,8 +473,9 @@ Object.assign(DesignEditor.prototype, {
             await window.CartAssetStore.saveDesign(designId, design, {
                 productId: this.currentProduct?.id,
                 preview: cartItem.designPreview,
-                document: legacyDesignDocumentV2,
-                documentV3: designDocument
+                document: null,
+                documentV3: null,
+                scene: designScene
             });
         }
 

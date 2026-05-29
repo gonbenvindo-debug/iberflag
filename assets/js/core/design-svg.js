@@ -23,6 +23,8 @@
     const PREVIEW_MARKUP_CACHE_VERSION = 'vector-v8';
     const PREVIEW_CANVAS_MARGIN = 50;
     const PREVIEW_CONTENT_LONGEST_SIDE = 700;
+    const TEMPLATE_GEOMETRY_V1_FORMAT = 'template-geometry-v1';
+    const DESIGN_SCENE_V1_FORMAT = 'design-scene-v1';
     const DESIGN_DOCUMENT_V2_FORMAT = 'design-document-v2';
     const DESIGN_DOCUMENT_V3_FORMAT = 'design-document-v3';
     const DESIGN_COORDINATE_UNIT = 'template-svg-unit';
@@ -905,6 +907,99 @@
         return convertDesignDocumentV2ToV3(v2);
     }
 
+    function buildSceneFromDesignDocument(designDocumentInput, templateGeometry = null, options = {}) {
+        const designDocument = unwrapDesignDocumentV3(designDocumentInput);
+        if (!designDocument) {
+            return null;
+        }
+
+        const geometry = normalizeTemplateGeometryV1(
+            templateGeometry || designDocument.templateGeometry || null,
+            {
+                viewBoxBounds: designDocument.viewBoxRef || designDocument.viewBox || DEFAULT_SIZE,
+                printAreaBounds: designDocument.printAreaRef || DEFAULT_SIZE
+            }
+        );
+
+        return {
+            format: DESIGN_SCENE_V1_FORMAT,
+            version: 1,
+            productId: designDocument?.productId ? String(designDocument.productId) : (options.productId ? String(options.productId) : null),
+            selectedBaseId: Number.isFinite(Number(designDocument?.selectedBaseId))
+                ? Number(designDocument.selectedBaseId)
+                : (Number.isFinite(Number(options.selectedBaseId)) ? Number(options.selectedBaseId) : null),
+            templateGeometry: geometry,
+            elements: Array.isArray(designDocument.elements) ? designDocument.elements : []
+        };
+    }
+
+    function unwrapDesignSceneV1(input, options = {}) {
+        if (!input) {
+            return null;
+        }
+
+        if (typeof input === 'string') {
+            const trimmed = input.trim();
+            if (!trimmed) return null;
+            try {
+                return unwrapDesignSceneV1(JSON.parse(trimmed), options);
+            } catch {
+                return null;
+            }
+        }
+
+        if (typeof input !== 'object') {
+            return null;
+        }
+
+        if (input.format === DESIGN_SCENE_V1_FORMAT && Array.isArray(input.elements)) {
+            const fallbackGeometry = options.templateGeometry
+                || resolveTemplateGeometry(options.productSvg || options.svgTemplate || '', options)
+                || null;
+            const geometry = normalizeTemplateGeometryV1(input.templateGeometry || fallbackGeometry, fallbackGeometry || DEFAULT_SIZE);
+            return {
+                format: DESIGN_SCENE_V1_FORMAT,
+                version: 1,
+                productId: input?.productId ? String(input.productId) : null,
+                selectedBaseId: Number.isFinite(Number(input?.selectedBaseId)) ? Number(input.selectedBaseId) : null,
+                templateGeometry: geometry,
+                elements: Array.isArray(input.elements) ? input.elements : []
+            };
+        }
+
+        if (input.design_scene_v1) {
+            return unwrapDesignSceneV1(input.design_scene_v1, options);
+        }
+
+        if (input.designSceneV1) {
+            return unwrapDesignSceneV1(input.designSceneV1, options);
+        }
+
+        return buildSceneFromDesignDocument(input, options.templateGeometry || null, options);
+    }
+
+    function serializeEditorScene(editor, options = {}) {
+        const viewBoxBounds = getCanvasViewBoxBounds(editor, options);
+        const printAreaBounds = getEditorPrintAreaBounds(editor, viewBoxBounds);
+        const productSvg = options.productSvg || editor?.currentProduct?.svg_template || '';
+        const templateGeometry = normalizeTemplateGeometryV1(
+            options.templateGeometry || resolveTemplateGeometry(productSvg, { viewBoxBounds }),
+            { viewBoxBounds, printAreaBounds }
+        );
+        const elements = Array.from(editor?.elements || [])
+            .map((elementData, index) => serializeElementToDesignDocument(editor, elementData, templateGeometry.printAreaBounds, index))
+            .filter(Boolean);
+
+        return {
+            format: DESIGN_SCENE_V1_FORMAT,
+            version: 1,
+            productId: editor?.productId ? String(editor.productId) : (editor?.currentProduct?.id ? String(editor.currentProduct.id) : null),
+            selectedBaseId: Number.isFinite(Number(editor?.selectedBaseId)) ? Number(editor.selectedBaseId) : null,
+            templateGeometry,
+            elements
+        };
+    }
+
     function unwrapDesignDocumentV2(input) {
         if (!input) {
             return null;
@@ -1201,96 +1296,119 @@
             });
     }
 
-    function resolveMaskShapeSource(productContext = {}, printAreaBounds) {
-        if (productContext.maskNode?.cloneNode) {
-            return {
-                maskNode: productContext.maskNode.cloneNode(true),
-                sourceBounds: normalizeBounds(productContext.viewBoxBounds || printAreaBounds, printAreaBounds)
-            };
-        }
-
-        const productMarkup = extractTemplateSvg(productContext.productSvg || productContext.svgTemplate || '', {});
-        const productRoot = productMarkup ? parseSvgMarkup(productMarkup) : null;
-        if (productRoot) {
-            const maskNode = pickMaskNode(productRoot);
-            if (maskNode) {
-                const sourceBounds = getSvgSourceBounds(productRoot, printAreaBounds);
-                return {
-                    maskNode,
-                    sourceBounds
-                };
-            }
-        }
-
-        const fallbackMask = document.createElementNS(SVG_NS, 'rect');
-        fallbackMask.setAttribute('x', String(printAreaBounds.x));
-        fallbackMask.setAttribute('y', String(printAreaBounds.y));
-        fallbackMask.setAttribute('width', String(printAreaBounds.width));
-        fallbackMask.setAttribute('height', String(printAreaBounds.height));
-        return {
-            maskNode: fallbackMask,
-            sourceBounds: normalizeBounds(productContext.viewBoxBounds || printAreaBounds, printAreaBounds)
-        };
-    }
-
-    function resolveViewBoxBoundsForDocument(designDocument, productContext = {}, printAreaBounds) {
-        if (productContext.viewBoxBounds) {
-            return normalizeBounds(productContext.viewBoxBounds, printAreaBounds);
-        }
-
-        const productMarkup = extractTemplateSvg(productContext.productSvg || productContext.svgTemplate || '', {});
-        const productRoot = productMarkup ? parseSvgMarkup(productMarkup) : null;
-        if (productRoot) {
-            return normalizeBounds(getSvgSourceBounds(productRoot, printAreaBounds), printAreaBounds);
-        }
-
-        return normalizeBounds(designDocument?.viewBox || designDocument?.printAreaRef, printAreaBounds);
-    }
-
-    function renderDesignDocumentToSvg(designDocumentInput, productContext = {}) {
-        const designDocument = unwrapDesignDocumentV3(designDocumentInput);
-        if (!designDocument) {
+    function renderSceneToSvg(sceneInput, options = {}) {
+        const scene = unwrapDesignSceneV1(sceneInput, options);
+        if (!scene) {
             return '';
         }
 
-        const fallbackPrintArea = normalizeBounds(designDocument.printAreaRef, DEFAULT_SIZE);
-        const printAreaBounds = normalizeBounds(productContext.printAreaBounds || designDocument.printAreaRef, fallbackPrintArea);
-        const viewBoxBounds = normalizeBounds(
-            productContext.viewBoxBounds
-            || designDocument.viewBoxRef
-            || designDocument.viewBox
-            || resolveViewBoxBoundsForDocument(designDocument, productContext, printAreaBounds),
-            printAreaBounds
+        const resolvedGeometry = normalizeTemplateGeometryV1(
+            options.templateGeometry
+            || scene.templateGeometry
+            || resolveTemplateGeometry(options.productSvg || options.svgTemplate || '', options),
+            scene.templateGeometry || DEFAULT_SIZE
         );
-        const maskSource = resolveMaskShapeSource(productContext, printAreaBounds);
+        const viewBoxBounds = normalizeBounds(resolvedGeometry.viewBoxBounds, DEFAULT_SIZE);
+        const printAreaBounds = normalizeBounds(resolvedGeometry.printAreaBounds, viewBoxBounds);
+        const maskNode = parseMaskShapeNode(resolvedGeometry.maskShapeMarkup, printAreaBounds)
+            || buildEditorExportMaskShape({ querySelector: () => null }, printAreaBounds.width, printAreaBounds.height, printAreaBounds);
+        const mode = String(options.mode || 'final').toLowerCase();
+        const includeOutline = options.includeOutline === true;
+        const backgroundColor = String(options.backgroundColor || 'transparent');
+        const fillRatio = Number.isFinite(Number(options.fillRatio)) ? Number(options.fillRatio) : 1;
+
+        if (mode === 'preview') {
+            const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
+            const previewTargetBounds = {
+                x: previewGeometry.x,
+                y: previewGeometry.y,
+                width: previewGeometry.width,
+                height: previewGeometry.height
+            };
+            const sourceTransform = buildContainTransform(printAreaBounds, previewTargetBounds);
+            const wrapper = document.createElementNS(SVG_NS, 'svg');
+            const defs = document.createElementNS(SVG_NS, 'defs');
+            const maskId = `design-scene-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
+            const mask = document.createElementNS(SVG_NS, 'mask');
+
+            wrapper.setAttribute('xmlns', SVG_NS);
+            wrapper.setAttribute('viewBox', `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`);
+            wrapper.setAttribute('width', '100%');
+            wrapper.setAttribute('height', '100%');
+            wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+            wrapper.setAttribute('style', buildStyleString({
+                display: 'block',
+                width: '100%',
+                height: '100%',
+                overflow: 'hidden',
+                'background-color': backgroundColor
+            }));
+            wrapper.setAttribute('data-design-scene-format', DESIGN_SCENE_V1_FORMAT);
+            wrapper.setAttribute('data-template-geometry-hash', String(resolvedGeometry.templateSourceHash || ''));
+
+            const background = document.createElementNS(SVG_NS, 'rect');
+            background.setAttribute('x', '0');
+            background.setAttribute('y', '0');
+            background.setAttribute('width', String(previewGeometry.canvasWidth));
+            background.setAttribute('height', String(previewGeometry.canvasHeight));
+            background.setAttribute('fill', backgroundColor);
+            wrapper.appendChild(background);
+
+            mask.setAttribute('id', maskId);
+            mask.setAttribute('maskUnits', 'userSpaceOnUse');
+            mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
+
+            const blackRect = document.createElementNS(SVG_NS, 'rect');
+            blackRect.setAttribute('x', '0');
+            blackRect.setAttribute('y', '0');
+            blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
+            blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
+            blackRect.setAttribute('fill', '#000000');
+            mask.appendChild(blackRect);
+            mask.appendChild(buildPreviewMaskNode(maskNode, sourceTransform));
+            defs.appendChild(mask);
+            wrapper.appendChild(defs);
+
+            const whiteBase = document.createElementNS(SVG_NS, 'rect');
+            whiteBase.setAttribute('x', '0');
+            whiteBase.setAttribute('y', '0');
+            whiteBase.setAttribute('width', String(previewGeometry.canvasWidth));
+            whiteBase.setAttribute('height', String(previewGeometry.canvasHeight));
+            whiteBase.setAttribute('fill', '#ffffff');
+            whiteBase.setAttribute('mask', `url(#${maskId})`);
+            wrapper.appendChild(whiteBase);
+
+            const contentGroup = document.createElementNS(SVG_NS, 'g');
+            contentGroup.setAttribute('mask', `url(#${maskId})`);
+            contentGroup.setAttribute('transform', sourceTransform);
+            appendDesignDocumentElements(contentGroup, scene, printAreaBounds);
+            wrapper.appendChild(contentGroup);
+
+            if (includeOutline) {
+                wrapper.appendChild(buildPreviewOutlineNode(maskNode, sourceTransform));
+            }
+
+            return new XMLSerializer().serializeToString(wrapper);
+        }
+
         const svg = document.createElementNS(SVG_NS, 'svg');
         const defs = document.createElementNS(SVG_NS, 'defs');
         const clipPath = document.createElementNS(SVG_NS, 'clipPath');
-        const clipPathId = `design-document-clip-${Math.random().toString(36).slice(2, 10)}`;
+        const clipPathId = `design-scene-clip-${Math.random().toString(36).slice(2, 10)}`;
 
         svg.setAttribute('xmlns', SVG_NS);
         svg.setAttribute('viewBox', `${viewBoxBounds.x} ${viewBoxBounds.y} ${viewBoxBounds.width} ${viewBoxBounds.height}`);
         svg.setAttribute('width', String(viewBoxBounds.width));
         svg.setAttribute('height', String(viewBoxBounds.height));
         svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        svg.setAttribute('data-design-document-format', DESIGN_DOCUMENT_V3_FORMAT);
+        svg.setAttribute('data-design-scene-format', DESIGN_SCENE_V1_FORMAT);
         svg.setAttribute('data-coordinate-unit', DESIGN_COORDINATE_UNIT);
         svg.setAttribute('data-print-area-bounds', `${printAreaBounds.x} ${printAreaBounds.y} ${printAreaBounds.width} ${printAreaBounds.height}`);
+        svg.setAttribute('data-template-geometry-hash', String(resolvedGeometry.templateSourceHash || ''));
 
         clipPath.setAttribute('id', clipPathId);
         clipPath.setAttribute('clipPathUnits', 'userSpaceOnUse');
-        clipPath.appendChild(buildEditorExportMaskShape({ querySelector: () => null }, printAreaBounds.width, printAreaBounds.height, printAreaBounds));
-        if (maskSource.maskNode) {
-            const shape = maskSource.maskNode.cloneNode(true);
-            shape.removeAttribute?.('id');
-            shape.removeAttribute?.('class');
-            shape.removeAttribute?.('opacity');
-            shape.removeAttribute?.('stroke');
-            shape.removeAttribute?.('stroke-width');
-            shape.removeAttribute?.('stroke-dasharray');
-            shape.setAttribute?.('fill', '#ffffff');
-            clipPath.replaceChildren(shape);
-        }
+        clipPath.appendChild(maskNode.cloneNode(true));
         defs.appendChild(clipPath);
         svg.appendChild(defs);
 
@@ -1305,19 +1423,40 @@
         whiteBase.setAttribute('fill', '#ffffff');
         group.appendChild(whiteBase);
 
-        appendDesignDocumentElements(group, designDocument, printAreaBounds);
+        appendDesignDocumentElements(group, scene, printAreaBounds);
         svg.appendChild(group);
 
         return new XMLSerializer().serializeToString(svg);
     }
 
-    function renderDesignDocumentV2ToSvg(designDocumentInput, productContext = {}) {
-        const v3 = unwrapDesignDocumentV3(designDocumentInput);
-        if (v3) {
-            return renderDesignDocumentToSvg(v3, productContext);
-        }
+    function buildPreviewSvg(sceneInput, options = {}) {
+        return renderSceneToSvg(sceneInput, {
+            ...options,
+            mode: 'preview'
+        });
+    }
 
-        return '';
+    function buildPreviewDataUrl(sceneInput, options = {}) {
+        const previewSvg = buildPreviewSvg(sceneInput, options);
+        return previewSvg ? toDataUrlFromSvgMarkup(previewSvg) : '';
+    }
+
+    function renderDesignDocumentToSvg(designDocumentInput, productContext = {}) {
+        const scene = buildSceneFromDesignDocument(
+            designDocumentInput,
+            productContext?.templateGeometry || null,
+            { productId: productContext?.productId || null }
+        );
+        return scene
+            ? renderSceneToSvg(scene, {
+                ...productContext,
+                mode: 'final'
+            })
+            : '';
+    }
+
+    function renderDesignDocumentV2ToSvg(designDocumentInput, productContext = {}) {
+        return renderDesignDocumentToSvg(designDocumentInput, productContext);
     }
 
     function serializeEditorToSvg(editor, options = {}) {
@@ -1326,15 +1465,13 @@
             return '';
         }
 
-        const useDesignDocument = options?.forceLiveSnapshot !== true;
-        if (useDesignDocument) {
-            const designDocument = serializeDesignDocumentV3(editor, options);
-            if (designDocument) {
-                const rendered = renderDesignDocumentToSvg(designDocument, {
+        const useScene = options?.forceLiveSnapshot !== true;
+        if (useScene) {
+            const scene = serializeEditorScene(editor, options);
+            if (scene) {
+                const rendered = renderSceneToSvg(scene, {
                     productSvg: editor?.currentProduct?.svg_template || '',
-                    viewBoxBounds: getCanvasViewBoxBounds(editor, options),
-                    printAreaBounds: getEditorPrintAreaBounds(editor),
-                    maskNode: editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null
+                    mode: 'final'
                 });
                 if (rendered) {
                     return rendered;
@@ -1871,6 +2008,201 @@
             .join(' ');
     }
 
+    function hashString(value) {
+        const source = String(value || '');
+        let hash = 2166136261;
+        for (let index = 0; index < source.length; index += 1) {
+            hash ^= source.charCodeAt(index);
+            hash += (hash << 1) + (hash << 4) + (hash << 7) + (hash << 8) + (hash << 24);
+        }
+        return `h${(hash >>> 0).toString(16)}`;
+    }
+
+    function collectAncestorTransformChain(node, stopNode = null) {
+        const transforms = [];
+        let current = node?.parentNode || null;
+        while (current && current !== stopNode) {
+            const transform = current.getAttribute?.('transform');
+            if (transform && String(transform).trim()) {
+                transforms.push(String(transform).trim());
+            }
+            current = current.parentNode;
+        }
+        return transforms.reverse().join(' ').trim();
+    }
+
+    function cloneShapeWithAncestorTransform(node, root) {
+        if (!node?.cloneNode) {
+            return null;
+        }
+
+        const clone = node.cloneNode(true);
+        const ancestorTransform = collectAncestorTransformChain(node, root);
+        const ownTransform = String(clone.getAttribute('transform') || '').trim();
+        const mergedTransform = composeSvgTransforms(ancestorTransform, ownTransform);
+        if (mergedTransform) {
+            clone.setAttribute('transform', mergedTransform);
+        } else {
+            clone.removeAttribute('transform');
+        }
+        return clone;
+    }
+
+    function resolveTemplateMaskNode(root) {
+        if (!root) {
+            return null;
+        }
+
+        const selectors = [
+            '[data-personalizable="true"]',
+            '[data-print-area="true"]',
+            '[data-template-area="true"]',
+            '[data-editable-area="true"]',
+            '[data-personalizable-outline="true"]'
+        ];
+        for (const selector of selectors) {
+            const explicit = root.querySelector(selector);
+            if (explicit) {
+                return explicit;
+            }
+        }
+
+        return pickMaskNode(root);
+    }
+
+    function parseMaskShapeNode(markup, fallbackBounds = DEFAULT_SIZE) {
+        if (typeof markup !== 'string' || !markup.trim()) {
+            return null;
+        }
+
+        const parsed = parseSvgMarkup(markup);
+        if (!parsed) {
+            return null;
+        }
+
+        if (String(parsed.tagName || '').toLowerCase() !== 'svg') {
+            return parsed.cloneNode(true);
+        }
+
+        const node = Array.from(parsed.children || []).find((child) => {
+            const tag = String(child?.tagName || '').toLowerCase();
+            return tag && tag !== 'defs' && tag !== 'title' && tag !== 'desc' && tag !== 'metadata';
+        });
+        if (node) {
+            return node.cloneNode(true);
+        }
+
+        const fallback = document.createElementNS(SVG_NS, 'rect');
+        fallback.setAttribute('x', String(Number(fallbackBounds?.x) || 0));
+        fallback.setAttribute('y', String(Number(fallbackBounds?.y) || 0));
+        fallback.setAttribute('width', String(Math.max(1, Number(fallbackBounds?.width) || DEFAULT_SIZE.width)));
+        fallback.setAttribute('height', String(Math.max(1, Number(fallbackBounds?.height) || DEFAULT_SIZE.height)));
+        fallback.setAttribute('fill', '#ffffff');
+        return fallback;
+    }
+
+    function normalizeTemplateGeometryV1(inputGeometry, fallback = {}) {
+        const fallbackViewBox = normalizeBounds(
+            fallback.viewBoxBounds || fallback.viewBoxRef || DEFAULT_SIZE,
+            DEFAULT_SIZE
+        );
+        const fallbackPrintArea = normalizeBounds(
+            fallback.printAreaBounds || fallback.printAreaRef || fallbackViewBox,
+            fallbackViewBox
+        );
+        const source = inputGeometry && typeof inputGeometry === 'object' ? inputGeometry : {};
+        const viewBoxBounds = normalizeBounds(
+            source.viewBoxBounds || source.viewBoxRef || source.viewBox || fallbackViewBox,
+            fallbackViewBox
+        );
+        const printAreaBounds = normalizeBounds(
+            source.printAreaBounds || source.printAreaRef || source.maskShapeBounds || fallbackPrintArea,
+            fallbackPrintArea
+        );
+        const maskShapeBounds = normalizeBounds(
+            source.maskShapeBounds || source.printAreaBounds || printAreaBounds,
+            printAreaBounds
+        );
+        const maskShapeMarkup = typeof source.maskShapeMarkup === 'string'
+            ? source.maskShapeMarkup.trim()
+            : '';
+        const templateSourceHash = String(
+            source.templateSourceHash
+            || hashString(`${maskShapeMarkup}|${viewBoxBounds.x}|${viewBoxBounds.y}|${viewBoxBounds.width}|${viewBoxBounds.height}`)
+        );
+
+        return {
+            format: TEMPLATE_GEOMETRY_V1_FORMAT,
+            version: 1,
+            viewBoxBounds: {
+                x: roundNumber(viewBoxBounds.x),
+                y: roundNumber(viewBoxBounds.y),
+                width: roundNumber(viewBoxBounds.width),
+                height: roundNumber(viewBoxBounds.height)
+            },
+            printAreaBounds: {
+                x: roundNumber(printAreaBounds.x),
+                y: roundNumber(printAreaBounds.y),
+                width: roundNumber(printAreaBounds.width),
+                height: roundNumber(printAreaBounds.height)
+            },
+            maskShapeBounds: {
+                x: roundNumber(maskShapeBounds.x),
+                y: roundNumber(maskShapeBounds.y),
+                width: roundNumber(maskShapeBounds.width),
+                height: roundNumber(maskShapeBounds.height)
+            },
+            maskShapeMarkup,
+            templateSourceHash
+        };
+    }
+
+    function resolveTemplateGeometry(productSvg, options = {}) {
+        const productMarkup = extractTemplateSvg(productSvg || options.productSvg || options.svgTemplate || '', {});
+        const root = productMarkup ? parseSvgMarkup(productMarkup) : null;
+        const fallbackViewBox = normalizeBounds(options.viewBoxBounds || DEFAULT_SIZE, DEFAULT_SIZE);
+        const viewBoxBounds = root
+            ? normalizeBounds(getSvgSourceBounds(root, fallbackViewBox), fallbackViewBox)
+            : fallbackViewBox;
+        const fallbackMask = document.createElementNS(SVG_NS, 'rect');
+        fallbackMask.setAttribute('x', String(viewBoxBounds.x));
+        fallbackMask.setAttribute('y', String(viewBoxBounds.y));
+        fallbackMask.setAttribute('width', String(viewBoxBounds.width));
+        fallbackMask.setAttribute('height', String(viewBoxBounds.height));
+        fallbackMask.setAttribute('fill', '#ffffff');
+
+        const selectedMaskNode = root ? resolveTemplateMaskNode(root) : null;
+        const normalizedMaskNode = selectedMaskNode
+            ? (cloneShapeWithAncestorTransform(selectedMaskNode, root) || selectedMaskNode.cloneNode(true))
+            : fallbackMask;
+        normalizedMaskNode.removeAttribute?.('id');
+        normalizedMaskNode.removeAttribute?.('class');
+        normalizedMaskNode.removeAttribute?.('pointer-events');
+        normalizedMaskNode.removeAttribute?.('opacity');
+        normalizedMaskNode.removeAttribute?.('stroke');
+        normalizedMaskNode.removeAttribute?.('stroke-width');
+        normalizedMaskNode.removeAttribute?.('stroke-dasharray');
+        normalizedMaskNode.setAttribute?.('fill', '#ffffff');
+
+        const maskShapeBounds = normalizeBounds(getSvgNodeBounds(normalizedMaskNode, viewBoxBounds), viewBoxBounds);
+        const serializer = new XMLSerializer();
+        const maskShapeMarkup = serializer.serializeToString(normalizedMaskNode);
+        const templateSourceHash = hashString(productMarkup || `${viewBoxBounds.x} ${viewBoxBounds.y} ${viewBoxBounds.width} ${viewBoxBounds.height}`);
+
+        return normalizeTemplateGeometryV1({
+            format: TEMPLATE_GEOMETRY_V1_FORMAT,
+            version: 1,
+            viewBoxBounds,
+            printAreaBounds: maskShapeBounds,
+            maskShapeBounds,
+            maskShapeMarkup,
+            templateSourceHash
+        }, {
+            viewBoxBounds,
+            printAreaBounds: maskShapeBounds
+        });
+    }
+
     function buildPreviewOutlineNode(maskNode, transform) {
         const outlineNode = maskNode.cloneNode(true);
         const originalTransform = outlineNode.getAttribute?.('transform') || '';
@@ -2226,147 +2558,26 @@
     }
 
     function buildNormalizedProductPreviewSvg({
-        designSvg,
         designDocument,
         productSvg,
         fillRatio = 0.9,
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
-        const normalizedDocument = unwrapDesignDocumentV3(designDocument || designSvg);
-        if (normalizedDocument) {
-            return buildMaskedProductPreview({
-                designDocument: normalizedDocument,
-                productSvg,
-                fillRatio,
-                includeOutline,
-                backgroundColor
-            });
-        }
+        const scene = unwrapDesignSceneV1(designDocument || null, {
+            productSvg
+        }) || buildSceneFromDesignDocument(designDocument, null) || null;
 
-        const extractedPreviewMarkup = extractTemplateSvg(designSvg, {});
-        const extractedPreviewRoot = extractedPreviewMarkup ? parseSvgMarkup(extractedPreviewMarkup) : null;
-        const isPreClippedPreview = Boolean(extractedPreviewRoot && isMaskedExportSvgRoot(extractedPreviewRoot));
-        // Editor exports keep original canvas coordinates plus a clipPath; crop them to the print area first
-        // so downstream thumbnail scaling works from the visible design bounds instead of the full canvas.
-        const previewMarkup = isPreClippedPreview
-            ? (buildMaskedExportPreviewMarkup(extractedPreviewRoot, DEFAULT_SIZE) || extractedPreviewMarkup)
-            : extractedPreviewMarkup;
-        const previewRoot = previewMarkup ? parseSvgMarkup(previewMarkup) : null;
-        const previewSource = previewMarkup
-            ? toDataUrlFromSvgMarkup(previewMarkup)
-            : toPreviewImageSource(designSvg, {});
-        const maskMarkup = extractTemplateSvg(productSvg, {});
-        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
-        const previewHref = previewMarkup
-            ? toDataUrlFromSvgMarkup(previewMarkup)
-            : previewSource;
-
-        if (!maskRoot || !previewHref) {
+        if (!scene) {
             return '';
         }
 
-        const maskNode = pickMaskNode(maskRoot);
-        if (!maskNode) {
-            return '';
-        }
-
-        const maskSourceBounds = getSvgSourceBounds(maskRoot, DEFAULT_SIZE);
-        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
-        const previewSourceBounds = previewRoot
-            ? getSvgSourceBounds(previewRoot, printAreaBounds)
-            : printAreaBounds;
-
-        const previewGeometry = buildPreviewCanvasGeometry(printAreaBounds, { contentFillRatio: fillRatio });
-        const previewTargetBounds = {
-            x: previewGeometry.x,
-            y: previewGeometry.y,
-            width: previewGeometry.width,
-            height: previewGeometry.height
-        };
-        const maskTransform = buildContainTransform(printAreaBounds, previewTargetBounds);
-        const previewTransform = buildContainTransform(previewSourceBounds, previewTargetBounds);
-        const wrapperViewBox = `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`;
-        const wrapper = document.createElementNS(SVG_NS, 'svg');
-        wrapper.setAttribute('xmlns', SVG_NS);
-        wrapper.setAttribute('viewBox', wrapperViewBox);
-        wrapper.setAttribute('width', '100%');
-        wrapper.setAttribute('height', '100%');
-        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        wrapper.setAttribute('style', buildStyleString({
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            'background-color': backgroundColor || 'transparent'
-        }));
-
-        const background = document.createElementNS(SVG_NS, 'rect');
-        background.setAttribute('x', '0');
-        background.setAttribute('y', '0');
-        background.setAttribute('width', String(previewGeometry.canvasWidth));
-        background.setAttribute('height', String(previewGeometry.canvasHeight));
-        background.setAttribute('fill', backgroundColor || 'transparent');
-        wrapper.appendChild(background);
-
-        const defs = document.createElementNS(SVG_NS, 'defs');
-        const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
-        const mask = document.createElementNS(SVG_NS, 'mask');
-        mask.setAttribute('id', maskId);
-        mask.setAttribute('maskUnits', 'userSpaceOnUse');
-        mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
-
-        const blackRect = document.createElementNS(SVG_NS, 'rect');
-        blackRect.setAttribute('x', '0');
-        blackRect.setAttribute('y', '0');
-        blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
-        blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
-        blackRect.setAttribute('fill', '#000000');
-        mask.appendChild(blackRect);
-
-        const previewMaskNode = buildPreviewMaskNode(maskNode, maskTransform);
-        mask.appendChild(previewMaskNode);
-        defs.appendChild(mask);
-        wrapper.appendChild(defs);
-
-        const maskedWhiteBase = document.createElementNS(SVG_NS, 'rect');
-        maskedWhiteBase.setAttribute('x', '0');
-        maskedWhiteBase.setAttribute('y', '0');
-        maskedWhiteBase.setAttribute('width', String(previewGeometry.canvasWidth));
-        maskedWhiteBase.setAttribute('height', String(previewGeometry.canvasHeight));
-        maskedWhiteBase.setAttribute('fill', '#ffffff');
-        maskedWhiteBase.setAttribute('mask', `url(#${maskId})`);
-        wrapper.appendChild(maskedWhiteBase);
-
-        if (previewRoot) {
-            appendSvgRootDefs(defs, previewRoot);
-            const previewGroup = document.createElementNS(SVG_NS, 'g');
-            previewGroup.setAttribute('mask', `url(#${maskId})`);
-            previewGroup.setAttribute('transform', previewTransform);
-
-            if (appendSvgRootGraphicChildren(previewGroup, previewRoot)) {
-                wrapper.appendChild(previewGroup);
-            }
-        } else if (previewHref) {
-            const image = document.createElementNS(SVG_NS, 'image');
-            image.setAttribute('href', previewHref);
-            image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', previewHref);
-            image.setAttribute('x', String(previewSourceBounds.x));
-            image.setAttribute('y', String(previewSourceBounds.y));
-            image.setAttribute('width', String(previewSourceBounds.width));
-            image.setAttribute('height', String(previewSourceBounds.height));
-            image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-            image.setAttribute('mask', `url(#${maskId})`);
-            image.setAttribute('transform', previewTransform);
-            wrapper.appendChild(image);
-        }
-
-        if (includeOutline) {
-            const previewOutlineNode = buildPreviewOutlineNode(maskNode, maskTransform);
-            wrapper.appendChild(previewOutlineNode);
-        }
-
-        return new XMLSerializer().serializeToString(wrapper);
+        return buildPreviewSvg(scene, {
+            productSvg,
+            fillRatio,
+            includeOutline,
+            backgroundColor
+        });
     }
 
     function buildNormalizedProductPreviewDataUrl(options = {}) {
@@ -2375,46 +2586,30 @@
     }
 
     function buildCanonicalProductPreviewSvg(options = {}) {
-        const designDocument = unwrapDesignDocumentV3(
-            options.designDocument
+        const designDocumentLike = options.designScene
+            || options.designSceneV1
+            || options.design_scene_v1
+            || options.designDocument
             || options.designDocumentV3
             || options.design_document_v3
             || options.designDocumentV2
             || options.design_document_v2
-            || null
-        );
+            || null;
         const designSvg = typeof options.designSvg === 'string' ? options.designSvg : '';
         const productSvg = typeof options.productSvg === 'string' ? options.productSvg : (typeof options.svgTemplate === 'string' ? options.svgTemplate : '');
+        const scene = unwrapDesignSceneV1(designDocumentLike, {
+            productSvg
+        }) || buildSceneFromDesignDocument(designDocumentLike, null, {});
+        if (!scene) {
+            return '';
+        }
 
-        const normalizedPreview = buildNormalizedProductPreviewSvg({
-            designDocument,
-            designSvg,
+        return buildPreviewSvg(scene, {
             productSvg,
             fillRatio: Number.isFinite(Number(options.fillRatio)) ? Number(options.fillRatio) : 1,
             includeOutline: options.includeOutline === true,
             backgroundColor: options.backgroundColor || 'transparent'
-        });
-
-        if (typeof normalizedPreview === 'string' && normalizedPreview.trim()) {
-            return normalizedPreview;
-        }
-
-        const renderedSvg = designDocument
-            ? renderDesignDocumentToSvg(designDocument, {
-                productSvg,
-                viewBoxBounds: designDocument.viewBoxRef || designDocument.viewBox || null
-            })
-            : '';
-        if (typeof renderedSvg === 'string' && renderedSvg.trim()) {
-            return renderedSvg;
-        }
-
-        const extractedSvg = extractTemplateSvg(designSvg, {});
-        if (typeof extractedSvg === 'string' && extractedSvg.trim()) {
-            return extractedSvg;
-        }
-
-        return typeof designSvg === 'string' && designSvg.trim() ? designSvg.trim() : '';
+        }) || '';
     }
 
     function buildCanonicalProductPreviewDataUrl(options = {}) {
@@ -2429,91 +2624,18 @@
         includeOutline = true,
         backgroundColor = 'transparent'
     } = {}) {
-        const normalizedDocument = unwrapDesignDocumentV3(designDocument);
-        if (!normalizedDocument) {
+        const scene = unwrapDesignSceneV1(designDocument, {
+            productSvg
+        }) || buildSceneFromDesignDocument(designDocument, null, {});
+        if (!scene) {
             return '';
         }
-
-        const fallbackPrintArea = normalizeBounds(normalizedDocument.printAreaRef, DEFAULT_SIZE);
-        const maskMarkup = extractTemplateSvg(productSvg, {});
-        const maskRoot = maskMarkup ? parseSvgMarkup(maskMarkup) : null;
-        const maskNode = maskRoot ? pickMaskNode(maskRoot) : null;
-        if (!maskNode) {
-            return '';
-        }
-
-        const maskSourceBounds = getSvgSourceBounds(maskRoot, fallbackPrintArea);
-        const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
-        const sourceBounds = normalizeBounds(printAreaBounds, fallbackPrintArea);
-        const previewGeometry = buildPreviewCanvasGeometry(sourceBounds, { contentFillRatio: fillRatio });
-        const previewTargetBounds = {
-            x: previewGeometry.x,
-            y: previewGeometry.y,
-            width: previewGeometry.width,
-            height: previewGeometry.height
-        };
-        const sourceTransform = buildContainTransform(sourceBounds, previewTargetBounds);
-        const wrapper = document.createElementNS(SVG_NS, 'svg');
-        const defs = document.createElementNS(SVG_NS, 'defs');
-        const maskId = `design-preview-mask-${Math.random().toString(36).slice(2, 10)}`;
-        const mask = document.createElementNS(SVG_NS, 'mask');
-
-        wrapper.setAttribute('xmlns', SVG_NS);
-        wrapper.setAttribute('viewBox', `0 0 ${previewGeometry.canvasWidth} ${previewGeometry.canvasHeight}`);
-        wrapper.setAttribute('width', '100%');
-        wrapper.setAttribute('height', '100%');
-        wrapper.setAttribute('preserveAspectRatio', 'xMidYMid meet');
-        wrapper.setAttribute('style', buildStyleString({
-            display: 'block',
-            width: '100%',
-            height: '100%',
-            overflow: 'hidden',
-            'background-color': backgroundColor || 'transparent'
-        }));
-
-        const background = document.createElementNS(SVG_NS, 'rect');
-        background.setAttribute('x', '0');
-        background.setAttribute('y', '0');
-        background.setAttribute('width', String(previewGeometry.canvasWidth));
-        background.setAttribute('height', String(previewGeometry.canvasHeight));
-        background.setAttribute('fill', backgroundColor || 'transparent');
-        wrapper.appendChild(background);
-
-        mask.setAttribute('id', maskId);
-        mask.setAttribute('maskUnits', 'userSpaceOnUse');
-        mask.setAttribute('maskContentUnits', 'userSpaceOnUse');
-
-        const blackRect = document.createElementNS(SVG_NS, 'rect');
-        blackRect.setAttribute('x', '0');
-        blackRect.setAttribute('y', '0');
-        blackRect.setAttribute('width', String(previewGeometry.canvasWidth));
-        blackRect.setAttribute('height', String(previewGeometry.canvasHeight));
-        blackRect.setAttribute('fill', '#000000');
-        mask.appendChild(blackRect);
-        mask.appendChild(buildPreviewMaskNode(maskNode, sourceTransform));
-        defs.appendChild(mask);
-        wrapper.appendChild(defs);
-
-        const whiteBase = document.createElementNS(SVG_NS, 'rect');
-        whiteBase.setAttribute('x', '0');
-        whiteBase.setAttribute('y', '0');
-        whiteBase.setAttribute('width', String(previewGeometry.canvasWidth));
-        whiteBase.setAttribute('height', String(previewGeometry.canvasHeight));
-        whiteBase.setAttribute('fill', '#ffffff');
-        whiteBase.setAttribute('mask', `url(#${maskId})`);
-        wrapper.appendChild(whiteBase);
-
-        const contentGroup = document.createElementNS(SVG_NS, 'g');
-        contentGroup.setAttribute('mask', `url(#${maskId})`);
-        contentGroup.setAttribute('transform', sourceTransform);
-        appendDesignDocumentElements(contentGroup, normalizedDocument, printAreaBounds);
-        wrapper.appendChild(contentGroup);
-
-        if (includeOutline) {
-            wrapper.appendChild(buildPreviewOutlineNode(maskNode, sourceTransform));
-        }
-
-        return new XMLSerializer().serializeToString(wrapper);
+        return buildPreviewSvg(scene, {
+            productSvg,
+            fillRatio,
+            includeOutline,
+            backgroundColor
+        });
     }
 
     function buildPreviewSvgMarkup(previewValue, maskValue = null, options = {}) {
@@ -2759,8 +2881,10 @@
     }
 
     function importDesignDocumentV2IntoEditor(editor, designDocumentInput, options = {}) {
-        const designDocument = unwrapDesignDocumentV3(designDocumentInput);
-        if (!editor?.canvas || !designDocument) {
+        const scene = unwrapDesignSceneV1(designDocumentInput, {
+            productSvg: editor?.currentProduct?.svg_template || ''
+        });
+        if (!editor?.canvas || !scene) {
             return false;
         }
 
@@ -2769,7 +2893,7 @@
             editor.clearCanvas();
         }
 
-        const elements = Array.isArray(designDocument.elements) ? [...designDocument.elements] : [];
+        const elements = Array.isArray(scene.elements) ? [...scene.elements] : [];
         elements
             .sort((left, right) => toNumber(left?.zIndex, 0) - toNumber(right?.zIndex, 0))
             .forEach((element) => {
@@ -2791,8 +2915,8 @@
                 }
             });
 
-        if (Number.isFinite(Number(designDocument.selectedBaseId))) {
-            editor.selectedBaseId = Number(designDocument.selectedBaseId);
+        if (Number.isFinite(Number(scene.selectedBaseId))) {
+            editor.selectedBaseId = Number(scene.selectedBaseId);
             editor.renderProductBaseOptions?.();
             editor.updateProductPriceDisplay?.();
         }
@@ -2810,8 +2934,22 @@
         return importDesignDocumentV2IntoEditor(editor, designDocumentInput, options);
     }
 
+    window.DesignRenderEngine = {
+        TEMPLATE_GEOMETRY_V1_FORMAT,
+        DESIGN_SCENE_V1_FORMAT,
+        DESIGN_COORDINATE_UNIT,
+        resolveTemplateGeometry,
+        serializeEditorScene,
+        unwrapDesignSceneV1,
+        renderSceneToSvg,
+        buildPreviewSvg,
+        buildPreviewDataUrl
+    };
+
     window.DesignSvgStore = {
         DEFAULT_SIZE,
+        TEMPLATE_GEOMETRY_V1_FORMAT,
+        DESIGN_SCENE_V1_FORMAT,
         DESIGN_DOCUMENT_V2_FORMAT,
         DESIGN_DOCUMENT_V3_FORMAT,
         DESIGN_COORDINATE_UNIT,
@@ -2831,6 +2969,12 @@
         buildCanonicalProductPreviewDataUrl,
         buildFramedPreviewSvgMarkup,
         buildPreviewSvgMarkup,
+        resolveTemplateGeometry,
+        serializeEditorScene,
+        unwrapDesignSceneV1,
+        renderSceneToSvg,
+        buildPreviewSvg,
+        buildPreviewDataUrl,
         serializeEditorToSvg,
         extractTemplateSvg,
         importSvgIntoEditor,

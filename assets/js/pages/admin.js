@@ -2153,24 +2153,18 @@ function resolveItemPreviewAndDesign(item, snapshot) {
         snapshot?.svgTemplate,
         snapshot?.svg_template
     ].find((value) => typeof value === 'string' && value.trim()) || '';
-    const designDocument = item?.design_document_v3
-        || item?.designDocumentV3
-        || item?.design_document_v2
-        || item?.designDocumentV2
-        || snapshot?.designDocumentV3
-        || snapshot?.design_document_v3
-        || snapshot?.designDocumentV2
-        || snapshot?.design_document_v2
+    const designScene = item?.designSceneV1
+        || item?.design_scene_v1
+        || snapshot?.designSceneV1
+        || snapshot?.design_scene_v1
         || null;
 
     const normalizedPreviewUrl = (
-        (designSvg || designDocument)
+        designScene
         && productSvgTemplate
-        && window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl
+        && window.DesignRenderEngine?.buildPreviewDataUrl
     )
-        ? window.DesignSvgStore.buildCanonicalProductPreviewDataUrl({
-            designDocument,
-            designSvg,
+        ? window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
             productSvg: productSvgTemplate,
             fillRatio: 0.9,
             includeOutline: false,
@@ -2185,7 +2179,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
     );
 
     const previewUrl = designPreviewUrl || httpPreview || designDataUrl;
-    const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);
+    const hasDesign = Boolean(designSvg || designScene || designPreviewUrl || httpPreview);
 
     return {
         previewUrl,

@@ -20,7 +20,7 @@ window.supabaseClient = supabaseClient;
 // ===== CART MANAGEMENT =====
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
-var CART_PREVIEW_VERSION = 6;
+var CART_PREVIEW_VERSION = 7;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -880,8 +880,7 @@ function normalizeCartItem(item) {
         design: item.design || null,
         designPreview: item.designPreview || null,
         designPreviewVersion: Number(item.designPreviewVersion || 0) || 0,
-        designDocumentV3: item.designDocumentV3 || item.design_document_v3 || null,
-        designDocumentV2: item.designDocumentV2 || item.design_document_v2 || null,
+        designSceneV1: item.designSceneV1 || item.design_scene_v1 || null,
         svgTemplate: item.svgTemplate || item.svg_template || fallbackProduct?.svg_template || null,
         slug: item.slug || fallbackProduct?.slug || null
     };
@@ -943,19 +942,8 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         return storedPreview;
     }
 
-    const designSource = typeof item.design === 'string' && item.design.trim()
-        ? item.design
-        : '';
-    const fallbackPreview = designSource ? buildSvgDataUrl(designSource) : null;
-
-    const designDocument = item?.designDocumentV3
-        || item?.design_document_v3
-        || item?.designDocumentV2
-        || item?.design_document_v2
-        || null;
-    const canonicalPreview = window.DesignSvgStore?.buildCanonicalProductPreviewDataUrl?.({
-        designDocument,
-        designSvg: designSource,
+    const designScene = item?.designSceneV1 || item?.design_scene_v1 || null;
+    const canonicalPreview = window.DesignRenderEngine?.buildPreviewDataUrl?.(designScene, {
         productSvg: String(item?.svgTemplate || item?.svg_template || '').trim(),
         fillRatio: 1,
         includeOutline: false,
@@ -965,11 +953,14 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         return canonicalPreview;
     }
 
+    const designSource = typeof item.design === 'string' && item.design.trim()
+        ? item.design
+        : '';
     if (designSource) {
         return buildSvgDataUrl(designSource);
     }
 
-    return fallbackPreview;
+    return null;
 }
 
 window.buildAdaptiveCartPreviewDataUrl = buildAdaptiveCartPreviewDataUrl;
@@ -1207,8 +1198,7 @@ function compactCartItems(items) {
             design: item?.design ? String(item.design).trim() : null,
             designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
             designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
-            designDocumentV3: item?.designDocumentV3 || item?.design_document_v3 || null,
-            designDocumentV2: item?.designDocumentV2 || item?.design_document_v2 || null,
+            designSceneV1: item?.designSceneV1 || item?.design_scene_v1 || null,
             slug: item?.slug ? String(item.slug).trim() : null,
             svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
             baseId: item?.baseId || item?.base_id || null,
