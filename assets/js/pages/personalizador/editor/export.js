@@ -468,7 +468,7 @@ Object.assign(DesignEditor.prototype, {
             design: design,
             designDocumentV2: designDocument,
             designPreview: null,
-            designPreviewVersion: 5,
+            designPreviewVersion: 6,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
