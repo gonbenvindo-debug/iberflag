@@ -91,6 +91,17 @@ Object.assign(DesignEditor.prototype, {
         if (this.canvas?.style) {
             this.canvas.style.overflow = 'visible';
             this.canvas.setAttribute('overflow', 'visible');
+            this.canvas.setAttribute('shape-rendering', 'geometricPrecision');
+            this.canvas.setAttribute('text-rendering', 'geometricPrecision');
+            this.canvas.style.transform = '';
+            this.canvas.style.willChange = 'auto';
+            this.canvas.style.transformOrigin = 'center center';
+            this.canvas.style.transformBox = 'fill-box';
+            this.canvas.style.imageRendering = 'auto';
+            this.canvas.style.backfaceVisibility = 'hidden';
+            this.canvas.style.webkitFontSmoothing = 'antialiased';
+            this.canvas.style.textRendering = 'geometricPrecision';
+            this.canvas.style.shapeRendering = 'geometricPrecision';
         }
 
         const checkerSize = 20;
@@ -119,10 +130,18 @@ Object.assign(DesignEditor.prototype, {
         if (this.canvas?.style) {
             this.canvas.style.overflow = 'visible';
             this.canvas.setAttribute('overflow', 'visible');
+            this.canvas.setAttribute('shape-rendering', 'geometricPrecision');
+            this.canvas.setAttribute('text-rendering', 'geometricPrecision');
             this.canvas.style.transformOrigin = 'center center';
             this.canvas.style.transformBox = 'fill-box';
-            this.canvas.style.willChange = 'transform';
-            this.canvas.style.transform = `translate3d(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px, 0) scale(${zoom.toFixed(4)})`;
+            // Avoid 3D transforms/will-change here: they can promote SVG to a rasterized GPU layer.
+            this.canvas.style.willChange = 'auto';
+            this.canvas.style.imageRendering = 'auto';
+            this.canvas.style.backfaceVisibility = 'hidden';
+            this.canvas.style.webkitFontSmoothing = 'antialiased';
+            this.canvas.style.textRendering = 'geometricPrecision';
+            this.canvas.style.shapeRendering = 'geometricPrecision';
+            this.canvas.style.transform = `translate(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px) scale(${zoom.toFixed(4)})`;
         }
         this.updateResetViewButtonVisibility?.();
     },
