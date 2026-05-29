@@ -2188,14 +2188,21 @@
             return null;
         }
 
-        const parsed = parseSvgMarkup(markup);
+        const sourceMarkup = markup.trim();
+        const sourceHasSvgRoot = /<svg\b/i.test(sourceMarkup);
+        const svgMarkup = sourceHasSvgRoot
+            ? sourceMarkup
+            : `<svg xmlns="${SVG_NS}">${sourceMarkup}</svg>`;
+        const parsed = parseSvgMarkup(svgMarkup);
         if (!parsed) {
             return null;
         }
 
-        if (String(parsed.tagName || '').toLowerCase() !== 'svg') {
-            const directMaskNode = resolveMaskGeometryNode(parsed, { preferNonRect: true }) || parsed;
-            return cloneShapeWithAncestorTransform(directMaskNode, null) || directMaskNode.cloneNode(true);
+        const directMaskNode = sourceHasSvgRoot
+            ? resolveTemplateMaskNode(parsed)
+            : resolveMaskGeometryNode(parsed, { preferNonRect: true });
+        if (directMaskNode) {
+            return cloneShapeWithAncestorTransform(directMaskNode, parsed) || directMaskNode.cloneNode(true);
         }
 
         const firstRenderable = Array.from(parsed.children || []).find((child) => {
