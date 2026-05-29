@@ -616,6 +616,18 @@
             };
         }
 
+        // Prefer transformed bounds whenever possible so we persist exactly what is on screen
+        // (translate/scale/parent transforms included), preventing tiny corner previews.
+        const transformedBounds = measureSvgNodeBounds(node, null);
+        if (isUsableBounds(transformedBounds)) {
+            return {
+                x: Number(transformedBounds.x) || 0,
+                y: Number(transformedBounds.y) || 0,
+                width: Math.max(1, Number(transformedBounds.width) || 1),
+                height: Math.max(1, Number(transformedBounds.height) || 1)
+            };
+        }
+
         if (tagName === 'image' || tagName === 'rect') {
             const width = Math.max(1, toNumber(node.getAttribute('width'), toNumber(elementData?.width, 1)));
             const height = Math.max(1, toNumber(node.getAttribute('height'), toNumber(elementData?.height, 1)));
