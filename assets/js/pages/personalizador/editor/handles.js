@@ -972,8 +972,10 @@ Object.assign(DesignEditor.prototype, {
 
         return Boolean(
             target === this.canvas ||
+            target === this.canvasStage ||
             target === this.printArea ||
             target.closest('#design-canvas') ||
+            target.closest('#canvas-stage') ||
             target.closest('#canvas-wrapper')
         );
     },
