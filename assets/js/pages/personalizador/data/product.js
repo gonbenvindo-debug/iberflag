@@ -696,23 +696,6 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
-        // EXACT same source + renderer used by "Continuar design".
-        if (typeof this.autoSave === 'function') {
-            try { this.autoSave(); } catch (_) {}
-        }
-        const autosaveRecord = typeof this.getAutosaveRecord === 'function'
-            ? this.getAutosaveRecord()
-            : null;
-        if (autosaveRecord && typeof this.buildAutosavePreviewSvg === 'function') {
-            const autosavePreviewSvg = this.buildAutosavePreviewSvg(autosaveRecord);
-            const autosavePreviewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
-                ? this.svgToPreviewDataUrl(autosavePreviewSvg)
-                : (autosavePreviewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(autosavePreviewSvg)}` : '');
-            if (typeof autosavePreviewDataUrl === 'string' && autosavePreviewDataUrl.trim()) {
-                return autosavePreviewDataUrl;
-            }
-        }
-
         const scene = designScene || this.getDesignSceneV1?.() || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
@@ -727,6 +710,23 @@ Object.assign(DesignEditor.prototype, {
             });
             if (typeof preview === 'string' && preview.trim()) {
                 return preview;
+            }
+        }
+
+        // Fallback: keep autosave-based preview only if scene rendering fails.
+        if (typeof this.autoSave === 'function') {
+            try { this.autoSave(); } catch (_) {}
+        }
+        const autosaveRecord = typeof this.getAutosaveRecord === 'function'
+            ? this.getAutosaveRecord()
+            : null;
+        if (autosaveRecord && typeof this.buildAutosavePreviewSvg === 'function') {
+            const autosavePreviewSvg = this.buildAutosavePreviewSvg(autosaveRecord);
+            const autosavePreviewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
+                ? this.svgToPreviewDataUrl(autosavePreviewSvg)
+                : (autosavePreviewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(autosavePreviewSvg)}` : '');
+            if (typeof autosavePreviewDataUrl === 'string' && autosavePreviewDataUrl.trim()) {
+                return autosavePreviewDataUrl;
             }
         }
 

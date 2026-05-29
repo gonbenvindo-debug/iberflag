@@ -1000,8 +1000,12 @@
             || editor?.canvas?.querySelector?.('#print-area-outline')
             || null
         );
-        const normalizedEditorMaskNode = editorMaskNode?.cloneNode
-            ? editorMaskNode.cloneNode(true)
+        const resolvedEditorMaskNode = resolveMaskGeometryNode(editorMaskNode, { preferNonRect: true }) || editorMaskNode;
+        const normalizedEditorMaskNode = resolvedEditorMaskNode?.cloneNode
+            ? (
+                cloneShapeWithAncestorTransform(resolvedEditorMaskNode, editor?.canvas || null)
+                || resolvedEditorMaskNode.cloneNode(true)
+            )
             : null;
         if (normalizedEditorMaskNode) {
             normalizedEditorMaskNode.removeAttribute?.('id');
@@ -1793,8 +1797,8 @@
         return Boolean(tagName && MASK_GEOMETRY_TAGS.has(tagName));
     }
 
-    function pickMaskNode(root) {
-        if (!root) return null;
+    function collectMaskCandidateNodes(root) {
+        if (!root) return [];
         const collectNodes = (node) => {
             if (!node || !node.children) {
                 return [];
@@ -1813,9 +1817,16 @@
             });
         };
 
-        const candidates = collectNodes(root).filter(Boolean);
+        return collectNodes(root).filter(Boolean);
+    }
+
+    function pickMaskNode(root, options = {}) {
+        if (!root) return null;
+
+        const candidates = collectMaskCandidateNodes(root);
         const rootBounds = getSvgSourceBounds(root, DEFAULT_SIZE);
         const rootArea = Math.max(1, (Number(rootBounds?.width) || 1) * (Number(rootBounds?.height) || 1));
+        const preferNonRect = options?.preferNonRect === true;
         const scored = candidates
             .filter((node) => {
                 return isMaskGeometryNode(node);
@@ -1854,6 +1865,10 @@
                     score += 150000;
                 }
 
+                if (preferNonRect && tagName === 'rect') {
+                    score -= 1200000;
+                }
+
                 if (
                     tagName === 'rect'
                     && areaRatio >= 0.92
@@ -1876,7 +1891,7 @@
         return scored.length > 0 ? scored[0].node : candidates[0] || null;
     }
 
-    function resolveMaskGeometryNode(rootLike) {
+    function resolveMaskGeometryNode(rootLike, options = {}) {
         if (!rootLike) {
             return null;
         }
@@ -1885,7 +1900,7 @@
             return rootLike;
         }
 
-        return pickMaskNode(rootLike);
+        return pickMaskNode(rootLike, options);
     }
 
     function getSvgNodeBounds(node, fallback = DEFAULT_SIZE) {
@@ -2157,7 +2172,7 @@
         for (const selector of selectors) {
             const explicit = root.querySelector(selector);
             if (explicit) {
-                return resolveMaskGeometryNode(explicit) || explicit;
+                return resolveMaskGeometryNode(explicit, { preferNonRect: true }) || explicit;
             }
         }
 
@@ -2175,7 +2190,7 @@
         }
 
         if (String(parsed.tagName || '').toLowerCase() !== 'svg') {
-            const directMaskNode = resolveMaskGeometryNode(parsed) || parsed;
+            const directMaskNode = resolveMaskGeometryNode(parsed, { preferNonRect: true }) || parsed;
             return cloneShapeWithAncestorTransform(directMaskNode, null) || directMaskNode.cloneNode(true);
         }
 
@@ -2184,7 +2199,7 @@
             return tag && tag !== 'defs' && tag !== 'title' && tag !== 'desc' && tag !== 'metadata';
         });
         if (firstRenderable) {
-            const resolved = resolveMaskGeometryNode(firstRenderable) || firstRenderable;
+            const resolved = resolveMaskGeometryNode(firstRenderable, { preferNonRect: true }) || firstRenderable;
             return cloneShapeWithAncestorTransform(resolved, parsed) || resolved.cloneNode(true);
         }
 

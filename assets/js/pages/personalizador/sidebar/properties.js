@@ -1828,9 +1828,7 @@ Object.assign(DesignEditor.prototype, {
         };
         const compactDesign = JSON.stringify(payload);
 
-        const candidates = svgDesign && svgDesign.length <= 180000
-            ? [svgDesign, compactDesign]
-            : [compactDesign, svgDesign];
+        const candidates = [compactDesign, svgDesign];
 
         let stored = false;
         for (const value of candidates) {
