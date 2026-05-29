@@ -1842,32 +1842,14 @@
             }
         }
 
-        const clipShape = getMaskedExportClipNode(root);
         const previewGroup = document.importNode(clippedGroup, true);
         if (previewGroup && previewGroup.insertBefore) {
-            const whiteBase = clipShape
-                ? document.importNode(clipShape, true)
-                : document.createElementNS(SVG_NS, 'rect');
-
-            if (!clipShape) {
-                whiteBase.setAttribute('x', String(clipBounds.x));
-                whiteBase.setAttribute('y', String(clipBounds.y));
-                whiteBase.setAttribute('width', String(Math.max(1, clipBounds.width)));
-                whiteBase.setAttribute('height', String(Math.max(1, clipBounds.height)));
-            }
-
-            whiteBase.removeAttribute?.('id');
-            whiteBase.removeAttribute?.('class');
-            whiteBase.removeAttribute?.('style');
-            whiteBase.removeAttribute?.('clip-path');
-            whiteBase.removeAttribute?.('mask');
-            whiteBase.removeAttribute?.('filter');
-            whiteBase.removeAttribute?.('opacity');
-            whiteBase.removeAttribute?.('stroke');
-            whiteBase.removeAttribute?.('stroke-width');
-            whiteBase.removeAttribute?.('stroke-dasharray');
+            const whiteBase = document.createElementNS(SVG_NS, 'rect');
+            whiteBase.setAttribute('x', String(clipBounds.x));
+            whiteBase.setAttribute('y', String(clipBounds.y));
+            whiteBase.setAttribute('width', String(Math.max(1, clipBounds.width)));
+            whiteBase.setAttribute('height', String(Math.max(1, clipBounds.height)));
             whiteBase.setAttribute('fill', '#ffffff');
-            whiteBase.setAttribute('stroke', 'none');
             whiteBase.setAttribute('pointer-events', 'none');
             previewGroup.insertBefore(whiteBase, previewGroup.firstChild || null);
         }

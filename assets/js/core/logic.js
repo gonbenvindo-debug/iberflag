@@ -20,7 +20,7 @@ window.supabaseClient = supabaseClient;
 // ===== CART MANAGEMENT =====
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
-var CART_PREVIEW_VERSION = 6;
+var CART_PREVIEW_VERSION = 5;
 
 function escapeHtml(value) {
     return String(value || '')
