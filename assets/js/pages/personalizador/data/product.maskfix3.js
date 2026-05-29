@@ -700,7 +700,16 @@ Object.assign(DesignEditor.prototype, {
         const scene = currentScene || designScene || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
-            : this.getDesignSVG();
+            : (this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG());
+        const liveSnapshotSvg = this.getDesignSVG?.({ preferLiveSnapshot: true }) || rawDesignSvg;
+        const liveSnapshotPreviewSvg = typeof this.generateCartPreviewSVG === 'function'
+            ? this.generateCartPreviewSVG(liveSnapshotSvg)
+            : '';
+        if (typeof liveSnapshotPreviewSvg === 'string' && liveSnapshotPreviewSvg.trim().includes('<svg')) {
+            return typeof this.svgToPreviewDataUrl === 'function'
+                ? this.svgToPreviewDataUrl(liveSnapshotPreviewSvg)
+                : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(liveSnapshotPreviewSvg)}`;
+        }
         const templateGeometry = window.DesignRenderEngine?.resolveTemplateGeometry
             ? window.DesignRenderEngine.resolveTemplateGeometry(this.currentProduct?.svg_template || '')
             : null;
@@ -839,7 +848,7 @@ Object.assign(DesignEditor.prototype, {
         ) || null;
         const autosaveSvg = String(autosaveRecord?.parsed?.design_svg || autosaveRecord?.raw || '').trim();
         const liveScene = this.getDesignSceneV1?.() || null;
-        const liveSvg = this.getDesignSVG();
+        const liveSvg = this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG();
 
         this.cartStepsDesignSceneSnapshot = liveScene || autosaveScene || null;
         this.cartStepsDesignSnapshot = liveSvg || autosaveSvg || '';
