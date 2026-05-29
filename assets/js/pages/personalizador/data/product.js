@@ -701,10 +701,20 @@ Object.assign(DesignEditor.prototype, {
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
             : this.getDesignSVG();
+        const templateGeometry = window.DesignRenderEngine?.resolveTemplateGeometry
+            ? window.DesignRenderEngine.resolveTemplateGeometry(this.currentProduct?.svg_template || '')
+            : null;
+        const sceneForPreview = scene
+            ? {
+                ...scene,
+                templateGeometry: templateGeometry || scene.templateGeometry || null
+            }
+            : null;
 
-        if (scene && window.DesignRenderEngine?.buildPreviewDataUrl) {
-            const preview = window.DesignRenderEngine.buildPreviewDataUrl(scene, {
+        if (sceneForPreview && window.DesignRenderEngine?.buildPreviewDataUrl) {
+            const preview = window.DesignRenderEngine.buildPreviewDataUrl(sceneForPreview, {
                 productSvg: this.currentProduct?.svg_template || '',
+                templateGeometry: templateGeometry || undefined,
                 fillRatio: 1,
                 includeOutline: false,
                 backgroundColor: 'transparent'
