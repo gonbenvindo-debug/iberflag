@@ -167,6 +167,29 @@ Object.assign(DesignEditor.prototype, {
         return { x, y, width, height };
     },
 
+    collectAncestorTransformChain(element, stopNode = null) {
+        if (!element) return '';
+
+        const transforms = [];
+        let current = element.parentNode;
+        while (current && current !== stopNode) {
+            const transform = current.getAttribute?.('transform');
+            if (transform && String(transform).trim()) {
+                transforms.push(String(transform).trim());
+            }
+            current = current.parentNode;
+        }
+
+        return transforms.reverse().join(' ').trim();
+    },
+
+    composeTransformChain(outerTransform = '', innerTransform = '') {
+        return [outerTransform, innerTransform]
+            .map((value) => String(value || '').trim())
+            .filter(Boolean)
+            .join(' ');
+    },
+
     getExplicitTemplateBounds(root, fallbackBounds) {
         const candidates = [
             root?.getAttribute?.('data-personalizable-bounds'),
@@ -393,7 +416,7 @@ Object.assign(DesignEditor.prototype, {
         outsideGrid.setAttribute('mask', 'url(#print-area-outside-mask)');
     },
 
-    updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds = sourceBounds) {
+    updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds = sourceBounds, options = {}) {
         this.setDefaultPrintArea();
 
         if (!areaElement || !sourceBounds || !sourceBounds.width || !sourceBounds.height) {
@@ -427,6 +450,7 @@ Object.assign(DesignEditor.prototype, {
                 height: Number(sourceBounds.height) || 600
             };
         this.printAreaBounds = measuredBounds;
+        const ancestorTransform = String(options?.ancestorTransform || '').trim();
 
         logTemplateDebug('print-area-geometry', {
             sourceBounds,
@@ -448,6 +472,7 @@ Object.assign(DesignEditor.prototype, {
                 stroke: areaElement.getAttribute?.('stroke')
             },
             canvasViewBox: this.canvas?.getAttribute?.('viewBox') || '',
+            ancestorTransform,
             printAreaBounds: this.printAreaBounds
         });
 
@@ -465,7 +490,13 @@ Object.assign(DesignEditor.prototype, {
         visualArea.removeAttribute('vector-effect');
         visualArea.setAttribute('opacity', '1');
         visualArea.setAttribute('pointer-events', 'none');
-        visualArea.removeAttribute('transform');
+        const currentTransform = String(visualArea.getAttribute('transform') || '').trim();
+        const composedTransform = this.composeTransformChain(ancestorTransform, currentTransform);
+        if (composedTransform) {
+            visualArea.setAttribute('transform', composedTransform);
+        } else {
+            visualArea.removeAttribute('transform');
+        }
 
         this.printArea.setAttribute('x', String(measuredBounds.x));
         this.printArea.setAttribute('y', String(measuredBounds.y));
@@ -612,8 +643,24 @@ Object.assign(DesignEditor.prototype, {
             sourceBounds = this.getExplicitTemplateBounds(root, sourceBounds);
             const explicitAreaElement = this.findExplicitTemplateOutlineElement(root);
             const areaElement = explicitAreaElement || this.findTemplateOutlineElement(root, sourceBounds);
-            const outlineBounds = areaElement
-                ? window.DesignEditorPrintAreaLayout.measureElementBounds(areaElement, sourceBounds)
+            const ancestorTransform = areaElement
+                ? this.collectAncestorTransformChain(areaElement, root)
+                : '';
+            const areaElementForMeasure = areaElement
+                ? (() => {
+                    const clone = document.importNode(areaElement, true);
+                    const existingTransform = String(clone.getAttribute('transform') || '').trim();
+                    const composedTransform = this.composeTransformChain(ancestorTransform, existingTransform);
+                    if (composedTransform) {
+                        clone.setAttribute('transform', composedTransform);
+                    } else {
+                        clone.removeAttribute('transform');
+                    }
+                    return clone;
+                })()
+                : null;
+            const outlineBounds = areaElementForMeasure
+                ? window.DesignEditorPrintAreaLayout.measureElementBounds(areaElementForMeasure, sourceBounds)
                 : sourceBounds;
 
             logTemplateDebug('loadSVGTemplate', {
@@ -642,7 +689,8 @@ Object.assign(DesignEditor.prototype, {
                     points: areaElement.getAttribute?.('points'),
                     fill: areaElement.getAttribute?.('fill'),
                     stroke: areaElement.getAttribute?.('stroke')
-                } : null
+                } : null,
+                ancestorTransform
             });
 
             if (!areaElement) {
@@ -651,7 +699,9 @@ Object.assign(DesignEditor.prototype, {
                 return;
             }
 
-            this.updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds);
+            this.updatePrintAreaFromElement(areaElement, sourceBounds, outlineBounds, {
+                ancestorTransform
+            });
         } catch (error) {
             console.error('Error loading SVG template:', error);
             this.setDefaultPrintArea();
