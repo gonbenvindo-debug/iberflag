@@ -710,6 +710,19 @@ Object.assign(DesignEditor.prototype, {
                 templateGeometry: templateGeometry || scene.templateGeometry || null
             }
             : null;
+        if (sceneForPreview && typeof this.buildAutosavePreviewSvg === 'function') {
+            const previewSvg = this.buildAutosavePreviewSvg({
+                parsed: {
+                    design_scene_v1: sceneForPreview
+                }
+            });
+            const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
+                ? this.svgToPreviewDataUrl(previewSvg)
+                : (previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '');
+            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                return previewDataUrl;
+            }
+        }
 
         if (sceneForPreview && window.DesignRenderEngine?.buildPreviewDataUrl) {
             const preview = window.DesignRenderEngine.buildPreviewDataUrl(sceneForPreview, {
