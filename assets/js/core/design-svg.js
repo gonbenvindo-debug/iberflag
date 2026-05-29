@@ -994,7 +994,12 @@
         const viewBoxBounds = getCanvasViewBoxBounds(editor, options);
         const printAreaBounds = getEditorPrintAreaBounds(editor, viewBoxBounds);
         const productSvg = options.productSvg || editor?.currentProduct?.svg_template || '';
-        const editorMaskNode = editor?.canvas?.querySelector?.('#print-area-shape-outline, #print-area-outline') || null;
+        const editorMaskNode = (
+            editor?.canvas?.querySelector?.('#print-area-shape-outline')
+            || editor?.canvas?.querySelector?.('#print-area-shape-outline-border')
+            || editor?.canvas?.querySelector?.('#print-area-outline')
+            || null
+        );
         const normalizedEditorMaskNode = editorMaskNode?.cloneNode
             ? editorMaskNode.cloneNode(true)
             : null;
@@ -1781,10 +1786,15 @@
         return applyTransformToBounds(bounds, node?.getAttribute?.('transform'));
     }
 
+    const MASK_GEOMETRY_TAGS = new Set(['path', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'line']);
+
+    function isMaskGeometryNode(node) {
+        const tagName = String(node?.tagName || '').toLowerCase();
+        return Boolean(tagName && MASK_GEOMETRY_TAGS.has(tagName));
+    }
+
     function pickMaskNode(root) {
         if (!root) return null;
-
-        const geometryTags = new Set(['path', 'rect', 'circle', 'ellipse', 'polygon', 'polyline', 'line']);
         const collectNodes = (node) => {
             if (!node || !node.children) {
                 return [];
@@ -1804,10 +1814,11 @@
         };
 
         const candidates = collectNodes(root).filter(Boolean);
+        const rootBounds = getSvgSourceBounds(root, DEFAULT_SIZE);
+        const rootArea = Math.max(1, (Number(rootBounds?.width) || 1) * (Number(rootBounds?.height) || 1));
         const scored = candidates
             .filter((node) => {
-                const tagName = String(node.tagName || '').toLowerCase();
-                return geometryTags.has(tagName);
+                return isMaskGeometryNode(node);
             })
             .map((node) => {
                 const tagName = String(node.tagName || '').toLowerCase();
@@ -1819,6 +1830,9 @@
                 const fill = String(node.getAttribute?.('fill') || '').trim().toLowerCase();
                 const areaLike = tagName === 'path' ? Math.max(1, d.length) : Math.max(1, points.length);
                 let score = areaLike;
+                const bounds = getSvgNodeBounds(node, rootBounds);
+                const area = Math.max(1, (Number(bounds?.width) || 1) * (Number(bounds?.height) || 1));
+                const areaRatio = area / rootArea;
 
                 if (id.includes('print') || id.includes('shape') || id.includes('outline') || id.includes('mask')) {
                     score += 1000000;
@@ -1836,11 +1850,42 @@
                     score += 50000;
                 }
 
+                if (tagName !== 'rect') {
+                    score += 150000;
+                }
+
+                if (
+                    tagName === 'rect'
+                    && areaRatio >= 0.92
+                    && !id.includes('print')
+                    && !id.includes('mask')
+                    && !className.includes('print')
+                    && !className.includes('mask')
+                ) {
+                    score -= 900000;
+                }
+
+                if (id.includes('background') || id.includes('backdrop') || className.includes('background') || className.includes('backdrop')) {
+                    score -= 700000;
+                }
+
                 return { node, score };
             })
             .sort((left, right) => right.score - left.score);
 
         return scored.length > 0 ? scored[0].node : candidates[0] || null;
+    }
+
+    function resolveMaskGeometryNode(rootLike) {
+        if (!rootLike) {
+            return null;
+        }
+
+        if (isMaskGeometryNode(rootLike)) {
+            return rootLike;
+        }
+
+        return pickMaskNode(rootLike);
     }
 
     function getSvgNodeBounds(node, fallback = DEFAULT_SIZE) {
@@ -2112,7 +2157,7 @@
         for (const selector of selectors) {
             const explicit = root.querySelector(selector);
             if (explicit) {
-                return explicit;
+                return resolveMaskGeometryNode(explicit) || explicit;
             }
         }
 
@@ -2130,15 +2175,17 @@
         }
 
         if (String(parsed.tagName || '').toLowerCase() !== 'svg') {
-            return parsed.cloneNode(true);
+            const directMaskNode = resolveMaskGeometryNode(parsed) || parsed;
+            return cloneShapeWithAncestorTransform(directMaskNode, null) || directMaskNode.cloneNode(true);
         }
 
-        const node = Array.from(parsed.children || []).find((child) => {
+        const firstRenderable = Array.from(parsed.children || []).find((child) => {
             const tag = String(child?.tagName || '').toLowerCase();
             return tag && tag !== 'defs' && tag !== 'title' && tag !== 'desc' && tag !== 'metadata';
         });
-        if (node) {
-            return node.cloneNode(true);
+        if (firstRenderable) {
+            const resolved = resolveMaskGeometryNode(firstRenderable) || firstRenderable;
+            return cloneShapeWithAncestorTransform(resolved, parsed) || resolved.cloneNode(true);
         }
 
         const fallback = document.createElementNS(SVG_NS, 'rect');
