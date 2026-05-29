@@ -2200,7 +2200,7 @@
 
         const maskSourceBounds = getSvgSourceBounds(maskRoot, fallbackPrintArea);
         const printAreaBounds = getSvgNodeBounds(maskNode, maskSourceBounds);
-        const sourceBounds = normalizeBounds(maskSourceBounds, fallbackPrintArea);
+        const sourceBounds = normalizeBounds(printAreaBounds, fallbackPrintArea);
         const previewGeometry = buildPreviewCanvasGeometry(sourceBounds, { contentFillRatio: fillRatio });
         const previewTargetBounds = {
             x: previewGeometry.x,
@@ -2262,7 +2262,7 @@
         const contentGroup = document.createElementNS(SVG_NS, 'g');
         contentGroup.setAttribute('mask', `url(#${maskId})`);
         contentGroup.setAttribute('transform', sourceTransform);
-        appendDesignDocumentElements(contentGroup, normalizedDocument, sourceBounds);
+        appendDesignDocumentElements(contentGroup, normalizedDocument, printAreaBounds);
         wrapper.appendChild(contentGroup);
 
         if (includeOutline) {
