@@ -935,8 +935,30 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         ? item.design
         : '';
     const fallbackPreview = item.designPreview || (designSource ? buildSvgDataUrl(designSource) : null);
+    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
+    const svgTemplate = getCartItemSvgTemplate(item);
+
+    if ((designSource || designDocument) && svgTemplate && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
+        const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+            designDocument,
+            designSvg: designSource,
+            productSvg: svgTemplate,
+            fillRatio: 0.9,
+            includeOutline: false,
+            backgroundColor: 'transparent'
+        });
+
+        if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+            return previewDataUrl;
+        }
+    }
 
     if (designSource) {
+        const maskedExportPreview = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(designSource, { x: 0, y: 0, width: 800, height: 600 });
+        if (typeof maskedExportPreview === 'string' && maskedExportPreview.trim()) {
+            return maskedExportPreview;
+        }
+
         const framedPreviewMarkup = window.DesignSvgStore?.buildFramedPreviewSvgMarkup?.(designSource, {
             backgroundColor: 'transparent',
             contentFillRatio: 0.9,
@@ -945,27 +967,8 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         if (typeof framedPreviewMarkup === 'string' && framedPreviewMarkup.includes('<svg')) {
             return buildSvgDataUrl(framedPreviewMarkup);
         }
+
         return buildSvgDataUrl(designSource);
-    }
-
-    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
-    const svgTemplate = getCartItemSvgTemplate(item);
-
-    if ((!designSource && !designDocument) || !svgTemplate || !window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
-        return fallbackPreview;
-    }
-
-    const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
-        designDocument,
-        designSvg: designSource,
-        productSvg: svgTemplate,
-        fillRatio: 0.9,
-        includeOutline: false,
-        backgroundColor: 'transparent'
-    });
-
-    if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-        return previewDataUrl;
     }
 
     return fallbackPreview;
