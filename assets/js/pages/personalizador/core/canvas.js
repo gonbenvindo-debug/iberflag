@@ -2,6 +2,21 @@
 // CANVAS & VIEWPORT
 // ============================================================
 Object.assign(DesignEditor.prototype, {
+    ensureWorldCheckerLayer() {
+        if (!this.canvasStage) {
+            return null;
+        }
+
+        let layer = this.canvasStage.querySelector('#canvas-world-grid');
+        if (!layer) {
+            layer = document.createElement('div');
+            layer.id = 'canvas-world-grid';
+            layer.setAttribute('aria-hidden', 'true');
+            this.canvasStage.insertBefore(layer, this.canvasStage.firstChild || null);
+        }
+
+        return layer;
+    },
 
     getEditableBounds() {
         // Bounds stay in SVG coordinates. The visible limits then scale with
@@ -106,6 +121,7 @@ Object.assign(DesignEditor.prototype, {
 
         const checkerSize = 20;
         this.canvasWrapper.style.setProperty('--checker-size', `${checkerSize.toFixed(2)}px`);
+        this.ensureWorldCheckerLayer?.();
 
         this.applyCameraTransform?.();
         return true;
@@ -124,6 +140,7 @@ Object.assign(DesignEditor.prototype, {
         const offsetY = Number(this.cameraOffset?.y) || 0;
         const bounds = this.getZoomBounds?.() || { min: 0.5, max: 12 };
         const zoom = Math.max(bounds.min, Math.min(bounds.max, Number(this.zoom) || 1));
+        const checkerLayer = this.ensureWorldCheckerLayer?.();
 
         this.canvasWrapper.style.transform = '';
         this.canvasWrapper.style.overflow = 'visible';
@@ -143,6 +160,12 @@ Object.assign(DesignEditor.prototype, {
             this.canvas.style.textRendering = 'geometricPrecision';
             this.canvas.style.shapeRendering = 'geometricPrecision';
             this.canvas.style.transform = `translate(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px) scale(${zoom.toFixed(4)})`;
+        }
+
+        if (checkerLayer?.style) {
+            checkerLayer.style.transformOrigin = 'center center';
+            checkerLayer.style.willChange = 'auto';
+            checkerLayer.style.transform = `translate(${offsetX.toFixed(3)}px, ${offsetY.toFixed(3)}px) scale(${zoom.toFixed(4)})`;
         }
         this.updateResetViewButtonVisibility?.();
     },
