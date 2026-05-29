@@ -20,7 +20,7 @@ window.supabaseClient = supabaseClient;
 // ===== CART MANAGEMENT =====
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
-var CART_PREVIEW_VERSION = 3;
+var CART_PREVIEW_VERSION = 4;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -945,23 +945,6 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         ? item.design
         : '';
     const fallbackPreview = designSource ? buildSvgDataUrl(designSource) : null;
-    const designDocument = item.designDocumentV2 || item.design_document_v2 || null;
-    const svgTemplate = getCartItemSvgTemplate(item);
-
-    if ((designSource || designDocument) && svgTemplate && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl) {
-        const previewDataUrl = window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
-            designDocument,
-            designSvg: designSource,
-            productSvg: svgTemplate,
-            fillRatio: 0.9,
-            includeOutline: false,
-            backgroundColor: 'transparent'
-        });
-
-        if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-            return previewDataUrl;
-        }
-    }
 
     if (designSource) {
         const maskedExportPreview = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(designSource, { x: 0, y: 0, width: 800, height: 600 });
