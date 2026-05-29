@@ -718,6 +718,20 @@ Object.assign(DesignEditor.prototype, {
             ? designSvgMarkup
             : this.getDesignSVG({ preferLiveSnapshot: true });
 
+        const normalizedPreview = this.currentProduct?.svg_template && window.DesignSvgStore?.buildNormalizedProductPreviewDataUrl
+            ? window.DesignSvgStore.buildNormalizedProductPreviewDataUrl({
+                designDocument: designDocument || this.getDesignDocumentV2?.() || null,
+                designSvg: rawDesignSvg,
+                productSvg: this.currentProduct.svg_template,
+                fillRatio: 0.88,
+                includeOutline: true,
+                backgroundColor: 'transparent'
+            })
+            : '';
+        if (typeof normalizedPreview === 'string' && normalizedPreview.trim()) {
+            return normalizedPreview;
+        }
+
         const previewSvg = this.generateCartPreviewSVG(rawDesignSvg) || rawDesignSvg;
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
     },

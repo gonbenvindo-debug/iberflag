@@ -20,6 +20,7 @@ window.supabaseClient = supabaseClient;
 // ===== CART MANAGEMENT =====
 var CART_STORAGE_KEY = 'iberflag_cart';
 var LEGACY_CART_STORAGE_KEYS = ['iberflag_cart', 'cart'];
+var CART_PREVIEW_VERSION = 3;
 
 function escapeHtml(value) {
     return String(value || '')
@@ -936,7 +937,7 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         ? item.designPreview.trim()
         : '';
     const previewVersion = Number(item.designPreviewVersion || 0) || 0;
-    if (storedPreview && previewVersion >= 2) {
+    if (storedPreview && previewVersion >= CART_PREVIEW_VERSION) {
         return storedPreview;
     }
 
@@ -1006,7 +1007,7 @@ function hydrateCartSvgTemplatesFromProducts(products) {
         const nextSvgTemplate = String(item?.svgTemplate || item?.svg_template || product?.svg_template || '').trim();
         const nextSlug = String(item?.slug || product?.slug || '').trim();
         const currentPreviewVersion = Number(item?.designPreviewVersion || 0) || 0;
-        const canKeepPreview = currentPreviewVersion >= 2
+        const canKeepPreview = currentPreviewVersion >= CART_PREVIEW_VERSION
             && typeof item?.designPreview === 'string'
             && item.designPreview.trim().length > 0;
         const nextPreview = buildAdaptiveCartPreviewDataUrl({
@@ -1016,7 +1017,7 @@ function hydrateCartSvgTemplatesFromProducts(products) {
             designPreview: canKeepPreview ? item.designPreview : null
         });
         const nextPreviewVersion = (typeof nextPreview === 'string' && nextPreview.trim())
-            ? 2
+            ? CART_PREVIEW_VERSION
             : currentPreviewVersion;
 
         if (nextSvgTemplate === String(item?.svgTemplate || '').trim()
@@ -1046,7 +1047,7 @@ function getCartItemImage(item) {
         return '';
     }
 
-    if ((Number(item.designPreviewVersion || 0) || 0) >= 2
+    if ((Number(item.designPreviewVersion || 0) || 0) >= CART_PREVIEW_VERSION
         && typeof item.designPreview === 'string'
         && item.designPreview.trim()) {
         return item.designPreview.trim();
