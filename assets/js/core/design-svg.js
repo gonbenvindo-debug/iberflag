@@ -1842,19 +1842,7 @@
             }
         }
 
-        const previewGroup = document.importNode(clippedGroup, true);
-        if (previewGroup && previewGroup.insertBefore) {
-            const whiteBase = document.createElementNS(SVG_NS, 'rect');
-            whiteBase.setAttribute('x', String(clipBounds.x));
-            whiteBase.setAttribute('y', String(clipBounds.y));
-            whiteBase.setAttribute('width', String(Math.max(1, clipBounds.width)));
-            whiteBase.setAttribute('height', String(Math.max(1, clipBounds.height)));
-            whiteBase.setAttribute('fill', '#ffffff');
-            whiteBase.setAttribute('pointer-events', 'none');
-            previewGroup.insertBefore(whiteBase, previewGroup.firstChild || null);
-        }
-
-        previewSvg.appendChild(previewGroup);
+        previewSvg.appendChild(document.importNode(clippedGroup, true));
 
         return new XMLSerializer().serializeToString(previewSvg);
     }
