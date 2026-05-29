@@ -581,10 +581,10 @@ function resolveOrderItemVisual(item, snapshot) {
     const designDataUrl = normalizedPreviewUrl || ((designSvg && typeof buildSvgDataUrl === 'function') ? buildSvgDataUrl(designSvg) : '');
     const hasDesign = Boolean(designSvg || explicitPreview);
 
-    // Priority: SVG design -> explicit preview -> product image fallback.
+    // Priority: explicit saved preview -> SVG render fallback -> product image fallback.
     return {
         designSvg,
-        previewUrl: designDataUrl || explicitPreview || fallbackImage,
+        previewUrl: explicitPreview || designDataUrl || fallbackImage,
         hasDesign
     };
 }

@@ -2174,7 +2174,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
             : ''
     );
 
-    const previewUrl = designDataUrl || designPreviewUrl || httpPreview;
+    const previewUrl = designPreviewUrl || httpPreview || designDataUrl;
     const hasDesign = Boolean(designSvg || designPreviewUrl || httpPreview);
 
     return {

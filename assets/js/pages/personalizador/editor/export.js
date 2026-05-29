@@ -468,6 +468,7 @@ Object.assign(DesignEditor.prototype, {
             design: design,
             designDocumentV2: designDocument,
             designPreview: null,
+            designPreviewVersion: 2,
             svgTemplate: this.currentProduct.svg_template || null,
             baseId: selectedBase ? Number(selectedBase.base_id) : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
@@ -475,9 +476,27 @@ Object.assign(DesignEditor.prototype, {
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))
         };
 
-        cartItem.designPreview = window.buildAdaptiveCartPreviewDataUrl
-            ? window.buildAdaptiveCartPreviewDataUrl(cartItem)
-            : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`;
+        const canReuseCartStepPreview = (
+            typeof this.cartStepsDesignPreview === 'string'
+            && this.cartStepsDesignPreview.trim()
+            && typeof this.cartStepsDesignSnapshot === 'string'
+            && this.cartStepsDesignSnapshot === design
+        );
+        const canonicalPreview = canReuseCartStepPreview
+            ? this.cartStepsDesignPreview
+            : (
+                typeof this.buildCartStepsPreviewDataUrl === 'function'
+                    ? this.buildCartStepsPreviewDataUrl(designDocument, design)
+                    : ''
+            );
+
+        cartItem.designPreview = (typeof canonicalPreview === 'string' && canonicalPreview.trim())
+            ? canonicalPreview
+            : (
+                window.buildAdaptiveCartPreviewDataUrl
+                    ? window.buildAdaptiveCartPreviewDataUrl(cartItem)
+                    : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`
+            );
 
         if (window.CartAssetStore?.saveDesign && designId) {
             await window.CartAssetStore.saveDesign(designId, design, {
