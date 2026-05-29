@@ -122,7 +122,8 @@ Object.assign(DesignEditor.prototype, {
         if (!this.canvasWrapper) return;
         const offsetX = Number(this.cameraOffset?.x) || 0;
         const offsetY = Number(this.cameraOffset?.y) || 0;
-        const zoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
+        const bounds = this.getZoomBounds?.() || { min: 0.5, max: 12 };
+        const zoom = Math.max(bounds.min, Math.min(bounds.max, Number(this.zoom) || 1));
 
         this.canvasWrapper.style.transform = '';
         this.canvasWrapper.style.overflow = 'visible';

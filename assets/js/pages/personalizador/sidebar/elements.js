@@ -1296,8 +1296,10 @@ Object.assign(DesignEditor.prototype, {
                 if (event.ctrlKey || event.metaKey || event.altKey) return;
                 event.preventDefault();
                 const delta = Number(event.deltaY) || 0;
-                const zoomStep = delta < 0 ? 0.08 : -0.08;
-                this.setZoom((Number(this.zoom) || 1) + zoomStep, {
+                const direction = delta < 0 ? 'in' : 'out';
+                const wheelSteps = Math.max(1, Math.round(Math.abs(delta) / 90));
+                const nextZoom = this.getSteppedZoom?.(direction, this.zoom, wheelSteps);
+                this.setZoom(nextZoom ?? this.zoom, {
                     clientX: event.clientX,
                     clientY: event.clientY
                 });

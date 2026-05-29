@@ -1523,10 +1523,35 @@ Object.assign(DesignEditor.prototype, {
         this.updateResetViewButtonVisibility?.();
     },
 
+    getZoomBounds() {
+        const min = Math.max(0.05, Number(this.zoomMin) || 0.5);
+        const max = Math.max(min + 0.01, Number(this.zoomMax) || 12);
+        return { min, max };
+    },
+
+    normalizeZoomValue(value) {
+        const bounds = this.getZoomBounds();
+        const numeric = Number(value);
+        const fallback = Number(this.zoom) || Number(this.initialZoom) || 1;
+        const safe = Number.isFinite(numeric) ? numeric : fallback;
+        return Math.min(bounds.max, Math.max(bounds.min, safe));
+    },
+
+    getSteppedZoom(direction = 'in', baseZoom = null, steps = 1) {
+        const current = this.normalizeZoomValue(baseZoom != null ? baseZoom : this.zoom);
+        const factor = Math.max(1.01, Number(this.zoomStepFactor) || 1.14);
+        const safeSteps = Math.max(1, Math.round(Number(steps) || 1));
+        const multiplier = Math.pow(factor, safeSteps);
+        const next = String(direction).toLowerCase() === 'out'
+            ? current / multiplier
+            : current * multiplier;
+        return this.normalizeZoomValue(next);
+    },
+
     setZoom(newZoom, options = {}) {
         this.hideGuideLines?.();
-        const previousZoom = Math.max(0.5, Math.min(5, Number(this.zoom) || 1));
-        const nextZoom = Math.max(0.5, Math.min(5, Number(newZoom) || (Number(this.zoom) || 1)));
+        const previousZoom = this.normalizeZoomValue(this.zoom);
+        const nextZoom = this.normalizeZoomValue(newZoom);
         const hasAnchor = Number.isFinite(Number(options?.clientX)) && Number.isFinite(Number(options?.clientY));
 
         let anchorData = null;

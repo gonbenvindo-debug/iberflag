@@ -31,6 +31,9 @@ class DesignEditor {
         this.layerDragIndex = null;
         this.initialZoom = 0.9;
         this.zoom = this.initialZoom;
+        this.zoomMin = 0.5;
+        this.zoomMax = 12;
+        this.zoomStepFactor = 1.14;
         this.cameraOffset = { x: 0, y: 0 };
         this.isPanningCamera = false;
         this.isPinchZooming = false;
@@ -193,9 +196,9 @@ class DesignEditor {
             case 'add-shape':
                 return this.addShape?.(payload);
             case 'zoom-in':
-                return this.setZoom?.(this.zoom + 0.1);
+                return this.setZoom?.(this.getSteppedZoom?.('in') ?? ((Number(this.zoom) || 1) * 1.14));
             case 'zoom-out':
-                return this.setZoom?.(this.zoom - 0.1);
+                return this.setZoom?.(this.getSteppedZoom?.('out') ?? ((Number(this.zoom) || 1) / 1.14));
             case 'reset-view':
                 return this.resetCanvasView?.();
             case 'undo':
