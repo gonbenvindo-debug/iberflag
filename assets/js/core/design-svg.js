@@ -1360,8 +1360,12 @@
             return '';
         }
 
+        const preferredProductGeometry = (options.productSvg || options.svgTemplate)
+            ? resolveTemplateGeometry(options.productSvg || options.svgTemplate || '', options)
+            : null;
         const resolvedGeometry = normalizeTemplateGeometryV1(
             options.templateGeometry
+            || preferredProductGeometry
             || scene.templateGeometry
             || resolveTemplateGeometry(options.productSvg || options.svgTemplate || '', options),
             scene.templateGeometry || DEFAULT_SIZE

@@ -696,7 +696,8 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
-        const scene = designScene || this.getDesignSceneV1?.() || null;
+        const currentScene = this.getDesignSceneV1?.() || null;
+        const scene = currentScene || designScene || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
             : this.getDesignSVG();
@@ -814,9 +815,11 @@ Object.assign(DesignEditor.prototype, {
             autosaveRecord?.parsed?.design_scene_v1 || autosaveRecord?.parsed || null
         ) || null;
         const autosaveSvg = String(autosaveRecord?.parsed?.design_svg || autosaveRecord?.raw || '').trim();
+        const liveScene = this.getDesignSceneV1?.() || null;
+        const liveSvg = this.getDesignSVG();
 
-        this.cartStepsDesignSceneSnapshot = autosaveScene || this.getDesignSceneV1?.() || null;
-        this.cartStepsDesignSnapshot = autosaveSvg || this.getDesignSVG();
+        this.cartStepsDesignSceneSnapshot = liveScene || autosaveScene || null;
+        this.cartStepsDesignSnapshot = liveSvg || autosaveSvg || '';
         previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignSceneSnapshot, this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 
