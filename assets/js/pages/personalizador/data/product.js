@@ -696,29 +696,27 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
+        // EXACT same source + renderer used by "Continuar design".
+        if (typeof this.autoSave === 'function') {
+            try { this.autoSave(); } catch (_) {}
+        }
+        const autosaveRecord = typeof this.getAutosaveRecord === 'function'
+            ? this.getAutosaveRecord()
+            : null;
+        if (autosaveRecord && typeof this.buildAutosavePreviewSvg === 'function') {
+            const autosavePreviewSvg = this.buildAutosavePreviewSvg(autosaveRecord);
+            const autosavePreviewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
+                ? this.svgToPreviewDataUrl(autosavePreviewSvg)
+                : (autosavePreviewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(autosavePreviewSvg)}` : '');
+            if (typeof autosavePreviewDataUrl === 'string' && autosavePreviewDataUrl.trim()) {
+                return autosavePreviewDataUrl;
+            }
+        }
+
         const scene = designScene || this.getDesignSceneV1?.() || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
             : this.getDesignSVG();
-
-        // Keep cart-step confirmation preview on the exact same rendering path
-        // used by "Continuar design" (autosave recovery preview).
-        if (typeof this.buildAutosavePreviewSvg === 'function') {
-            const previewSvg = this.buildAutosavePreviewSvg({
-                parsed: {
-                    format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
-                    design_scene_v1: scene,
-                    design_svg: rawDesignSvg
-                },
-                raw: rawDesignSvg
-            });
-            const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
-                ? this.svgToPreviewDataUrl(previewSvg)
-                : (previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '');
-            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                return previewDataUrl;
-            }
-        }
 
         if (scene && window.DesignRenderEngine?.buildPreviewDataUrl) {
             const preview = window.DesignRenderEngine.buildPreviewDataUrl(scene, {
@@ -805,8 +803,20 @@ Object.assign(DesignEditor.prototype, {
             ? document.activeElement
             : null;
         this.ensureSelectedBase();
-        this.cartStepsDesignSceneSnapshot = this.getDesignSceneV1?.() || null;
-        this.cartStepsDesignSnapshot = this.getDesignSVG();
+
+        if (typeof this.autoSave === 'function') {
+            try { this.autoSave(); } catch (_) {}
+        }
+        const autosaveRecord = typeof this.getAutosaveRecord === 'function'
+            ? this.getAutosaveRecord()
+            : null;
+        const autosaveScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+            autosaveRecord?.parsed?.design_scene_v1 || autosaveRecord?.parsed || null
+        ) || null;
+        const autosaveSvg = String(autosaveRecord?.parsed?.design_svg || autosaveRecord?.raw || '').trim();
+
+        this.cartStepsDesignSceneSnapshot = autosaveScene || this.getDesignSceneV1?.() || null;
+        this.cartStepsDesignSnapshot = autosaveSvg || this.getDesignSVG();
         previewImg.src = this.buildCartStepsPreviewDataUrl(this.cartStepsDesignSceneSnapshot, this.cartStepsDesignSnapshot);
         this.cartStepsDesignPreview = previewImg.src;
 
