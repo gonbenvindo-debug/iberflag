@@ -814,6 +814,7 @@ Object.assign(DesignEditor.prototype, {
             {
                 const guides = this.dragStart.guides || this.calculateGuides(this.selectedElement);
                 const transformedBounds = this.dragStart.transformedBounds || this.getTransformedBounds(this.selectedElement);
+                const snapThreshold = this.getGuideSnapThresholdSvg?.() || this.guideThreshold;
                 const elLeft   = transformedBounds.left   + deltaX;
                 const elRight  = transformedBounds.right  + deltaX;
                 const elTop    = transformedBounds.top    + deltaY;
@@ -831,7 +832,7 @@ Object.assign(DesignEditor.prototype, {
                 testV.forEach(vx => {
                     guides.vertical.forEach(g => {
                         const diff = Math.abs(vx - g.value);
-                        if (diff < this.guideThreshold && (!bestX || diff < bestX.diff)) {
+                        if (diff < snapThreshold && (!bestX || diff < bestX.diff)) {
                             bestX = { value: g.value, diff, type: g.type, offsetX: g.value - vx };
                         }
                     });
@@ -840,7 +841,7 @@ Object.assign(DesignEditor.prototype, {
                 testH.forEach(hy => {
                     guides.horizontal.forEach(g => {
                         const diff = Math.abs(hy - g.value);
-                        if (diff < this.guideThreshold && (!bestY || diff < bestY.diff)) {
+                        if (diff < snapThreshold && (!bestY || diff < bestY.diff)) {
                             bestY = { value: g.value, diff, type: g.type, offsetY: g.value - hy };
                         }
                     });

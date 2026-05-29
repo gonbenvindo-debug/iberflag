@@ -132,6 +132,38 @@ Object.assign(DesignEditor.prototype, {
         return this.getProjectGuideFrame().bounds;
     },
 
+    getSvgLengthFromClientPixels(clientPixels) {
+        const pixels = Number(clientPixels);
+        if (!Number.isFinite(pixels) || pixels <= 0) {
+            return 0;
+        }
+
+        const metrics = this.getCanvasViewportMetrics?.();
+        const scale = Number(metrics?.scale);
+        if (!Number.isFinite(scale) || scale <= 0) {
+            return pixels;
+        }
+
+        return pixels / scale;
+    },
+
+    getGuideSnapThresholdSvg() {
+        const baseThreshold = Number(this.guideThreshold);
+        const fallback = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 14;
+        return Math.max(0.1, this.getSvgLengthFromClientPixels(fallback));
+    },
+
+    getGuideReleaseThresholdSvg() {
+        const baseThreshold = Number(this.guideThreshold);
+        const fallbackThreshold = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 14;
+        const releaseThreshold = Number(this.guideReleaseThreshold);
+        const fallbackRelease = Number.isFinite(releaseThreshold) && releaseThreshold > 0
+            ? releaseThreshold
+            : 22;
+        const releasePixels = Math.max(fallbackThreshold + 2, fallbackRelease);
+        return Math.max(this.getGuideSnapThresholdSvg(), this.getSvgLengthFromClientPixels(releasePixels));
+    },
+
     getTransformedSvgBounds(node, fallback = null) {
         if (!node?.getBBox) {
             return fallback;
@@ -218,6 +250,31 @@ Object.assign(DesignEditor.prototype, {
             return null;
         };
 
+        const printAreaBounds = normalizeBounds(this.printAreaBounds);
+        if (printAreaBounds) {
+            return {
+                bounds: printAreaBounds,
+                center: {
+                    x: printAreaBounds.x + (printAreaBounds.width / 2),
+                    y: printAreaBounds.y + (printAreaBounds.height / 2)
+                }
+            };
+        }
+
+        const printAreaRect = this.canvas?.querySelector?.('#print-area-outline');
+        if (printAreaRect) {
+            const bbox = normalizeBounds(this.getTransformedSvgBounds(printAreaRect));
+            if (bbox) {
+                return {
+                    bounds: bbox,
+                    center: {
+                        x: bbox.x + (bbox.width / 2),
+                        y: bbox.y + (bbox.height / 2)
+                    }
+                }
+            }
+        }
+
         const outline = this.canvas?.querySelector?.('#print-area-shape-outline-border, #print-area-shape-outline');
         if (outline) {
             const bbox = normalizeBounds(this.getTransformedSvgBounds(outline));
@@ -232,18 +289,18 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        const printAreaBounds = normalizeBounds(this.printAreaBounds);
-        if (printAreaBounds) {
+        const editableBounds = normalizeBounds(fallback);
+        if (editableBounds) {
             return {
-                bounds: printAreaBounds,
+                bounds: editableBounds,
                 center: {
-                    x: printAreaBounds.x + (printAreaBounds.width / 2),
-                    y: printAreaBounds.y + (printAreaBounds.height / 2)
+                    x: editableBounds.x + (editableBounds.width / 2),
+                    y: editableBounds.y + (editableBounds.height / 2)
                 }
             };
         }
 
-        const safeFallback = normalizeBounds(fallback) || { x: 0, y: 0, width: 1, height: 1 };
+        const safeFallback = { x: 0, y: 0, width: 1, height: 1 };
         return {
             bounds: safeFallback,
             center: {
@@ -730,13 +787,14 @@ Object.assign(DesignEditor.prototype, {
     applySnapToMove(deltaX, deltaY, snaps, proposedCenter) {
         let snappedDeltaX = deltaX;
         let snappedDeltaY = deltaY;
+        const threshold = this.getGuideSnapThresholdSvg();
 
-        if (snaps.x && Math.abs(snaps.x.diff) < this.guideThreshold && proposedCenter) {
+        if (snaps.x && Math.abs(snaps.x.diff) < threshold && proposedCenter) {
             // Keep snap incremental to avoid runaway jumps while dragging.
             snappedDeltaX += snaps.x.value - proposedCenter.x;
         }
 
-        if (snaps.y && Math.abs(snaps.y.diff) < this.guideThreshold && proposedCenter) {
+        if (snaps.y && Math.abs(snaps.y.diff) < threshold && proposedCenter) {
             // Keep snap incremental to avoid runaway jumps while dragging.
             snappedDeltaY += snaps.y.value - proposedCenter.y;
         }
@@ -759,7 +817,7 @@ Object.assign(DesignEditor.prototype, {
             return null;
         }
 
-        const releaseDistance = Math.max(this.guideThreshold + 2, this.guideReleaseThreshold);
+        const releaseDistance = this.getGuideReleaseThresholdSvg();
         const distanceFromLockedAxis = Math.abs(proposedCenterValue - lockedSnap.value);
 
         if (distanceFromLockedAxis <= releaseDistance) {
