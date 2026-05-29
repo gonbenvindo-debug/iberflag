@@ -652,11 +652,6 @@ Object.assign(DesignEditor.prototype, {
                     return new XMLSerializer().serializeToString(doc);
                 }
 
-                const vbY = viewBoxParts[1];
-                const vbHeight = viewBoxParts[3];
-                const centerY = vbY + (vbHeight / 2);
-                const verticalInsetTransform = `translate(0 ${centerY}) scale(1 0.9) translate(0 ${-centerY})`;
-
                 const clipPath = svgRoot.querySelector('clipPath[id^="design-export-clip"], clipPath#design-export-clip');
                 const clipShape = clipPath
                     ? Array.from(clipPath.children || []).find((child) => {
@@ -668,7 +663,6 @@ Object.assign(DesignEditor.prototype, {
 
                 if (clipShape && clippedGroup && clippedGroup.parentNode) {
                     const previewLayer = doc.createElementNS('http://www.w3.org/2000/svg', 'g');
-                    previewLayer.setAttribute('transform', verticalInsetTransform);
 
                     clippedGroup.parentNode.insertBefore(previewLayer, clippedGroup);
                     previewLayer.appendChild(clippedGroup);
