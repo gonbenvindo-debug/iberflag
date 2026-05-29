@@ -696,10 +696,32 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
-        const renderEngine = window.DesignRenderEngine;
         const scene = designScene || this.getDesignSceneV1?.() || null;
-        if (scene && renderEngine?.buildPreviewDataUrl) {
-            const preview = renderEngine.buildPreviewDataUrl(scene, {
+        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
+            ? designSvgMarkup
+            : this.getDesignSVG();
+
+        // Keep cart-step confirmation preview on the exact same rendering path
+        // used by "Continuar design" (autosave recovery preview).
+        if (typeof this.buildAutosavePreviewSvg === 'function') {
+            const previewSvg = this.buildAutosavePreviewSvg({
+                parsed: {
+                    format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
+                    design_scene_v1: scene,
+                    design_svg: rawDesignSvg
+                },
+                raw: rawDesignSvg
+            });
+            const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
+                ? this.svgToPreviewDataUrl(previewSvg)
+                : (previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '');
+            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                return previewDataUrl;
+            }
+        }
+
+        if (scene && window.DesignRenderEngine?.buildPreviewDataUrl) {
+            const preview = window.DesignRenderEngine.buildPreviewDataUrl(scene, {
                 productSvg: this.currentProduct?.svg_template || '',
                 fillRatio: 1,
                 includeOutline: false,
@@ -710,9 +732,6 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
-            ? designSvgMarkup
-            : this.getDesignSVG();
         return rawDesignSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(rawDesignSvg)}` : '';
     },
 
