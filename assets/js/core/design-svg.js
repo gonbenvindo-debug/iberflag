@@ -616,15 +616,15 @@
             };
         }
 
-        // Prefer transformed bounds whenever possible so we persist exactly what is on screen
-        // (translate/scale/parent transforms included), preventing tiny corner previews.
-        const transformedBounds = measureSvgNodeBounds(node, null);
-        if (isUsableBounds(transformedBounds)) {
+        // IMPORTANT: serialize in template SVG units (not viewport/screen CTM units),
+        // otherwise frame ratios shrink and previews jump to the corner.
+        const canonicalSvgBounds = getSvgNodeBounds(node);
+        if (isUsableBounds(canonicalSvgBounds)) {
             return {
-                x: Number(transformedBounds.x) || 0,
-                y: Number(transformedBounds.y) || 0,
-                width: Math.max(1, Number(transformedBounds.width) || 1),
-                height: Math.max(1, Number(transformedBounds.height) || 1)
+                x: Number(canonicalSvgBounds.x) || 0,
+                y: Number(canonicalSvgBounds.y) || 0,
+                width: Math.max(1, Number(canonicalSvgBounds.width) || 1),
+                height: Math.max(1, Number(canonicalSvgBounds.height) || 1)
             };
         }
 
