@@ -732,6 +732,9 @@
             object-fit: contain;
             object-position: center;
             display: block;
+            box-sizing: border-box;
+            padding-top: 8px;
+            padding-bottom: 8px;
             border-radius: 10px;
             background-color: #f8fafc;
             background-image: none;
@@ -921,6 +924,8 @@
 
             .cart-design-preview {
                 height: 42dvh;
+                padding-top: 6px;
+                padding-bottom: 6px;
             }
 
             .cart-base-grid {
