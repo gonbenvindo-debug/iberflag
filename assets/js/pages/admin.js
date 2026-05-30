@@ -2216,6 +2216,40 @@ function stripInvalidXmlChars(input) {
     );
 }
 
+function parseDataUrl(dataUrl) {
+    const raw = String(dataUrl || '').trim();
+    const match = raw.match(/^data:([^;,]+)?((?:;[^,]*)*?),(.*)$/is);
+    if (!match) {
+        return null;
+    }
+
+    const mimeType = String(match[1] || '').trim().toLowerCase();
+    const params = String(match[2] || '');
+    const payload = String(match[3] || '');
+    const isBase64 = /\bbase64\b/i.test(params);
+
+    return { mimeType, payload, isBase64 };
+}
+
+function decodeSvgDataUrlToMarkup(dataUrl) {
+    const parsed = parseDataUrl(dataUrl);
+    if (!parsed || parsed.mimeType !== 'image/svg+xml') {
+        return '';
+    }
+
+    try {
+        if (parsed.isBase64) {
+            const decodedBinary = atob(parsed.payload);
+            const bytes = Uint8Array.from(decodedBinary, (char) => char.charCodeAt(0));
+            return new TextDecoder('utf-8').decode(bytes);
+        }
+
+        return decodeURIComponent(parsed.payload);
+    } catch (error) {
+        return '';
+    }
+}
+
 async function normalizeSvgImageDataUri(href) {
     const raw = String(href || '').trim();
     const match = raw.match(/^data:image\/svg\+xml([^,]*),(.*)$/is);
@@ -2239,6 +2273,83 @@ async function normalizeSvgImageDataUri(href) {
     const safeMarkup = stripInvalidXmlChars(decoded);
     const blob = new Blob([safeMarkup], { type: 'image/svg+xml;charset=utf-8' });
     return blobToDataUrl(blob);
+}
+
+async function resolveImageSourceToDataUrl(source) {
+    const raw = String(source || '').trim();
+    if (!raw) {
+        return '';
+    }
+
+    if (raw.startsWith('data:image/')) {
+        return raw;
+    }
+
+    if (raw.startsWith('blob:')) {
+        return raw;
+    }
+
+    try {
+        const resolvedUrl = new URL(raw, window.location.origin).toString();
+        const response = await fetch(resolvedUrl, { credentials: 'omit' });
+        if (!response.ok) {
+            return '';
+        }
+        const blob = await response.blob();
+        return await blobToDataUrl(blob);
+    } catch (error) {
+        return '';
+    }
+}
+
+async function buildDownloadableSvgFromPreviewSource(previewSource) {
+    const source = String(previewSource || '').trim();
+    if (!source) {
+        return '';
+    }
+
+    if (source.startsWith('data:image/svg+xml')) {
+        const decodedMarkup = stripInvalidXmlChars(decodeSvgDataUrlToMarkup(source));
+        if (decodedMarkup) {
+            const parsed = new DOMParser().parseFromString(decodedMarkup, 'image/svg+xml');
+            if (!parsed.querySelector('parsererror')) {
+                return await buildIllustratorReadySvg(new XMLSerializer().serializeToString(parsed.documentElement));
+            }
+        }
+    }
+
+    const resolvedDataUrl = await resolveImageSourceToDataUrl(source);
+    if (!resolvedDataUrl) {
+        return '';
+    }
+
+    const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svg.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+    svg.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    svg.setAttribute('viewBox', '0 0 1200 1200');
+    svg.setAttribute('width', '1200');
+    svg.setAttribute('height', '1200');
+    svg.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+
+    const background = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+    background.setAttribute('x', '0');
+    background.setAttribute('y', '0');
+    background.setAttribute('width', '1200');
+    background.setAttribute('height', '1200');
+    background.setAttribute('fill', '#ffffff');
+    svg.appendChild(background);
+
+    const image = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+    image.setAttribute('x', '0');
+    image.setAttribute('y', '0');
+    image.setAttribute('width', '1200');
+    image.setAttribute('height', '1200');
+    image.setAttribute('preserveAspectRatio', 'xMidYMid meet');
+    image.setAttribute('href', resolvedDataUrl);
+    image.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', resolvedDataUrl);
+    svg.appendChild(image);
+
+    return new XMLSerializer().serializeToString(svg);
 }
 
 function revokeCurrentDesignViewerDownloadUrl() {
@@ -3269,7 +3380,7 @@ async function openAdminDesignViewer(designKey, preferredDisplaySrc = '') {
     if (downloadBtn) {
         downloadBtn.style.display = 'none';
         const candidateSvg = String(entry.downloadableSvg || '').trim();
-        if (!candidateSvg && !entry.svgDataUrl) {
+        if (!candidateSvg && !entry.svgDataUrl && !entry.previewUrl && !preferredDisplaySrc) {
             downloadBtn.style.display = 'none';
         } else {
             downloadBtn.style.display = 'inline-flex';
@@ -3285,6 +3396,19 @@ async function openAdminDesignViewer(designKey, preferredDisplaySrc = '') {
                     const illustratorReadySvg = await buildIllustratorReadySvg(candidateSvg);
                     if (illustratorReadySvg) {
                         const blob = new Blob([illustratorReadySvg], { type: 'image/svg+xml;charset=utf-8' });
+                        currentDesignViewerDownloadUrl = URL.createObjectURL(blob);
+                        downloadBtn.href = currentDesignViewerDownloadUrl;
+                        downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
+                        hrefAssigned = true;
+                    }
+                }
+
+                if (!hrefAssigned) {
+                    const fallbackSvg = await buildDownloadableSvgFromPreviewSource(
+                        entry.previewUrl || entry.svgDataUrl || preferredDisplaySrc || ''
+                    );
+                    if (fallbackSvg) {
+                        const blob = new Blob([fallbackSvg], { type: 'image/svg+xml;charset=utf-8' });
                         currentDesignViewerDownloadUrl = URL.createObjectURL(blob);
                         downloadBtn.href = currentDesignViewerDownloadUrl;
                         downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
