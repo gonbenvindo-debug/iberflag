@@ -2209,6 +2209,38 @@ function blobToDataUrl(blob) {
     });
 }
 
+function stripInvalidXmlChars(input) {
+    return String(input || '').replace(
+        /[^\u0009\u000A\u000D\u0020-\uD7FF\uE000-\uFFFD]/g,
+        ''
+    );
+}
+
+async function normalizeSvgImageDataUri(href) {
+    const raw = String(href || '').trim();
+    const match = raw.match(/^data:image\/svg\+xml([^,]*),(.*)$/is);
+    if (!match) {
+        return raw;
+    }
+
+    const meta = String(match[1] || '');
+    const payload = String(match[2] || '');
+    if (/\bbase64\b/i.test(meta)) {
+        return raw;
+    }
+
+    let decoded = payload;
+    try {
+        decoded = decodeURIComponent(payload);
+    } catch (error) {
+        decoded = payload;
+    }
+
+    const safeMarkup = stripInvalidXmlChars(decoded);
+    const blob = new Blob([safeMarkup], { type: 'image/svg+xml;charset=utf-8' });
+    return blobToDataUrl(blob);
+}
+
 function revokeCurrentDesignViewerDownloadUrl() {
     if (currentDesignViewerDownloadUrl) {
         try {
@@ -2225,16 +2257,17 @@ async function buildIllustratorReadySvg(svgMarkup) {
         return '';
     }
 
+    const cleanedMarkup = stripInvalidXmlChars(svgMarkup);
     let documentSvg = null;
     try {
         const parser = new DOMParser();
-        documentSvg = parser.parseFromString(svgMarkup, 'image/svg+xml');
+        documentSvg = parser.parseFromString(cleanedMarkup, 'image/svg+xml');
     } catch (error) {
-        return svgMarkup;
+        return cleanedMarkup;
     }
 
     if (!documentSvg || documentSvg.querySelector('parsererror')) {
-        return svgMarkup;
+        return cleanedMarkup;
     }
 
     const svgRoot = documentSvg.documentElement;
@@ -2250,41 +2283,62 @@ async function buildIllustratorReadySvg(svgMarkup) {
     const imageNodes = Array.from(svgRoot.querySelectorAll('image'));
 
     for (const node of imageNodes) {
-        const href = String(
+        const originalHref = String(
             node.getAttribute('href')
             || node.getAttributeNS(XLINK_NS, 'href')
             || node.getAttribute('xlink:href')
             || ''
         ).trim();
 
-        if (!href || href.startsWith('data:image/')) {
+        if (!originalHref) {
             continue;
         }
 
-        if (href.startsWith('blob:')) {
+        let finalHref = originalHref;
+
+        if (originalHref.startsWith('data:image/svg+xml')) {
+            try {
+                finalHref = await normalizeSvgImageDataUri(originalHref);
+            } catch (error) {
+                finalHref = originalHref;
+            }
+        } else if (!originalHref.startsWith('data:image/')) {
+            if (originalHref.startsWith('blob:')) {
+                // Blob URLs não são portáveis fora da sessão atual.
+                continue;
+            }
+
+            try {
+                const resolvedUrl = new URL(originalHref, window.location.origin).toString();
+                const response = await fetch(resolvedUrl, { credentials: 'omit' });
+                if (response.ok) {
+                    const blob = await response.blob();
+                    const dataUrl = await blobToDataUrl(blob);
+                    if (dataUrl) {
+                        finalHref = dataUrl;
+                    }
+                }
+            } catch (error) {
+                console.warn('Falha ao embutir imagem no SVG para download:', error);
+            }
+        }
+
+        if (!finalHref) {
             // Blob URLs não são portáveis fora da sessão atual.
             continue;
         }
 
-        try {
-            const resolvedUrl = new URL(href, window.location.origin).toString();
-            const response = await fetch(resolvedUrl, { credentials: 'omit' });
-            if (!response.ok) {
-                continue;
-            }
-            const blob = await response.blob();
-            const dataUrl = await blobToDataUrl(blob);
-            if (!dataUrl) {
-                continue;
-            }
-            node.setAttribute('href', dataUrl);
-            node.setAttributeNS(XLINK_NS, 'xlink:href', dataUrl);
-        } catch (error) {
-            console.warn('Falha ao embutir imagem no SVG para download:', error);
-        }
+        node.setAttribute('href', finalHref);
+        node.setAttributeNS(XLINK_NS, 'xlink:href', finalHref);
     }
 
-    return new XMLSerializer().serializeToString(svgRoot);
+    const serialized = new XMLSerializer().serializeToString(svgRoot);
+    const finalSvg = stripInvalidXmlChars(serialized);
+    const validationDoc = new DOMParser().parseFromString(finalSvg, 'image/svg+xml');
+    if (validationDoc.querySelector('parsererror')) {
+        return cleanedMarkup;
+    }
+    return finalSvg;
 }
 
 function buildStatusOptionsHtml(activeStatus) {
