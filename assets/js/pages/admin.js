@@ -2356,7 +2356,7 @@ function renderOrdersTable(orders) {
 
     if (visibleOrders.length > 0) {
         tbody.innerHTML = visibleOrders.map((o) => `
-            <tr>
+            <tr data-order-id="${escapeHtml(String(o.id))}" class="order-row cursor-pointer">
                 <td class="font-semibold">${o.numero_encomenda}</td>
                 <td>
                     <div class="min-w-[180px]">
@@ -3097,6 +3097,26 @@ document.addEventListener('click', (e) => {
     if (btn && btn.dataset.designKey) {
         openAdminDesignViewer(btn.dataset.designKey);
     }
+});
+
+document.getElementById('orders-tbody')?.addEventListener('click', (event) => {
+    const interactiveTarget = event.target.closest('button, a, input, select, textarea, label');
+    if (interactiveTarget) {
+        return;
+    }
+
+    const row = event.target.closest('tr[data-order-id]');
+    if (!row) {
+        return;
+    }
+
+    const orderId = row.getAttribute('data-order-id');
+    if (!orderId) {
+        showToast('ID da encomenda inválido', 'warning');
+        return;
+    }
+
+    viewOrder(orderId);
 });
 
 document.addEventListener('click', (event) => {
