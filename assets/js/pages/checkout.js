@@ -424,14 +424,41 @@ function getCheckoutStepIndex(step) {
     return index >= 0 ? index : 0;
 }
 
+function setPanelInert(panel, shouldInert) {
+    if (!panel) return;
+    if ('inert' in panel) {
+        panel.inert = Boolean(shouldInert);
+    } else if (shouldInert) {
+        panel.setAttribute('inert', '');
+    } else {
+        panel.removeAttribute('inert');
+    }
+}
+
+function getFirstFocusableInPanel(panel) {
+    if (!(panel instanceof Element)) {
+        return null;
+    }
+
+    return panel.querySelector(
+        'button:not([disabled]), [href], input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])'
+    );
+}
+
 function setCheckoutStep(step = 'details') {
     const normalizedStep = CHECKOUT_STEP_ORDER.includes(step) ? step : 'details';
     currentCheckoutStep = normalizedStep;
     const activeIndex = getCheckoutStepIndex(normalizedStep);
     const activePanelKey = normalizedStep === 'payment' ? 'confirm' : normalizedStep;
+    const activeElement = document.activeElement instanceof HTMLElement ? document.activeElement : null;
 
     checkoutStepPanels.forEach((panel) => {
         const isActive = panel.dataset.checkoutPanel === activePanelKey;
+        if (!isActive && activeElement && panel.contains(activeElement)) {
+            activeElement.blur();
+        }
+
+        setPanelInert(panel, !isActive);
         panel.hidden = !isActive;
         panel.classList.toggle('checkout-step-panel-active', isActive);
         panel.setAttribute('aria-hidden', isActive ? 'false' : 'true');
@@ -453,6 +480,19 @@ function setCheckoutStep(step = 'details') {
     if (checkoutSummaryColumn) {
         setElementHidden(checkoutSummaryColumn, normalizedStep === 'payment');
     }
+
+    const activePanel = checkoutStepPanels.find((panel) => panel.dataset.checkoutPanel === activePanelKey);
+    const focusTarget = getFirstFocusableInPanel(activePanel);
+    if (focusTarget && focusTarget !== activeElement) {
+        requestAnimationFrame(() => {
+            try {
+                focusTarget.focus({ preventScroll: true });
+            } catch (error) {
+                focusTarget.focus?.();
+            }
+        });
+    }
+
     schedulePersistCheckoutState();
 }
 
@@ -2175,12 +2215,16 @@ function buildCheckoutRequestCart(items) {
         quantity: Math.max(1, Number.parseInt(item.quantity || 1, 10) || 1),
         customized: Boolean(item.customized),
         slug: String(item.slug || '').trim() || null,
-        svgTemplate: String(item.svgTemplate || item.svg_template || '').trim() || null,
-        design: typeof item.design === 'string' ? item.design : '',
-        designSceneV1: item.designSceneV1 || item.design_scene_v1 || null,
-        designPreview: typeof item.design === 'string' && item.design.trim() && typeof getCartItemImage === 'function'
-            ? (getCartItemImage(item) || '')
-            : (typeof item.designPreview === 'string' ? item.designPreview : ''),
+        // Evitar payloads gigantes no checkout: os assets do design já existem por designId.
+        // Só enviamos preview URL leve (http/https). Data URLs ficam de fora.
+        designPreview: (() => {
+            const preview = typeof getCartItemImage === 'function'
+                ? String(getCartItemImage(item) || '').trim()
+                : String(item.designPreview || '').trim();
+            if (!preview) return '';
+            if (preview.startsWith('data:') || preview.startsWith('blob:')) return '';
+            return preview;
+        })(),
         baseNome: String(item.baseNome || '').trim(),
         baseId: item.baseId || item.base_id || null,
         designId: item.designId || item.design_id || null
