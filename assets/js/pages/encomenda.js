@@ -743,9 +743,25 @@ function renderOrderItems(order, items, splitMeta) {
         const quantity = Number(item.quantidade || snapshot?.quantidade || 1);
         const unitPrice = Number(item.preco_unitario || snapshot?.precoUnitario || 0);
         const lineSubtotal = Number(item.subtotal || (quantity * unitPrice));
+        const visual = resolveOrderItemVisual(item, snapshot);
+        const previewUrl = String(visual?.previewUrl || item?.produtos?.imagem || snapshot?.imagem || '/favicon.svg').trim() || '/favicon.svg';
+        const options = extractOrderItemOptions(item, snapshot);
+
+        renderedItemPreviews.push({
+            productName,
+            previewUrl,
+            hasDesign: Boolean(visual?.hasDesign),
+            options
+        });
+
         return `
             <tr>
-                <td class="order-summary-product">${escapeHtml(productName)}</td>
+                <td class="order-summary-product">
+                    <span class="inline-flex items-center gap-2">
+                        <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="w-9 h-9 shrink-0 rounded-md border border-slate-200 bg-slate-50 object-contain">
+                        <span>${escapeHtml(productName)}</span>
+                    </span>
+                </td>
                 <td class="order-summary-qty">${escapeHtml(quantity)}</td>
                 <td class="order-summary-unit">${escapeHtml(formatCurrency(unitPrice))}</td>
                 <td class="order-summary-line">${escapeHtml(formatCurrency(lineSubtotal))}</td>
