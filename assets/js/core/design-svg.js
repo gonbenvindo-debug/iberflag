@@ -112,6 +112,13 @@
             normalized.borderRadius = toNumber(data.borderRadius ?? properties.borderRadius ?? 0);
             normalized.qrContent = data.qrContent || properties.qrContent || '';
             normalized.qrColor = data.qrColor || properties.qrColor || '#111827';
+            normalized.assetId = String(data.assetId || properties.assetId || data?.assetRef?.assetId || properties?.assetRef?.assetId || '').trim();
+            if (normalized.assetId) {
+                normalized.assetRef = {
+                    ...(data.assetRef && typeof data.assetRef === 'object' ? data.assetRef : {}),
+                    assetId: normalized.assetId
+                };
+            }
         } else if (type === 'qrcode') {
             normalized.name = data.name || properties.name || 'QR Code';
             normalized.imageKind = 'qr';
@@ -372,6 +379,9 @@
         }
         if (data.qrColor) {
             node.dataset.qrColor = data.qrColor;
+        }
+        if (data.assetId) {
+            node.dataset.assetId = String(data.assetId).trim();
         }
 
         appendRotation(node, data);
@@ -743,6 +753,12 @@
         }
 
         if (type === 'image') {
+            const assetId = String(
+                elementData.assetId
+                || elementData.element.dataset?.assetId
+                || elementData.assetRef?.assetId
+                || ''
+            ).trim();
             const crop = elementData.cropData && typeof elementData.cropData === 'object'
                 ? {
                     x: roundNumber(toNumber(elementData.cropData.x, 0)),
@@ -766,7 +782,14 @@
                 qrContent: String(elementData.qrContent || elementData.element.dataset?.qrContent || ''),
                 qrColor: String(elementData.qrColor || elementData.element.dataset?.qrColor || '#111827'),
                 originalSrc: String(elementData.originalSrc || elementData.element.dataset?.originalSrc || ''),
-                layerLabel: String(elementData.layerLabel || elementData.element.dataset?.layerLabel || '')
+                layerLabel: String(elementData.layerLabel || elementData.element.dataset?.layerLabel || ''),
+                assetId: assetId || null,
+                assetRef: assetId
+                    ? {
+                        ...(elementData.assetRef && typeof elementData.assetRef === 'object' ? elementData.assetRef : {}),
+                        assetId
+                    }
+                    : null
             };
         }
 
@@ -2953,6 +2976,7 @@
         }
 
         if (type === 'image') {
+            const assetId = String(element?.assetRef?.assetId || element?.assetId || '').trim();
             return {
                 id: element.id,
                 type: 'image',
@@ -2976,7 +3000,14 @@
                 qrContent: String(element.qrContent || ''),
                 qrColor: String(element.qrColor || '#111827'),
                 originalSrc: String(element.originalSrc || element.src || ''),
-                layerLabel: String(element.layerLabel || '')
+                layerLabel: String(element.layerLabel || ''),
+                assetId: assetId || '',
+                assetRef: assetId
+                    ? {
+                        ...(element.assetRef && typeof element.assetRef === 'object' ? element.assetRef : {}),
+                        assetId
+                    }
+                    : null
             };
         }
 

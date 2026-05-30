@@ -938,7 +938,10 @@ Object.assign(DesignEditor.prototype, {
                 designId: item?.designId ? String(item.designId).trim() : null,
                 designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
                 designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
-                designSceneV1: item?.designSceneV1 || item?.design_scene_v1 || null,
+                designSceneV1: this.compactDesignSceneForStorage?.(
+                    item?.designSceneV1 || item?.design_scene_v1 || null,
+                    { stripImageSources: true }
+                ) || item?.designSceneV1 || item?.design_scene_v1 || null,
                 slug: item?.slug ? String(item.slug).trim() : null,
                 svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
                 baseId: item?.baseId || item?.base_id || null,
@@ -995,6 +998,20 @@ Object.assign(DesignEditor.prototype, {
 
             window.CartAssetStore.cleanupUnusedDesigns(activeDesignIds).catch((error) => {
                 console.warn('Falha ao limpar designs antigos do carrinho:', error);
+            });
+        }
+
+        if (window.CartAssetStore?.cleanupUnusedImageAssets) {
+            const activeImageAssetIds = compactCart.flatMap((item) => {
+                const scene = item?.designSceneV1 || item?.design_scene_v1 || null;
+                const elements = Array.isArray(scene?.elements) ? scene.elements : [];
+                return elements
+                    .map((element) => String(element?.assetRef?.assetId || element?.assetId || '').trim())
+                    .filter(Boolean);
+            });
+
+            window.CartAssetStore.cleanupUnusedImageAssets(activeImageAssetIds).catch((error) => {
+                console.warn('Falha ao limpar image assets antigos do carrinho:', error);
             });
         }
     },

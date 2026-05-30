@@ -123,11 +123,52 @@ Object.assign(DesignEditor.prototype, {
         const elementToUpdate = this.selectedElement;
         this.beginCropSession();
 
-        this.openUploadCropModal(srcToCrop, existingCropData).then((croppedImageData) => {
+        this.openUploadCropModal(srcToCrop, existingCropData).then(async (croppedImageData) => {
             if (croppedImageData && elementToUpdate) {
                 // Salvar imagem original na primeira vez que cortar
                 if (!imgElement.dataset.originalSrc && currentSrc) {
                     imgElement.dataset.originalSrc = currentSrc;
+                }
+
+                let optimizedDataUrl = croppedImageData.dataUrl;
+                let optimizedFullWidth = Number(croppedImageData.fullWidth || croppedImageData.width || 0) || 0;
+                let optimizedFullHeight = Number(croppedImageData.fullHeight || croppedImageData.height || 0) || 0;
+                try {
+                    const sourceBlob = croppedImageData.blob instanceof Blob
+                        ? croppedImageData.blob
+                        : await (async () => {
+                            const response = await fetch(croppedImageData.dataUrl);
+                            return await response.blob();
+                        })();
+                    const sourceMimeMatch = String(croppedImageData.dataUrl || '').match(/^data:([^;,]+)/i);
+                    const sourceMime = String(sourceMimeMatch?.[1] || sourceBlob?.type || '').toLowerCase();
+                    const optimized = await this.optimizeImageBlob?.(sourceBlob, {
+                        sourceMime,
+                        maxSide: 2560,
+                        quality: 0.84,
+                        outputMime: 'image/webp'
+                    });
+                    if (optimized?.blob) {
+                        optimizedDataUrl = await this.blobToDataUrl?.(optimized.blob) || optimizedDataUrl;
+                        optimizedFullWidth = Number(optimized.width) || optimizedFullWidth;
+                        optimizedFullHeight = Number(optimized.height) || optimizedFullHeight;
+
+                        if (window.CartAssetStore?.saveImageAsset) {
+                            const savedAsset = await window.CartAssetStore.saveImageAsset(optimized.blob, {
+                                mime: optimized.mime,
+                                width: optimized.width,
+                                height: optimized.height
+                            });
+                            const savedAssetId = String(savedAsset?.assetId || savedAsset?.id || '').trim();
+                            if (savedAssetId) {
+                                elementToUpdate.assetId = savedAssetId;
+                                elementToUpdate.assetRef = { assetId: savedAssetId };
+                                imgElement.dataset.assetId = savedAssetId;
+                            }
+                        }
+                    }
+                } catch (assetError) {
+                    console.warn('Falha ao otimizar imagem cortada. A usar dataURL direto.', assetError);
                 }
 
                 const referenceBox = this.getImageCropReferenceBox?.(imgElement, imgElement.getBBox()) || {
@@ -137,11 +178,12 @@ Object.assign(DesignEditor.prototype, {
                     height: 0
                 };
                 const currentSourceCropData = this.parseSourceCropData?.(imgElement) || null;
-                imgElement.setAttribute('href', croppedImageData.dataUrl);
+                imgElement.setAttribute('href', optimizedDataUrl);
+                elementToUpdate.src = optimizedDataUrl;
 
                 if (croppedImageData.cropData) {
-                    const fullWidth = croppedImageData.fullWidth;
-                    const fullHeight = croppedImageData.fullHeight;
+                    const fullWidth = optimizedFullWidth || croppedImageData.fullWidth;
+                    const fullHeight = optimizedFullHeight || croppedImageData.fullHeight;
                     const cropData = croppedImageData.cropData;
                     const viewBoxX = cropData.x * fullWidth;
                     const viewBoxY = cropData.y * fullHeight;
@@ -164,7 +206,7 @@ Object.assign(DesignEditor.prototype, {
                         }
                     ) || referenceBox;
 
-                    elementToUpdate.src = croppedImageData.dataUrl;
+                    elementToUpdate.src = optimizedDataUrl;
                     elementToUpdate.cropData = cropData;
                     elementToUpdate.fullWidth = fullWidth;
                     elementToUpdate.fullHeight = fullHeight;
@@ -398,6 +440,9 @@ Object.assign(DesignEditor.prototype, {
         const designScene = options?.designScene
             || this.getDesignSceneV1?.()
             || null;
+        const compactDesignScene = this.compactDesignSceneForStorage?.(designScene, {
+            stripImageSources: true
+        }) || designScene;
         const design = designOverride || this.getDesignSVG();
 
         if (!design && this.elements.length === 0) {
@@ -436,8 +481,8 @@ Object.assign(DesignEditor.prototype, {
             customized: true,
             designId,
             design: design,
-            designSceneV1: designScene,
-            design_scene_v1: designScene,
+            designSceneV1: compactDesignScene,
+            design_scene_v1: compactDesignScene,
             designPreview: null,
             designPreviewVersion: Number(window.CART_PREVIEW_VERSION || 7) || 7,
             svgTemplate: this.currentProduct.svg_template || null,
@@ -475,7 +520,7 @@ Object.assign(DesignEditor.prototype, {
                 preview: cartItem.designPreview,
                 document: null,
                 documentV3: null,
-                scene: designScene
+                scene: compactDesignScene
             });
         }
 

@@ -1818,17 +1818,17 @@ Object.assign(DesignEditor.prototype, {
     autoSave() {
         const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
         const designScene = this.getDesignSceneV1?.() || null;
-        const svgDesign = this.getDesignSVG();
+        const compactScene = this.compactDesignSceneForStorage?.(designScene, {
+            stripImageSources: true
+        }) || designScene;
         const payload = {
             format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
-            design_scene_v1: designScene,
-            design_svg: svgDesign
+            design_scene_v1: compactScene
         };
         const compactDesign = JSON.stringify(payload);
-
-        const candidates = [compactDesign, svgDesign];
+        const candidates = [compactDesign];
 
         let stored = false;
         for (const value of candidates) {

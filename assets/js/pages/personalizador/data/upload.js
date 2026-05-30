@@ -85,6 +85,229 @@ Object.assign(DesignEditor.prototype, {
         return null;
     },
 
+    async blobToDataUrl(blob) {
+        if (!(blob instanceof Blob)) return '';
+        return await new Promise((resolve) => {
+            const reader = new FileReader();
+            reader.onload = () => resolve(String(reader.result || ''));
+            reader.onerror = () => resolve('');
+            reader.readAsDataURL(blob);
+        });
+    },
+
+    async optimizeImageBlob(sourceBlob, options = {}) {
+        if (!(sourceBlob instanceof Blob)) {
+            return null;
+        }
+
+        const maxSide = Math.max(800, Number(options.maxSide) || 2560);
+        const sourceMime = String(options.sourceMime || sourceBlob.type || '').toLowerCase();
+        const preferLossless = sourceMime === 'image/png' || sourceMime === 'image/svg+xml' || sourceMime === 'image/webp';
+        const quality = preferLossless ? 1 : (Number.isFinite(Number(options.quality)) ? Number(options.quality) : 0.84);
+        const outputMime = String(options.outputMime || 'image/webp');
+
+        let bitmap = null;
+        try {
+            bitmap = await createImageBitmap(sourceBlob);
+        } catch {
+            bitmap = null;
+        }
+        if (!bitmap) {
+            return {
+                blob: sourceBlob,
+                width: null,
+                height: null,
+                mime: sourceBlob.type || sourceMime || 'application/octet-stream',
+                bytes: sourceBlob.size
+            };
+        }
+
+        const sourceWidth = Math.max(1, Number(bitmap.width) || 1);
+        const sourceHeight = Math.max(1, Number(bitmap.height) || 1);
+        const scale = Math.min(1, maxSide / Math.max(sourceWidth, sourceHeight));
+        const targetWidth = Math.max(1, Math.round(sourceWidth * scale));
+        const targetHeight = Math.max(1, Math.round(sourceHeight * scale));
+
+        const canvas = document.createElement('canvas');
+        canvas.width = targetWidth;
+        canvas.height = targetHeight;
+        const ctx = canvas.getContext('2d', { alpha: true });
+        if (!ctx) {
+            bitmap.close?.();
+            return {
+                blob: sourceBlob,
+                width: sourceWidth,
+                height: sourceHeight,
+                mime: sourceBlob.type || sourceMime || 'application/octet-stream',
+                bytes: sourceBlob.size
+            };
+        }
+
+        ctx.imageSmoothingEnabled = true;
+        ctx.imageSmoothingQuality = 'high';
+        ctx.drawImage(bitmap, 0, 0, targetWidth, targetHeight);
+        bitmap.close?.();
+
+        const encodedBlob = await new Promise((resolve) => {
+            canvas.toBlob((blob) => resolve(blob), outputMime, quality);
+        });
+        if (!(encodedBlob instanceof Blob)) {
+            return {
+                blob: sourceBlob,
+                width: targetWidth,
+                height: targetHeight,
+                mime: sourceBlob.type || sourceMime || 'application/octet-stream',
+                bytes: sourceBlob.size
+            };
+        }
+
+        const shouldKeepSource = scale >= 0.999
+            && Number.isFinite(Number(sourceBlob.size))
+            && sourceBlob.size > 0
+            && encodedBlob.size >= (sourceBlob.size * 0.98);
+        if (shouldKeepSource) {
+            return {
+                blob: sourceBlob,
+                width: sourceWidth,
+                height: sourceHeight,
+                mime: sourceBlob.type || sourceMime || 'application/octet-stream',
+                bytes: sourceBlob.size
+            };
+        }
+
+        return {
+            blob: encodedBlob,
+            width: targetWidth,
+            height: targetHeight,
+            mime: encodedBlob.type || outputMime,
+            bytes: encodedBlob.size
+        };
+    },
+
+    collectSceneAssetIds(sceneLike = null) {
+        const scene = sceneLike && typeof sceneLike === 'object'
+            ? sceneLike
+            : this.getDesignSceneV1?.();
+        if (!scene || !Array.isArray(scene.elements)) {
+            return [];
+        }
+
+        return scene.elements
+            .map((element) => String(element?.assetRef?.assetId || element?.assetId || '').trim())
+            .filter(Boolean);
+    },
+
+    compactDesignSceneForStorage(sceneLike = null, options = {}) {
+        const scene = sceneLike && typeof sceneLike === 'object'
+            ? sceneLike
+            : this.getDesignSceneV1?.();
+        if (!scene || !Array.isArray(scene.elements)) {
+            return scene || null;
+        }
+
+        const stripImageSources = options?.stripImageSources !== false;
+        const clone = JSON.parse(JSON.stringify(scene));
+
+        clone.elements = clone.elements.map((element) => {
+            if (!element || typeof element !== 'object' || String(element.type || '').toLowerCase() !== 'image') {
+                return element;
+            }
+
+            const assetId = String(element?.assetRef?.assetId || element?.assetId || '').trim();
+            if (!assetId) {
+                return element;
+            }
+
+            const next = {
+                ...element,
+                assetId,
+                assetRef: {
+                    ...(element.assetRef && typeof element.assetRef === 'object' ? element.assetRef : {}),
+                    assetId
+                }
+            };
+
+            if (stripImageSources) {
+                const src = String(next.src || '').trim();
+                if (src.startsWith('data:image/') || src.startsWith('blob:')) {
+                    next.src = '';
+                }
+
+                const originalSrc = String(next.originalSrc || '').trim();
+                if (originalSrc.startsWith('data:image/') || originalSrc.startsWith('blob:')) {
+                    next.originalSrc = '';
+                }
+            }
+
+            return next;
+        });
+
+        return clone;
+    },
+
+    async hydrateDesignSceneImageSources(sceneLike = null, options = {}) {
+        const source = sceneLike && typeof sceneLike === 'object'
+            ? sceneLike
+            : this.getDesignSceneV1?.();
+        if (!source || !Array.isArray(source.elements)) {
+            return source || null;
+        }
+
+        if (!window.CartAssetStore?.getImageAsset) {
+            return source;
+        }
+
+        const mode = String(options.mode || 'dataUrl').toLowerCase();
+        const hydrated = JSON.parse(JSON.stringify(source));
+
+        for (const element of hydrated.elements) {
+            if (!element || typeof element !== 'object' || String(element.type || '').toLowerCase() !== 'image') {
+                continue;
+            }
+
+            const assetId = String(element?.assetRef?.assetId || element?.assetId || '').trim();
+            if (!assetId) {
+                continue;
+            }
+
+            const currentSrc = String(element.src || '').trim();
+            if (currentSrc && !currentSrc.startsWith('blob:') && !currentSrc.startsWith('data:image/')) {
+                continue;
+            }
+
+            try {
+                const assetRecord = await window.CartAssetStore.getImageAsset(assetId);
+                const blob = assetRecord?.blob instanceof Blob ? assetRecord.blob : null;
+                if (!blob) {
+                    continue;
+                }
+
+                const hydratedSrc = mode === 'objecturl' && typeof URL !== 'undefined' && typeof URL.createObjectURL === 'function'
+                    ? URL.createObjectURL(blob)
+                    : await this.blobToDataUrl(blob);
+                if (!hydratedSrc) {
+                    continue;
+                }
+
+                element.src = hydratedSrc;
+                if (!String(element.originalSrc || '').trim() || String(element.originalSrc || '').startsWith('blob:')) {
+                    element.originalSrc = hydratedSrc;
+                }
+
+                if (!Number.isFinite(Number(element.fullWidth)) && Number.isFinite(Number(assetRecord?.width))) {
+                    element.fullWidth = Number(assetRecord.width);
+                }
+                if (!Number.isFinite(Number(element.fullHeight)) && Number.isFinite(Number(assetRecord?.height))) {
+                    element.fullHeight = Number(assetRecord.height);
+                }
+            } catch (error) {
+                console.warn('Falha ao hidratar image asset no scene:', error);
+            }
+        }
+
+        return hydrated;
+    },
+
     buildShapePoints(shapeType, center, size) {
         const normalized = String(shapeType || 'triangle').trim().toLowerCase();
         const cx = Number(center?.x) || 0;
@@ -329,11 +552,50 @@ Object.assign(DesignEditor.prototype, {
                 try {
                     const cropped = await this.openUploadCropModal(src);
                     if (cropped) {
-                        this.addImageFromSource(cropped.dataUrl, cropped.width, cropped.height, imageName, {
-                            originalSrc: src,
+                        let finalDataUrl = cropped.dataUrl;
+                        let finalWidth = cropped.width;
+                        let finalHeight = cropped.height;
+                        let imageAssetId = '';
+
+                        try {
+                            const sourceBlob = cropped.blob instanceof Blob
+                                ? cropped.blob
+                                : await (async () => {
+                                    const response = await fetch(cropped.dataUrl);
+                                    return await response.blob();
+                                })();
+                            const optimized = await this.optimizeImageBlob(sourceBlob, {
+                                sourceMime: file.type,
+                                maxSide: 2560,
+                                quality: 0.84,
+                                outputMime: 'image/webp'
+                            });
+
+                            if (optimized?.blob) {
+                                if (window.CartAssetStore?.saveImageAsset) {
+                                    const saved = await window.CartAssetStore.saveImageAsset(optimized.blob, {
+                                        mime: optimized.mime,
+                                        width: optimized.width,
+                                        height: optimized.height
+                                    });
+                                    imageAssetId = String(saved?.assetId || saved?.id || '').trim();
+                                }
+
+                                finalDataUrl = await this.blobToDataUrl(optimized.blob) || finalDataUrl;
+                                finalWidth = Number(optimized.width) || finalWidth;
+                                finalHeight = Number(optimized.height) || finalHeight;
+                            }
+                        } catch (assetError) {
+                            console.warn('Falha ao otimizar/guardar image asset. A usar dataURL direto.', assetError);
+                        }
+
+                        this.addImageFromSource(finalDataUrl, finalWidth || cropped.width, finalHeight || cropped.height, imageName, {
+                            originalSrc: finalDataUrl,
+                            assetId: imageAssetId,
+                            sourceMime: file.type || '',
                             cropData: cropped.cropData,
-                            fullWidth: cropped.fullWidth,
-                            fullHeight: cropped.fullHeight
+                            fullWidth: finalWidth || cropped.fullWidth,
+                            fullHeight: finalHeight || cropped.fullHeight
                         });
                     }
                 } catch (error) {
@@ -1102,6 +1364,7 @@ Object.assign(DesignEditor.prototype, {
         const fullHeight = options.fullHeight || height;
         const originalSrc = options.originalSrc || src;
         const cropSourceData = options.cropSourceData || null;
+        const assetId = String(options.assetId || '').trim();
         const objectFit = String(options.objectFit || 'contain').toLowerCase();
         const flipX = Boolean(options.flipX);
         const flipY = Boolean(options.flipY);
@@ -1131,6 +1394,11 @@ Object.assign(DesignEditor.prototype, {
         img.dataset.baseHeight = String(fitted.height);
         img.dataset.flipX = flipX ? 'true' : 'false';
         img.dataset.flipY = flipY ? 'true' : 'false';
+        if (assetId) {
+            img.dataset.assetId = assetId;
+        } else {
+            delete img.dataset.assetId;
+        }
 
         if (cropData) {
             img.dataset.cropData = JSON.stringify(cropData);
@@ -1178,6 +1446,8 @@ Object.assign(DesignEditor.prototype, {
             qrColor,
             originalSrc,
             layerLabel,
+            assetId,
+            assetRef: assetId ? { assetId } : null,
             cropData,
             fullWidth,
             fullHeight,

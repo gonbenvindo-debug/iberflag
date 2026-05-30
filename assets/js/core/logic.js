@@ -1186,6 +1186,47 @@ function compactCartItems(items) {
         return [];
     }
 
+    const compactSceneForStorage = (sceneLike) => {
+        if (!sceneLike || typeof sceneLike !== 'object' || !Array.isArray(sceneLike.elements)) {
+            return sceneLike || null;
+        }
+
+        const cloned = JSON.parse(JSON.stringify(sceneLike));
+        cloned.elements = cloned.elements.map((element) => {
+            if (!element || typeof element !== 'object' || String(element.type || '').toLowerCase() !== 'image') {
+                return element;
+            }
+
+            const assetId = String(element?.assetRef?.assetId || element?.assetId || '').trim();
+            if (!assetId) {
+                return element;
+            }
+
+            const next = {
+                ...element,
+                assetId,
+                assetRef: {
+                    ...(element.assetRef && typeof element.assetRef === 'object' ? element.assetRef : {}),
+                    assetId
+                }
+            };
+
+            const src = String(next.src || '').trim();
+            if (src.startsWith('data:image/') || src.startsWith('blob:')) {
+                next.src = '';
+            }
+
+            const originalSrc = String(next.originalSrc || '').trim();
+            if (originalSrc.startsWith('data:image/') || originalSrc.startsWith('blob:')) {
+                next.originalSrc = '';
+            }
+
+            return next;
+        });
+
+        return cloned;
+    };
+
     return items.map((item) => {
         return {
             id: Number(item?.id || 0) || 0,
@@ -1195,10 +1236,9 @@ function compactCartItems(items) {
             quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
             customized: Boolean(item?.customized),
             designId: item?.designId ? String(item.designId).trim() : null,
-            design: item?.design ? String(item.design).trim() : null,
             designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
             designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
-            designSceneV1: item?.designSceneV1 || item?.design_scene_v1 || null,
+            designSceneV1: compactSceneForStorage(item?.designSceneV1 || item?.design_scene_v1 || null),
             slug: item?.slug ? String(item.slug).trim() : null,
             svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
             baseId: item?.baseId || item?.base_id || null,
@@ -1546,6 +1586,20 @@ function updateCart() {
 
         window.CartAssetStore.cleanupUnusedDesigns(activeDesignIds).catch((error) => {
             console.warn('Falha ao limpar designs antigos do carrinho:', error);
+        });
+    }
+
+    if (window.CartAssetStore?.cleanupUnusedImageAssets) {
+        const activeImageAssetIds = cart.flatMap((item) => {
+            const scene = item?.designSceneV1 || item?.design_scene_v1 || null;
+            const elements = Array.isArray(scene?.elements) ? scene.elements : [];
+            return elements
+                .map((element) => String(element?.assetRef?.assetId || element?.assetId || '').trim())
+                .filter(Boolean);
+        });
+
+        window.CartAssetStore.cleanupUnusedImageAssets(activeImageAssetIds).catch((error) => {
+            console.warn('Falha ao limpar image assets antigos do carrinho:', error);
         });
     }
 

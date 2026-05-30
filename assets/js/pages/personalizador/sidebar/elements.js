@@ -335,6 +335,8 @@ Object.assign(DesignEditor.prototype, {
                 this.registerImageLayerLabel(data.layerLabel);
             }
             data.originalSrc = node.dataset.originalSrc || '';
+            data.assetId = String(node.dataset.assetId || '').trim();
+            data.assetRef = data.assetId ? { assetId: data.assetId } : null;
             data.qrContent = node.dataset.qrContent || '';
             data.qrColor = node.dataset.qrColor || '#111827';
             data.flipX = String(node.dataset.flipX || 'false') === 'true';
@@ -460,6 +462,14 @@ Object.assign(DesignEditor.prototype, {
                 elementData.element.dataset.originalSrc = elementData.originalSrc;
             } else {
                 delete elementData.element.dataset.originalSrc;
+            }
+            const assetId = String(elementData.assetId || elementData?.assetRef?.assetId || '').trim();
+            if (assetId) {
+                elementData.assetId = assetId;
+                elementData.assetRef = { ...(elementData.assetRef && typeof elementData.assetRef === 'object' ? elementData.assetRef : {}), assetId };
+                elementData.element.dataset.assetId = assetId;
+            } else {
+                delete elementData.element.dataset.assetId;
             }
             if (Number.isFinite(Number(elementData.baseX))) {
                 elementData.element.dataset.baseX = String(elementData.baseX);
@@ -612,7 +622,10 @@ Object.assign(DesignEditor.prototype, {
                     || sourceItem.design_scene_v1
                     || null;
                 if (designScene && window.DesignSvgStore?.importDesignDocumentToEditor) {
-                    window.DesignSvgStore.importDesignDocumentToEditor(this, designScene);
+                    const hydratedScene = await this.hydrateDesignSceneImageSources?.(designScene, {
+                        mode: 'dataUrl'
+                    }) || designScene;
+                    window.DesignSvgStore.importDesignDocumentToEditor(this, hydratedScene);
                 } else {
                 const parser = new DOMParser();
                 const svgDoc = parser.parseFromString(sourceItem.design, 'image/svg+xml');
@@ -882,6 +895,30 @@ Object.assign(DesignEditor.prototype, {
         document.body.appendChild(modal);
         document.body.style.overflow = 'hidden';
 
+        const savedPreviewImg = modal.querySelector('#autosave-recovery-resume img');
+        const rawScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+            record?.parsed?.design_scene_v1 || record?.parsed || null
+        ) || null;
+        if (savedPreviewImg && rawScene && typeof this.hydrateDesignSceneImageSources === 'function' && window.DesignRenderEngine?.buildPreviewSvg) {
+            (async () => {
+                try {
+                    const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
+                    const hydratedPreview = window.DesignRenderEngine.buildPreviewSvg(hydratedScene, {
+                        productSvg: this.currentProduct?.svg_template || '',
+                        fillRatio: 0.9,
+                        includeOutline: true,
+                        backgroundColor: 'transparent'
+                    });
+                    const hydratedDataUrl = this.svgToPreviewDataUrl(hydratedPreview);
+                    if (hydratedDataUrl) {
+                        savedPreviewImg.src = hydratedDataUrl;
+                    }
+                } catch (error) {
+                    console.warn('Falha ao hidratar preview do autosave:', error);
+                }
+            })();
+        }
+
         return new Promise((resolve) => {
             const resumeBtn = modal.querySelector('#autosave-recovery-resume');
             const blankBtn = modal.querySelector('#autosave-recovery-blank');
@@ -903,7 +940,7 @@ Object.assign(DesignEditor.prototype, {
         });
     },
 
-    loadAutosaveDesign(autosaveOverride = null) {
+    async loadAutosaveDesign(autosaveOverride = null) {
         const autosave = autosaveOverride || localStorage.getItem(this.getAutosaveKey()) || this.getLegacyAutosaveKeys()
             .map((key) => localStorage.getItem(key))
             .find(Boolean);
@@ -917,7 +954,10 @@ Object.assign(DesignEditor.prototype, {
                     parsed?.design_scene_v1 || parsed
                 ) || null;
                 if (designScene && window.DesignSvgStore?.importDesignDocumentToEditor) {
-                    const imported = window.DesignSvgStore.importDesignDocumentToEditor(this, designScene, {
+                    const hydratedScene = await this.hydrateDesignSceneImageSources?.(designScene, {
+                        mode: 'dataUrl'
+                    }) || designScene;
+                    const imported = window.DesignSvgStore.importDesignDocumentToEditor(this, hydratedScene, {
                         skipHistory: true
                     });
                     if (imported) {

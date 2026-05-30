@@ -430,6 +430,7 @@ Object.assign(DesignEditor.prototype, {
     addImageFromTemplate(data, options = {}) {
         const id = data.id || ('el_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9));
         const imageElement = document.createElementNS('http://www.w3.org/2000/svg', 'image');
+        const assetId = String(data.assetId || data?.assetRef?.assetId || '').trim();
         const src = data.src || (data.imageKind === 'qr' && data.qrContent ? this.generateQRCodeDataUrl(data.qrContent, data.qrColor || '#111827') : '');
         const cropData = this.normalizeCropSelectionData?.(data.cropData, data.cropSourceData, data.fullWidth, data.fullHeight) || data.cropData || null;
         const fullWidth = Number(data.fullWidth || 0) || Number(data.width || 0) || 0;
@@ -455,6 +456,9 @@ Object.assign(DesignEditor.prototype, {
         imageElement.dataset.imageKind = data.imageKind || 'image';
         imageElement.dataset.layerLabel = layerLabel;
         imageElement.dataset.originalSrc = data.originalSrc || src;
+        if (assetId) {
+            imageElement.dataset.assetId = assetId;
+        }
         imageElement.dataset.baseX = String(data.baseX || data.x || 0);
         imageElement.dataset.baseY = String(data.baseY || data.y || 0);
         imageElement.dataset.baseWidth = String(data.baseWidth || data.width || 120);
