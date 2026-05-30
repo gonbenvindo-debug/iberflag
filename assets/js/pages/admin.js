@@ -377,6 +377,7 @@ const ORDER_DELETE_CONFIRM_WINDOW_MS = 6000;
 const orderDeleteArmed = new Set();
 const orderDeleteConfirmTimers = new Map();
 const adminDesignCache = new Map();
+let currentDesignViewerDownloadUrl = '';
 
 // ===== DOM ELEMENTS =====
 const navTabs = document.querySelectorAll('.nav-tab');
@@ -2180,12 +2181,110 @@ function resolveItemPreviewAndDesign(item, snapshot) {
 
     const previewUrl = designPreviewUrl || httpPreview || designDataUrl;
     const hasDesign = Boolean(designSvg || designScene || designPreviewUrl || httpPreview);
+    const downloadableSvg = (
+        designScene
+        && productSvgTemplate
+        && window.DesignRenderEngine?.renderSceneToSvg
+    )
+        ? window.DesignRenderEngine.renderSceneToSvg(designScene, {
+            productSvg: productSvgTemplate,
+            mode: 'final'
+        })
+        : designSvg;
 
     return {
         previewUrl,
         designSvg,
-        hasDesign
+        hasDesign,
+        downloadableSvg
     };
+}
+
+function blobToDataUrl(blob) {
+    return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(typeof reader.result === 'string' ? reader.result : '');
+        reader.onerror = () => reject(reader.error || new Error('Falha ao converter blob para data URL.'));
+        reader.readAsDataURL(blob);
+    });
+}
+
+function revokeCurrentDesignViewerDownloadUrl() {
+    if (currentDesignViewerDownloadUrl) {
+        try {
+            URL.revokeObjectURL(currentDesignViewerDownloadUrl);
+        } catch (error) {
+            console.warn('Falha ao libertar URL temporário do download SVG:', error);
+        }
+        currentDesignViewerDownloadUrl = '';
+    }
+}
+
+async function buildIllustratorReadySvg(svgMarkup) {
+    if (typeof svgMarkup !== 'string' || !svgMarkup.trim()) {
+        return '';
+    }
+
+    let documentSvg = null;
+    try {
+        const parser = new DOMParser();
+        documentSvg = parser.parseFromString(svgMarkup, 'image/svg+xml');
+    } catch (error) {
+        return svgMarkup;
+    }
+
+    if (!documentSvg || documentSvg.querySelector('parsererror')) {
+        return svgMarkup;
+    }
+
+    const svgRoot = documentSvg.documentElement;
+    if (!svgRoot) {
+        return svgMarkup;
+    }
+
+    if (!svgRoot.getAttribute('xmlns:xlink')) {
+        svgRoot.setAttribute('xmlns:xlink', 'http://www.w3.org/1999/xlink');
+    }
+
+    const XLINK_NS = 'http://www.w3.org/1999/xlink';
+    const imageNodes = Array.from(svgRoot.querySelectorAll('image'));
+
+    for (const node of imageNodes) {
+        const href = String(
+            node.getAttribute('href')
+            || node.getAttributeNS(XLINK_NS, 'href')
+            || node.getAttribute('xlink:href')
+            || ''
+        ).trim();
+
+        if (!href || href.startsWith('data:image/')) {
+            continue;
+        }
+
+        if (href.startsWith('blob:')) {
+            // Blob URLs não são portáveis fora da sessão atual.
+            continue;
+        }
+
+        try {
+            const resolvedUrl = new URL(href, window.location.origin).toString();
+            const response = await fetch(resolvedUrl, { credentials: 'omit' });
+            if (!response.ok) {
+                continue;
+            }
+            const blob = await response.blob();
+            const dataUrl = await blobToDataUrl(blob);
+            if (!dataUrl) {
+                continue;
+            }
+            node.setAttribute('href', dataUrl);
+            node.setAttributeNS(XLINK_NS, 'xlink:href', dataUrl);
+        } catch (error) {
+            console.warn('Falha ao embutir imagem no SVG para download:', error);
+        }
+    }
+
+    return new XMLSerializer().serializeToString(svgRoot);
 }
 
 function buildStatusOptionsHtml(activeStatus) {
@@ -2771,14 +2870,21 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                     const itemOptions = resolveItemOptions(item, snapshot);
                     const svgDataUrl = visuals.designSvg && typeof buildSvgDataUrl === 'function'
                         ? buildSvgDataUrl(visuals.designSvg) : '';
+                    const downloadableSvg = typeof visuals.downloadableSvg === 'string'
+                        ? visuals.downloadableSvg
+                        : '';
                     const designKey = `${String(orderId)}-${index}`;
-                    adminDesignCache.set(designKey, { previewUrl: visuals.previewUrl, svgDataUrl, name: productName });
+                    adminDesignCache.set(designKey, {
+                        previewUrl: visuals.previewUrl,
+                        svgDataUrl,
+                        downloadableSvg,
+                        name: productName
+                    });
 
                     const designCell = visuals.hasDesign
-                        ? `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1px solid #e5e7eb;background:#f9fafb;overflow:hidden;margin-bottom:0.35rem;cursor:pointer;" class="order-design-view-btn" data-design-key="${escapeHtml(designKey)}">
+                        ? `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1px solid #e5e7eb;background:#f9fafb;overflow:hidden;cursor:pointer;" class="order-design-thumb" data-design-key="${escapeHtml(designKey)}" title="Ver design">
                                <img src="${escapeHtml(visuals.previewUrl)}" alt="Design" style="width:100%;height:100%;object-fit:contain;">
-                           </div>
-                           <button type="button" class="order-design-view-btn" data-design-key="${escapeHtml(designKey)}" style="font-size:0.6875rem;color:#2563eb;background:none;border:none;cursor:pointer;padding:0;display:block;text-align:left;">Ver design</button>`
+                           </div>`
                         : `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1.5px dashed #d1d5db;background:#f9fafb;display:flex;align-items:center;justify-content:center;margin-bottom:0.2rem;">
                                <i data-lucide="image-off" style="width:1.125rem;height:1.125rem;color:#d1d5db;"></i>
                            </div>
@@ -3069,7 +3175,7 @@ closeOrderModalBtns.forEach((btn) => {
 });
 
 // Design viewer modal
-function openAdminDesignViewer(designKey) {
+async function openAdminDesignViewer(designKey) {
     const entry = adminDesignCache.get(designKey);
     if (!entry) return;
     const modal = document.getElementById('design-viewer-modal');
@@ -3077,15 +3183,59 @@ function openAdminDesignViewer(designKey) {
     const title = document.getElementById('design-viewer-title');
     const downloadBtn = document.getElementById('design-viewer-download');
     if (!modal || !img) return;
+
+    revokeCurrentDesignViewerDownloadUrl();
+
     img.src = entry.svgDataUrl || entry.previewUrl || '';
     if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
-        if (entry.svgDataUrl) {
-            downloadBtn.href = entry.svgDataUrl;
-            downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
-            downloadBtn.style.display = 'inline-flex';
-        } else {
+        downloadBtn.style.display = 'none';
+        const candidateSvg = String(entry.downloadableSvg || '').trim();
+        if (!candidateSvg && !entry.svgDataUrl) {
             downloadBtn.style.display = 'none';
+        } else {
+            downloadBtn.style.display = 'inline-flex';
+            const defaultHtml = downloadBtn.dataset.defaultHtml || downloadBtn.innerHTML;
+            downloadBtn.dataset.defaultHtml = defaultHtml;
+            downloadBtn.setAttribute('aria-disabled', 'true');
+            downloadBtn.classList.add('opacity-70', 'pointer-events-none');
+            downloadBtn.innerHTML = '<span>A preparar SVG...</span>';
+
+            try {
+                let hrefAssigned = false;
+                if (candidateSvg) {
+                    const illustratorReadySvg = await buildIllustratorReadySvg(candidateSvg);
+                    if (illustratorReadySvg) {
+                        const blob = new Blob([illustratorReadySvg], { type: 'image/svg+xml;charset=utf-8' });
+                        currentDesignViewerDownloadUrl = URL.createObjectURL(blob);
+                        downloadBtn.href = currentDesignViewerDownloadUrl;
+                        downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
+                        hrefAssigned = true;
+                    }
+                }
+
+                if (!hrefAssigned && entry.svgDataUrl) {
+                    downloadBtn.href = entry.svgDataUrl;
+                    downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
+                    hrefAssigned = true;
+                }
+
+                if (!hrefAssigned) {
+                    downloadBtn.style.display = 'none';
+                }
+            } catch (error) {
+                console.error('Erro ao preparar SVG para download:', error);
+                if (entry.svgDataUrl) {
+                    downloadBtn.href = entry.svgDataUrl;
+                    downloadBtn.download = `design-${sanitizeFilenameToken(entry.name || 'produto')}.svg`;
+                } else {
+                    downloadBtn.style.display = 'none';
+                }
+            } finally {
+                downloadBtn.innerHTML = downloadBtn.dataset.defaultHtml || 'Descarregar SVG';
+                downloadBtn.removeAttribute('aria-disabled');
+                downloadBtn.classList.remove('opacity-70', 'pointer-events-none');
+            }
         }
     }
     modal.classList.remove('hidden');
@@ -3093,9 +3243,9 @@ function openAdminDesignViewer(designKey) {
 }
 
 document.addEventListener('click', (e) => {
-    const btn = e.target.closest('.order-design-view-btn');
-    if (btn && btn.dataset.designKey) {
-        openAdminDesignViewer(btn.dataset.designKey);
+    const thumb = e.target.closest('.order-design-thumb');
+    if (thumb && thumb.dataset.designKey) {
+        openAdminDesignViewer(thumb.dataset.designKey);
     }
 });
 
@@ -3170,9 +3320,11 @@ document.addEventListener('click', (event) => {
 });
 
 document.getElementById('close-design-viewer')?.addEventListener('click', () => {
+    revokeCurrentDesignViewerDownloadUrl();
     document.getElementById('design-viewer-modal')?.classList.add('hidden');
 });
 document.getElementById('close-design-viewer-2')?.addEventListener('click', () => {
+    revokeCurrentDesignViewerDownloadUrl();
     document.getElementById('design-viewer-modal')?.classList.add('hidden');
 });
 
