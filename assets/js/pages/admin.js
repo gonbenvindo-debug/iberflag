@@ -3186,7 +3186,9 @@ async function openAdminDesignViewer(designKey) {
 
     revokeCurrentDesignViewerDownloadUrl();
 
-    img.src = entry.svgDataUrl || entry.previewUrl || '';
+    // Mostrar no modal a mesma representação visual do thumbnail (preview normalizado),
+    // evitando diferenças de enquadramento/corte entre cards e viewer.
+    img.src = entry.previewUrl || entry.svgDataUrl || '';
     if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         downloadBtn.style.display = 'none';
