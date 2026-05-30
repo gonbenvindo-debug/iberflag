@@ -1599,15 +1599,40 @@ function addToCart(productId) {
     openCart();
 }
 
-function removeFromCart(index) {
+function removeFromCart(index, options = {}) {
+    const item = cart[index];
+    if (!item) {
+        return false;
+    }
+
+    if (options.skipConfirm !== true) {
+        const itemName = item?.nome ? `"${item.nome}"` : i18nText('este item');
+        const confirmed = window.confirm(i18nText(`Quer remover ${itemName} do carrinho?`));
+        if (!confirmed) {
+            return false;
+        }
+    }
+
     cart.splice(index, 1);
     updateCart();
     showToast(i18nText('Produto removido do carrinho'), 'info');
+    return true;
 }
 
 function updateQuantity(index, newQuantity) {
     if (newQuantity <= 0) {
-        removeFromCart(index);
+        const item = cart[index];
+        if (!item) {
+            return;
+        }
+
+        const itemName = item?.nome ? `"${item.nome}"` : i18nText('este item');
+        const confirmed = window.confirm(i18nText(`A quantidade vai ficar a 0. Quer remover ${itemName} do carrinho?`));
+        if (!confirmed) {
+            return;
+        }
+
+        removeFromCart(index, { skipConfirm: true });
         return;
     }
 
