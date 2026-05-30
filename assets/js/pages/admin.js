@@ -3175,7 +3175,7 @@ closeOrderModalBtns.forEach((btn) => {
 });
 
 // Design viewer modal
-async function openAdminDesignViewer(designKey) {
+async function openAdminDesignViewer(designKey, preferredDisplaySrc = '') {
     const entry = adminDesignCache.get(designKey);
     if (!entry) return;
     const modal = document.getElementById('design-viewer-modal');
@@ -3186,9 +3186,31 @@ async function openAdminDesignViewer(designKey) {
 
     revokeCurrentDesignViewerDownloadUrl();
 
-    // Mostrar no modal a mesma representação visual do thumbnail (preview normalizado),
-    // evitando diferenças de enquadramento/corte entre cards e viewer.
-    img.src = entry.previewUrl || entry.svgDataUrl || '';
+    const previewSrc = String(entry.previewUrl || '').trim();
+    const svgFallbackSrc = String(entry.svgDataUrl || '').trim();
+    const displayCandidates = [
+        String(preferredDisplaySrc || '').trim(),
+        previewSrc,
+        svgFallbackSrc
+    ].filter(Boolean);
+    const triedSources = new Set();
+    const setNextDisplaySource = () => {
+        const next = displayCandidates.find((candidate) => !triedSources.has(candidate));
+        if (!next) {
+            return false;
+        }
+        triedSources.add(next);
+        img.src = next;
+        return true;
+    };
+    img.onerror = () => {
+        if (!setNextDisplaySource()) {
+            img.onerror = null;
+        }
+    };
+    if (!setNextDisplaySource()) {
+        img.src = '';
+    }
     if (title) title.textContent = `Design — ${entry.name || 'Produto'}`;
     if (downloadBtn) {
         downloadBtn.style.display = 'none';
@@ -3247,7 +3269,9 @@ async function openAdminDesignViewer(designKey) {
 document.addEventListener('click', (e) => {
     const thumb = e.target.closest('.order-design-thumb');
     if (thumb && thumb.dataset.designKey) {
-        openAdminDesignViewer(thumb.dataset.designKey);
+        const thumbImg = thumb.querySelector('img');
+        const thumbSrc = thumbImg instanceof HTMLImageElement ? thumbImg.currentSrc || thumbImg.src : '';
+        openAdminDesignViewer(thumb.dataset.designKey, thumbSrc);
     }
 });
 
