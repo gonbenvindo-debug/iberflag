@@ -1563,7 +1563,14 @@ Object.assign(DesignEditor.prototype, {
         }
 
         // Normalize rotation and snap to 45-degree guides when very close.
-        rotation = this.getRotationGuideSnap(rotation, e.shiftKey ? 2 : 4).value;
+        const baseRotationGuideThreshold = Number.isFinite(Number(this.rotationGuideThreshold))
+            ? Number(this.rotationGuideThreshold)
+            : 2;
+        const shiftRotationGuideThreshold = Math.max(0.5, baseRotationGuideThreshold / 2);
+        rotation = this.getRotationGuideSnap(
+            rotation,
+            e.shiftKey ? shiftRotationGuideThreshold : baseRotationGuideThreshold
+        ).value;
         
         this.selectedElement.rotation = rotation;
         this.applyElementRotation(this.selectedElement, rotation);
@@ -1594,7 +1601,10 @@ Object.assign(DesignEditor.prototype, {
     
     updateRotation(value) {
         if (this.selectedElement) {
-            let rotation = this.getRotationGuideSnap(parseFloat(value), 4).value;
+            const baseRotationGuideThreshold = Number.isFinite(Number(this.rotationGuideThreshold))
+                ? Number(this.rotationGuideThreshold)
+                : 2;
+            let rotation = this.getRotationGuideSnap(parseFloat(value), baseRotationGuideThreshold).value;
 
             this.selectedElement.rotation = rotation;
             this.applyElementRotation(this.selectedElement, rotation);

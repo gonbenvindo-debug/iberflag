@@ -149,17 +149,17 @@ Object.assign(DesignEditor.prototype, {
 
     getGuideSnapThresholdSvg() {
         const baseThreshold = Number(this.guideThreshold);
-        const fallback = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 14;
+        const fallback = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 8;
         return Math.max(0.1, this.getSvgLengthFromClientPixels(fallback));
     },
 
     getGuideReleaseThresholdSvg() {
         const baseThreshold = Number(this.guideThreshold);
-        const fallbackThreshold = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 14;
+        const fallbackThreshold = Number.isFinite(baseThreshold) && baseThreshold > 0 ? baseThreshold : 8;
         const releaseThreshold = Number(this.guideReleaseThreshold);
         const fallbackRelease = Number.isFinite(releaseThreshold) && releaseThreshold > 0
             ? releaseThreshold
-            : 22;
+            : 11;
         const releasePixels = Math.max(fallbackThreshold + 2, fallbackRelease);
         return Math.max(this.getGuideSnapThresholdSvg(), this.getSvgLengthFromClientPixels(releasePixels));
     },
@@ -705,17 +705,22 @@ Object.assign(DesignEditor.prototype, {
         this.clearGuideLineArtifacts();
     },
 
-    getRotationGuideSnap(rotation, threshold = 4) {
+    getRotationGuideSnap(rotation, threshold = null) {
         if (!Number.isFinite(rotation)) {
             return { snapped: false, value: rotation, guide: null, diff: Infinity };
         }
+
+        const configuredThreshold = Number(this.rotationGuideThreshold);
+        const effectiveThreshold = Number.isFinite(Number(threshold))
+            ? Number(threshold)
+            : (Number.isFinite(configuredThreshold) && configuredThreshold >= 0 ? configuredThreshold : 2);
 
         const normalized = this.normalizeRotation(rotation);
         const guide = Math.round(normalized / 45) * 45;
         const wrappedGuide = this.normalizeRotation(guide);
         const diff = Math.abs((((normalized - wrappedGuide) % 360) + 540) % 360 - 180);
 
-        if (diff <= threshold) {
+        if (diff <= effectiveThreshold) {
             return { snapped: true, value: wrappedGuide, guide: wrappedGuide, diff };
         }
 
@@ -732,7 +737,7 @@ Object.assign(DesignEditor.prototype, {
         const guideLayer = this.ensureGuideLineLayer();
         if (!guideLayer) return;
 
-        const snap = this.getRotationGuideSnap(rotation, 4);
+        const snap = this.getRotationGuideSnap(rotation, this.rotationGuideThreshold);
 
         if (!snap.snapped) {
             return;

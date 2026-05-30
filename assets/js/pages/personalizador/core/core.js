@@ -81,8 +81,9 @@ class DesignEditor {
         // ===== GUIDES & SNAP =====
         this.showGuides = true;
         this.guideLines = [];
-        this.guideThreshold = 14; // tolerancia de snap mais visivel
-        this.guideReleaseThreshold = 22;
+        this.guideThreshold = 8; // snap menos agressivo para arrastar livre
+        this.guideReleaseThreshold = 11; // liberta o lock mais cedo
+        this.rotationGuideThreshold = 2; // snap angular mais tolerante
         this.gridSize = 10; // para snap grid
 
         // ===== CROP =====
