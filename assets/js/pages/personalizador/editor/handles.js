@@ -818,7 +818,9 @@ Object.assign(DesignEditor.prototype, {
         this.pendingMoveEvent = {
             clientX: e.clientX,
             clientY: e.clientY,
-            shiftKey: Boolean(e.shiftKey)
+            shiftKey: Boolean(e.shiftKey),
+            ctrlKey: Boolean(e.ctrlKey),
+            metaKey: Boolean(e.metaKey)
         };
 
         if (this.moveFrameRequest !== null) {
@@ -857,9 +859,10 @@ Object.assign(DesignEditor.prototype, {
             );
             let deltaX = svgDelta.dx;
             let deltaY = svgDelta.dy;
+            const isFreeMoveModifier = Boolean(e?.ctrlKey || e?.metaKey);
 
             // ===== GUIDES & SNAP ALIGNMENT (sempre activo durante drag) =====
-            {
+            if (!isFreeMoveModifier) {
                 const guides = this.dragStart.guides || this.calculateGuides(this.selectedElement);
                 const transformedBounds = this.dragStart.transformedBounds || this.getTransformedBounds(this.selectedElement);
                 const snapThreshold = this.getGuideSnapThresholdSvg?.() || this.guideThreshold;
@@ -908,6 +911,12 @@ Object.assign(DesignEditor.prototype, {
 
                 if (snapPoints.x) deltaX += snapPoints.x.offsetX || 0;
                 if (snapPoints.y) deltaY += snapPoints.y.offsetY || 0;
+            } else {
+                this.hideGuideLines?.();
+                if (this.dragStart?.snapLock) {
+                    this.dragStart.snapLock.x = null;
+                    this.dragStart.snapLock.y = null;
+                }
             }
             
             this.moveElementFromDragStart(this.selectedElement, deltaX, deltaY);

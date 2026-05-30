@@ -753,37 +753,13 @@ Object.assign(DesignEditor.prototype, {
             delete clone.dataset.elementId;
             delete clone.dataset.layerLabel;
         }
-        const clonedData = this.buildElementDataFromNode(clone);
         const offset = 20;
-
-        if (clonedData.type === 'text') {
-            const x = parseFloat(clone.getAttribute('x') || '0') + offset;
-            const y = parseFloat(clone.getAttribute('y') || '0') + offset;
-            clone.setAttribute('x', x);
-            clone.setAttribute('y', y);
-        } else if (clonedData.type === 'image' || (clonedData.type === 'shape' && this.isRectLikeShapeType?.(clonedData.shapeType))) {
-            const x = parseFloat(clone.getAttribute('x') || '0') + offset;
-            const y = parseFloat(clone.getAttribute('y') || '0') + offset;
-            clone.setAttribute('x', x);
-            clone.setAttribute('y', y);
-        } else if (clonedData.type === 'shape' && clonedData.shapeType === 'circle') {
-            const cx = parseFloat(clone.getAttribute('cx') || '0') + offset;
-            const cy = parseFloat(clone.getAttribute('cy') || '0') + offset;
-            clone.setAttribute('cx', cx);
-            clone.setAttribute('cy', cy);
-        } else if (clonedData.type === 'shape' && this.isPolygonShapeType?.(clonedData.shapeType)) {
-            const points = (clone.getAttribute('points') || '')
-                .trim()
-                .split(/\s+/)
-                .map((pair) => pair.split(',').map(Number))
-                .map(([x, y]) => `${x + offset},${y + offset}`)
-                .join(' ');
-            clone.setAttribute('points', points);
-        }
 
         this.canvas.appendChild(clone);
         this.bringPrintAreaOverlaysToFront();
-        clonedData.element = clone;
+        const clonedData = this.buildElementDataFromNode(clone);
+        this.offsetElementGeometry(clonedData, offset, offset);
+        this.applyElementRotation(clonedData, clonedData.rotation || 0);
         this.makeElementInteractive(clonedData);
         this.elements.push(clonedData);
         this.selectElement(clonedData);
