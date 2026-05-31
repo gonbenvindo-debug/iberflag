@@ -542,6 +542,13 @@ function buildOptionsSummary(options) {
 }
 
 function resolveOrderItemVisual(item, snapshot) {
+    const remoteSvgUrl = [
+        item?.design_svg_url,
+        item?.designSvgUrl,
+        snapshot?.designSvgUrl,
+        snapshot?.design_svg_url,
+        snapshot?.designStorageUrl
+    ].find((value) => typeof value === 'string' && value.trim()) || '';
     const designCandidates = [
         item?.design_svg,
         item?.design,
@@ -552,7 +559,7 @@ function resolveOrderItemVisual(item, snapshot) {
     const designSvg = designCandidates.find((value) => typeof value === 'string' && value.trim()) || '';
 
     // Explicit raster preview (actual design render, not product image)
-    const explicitPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+    const explicitPreview = [remoteSvgUrl, item?.design_svg_url, item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((value) => typeof value === 'string' && value.trim()) || '';
 
     // Product store image as a final fallback only.

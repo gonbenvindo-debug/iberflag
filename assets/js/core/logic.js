@@ -878,7 +878,15 @@ function normalizeCartItem(item) {
         customized: Boolean(item.customized),
         designId,
         design: item.design || null,
-        designPreview: item.designPreview || null,
+        designPreview: item.designPreview || item.designSvgUrl || item.design_svg_url || null,
+        designReadToken: item.designReadToken || item.design_read_token || null,
+        design_read_token: item.designReadToken || item.design_read_token || null,
+        designSvgUrl: item.designSvgUrl || item.design_svg_url || null,
+        design_svg_url: item.designSvgUrl || item.design_svg_url || null,
+        designStorageBucket: item.designStorageBucket || item.design_storage_bucket || null,
+        design_storage_bucket: item.designStorageBucket || item.design_storage_bucket || null,
+        designStoragePath: item.designStoragePath || item.design_storage_path || null,
+        design_storage_path: item.designStoragePath || item.design_storage_path || null,
         designPreviewVersion: Number(item.designPreviewVersion || 0) || 0,
         designSceneV1: item.designSceneV1 || item.design_scene_v1 || null,
         svgTemplate: item.svgTemplate || item.svg_template || fallbackProduct?.svg_template || null,
@@ -1024,6 +1032,11 @@ function hydrateCartSvgTemplatesFromProducts(products) {
 function getCartItemImage(item) {
     if (!item || typeof item !== 'object') {
         return '';
+    }
+
+    const remoteSvgUrl = String(item.designSvgUrl || item.design_svg_url || '').trim();
+    if (remoteSvgUrl) {
+        return remoteSvgUrl;
     }
 
     if ((Number(item.designPreviewVersion || 0) || 0) >= CART_PREVIEW_VERSION

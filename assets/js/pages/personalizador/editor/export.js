@@ -514,14 +514,43 @@ Object.assign(DesignEditor.prototype, {
                     : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(design)}`
             );
 
+        const maskedDesignSvg = (typeof this.generateCartPreviewSVG === 'function')
+            ? this.generateCartPreviewSVG(design)
+            : design;
+
         if (window.CartAssetStore?.saveDesign && designId) {
-            await window.CartAssetStore.saveDesign(designId, design, {
-                productId: this.currentProduct?.id,
-                preview: cartItem.designPreview,
-                document: null,
-                documentV3: null,
-                scene: compactDesignScene
-            });
+            try {
+                const storedDesign = await window.CartAssetStore.saveDesign(designId, maskedDesignSvg, {
+                    productId: this.currentProduct?.id,
+                    preview: cartItem.designPreview,
+                    document: null,
+                    documentV3: null,
+                    scene: compactDesignScene,
+                    requireRemote: true
+                });
+
+                if (storedDesign?.remoteSync?.ok) {
+                    cartItem.designReadToken = storedDesign.readToken || storedDesign.designReadToken || '';
+                    cartItem.design_read_token = cartItem.designReadToken;
+                    cartItem.designSvgUrl = storedDesign.svgUrl || storedDesign.designSvgUrl || '';
+                    cartItem.design_svg_url = cartItem.designSvgUrl;
+                    cartItem.designStorageBucket = storedDesign.storageBucket || '';
+                    cartItem.design_storage_bucket = cartItem.designStorageBucket;
+                    cartItem.designStoragePath = storedDesign.maskedSvgPath || '';
+                    cartItem.design_storage_path = cartItem.designStoragePath;
+                    cartItem.designPreview = cartItem.designSvgUrl || cartItem.designPreview;
+                    cartItem.design = '';
+                }
+            } catch (error) {
+                console.error('Falha ao sincronizar design confirmado:', error);
+                showToast(
+                    window.personalizerI18nText
+                        ? window.personalizerI18nText('Nao foi possivel guardar o design online. Tente confirmar novamente antes de ir para o carrinho.')
+                        : 'Nao foi possivel guardar o design online. Tente confirmar novamente antes de ir para o carrinho.',
+                    'error'
+                );
+                return;
+            }
         }
 
         if (targetIndex >= 0) {

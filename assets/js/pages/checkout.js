@@ -2243,7 +2243,11 @@ function buildCheckoutRequestCart(items) {
         })(),
         baseNome: String(item.baseNome || '').trim(),
         baseId: item.baseId || item.base_id || null,
-        designId: item.designId || item.design_id || null
+        designId: item.designId || item.design_id || null,
+        designReadToken: item.designReadToken || item.design_read_token || null,
+        designSvgUrl: item.designSvgUrl || item.design_svg_url || null,
+        designStorageBucket: item.designStorageBucket || item.design_storage_bucket || null,
+        designStoragePath: item.designStoragePath || item.design_storage_path || null
     }));
 }
 
@@ -2264,6 +2268,7 @@ function getCustomizedItemsNeedingRemoteSnapshot(items = []) {
                 index,
                 item,
                 designId,
+                designReadToken: String(item?.designReadToken || item?.design_read_token || '').trim(),
                 productId: item?.id ?? null,
                 productName: String(item?.nome || 'Produto personalizado').trim() || 'Produto personalizado'
             };
@@ -2307,6 +2312,35 @@ function isRemoteDesignSyncTemporarilyUnavailable(status = {}) {
     return referencesDesignSnapshots && referencesSchemaOrAvailability;
 }
 
+function applyRemoteDesignMetadataToCartItem(item, storedDesign = {}) {
+    if (!item || typeof item !== 'object' || !storedDesign || typeof storedDesign !== 'object') {
+        return;
+    }
+
+    const readToken = String(storedDesign.readToken || storedDesign.designReadToken || '').trim();
+    const svgUrl = String(storedDesign.svgUrl || storedDesign.designSvgUrl || storedDesign.design_preview || '').trim();
+    const storageBucket = String(storedDesign.storageBucket || storedDesign.storage_bucket || '').trim();
+    const storagePath = String(storedDesign.maskedSvgPath || storedDesign.masked_svg_path || storedDesign.designStoragePath || '').trim();
+
+    if (readToken) {
+        item.designReadToken = readToken;
+        item.design_read_token = readToken;
+    }
+    if (svgUrl) {
+        item.designSvgUrl = svgUrl;
+        item.design_svg_url = svgUrl;
+        item.designPreview = svgUrl;
+    }
+    if (storageBucket) {
+        item.designStorageBucket = storageBucket;
+        item.design_storage_bucket = storageBucket;
+    }
+    if (storagePath) {
+        item.designStoragePath = storagePath;
+        item.design_storage_path = storagePath;
+    }
+}
+
 async function ensureRemoteSnapshotForCheckoutItem(target) {
     const designId = String(target?.designId || '').trim();
     if (!designId) {
@@ -2318,19 +2352,33 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
     }
 
     const remoteStatusReader = window.CartAssetStore?.getRemoteDesignStatus;
-    let remoteSyncUnavailable = false;
+    let readToken = String(target?.designReadToken || target?.item?.designReadToken || target?.item?.design_read_token || '').trim();
     if (typeof remoteStatusReader === 'function') {
-        const initialRemoteStatus = await remoteStatusReader(designId, { requirePreview: true });
+        const initialRemoteStatus = await remoteStatusReader(designId, {
+            requirePreview: false,
+            readToken
+        });
         if (initialRemoteStatus?.ok && initialRemoteStatus?.valid) {
+            applyRemoteDesignMetadataToCartItem(target.item, initialRemoteStatus.design);
             return { ok: true };
         }
-        remoteSyncUnavailable = isRemoteDesignSyncTemporarilyUnavailable(initialRemoteStatus);
     }
 
     let localRecord = null;
     if (typeof window.CartAssetStore?.getDesign === 'function') {
         try {
-            localRecord = await window.CartAssetStore.getDesign(designId);
+            localRecord = await window.CartAssetStore.getDesign(designId, { readToken });
+            readToken = readToken || String(localRecord?.readToken || localRecord?.designReadToken || '').trim();
+            if (readToken && typeof remoteStatusReader === 'function') {
+                const tokenStatus = await remoteStatusReader(designId, {
+                    requirePreview: false,
+                    readToken
+                });
+                if (tokenStatus?.ok && tokenStatus?.valid) {
+                    applyRemoteDesignMetadataToCartItem(target.item, tokenStatus.design);
+                    return { ok: true };
+                }
+            }
         } catch (error) {
             console.warn('Falha a ler design local durante preflight de checkout:', error);
         }
@@ -2348,32 +2396,26 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
         };
     }
 
-    if (remoteSyncUnavailable) {
+    let remoteSaveResult = null;
+    try {
+        remoteSaveResult = await window.CartAssetStore?.saveDesign?.(designId, designSvg, {
+            productId: target.productId,
+            preview: String(localRecord?.preview || target?.item?.designPreview || fallbackPreview || '').trim(),
+            scene: localRecord?.designSceneV1
+                || target?.item?.designSceneV1
+                || target?.item?.design_scene_v1
+                || null,
+            requireRemote: true
+        });
+    } catch (error) {
         return {
-            ok: true,
-            code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
-            degraded: true
+            ok: false,
+            code: String(error?.code || error?.remoteSync?.errorCode || 'REMOTE_SAVE_FAILED'),
+            message: String(error?.message || error?.remoteSync?.message || 'Falha ao sincronizar design remotamente.')
         };
     }
 
-    const remoteSaveResult = await window.CartAssetStore?.saveDesign?.(designId, designSvg, {
-        productId: target.productId,
-        preview: String(localRecord?.preview || target?.item?.designPreview || fallbackPreview || '').trim(),
-        scene: localRecord?.designSceneV1
-            || target?.item?.designSceneV1
-            || target?.item?.design_scene_v1
-            || null
-    });
-
     if (!remoteSaveResult?.remoteSync?.ok) {
-        if (isRemoteDesignSyncTemporarilyUnavailable(remoteSaveResult?.remoteSync)) {
-            return {
-                ok: true,
-                code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
-                degraded: true
-            };
-        }
-
         return {
             ok: false,
             code: String(remoteSaveResult?.remoteSync?.errorCode || 'REMOTE_SAVE_FAILED'),
@@ -2381,27 +2423,26 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
         };
     }
 
+    applyRemoteDesignMetadataToCartItem(target.item, remoteSaveResult);
+    readToken = String(remoteSaveResult.readToken || remoteSaveResult.designReadToken || '').trim();
+
     if (typeof remoteStatusReader !== 'function') {
         return { ok: true };
     }
 
-    const revalidatedStatus = await remoteStatusReader(designId, { requirePreview: true });
+    const revalidatedStatus = await remoteStatusReader(designId, {
+        requirePreview: false,
+        readToken
+    });
     if (revalidatedStatus?.ok && revalidatedStatus?.valid) {
+        applyRemoteDesignMetadataToCartItem(target.item, revalidatedStatus.design);
         return { ok: true };
-    }
-
-    if (isRemoteDesignSyncTemporarilyUnavailable(revalidatedStatus)) {
-        return {
-            ok: true,
-            code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
-            degraded: true
-        };
     }
 
     return {
         ok: false,
         code: 'REMOTE_SNAPSHOT_INVALID',
-        message: revalidatedStatus?.message || 'Snapshot remoto sem preview valido.'
+        message: revalidatedStatus?.message || 'Snapshot remoto sem metadata Storage valida.'
     };
 }
 

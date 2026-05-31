@@ -37,7 +37,10 @@
     function normalizeDesignRecord(record, fallbackId = '') {
         const id = String(record?.id || record?.design_id || fallbackId || '').trim();
         const svg = String(record?.svg || record?.design_svg || '').trim();
-        if (!id || !svg) {
+        const readToken = String(record?.readToken || record?.designReadToken || record?.read_token || record?.design_read_token || '').trim();
+        const svgUrl = String(record?.svgUrl || record?.designSvgUrl || record?.design_svg_url || '').trim();
+        const previewValue = String(record?.preview || record?.designPreview || record?.design_preview || svgUrl || '').trim();
+        if (!id || (!svg && !svgUrl && !previewValue)) {
             return null;
         }
         const designSceneV1 = (record?.designSceneV1 && typeof record.designSceneV1 === 'object')
@@ -51,7 +54,17 @@
         return {
             id,
             svg,
-            preview: String(record?.preview || record?.design_preview || '').trim() || '',
+            preview: previewValue || '',
+            readToken,
+            designReadToken: readToken,
+            svgUrl,
+            designSvgUrl: svgUrl,
+            storageBucket: String(record?.storageBucket || record?.storage_bucket || '').trim() || '',
+            maskedSvgPath: String(record?.maskedSvgPath || record?.masked_svg_path || record?.designStoragePath || '').trim() || '',
+            documentPath: String(record?.documentPath || record?.document_path || '').trim() || '',
+            assetManifest: (record?.assetManifest && typeof record.assetManifest === 'object')
+                ? record.assetManifest
+                : (record?.asset_manifest && typeof record.asset_manifest === 'object' ? record.asset_manifest : {}),
             designSceneV1: compactSceneImageSources(designSceneV1),
             createdAt: Number(record?.createdAt || Date.now()),
             updatedAt: Number(record?.updatedAt || Date.now()),
@@ -231,13 +244,19 @@
         };
     }
 
-    async function fetchDesignRemotely(designId) {
+    async function fetchDesignRemotely(designId, options = {}) {
         const id = String(designId || '').trim();
         if (!id || typeof fetch !== 'function') {
             return null;
         }
 
-        const response = await fetch(`${REMOTE_DESIGNS_ENDPOINT}?designId=${encodeURIComponent(id)}`, {
+        const params = new URLSearchParams({ designId: id });
+        const token = String(options?.readToken || options?.designReadToken || '').trim();
+        if (token) {
+            params.set('token', token);
+        }
+
+        const response = await fetch(`${REMOTE_DESIGNS_ENDPOINT}?${params.toString()}`, {
             method: 'GET'
         });
         if (!response.ok) {
@@ -251,6 +270,7 @@
     async function getRemoteDesignStatus(designId, options = {}) {
         const id = String(designId || '').trim();
         const requirePreview = options?.requirePreview !== false;
+        const token = String(options?.readToken || options?.designReadToken || options?.token || '').trim();
 
         if (!id || typeof fetch !== 'function') {
             return {
@@ -268,7 +288,11 @@
 
         let response;
         try {
-            response = await fetch(`${REMOTE_DESIGNS_ENDPOINT}?designId=${encodeURIComponent(id)}`, {
+            const params = new URLSearchParams({ designId: id });
+            if (token) {
+                params.set('token', token);
+            }
+            response = await fetch(`${REMOTE_DESIGNS_ENDPOINT}?${params.toString()}`, {
                 method: 'GET'
             });
         } catch (error) {
@@ -304,9 +328,9 @@
             ? payload.design
             : null;
         const normalized = normalizeDesignRecord(rawDesign, id);
-        const hasSvg = Boolean(normalized?.svg);
-        const hasPreview = Boolean(String(rawDesign?.design_preview || rawDesign?.preview || normalized?.preview || '').trim());
-        const exists = Boolean(rawDesign && hasSvg);
+        const hasSvg = Boolean(normalized?.svg || rawDesign?.masked_svg_path || rawDesign?.maskedSvgPath || rawDesign?.svgUrl || rawDesign?.designSvgUrl);
+        const hasPreview = Boolean(String(rawDesign?.design_preview || rawDesign?.preview || rawDesign?.svgUrl || rawDesign?.designSvgUrl || normalized?.preview || '').trim());
+        const exists = Boolean(rawDesign && (hasSvg || hasPreview));
 
         return {
             ok: true,
@@ -342,16 +366,31 @@
         const remoteSync = await saveDesignRemotely(record);
         if (!remoteSync?.ok) {
             console.warn('Falha ao guardar design remotamente. A usar cache local.', remoteSync);
+            if (meta?.requireRemote) {
+                const error = new Error(remoteSync?.message || 'Falha ao guardar design remotamente.');
+                error.code = remoteSync?.errorCode || 'REMOTE_SAVE_FAILED';
+                error.remoteSync = remoteSync;
+                throw error;
+            }
         }
 
-        await saveDesignLocally(record);
+        const remoteRecord = remoteSync?.ok && remoteSync.design
+            ? normalizeDesignRecord({
+                ...record,
+                ...remoteSync.design,
+                svg: record.svg,
+                preview: remoteSync.design.designPreview || remoteSync.design.design_preview || remoteSync.design.svgUrl || remoteSync.design.designSvgUrl || record.preview
+            }, record.id)
+            : record;
+
+        await saveDesignLocally(remoteRecord);
         return {
-            ...record,
+            ...remoteRecord,
             remoteSync
         };
     }
 
-    async function getDesign(designId) {
+    async function getDesign(designId, options = {}) {
         const id = String(designId || '').trim();
         if (!id) {
             return null;
@@ -373,7 +412,7 @@
         }
 
         try {
-            const remoteRecord = await fetchDesignRemotely(id);
+            const remoteRecord = await fetchDesignRemotely(id, options);
             if (!remoteRecord) {
                 return null;
             }
@@ -622,12 +661,24 @@
             const next = { ...item };
             const designId = String(next.designId || next.design_id || '').trim();
 
-            if (designId && !next.design) {
-                const record = await getDesign(designId);
-                if (record?.svg) {
-                    next.design = record.svg;
+            if (designId && (!next.design || !next.designSvgUrl)) {
+                const record = await getDesign(designId, {
+                    readToken: next.designReadToken || next.design_read_token || ''
+                });
+                if (record?.svg || record?.svgUrl || record?.preview) {
+                    if (record.svg && !next.design) {
+                        next.design = record.svg;
+                    }
+                    next.designReadToken = next.designReadToken || record.readToken || '';
+                    next.design_read_token = next.design_read_token || record.readToken || '';
+                    next.designSvgUrl = next.designSvgUrl || record.svgUrl || '';
+                    next.design_svg_url = next.design_svg_url || record.svgUrl || '';
+                    next.designStorageBucket = next.designStorageBucket || record.storageBucket || '';
+                    next.design_storage_bucket = next.design_storage_bucket || record.storageBucket || '';
+                    next.designStoragePath = next.designStoragePath || record.maskedSvgPath || '';
+                    next.design_storage_path = next.design_storage_path || record.maskedSvgPath || '';
                     if (!next.designPreview) {
-                        next.designPreview = record.preview || buildSvgDataUrl(record.svg);
+                        next.designPreview = record.svgUrl || record.preview || (record.svg ? buildSvgDataUrl(record.svg) : '');
                     }
                     if (!next.designSceneV1 && record.designSceneV1) {
                         next.designSceneV1 = record.designSceneV1;
@@ -662,13 +713,24 @@
             const designId = String(next.designId || next.design_id || '').trim();
 
             if (designId && typeof next.design === 'string' && next.design.trim()) {
-                await saveDesign(designId, next.design, {
+                const stored = await saveDesign(designId, next.design, {
                     preview: next.designPreview || '',
                     productId: next.id || null,
                     scene: next.designSceneV1
                         || next.design_scene_v1
                         || null
                 });
+                if (stored?.remoteSync?.ok) {
+                    next.designReadToken = stored.readToken || stored.designReadToken || next.designReadToken || '';
+                    next.design_read_token = next.designReadToken;
+                    next.designSvgUrl = stored.svgUrl || stored.designSvgUrl || next.designSvgUrl || '';
+                    next.design_svg_url = next.designSvgUrl;
+                    next.designStorageBucket = stored.storageBucket || next.designStorageBucket || '';
+                    next.design_storage_bucket = next.designStorageBucket;
+                    next.designStoragePath = stored.maskedSvgPath || next.designStoragePath || '';
+                    next.design_storage_path = next.designStoragePath;
+                    next.designPreview = next.designSvgUrl || next.designPreview || '';
+                }
             }
 
             migrated.push(next);

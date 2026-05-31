@@ -2127,6 +2127,13 @@ function resolveItemSnapshot(orderMeta, item, index) {
 }
 
 function resolveItemPreviewAndDesign(item, snapshot) {
+    const remoteSvgUrl = [
+        item?.design_svg_url,
+        item?.designSvgUrl,
+        snapshot?.designSvgUrl,
+        snapshot?.design_svg_url,
+        snapshot?.designStorageUrl
+    ].find((value) => typeof value === 'string' && value.trim()) || '';
     const svgCandidates = [
         item?.design_svg,
         item?.design,
@@ -2138,7 +2145,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
 
     // Only data: URIs are genuine design previews. Regular https/relative URLs are product images.
     const isDataUri = (v) => typeof v === 'string' && v.startsWith('data:');
-    const designPreviewUrl = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+    const designPreviewUrl = [remoteSvgUrl, item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find(isDataUri) || '';
 
     // Als? accept any https preview that isn't the same as the product image (e.g. server-rendered raster)
@@ -2146,7 +2153,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
         [item?.imagem_produto, snapshot?.imagem, item?.produtos?.imagem]
             .filter((v) => typeof v === 'string' && v.trim())
     );
-    const httpPreview = [item?.design_preview, item?.preview_design, snapshot?.designPreview]
+    const httpPreview = [remoteSvgUrl, item?.design_svg_url, item?.design_preview, item?.preview_design, snapshot?.designPreview]
         .find((v) => typeof v === 'string' && v.trim() && !isDataUri(v) && !productImageUrls.has(v)) || '';
 
     const productSvgTemplate = [
@@ -2179,7 +2186,7 @@ function resolveItemPreviewAndDesign(item, snapshot) {
             : ''
     );
 
-    const previewUrl = designPreviewUrl || httpPreview || designDataUrl;
+    const previewUrl = httpPreview || designPreviewUrl || designDataUrl;
     const hasDesign = Boolean(designSvg || designScene || designPreviewUrl || httpPreview);
     const downloadableSvg = (
         designScene

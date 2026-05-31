@@ -44,6 +44,7 @@ const {
     recordFiscalDecision
 } = require('../../lib/server/ops');
 const { runNonBlockingAction } = require('../../lib/server/resilience');
+const { hashReadToken } = require('../../lib/server/design-storage');
 const SiteRoutes = require('../../assets/js/core/site-routes.js');
 
 function getCheckoutErrorMessage(error) {
@@ -253,6 +254,7 @@ function collectCustomizedDesignRequirements(items = []) {
             return {
                 index,
                 designId,
+                designReadToken: normalizeCheckoutText(item?.designReadToken || item?.design_read_token),
                 productId: item?.id ?? item?.produtoId ?? item?.produto_id ?? null,
                 productName: normalizeCheckoutText(item?.nome || item?.name || 'Produto personalizado') || 'Produto personalizado'
             };
@@ -289,14 +291,14 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
     }
 
     const missingDesignIdItems = requirements
-        .filter((entry) => !entry.designId)
+        .filter((entry) => !entry.designId || !entry.designReadToken)
         .map((entry) => ({
             ...entry,
-            reason: 'MISSING_DESIGN_ID'
+            reason: !entry.designId ? 'MISSING_DESIGN_ID' : 'MISSING_DESIGN_READ_TOKEN'
         }));
 
     if (missingDesignIdItems.length > 0) {
-        const error = new Error('Existe um design personalizado sem designId valido. Reabra o personalizador e confirme o design novamente.');
+        const error = new Error('Existe um design personalizado sem designId/token valido. Reabra o personalizador e confirme o design novamente.');
         error.code = 'DESIGN_SNAPSHOT_REQUIRED';
         error.details = missingDesignIdItems;
         throw error;
@@ -308,7 +310,7 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
     if (designIds.length > 0) {
         const { data, error } = await supabase
             .from('design_snapshots')
-            .select('design_id, design_preview')
+            .select('design_id, storage_bucket, masked_svg_path, read_token_hash')
             .in('design_id', designIds);
 
         if (error) {
@@ -328,7 +330,9 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
 
             snapshotsById.set(id, {
                 designId: id,
-                hasPreview: Boolean(normalizeCheckoutText(row?.design_preview))
+                storageBucket: normalizeCheckoutText(row?.storage_bucket),
+                maskedSvgPath: normalizeCheckoutText(row?.masked_svg_path),
+                readTokenHash: normalizeCheckoutText(row?.read_token_hash)
             });
         });
     }
@@ -343,10 +347,17 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
                 };
             }
 
-            if (!snapshot.hasPreview) {
+            if (!snapshot.maskedSvgPath || !snapshot.readTokenHash) {
                 return {
                     ...entry,
-                    reason: 'SNAPSHOT_PREVIEW_MISSING'
+                    reason: !snapshot.maskedSvgPath ? 'SNAPSHOT_STORAGE_PATH_MISSING' : 'SNAPSHOT_TOKEN_HASH_MISSING'
+                };
+            }
+
+            if (hashReadToken(entry.designReadToken) !== snapshot.readTokenHash) {
+                return {
+                    ...entry,
+                    reason: 'SNAPSHOT_TOKEN_INVALID'
                 };
             }
 

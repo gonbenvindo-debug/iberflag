@@ -132,6 +132,9 @@
                     precoUnitario: Number(entry.precoUnitario || 0),
                     imagem: entry.imagem ? String(entry.imagem) : '',
                     designPreview: entry.designPreview ? String(entry.designPreview) : '',
+                    designSvgUrl: entry.designSvgUrl || entry.design_svg_url ? String(entry.designSvgUrl || entry.design_svg_url) : '',
+                    designStorageBucket: entry.designStorageBucket || entry.design_storage_bucket ? String(entry.designStorageBucket || entry.design_storage_bucket) : '',
+                    designStoragePath: entry.designStoragePath || entry.design_storage_path ? String(entry.designStoragePath || entry.design_storage_path) : '',
                     design: entry.design ? String(entry.design) : '',
                     designSceneV1: entry.designSceneV1 && typeof entry.designSceneV1 === 'object'
                         ? entry.designSceneV1
