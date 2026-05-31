@@ -2120,6 +2120,22 @@ async function mountEmbeddedCheckout(sessionPayload) {
 
 function getCheckoutErrorMessage(error) {
     const rawMessage = String(error?.message || error?.details || error?.hint || '').toLowerCase();
+    if (error?.code === 'DESIGN_SNAPSHOT_REQUIRED') {
+        const missingItems = Array.isArray(error?.items) ? error.items : [];
+        if (missingItems.length > 0) {
+            const formatted = missingItems
+                .slice(0, 3)
+                .map((item) => {
+                    const productName = String(item?.productName || item?.nome || 'Produto personalizado').trim();
+                    const designId = String(item?.designId || item?.design_id || '').trim() || 'sem designId';
+                    return `${productName} (${designId})`;
+                })
+                .join('; ');
+            return `${i18nText('Falta sincronizar o design remoto antes de pagar.')}: ${formatted}. ${i18nText('Reabra o personalizador e confirme novamente o design.')}`;
+        }
+
+        return error?.message || i18nText('Falta sincronizar o design remoto antes de pagar. Reabra o personalizador e confirme novamente o design.');
+    }
 
     if (error?.code === 'MISSING_PRODUCT_MAPPING') {
         return i18nText('Existem produtos no carrinho que já não existem na base de dados. Atualize o carrinho e tente novamente.');
@@ -2229,6 +2245,133 @@ function buildCheckoutRequestCart(items) {
         baseId: item.baseId || item.base_id || null,
         designId: item.designId || item.design_id || null
     }));
+}
+
+function getCustomizedItemsNeedingRemoteSnapshot(items = []) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map((item, index) => {
+            const designId = String(item?.designId || item?.design_id || '').trim();
+            const customized = Boolean(item?.customized) || Boolean(designId);
+            if (!customized) {
+                return null;
+            }
+
+            return {
+                index,
+                item,
+                designId,
+                productId: item?.id ?? null,
+                productName: String(item?.nome || 'Produto personalizado').trim() || 'Produto personalizado'
+            };
+        })
+        .filter(Boolean);
+}
+
+async function ensureRemoteSnapshotForCheckoutItem(target) {
+    const designId = String(target?.designId || '').trim();
+    if (!designId) {
+        return {
+            ok: false,
+            code: 'MISSING_DESIGN_ID',
+            message: 'designId em falta para item personalizado.'
+        };
+    }
+
+    const remoteStatusReader = window.CartAssetStore?.getRemoteDesignStatus;
+    if (typeof remoteStatusReader === 'function') {
+        const initialRemoteStatus = await remoteStatusReader(designId, { requirePreview: true });
+        if (initialRemoteStatus?.ok && initialRemoteStatus?.valid) {
+            return { ok: true };
+        }
+    }
+
+    let localRecord = null;
+    if (typeof window.CartAssetStore?.getDesign === 'function') {
+        try {
+            localRecord = await window.CartAssetStore.getDesign(designId);
+        } catch (error) {
+            console.warn('Falha a ler design local durante preflight de checkout:', error);
+        }
+    }
+
+    const fallbackPreview = typeof getCartItemImage === 'function'
+        ? String(getCartItemImage(target.item) || '').trim()
+        : '';
+    const designSvg = String(localRecord?.svg || target?.item?.design || '').trim();
+    if (!designSvg) {
+        return {
+            ok: false,
+            code: 'DESIGN_SVG_MISSING',
+            message: 'Design SVG em falta para sincronizacao remota.'
+        };
+    }
+
+    const remoteSaveResult = await window.CartAssetStore?.saveDesign?.(designId, designSvg, {
+        productId: target.productId,
+        preview: String(localRecord?.preview || target?.item?.designPreview || fallbackPreview || '').trim(),
+        scene: null
+    });
+
+    if (!remoteSaveResult?.remoteSync?.ok) {
+        return {
+            ok: false,
+            code: String(remoteSaveResult?.remoteSync?.errorCode || 'REMOTE_SAVE_FAILED'),
+            message: String(remoteSaveResult?.remoteSync?.message || 'Falha ao sincronizar design remotamente.')
+        };
+    }
+
+    if (typeof remoteStatusReader !== 'function') {
+        return { ok: true };
+    }
+
+    const revalidatedStatus = await remoteStatusReader(designId, { requirePreview: true });
+    if (revalidatedStatus?.ok && revalidatedStatus?.valid) {
+        return { ok: true };
+    }
+
+    return {
+        ok: false,
+        code: 'REMOTE_SNAPSHOT_INVALID',
+        message: revalidatedStatus?.message || 'Snapshot remoto sem preview valido.'
+    };
+}
+
+async function preflightRemoteDesignSnapshots(items = []) {
+    const customizedItems = getCustomizedItemsNeedingRemoteSnapshot(items);
+    if (customizedItems.length === 0) {
+        return {
+            ok: true,
+            issues: []
+        };
+    }
+
+    const results = await Promise.all(customizedItems.map((target) => ensureRemoteSnapshotForCheckoutItem(target)));
+    const issues = [];
+
+    results.forEach((result, index) => {
+        if (result?.ok) {
+            return;
+        }
+
+        const target = customizedItems[index];
+        issues.push({
+            index: target.index,
+            productId: target.productId,
+            productName: target.productName,
+            designId: target.designId || '',
+            reason: result?.code || 'REMOTE_SNAPSHOT_INVALID',
+            message: result?.message || ''
+        });
+    });
+
+    return {
+        ok: issues.length === 0,
+        issues
+    };
 }
 
 function getCatalogPath() {
@@ -2437,6 +2580,19 @@ if (placeOrderBtn) {
         setPlaceOrderLoading(true);
 
         try {
+            const designSnapshotPreflight = await preflightRemoteDesignSnapshots(cart);
+            if (!designSnapshotPreflight.ok) {
+                const preflightError = {
+                    code: 'DESIGN_SNAPSHOT_REQUIRED',
+                    items: designSnapshotPreflight.issues
+                };
+                const message = getCheckoutErrorMessage(preflightError);
+                setCheckoutFeedback(message, 'error');
+                showToast(message, 'error');
+                setPlaceOrderLoading(false);
+                return;
+            }
+
             const response = await fetch('/api/checkout/create-session', {
                 method: 'POST',
                 headers: {
@@ -2455,11 +2611,13 @@ if (placeOrderBtn) {
             if (!response.ok) {
                 const message = getCheckoutErrorMessage({
                     code: payload?.error,
-                    message: payload?.message || payload?.error || 'CHECKOUT_SESSION_FAILED'
+                    message: payload?.message || payload?.error || 'CHECKOUT_SESSION_FAILED',
+                    items: Array.isArray(payload?.items) ? payload.items : []
                 });
                 throw {
                     code: payload?.error || 'CHECKOUT_SESSION_FAILED',
-                    message
+                    message,
+                    items: Array.isArray(payload?.items) ? payload.items : []
                 };
             }
 

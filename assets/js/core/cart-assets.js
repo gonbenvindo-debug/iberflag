@@ -6,6 +6,8 @@
     const STORE_NAME = 'design_assets';
     const IMAGE_STORE_NAME = 'image_assets';
     const REMOTE_DESIGNS_ENDPOINT = '/api/designs';
+    const REMOTE_MAX_SVG_LENGTH = 1_900_000;
+    const REMOTE_MAX_PREVIEW_LENGTH = 1_450_000;
 
     const memoryCache = new Map();
     const imageMemoryCache = new Map();
@@ -163,29 +165,64 @@
     async function saveDesignRemotely(record) {
         const normalized = normalizeDesignRecord(record);
         if (!normalized || typeof fetch !== 'function') {
-            return false;
+            return {
+                ok: false,
+                status: 0,
+                errorCode: 'REMOTE_SAVE_UNAVAILABLE',
+                message: 'Guardar design remotamente indisponivel.'
+            };
         }
 
-        const response = await fetch(REMOTE_DESIGNS_ENDPOINT, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                designId: normalized.id,
-                designSvg: normalized.svg,
-                preview: normalized.preview,
-                designSceneV1: normalized.designSceneV1,
-                design_scene_v1: normalized.designSceneV1,
-                productId: normalized.productId
-            })
-        });
+        const designSvg = String(normalized.svg || '').trim().slice(0, REMOTE_MAX_SVG_LENGTH);
+        const previewRaw = String(normalized.preview || '').trim();
+        const preview = previewRaw.length > REMOTE_MAX_PREVIEW_LENGTH
+            ? ''
+            : previewRaw;
+        const payload = {
+            designId: normalized.id,
+            designSvg,
+            productId: normalized.productId
+        };
+        if (preview) {
+            payload.preview = preview;
+        }
 
+        let response;
+        try {
+            response = await fetch(REMOTE_DESIGNS_ENDPOINT, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            });
+        } catch (error) {
+            return {
+                ok: false,
+                status: 0,
+                errorCode: 'REMOTE_SAVE_NETWORK_ERROR',
+                message: error?.message || 'Falha de rede ao guardar design remotamente.'
+            };
+        }
+
+        const responsePayload = await response.json().catch(() => ({}));
         if (!response.ok) {
-            throw new Error(`Falha ao guardar design na base de dados (${response.status})`);
+            return {
+                ok: false,
+                status: Number(response.status) || 0,
+                errorCode: String(responsePayload?.error || 'REMOTE_SAVE_FAILED'),
+                message: String(responsePayload?.message || `Falha ao guardar design na base de dados (${response.status}).`)
+            };
         }
 
-        return true;
+        return {
+            ok: true,
+            status: Number(response.status) || 200,
+            errorCode: '',
+            message: '',
+            skippedPreview: !preview && Boolean(previewRaw),
+            design: responsePayload?.design || null
+        };
     }
 
     async function fetchDesignRemotely(designId) {
@@ -203,6 +240,79 @@
 
         const payload = await response.json().catch(() => ({}));
         return normalizeDesignRecord(payload?.design || null, id);
+    }
+
+    async function getRemoteDesignStatus(designId, options = {}) {
+        const id = String(designId || '').trim();
+        const requirePreview = options?.requirePreview !== false;
+
+        if (!id || typeof fetch !== 'function') {
+            return {
+                ok: false,
+                status: 0,
+                errorCode: !id ? 'MISSING_DESIGN_ID' : 'REMOTE_FETCH_UNAVAILABLE',
+                message: !id ? 'designId em falta.' : 'Leitura remota de design indisponivel.',
+                exists: false,
+                hasPreview: false,
+                hasSvg: false,
+                valid: false,
+                design: null
+            };
+        }
+
+        let response;
+        try {
+            response = await fetch(`${REMOTE_DESIGNS_ENDPOINT}?designId=${encodeURIComponent(id)}`, {
+                method: 'GET'
+            });
+        } catch (error) {
+            return {
+                ok: false,
+                status: 0,
+                errorCode: 'REMOTE_FETCH_NETWORK_ERROR',
+                message: error?.message || 'Falha de rede ao validar design remoto.',
+                exists: false,
+                hasPreview: false,
+                hasSvg: false,
+                valid: false,
+                design: null
+            };
+        }
+
+        const payload = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            return {
+                ok: false,
+                status: Number(response.status) || 0,
+                errorCode: String(payload?.error || 'REMOTE_FETCH_FAILED'),
+                message: String(payload?.message || `Falha ao validar design remoto (${response.status}).`),
+                exists: false,
+                hasPreview: false,
+                hasSvg: false,
+                valid: false,
+                design: null
+            };
+        }
+
+        const rawDesign = payload?.design && typeof payload.design === 'object'
+            ? payload.design
+            : null;
+        const normalized = normalizeDesignRecord(rawDesign, id);
+        const hasSvg = Boolean(normalized?.svg);
+        const hasPreview = Boolean(String(rawDesign?.design_preview || rawDesign?.preview || normalized?.preview || '').trim());
+        const exists = Boolean(rawDesign && hasSvg);
+
+        return {
+            ok: true,
+            status: Number(response.status) || 200,
+            errorCode: '',
+            message: '',
+            exists,
+            hasPreview,
+            hasSvg,
+            valid: exists && (!requirePreview || hasPreview),
+            design: normalized
+        };
     }
 
     async function saveDesign(designId, svgMarkup, meta = {}) {
@@ -223,14 +333,16 @@
             return null;
         }
 
-        try {
-            await saveDesignRemotely(record);
-        } catch (error) {
-            console.warn('Falha ao guardar design remotamente. A usar cache local.', error);
+        const remoteSync = await saveDesignRemotely(record);
+        if (!remoteSync?.ok) {
+            console.warn('Falha ao guardar design remotamente. A usar cache local.', remoteSync);
         }
 
         await saveDesignLocally(record);
-        return record;
+        return {
+            ...record,
+            remoteSync
+        };
     }
 
     async function getDesign(designId) {
@@ -562,6 +674,8 @@
     global.CartAssetStore = {
         buildSvgDataUrl,
         saveDesign,
+        saveDesignRemotely,
+        getRemoteDesignStatus,
         getDesign,
         deleteDesign,
         saveImageAsset,

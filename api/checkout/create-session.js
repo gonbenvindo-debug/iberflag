@@ -138,6 +138,10 @@ function getCheckoutErrorMessage(error) {
         return 'Uma das bases selecionadas ja nao esta disponivel para o produto.';
     }
 
+    if (errorCode === 'DESIGN_SNAPSHOT_REQUIRED') {
+        return error?.message || 'Existe um design personalizado sem snapshot remoto valido. Reabra o personalizador e confirme o design novamente.';
+    }
+
     if (raw.includes('itens_encomenda') || raw.includes('encomendas') || raw.includes('clientes')) {
         return 'A base de dados do checkout nao corresponde ao esperado.';
     }
@@ -195,7 +199,8 @@ function getCheckoutErrorStatus(error) {
 
     if ([
         'MISSING_PRODUCT_MAPPING',
-        'PRODUCT_INACTIVE'
+        'PRODUCT_INACTIVE',
+        'DESIGN_SNAPSHOT_REQUIRED'
     ].includes(errorCode)) {
         return 409;
     }
@@ -226,6 +231,99 @@ const ALLOWED_CHECKOUT_COUNTRIES = new Set(['PT', 'ES']);
 function normalizeAllowedCheckoutCountry(value) {
     const normalized = String(value || '').trim().toUpperCase();
     return ALLOWED_CHECKOUT_COUNTRIES.has(normalized) ? normalized : '';
+}
+
+function normalizeCheckoutText(value) {
+    return String(value || '').trim();
+}
+
+function collectCustomizedDesignRequirements(items = []) {
+    if (!Array.isArray(items) || items.length === 0) {
+        return [];
+    }
+
+    return items
+        .map((item, index) => {
+            const designId = normalizeCheckoutText(item?.designId || item?.design_id);
+            const customized = Boolean(item?.customized) || Boolean(designId);
+            if (!customized) {
+                return null;
+            }
+
+            return {
+                index,
+                designId,
+                productId: item?.id ?? item?.produtoId ?? item?.produto_id ?? null,
+                productName: normalizeCheckoutText(item?.nome || item?.name || 'Produto personalizado') || 'Produto personalizado'
+            };
+        })
+        .filter(Boolean);
+}
+
+async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
+    const requirements = collectCustomizedDesignRequirements(checkoutItems);
+    if (requirements.length === 0) {
+        return;
+    }
+
+    const designIds = [...new Set(requirements.map((entry) => entry.designId).filter(Boolean))];
+    const snapshotsById = new Map();
+
+    if (designIds.length > 0) {
+        const { data, error } = await supabase
+            .from('design_snapshots')
+            .select('design_id, design_preview')
+            .in('design_id', designIds);
+
+        if (error) {
+            throw error;
+        }
+
+        (Array.isArray(data) ? data : []).forEach((row) => {
+            const id = normalizeCheckoutText(row?.design_id);
+            if (!id) return;
+
+            snapshotsById.set(id, {
+                designId: id,
+                hasPreview: Boolean(normalizeCheckoutText(row?.design_preview))
+            });
+        });
+    }
+
+    const missingItems = requirements
+        .map((entry) => {
+            if (!entry.designId) {
+                return {
+                    ...entry,
+                    reason: 'MISSING_DESIGN_ID'
+                };
+            }
+
+            const snapshot = snapshotsById.get(entry.designId);
+            if (!snapshot) {
+                return {
+                    ...entry,
+                    reason: 'SNAPSHOT_NOT_FOUND'
+                };
+            }
+
+            if (!snapshot.hasPreview) {
+                return {
+                    ...entry,
+                    reason: 'SNAPSHOT_PREVIEW_MISSING'
+                };
+            }
+
+            return null;
+        })
+        .filter(Boolean);
+
+    if (missingItems.length > 0) {
+        const error = new Error('Existe um design personalizado sem snapshot remoto valido. Reabra o personalizador e confirme o design novamente.');
+        error.code = 'DESIGN_SNAPSHOT_REQUIRED';
+        error.details = missingItems;
+        throw error;
+    }
 }
 
 module.exports = async function createCheckoutSessionHandler(req, res) {
@@ -406,6 +504,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const publishableKey = getStripePublishableKey();
         const baseUrl = getPublicBaseUrl(req);
         const cart = await resolveCheckoutCart(supabase, rawCart);
+        await assertRemoteDesignSnapshotsReady(supabase, cart);
         const chargeableItems = [...cart, ...buildServiceOptionItems(serviceOptions)];
         const { subtotal, shipping, total } = calculateCheckoutTotals(chargeableItems);
         const vatValidation = {
@@ -617,7 +716,8 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         const statusCode = getCheckoutErrorStatus(error);
         sendJson(res, statusCode, {
             error: statusCode >= 500 ? 'CHECKOUT_SESSION_FAILED' : (error?.code || 'CHECKOUT_SESSION_FAILED'),
-            message: getCheckoutErrorMessage(error)
+            message: getCheckoutErrorMessage(error),
+            items: Array.isArray(error?.details) ? error.details : []
         });
     }
 };
