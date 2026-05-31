@@ -301,9 +301,9 @@ function renderCartItemsList() {
     cartItemsContainer.innerHTML = cart.map((item, index) => `
         <article class="cart-item-card group rounded-2xl border border-gray-200 bg-white p-4 shadow-sm transition hover:shadow-md" data-cart-item-index="${index}">
             <div class="cart-item-row flex items-start gap-3">
-                <a href="${getCartItemEditorLink(item, index)}" class="cart-item-preview-link flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
-                    <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame">
-                        <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image">
+                <a href="${getCartItemEditorLink(item, index)}" class="cart-item-preview-link design-preview-surface flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
+                    <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame design-preview-frame">
+                        <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image design-preview-media">
                     </div>
                 </a>
                 <div id="cart-item-details-${index}" data-cart-details="${index}" class="cart-item-details min-w-0 flex-1">

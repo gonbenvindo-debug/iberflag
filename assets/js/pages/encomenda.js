@@ -6,6 +6,7 @@ const orderDetail = document.getElementById('order-detail');
 const itemPreviewModal = document.getElementById('item-preview-modal');
 const itemPreviewCloseBtn = document.getElementById('item-preview-close');
 const itemPreviewTitle = document.getElementById('item-preview-title');
+const itemPreviewSurface = document.getElementById('item-preview-surface');
 const itemPreviewImage = document.getElementById('item-preview-image');
 const itemPreviewOptions = document.getElementById('item-preview-options');
 const itemPreviewDownload = document.getElementById('item-preview-download');
@@ -758,7 +759,11 @@ function renderOrderItems(order, items, splitMeta) {
             <tr>
                 <td class="order-summary-product">
                     <span class="inline-flex items-center gap-2">
-                        <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="w-9 h-9 shrink-0 rounded-md border border-slate-200 bg-slate-50 object-contain">
+                        <span class="order-item-preview-thumb design-preview-surface">
+                            <span class="design-preview-frame">
+                                <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="design-preview-media">
+                            </span>
+                        </span>
                         <span>${escapeHtml(productName)}</span>
                     </span>
                 </td>
@@ -831,7 +836,9 @@ function openItemPreview(index) {
     itemPreviewTitle.textContent = data.productName || 'Produto';
     itemPreviewImage.src = data.previewUrl || '/favicon.svg';
     itemPreviewImage.alt = data.productName || 'Preview';
-    itemPreviewImage.classList.toggle('design-preview-surface', Boolean(data.hasDesign));
+    if (itemPreviewSurface) {
+        itemPreviewSurface.classList.toggle('design-preview-surface--plain', !data.hasDesign);
+    }
     if (itemPreviewOptions) {
         renderItemPreviewOptions(data.options);
         itemPreviewOptions.classList.remove('hidden');

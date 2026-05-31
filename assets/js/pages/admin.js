@@ -3047,9 +3047,11 @@ const statusColor = resolveFacturalusaStatusColor(facturalusaStatus);
                     });
 
                     const designCell = visuals.hasDesign
-                        ? `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1px solid #e5e7eb;background:#f9fafb;overflow:hidden;cursor:pointer;" class="order-design-thumb" data-design-key="${escapeHtml(designKey)}" title="Ver design">
-                               <img src="${escapeHtml(visuals.previewUrl)}" alt="Design" style="width:100%;height:100%;object-fit:contain;">
-                           </div>`
+                        ? `<button type="button" class="order-design-thumb design-preview-surface" data-design-key="${escapeHtml(designKey)}" title="Ver design" aria-label="Ver design">
+                               <span class="design-preview-frame">
+                                   <img src="${escapeHtml(visuals.previewUrl)}" alt="Design" class="design-preview-media">
+                               </span>
+                           </button>`
                         : `<div style="width:3.5rem;height:3.5rem;border-radius:0.5rem;border:1.5px dashed #d1d5db;background:#f9fafb;display:flex;align-items:center;justify-content:center;margin-bottom:0.2rem;">
                                <i data-lucide="image-off" style="width:1.125rem;height:1.125rem;color:#d1d5db;"></i>
                            </div>
@@ -4091,19 +4093,21 @@ function renderProductTemplatesGrid() {
         const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
             previewUrl,
             null,
-            { backgroundColor: '#f8fafc' }
+            { backgroundColor: 'transparent' }
         );
         return `
             <div class="template-toggle-card group relative rounded-xl border-2 bg-white overflow-hidden transition-all duration-200 border-gray-200 hover:border-gray-300 hover:shadow-sm"
                 data-template-id="${t.id}">
-                <div class="template-toggle-preview relative bg-gray-50">
+                <div class="template-toggle-preview design-preview-surface relative">
+                    <span class="template-toggle-preview-frame design-preview-frame">
                     ${previewMarkup
                         ? `<span class="template-preview-svg-wrap">${previewMarkup}</span>`
                         : `<img src="${previewUrl}" 
                             alt="${safeName}" 
-                            class="template-preview-img transition-transform duration-300 group-hover:scale-[1.02]"
+                            class="template-preview-img design-preview-media transition-transform duration-300 group-hover:scale-[1.02]"
                             onerror="this.src='/assets/images/template-placeholder.svg'; this.onerror=null;">`}
-                    <button type="button" class="template-edit-btn absolute top-1 right-1 w-7 h-7 rounded-full bg-white/95 border border-gray-300 text-red-600 hover:text-red-700 hover:bg-white flex items-center justify-center transition-all duration-200" data-template-id="${t.id}" title="Continuar a editar template">
+                    </span>
+                    <button type="button" class="template-edit-btn absolute top-1 right-1 z-10 w-7 h-7 rounded-full bg-white/95 border border-gray-300 text-red-600 hover:text-red-700 hover:bg-white flex items-center justify-center transition-all duration-200" data-template-id="${t.id}" title="Continuar a editar template">
                         <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
                     </button>
                 </div>

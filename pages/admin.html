@@ -909,13 +909,16 @@
 
             <div class="p-4 bg-gray-50">
                 <div class="rounded-xl border border-gray-200 bg-white p-2.5 md:p-3">
-                    <img
-                        id="design-viewer-img"
-                        src=""
-                        alt="Design"
-                        class="w-full h-auto object-contain object-center mx-auto"
-                        style="max-height:min(56vh,520px);"
-                    >
+                    <div class="design-preview-surface" style="height:min(56vh,520px);--design-preview-radius:0.75rem;--design-preview-inset:0.45rem;">
+                        <div class="design-preview-frame">
+                            <img
+                                id="design-viewer-img"
+                                src=""
+                                alt="Design"
+                                class="design-preview-media mx-auto"
+                            >
+                        </div>
+                    </div>
                 </div>
             </div>
 

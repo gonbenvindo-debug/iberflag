@@ -591,7 +591,7 @@ function buildTemplatePreviewMarkup(template) {
     const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
         previewUrl,
         currentProduct?.svg_template || null,
-        { backgroundColor: '#f8fafc', contentFillRatio: 0.9, includeOutline: false }
+        { backgroundColor: 'transparent', contentFillRatio: 0.9, includeOutline: false }
     );
 
     if (previewMarkup) {
@@ -603,7 +603,7 @@ function buildTemplatePreviewMarkup(template) {
             src="${escapeHtml(previewUrl)}"
             alt="${escapeHtml(template.nome)}"
             loading="lazy"
-            class="template-gallery-card__preview-image"
+            class="template-gallery-card__preview-image design-preview-media"
             onerror="this.src='${TEMPLATE_PREVIEW_FALLBACK}';this.onerror=null;"
         >
     `;
@@ -637,8 +637,10 @@ function buildTemplateGalleryCard({ action, title, meta = '', previewMarkup, tem
             aria-label="${escapeHtml(ariaLabel)}"
         >
             <span class="template-gallery-card__preview">
-                <span class="template-gallery-card__preview-surface ${action === 'blank' ? 'template-gallery-card__preview-surface--blank' : ''}">
-                    ${previewMarkup}
+                <span class="template-gallery-card__preview-surface design-preview-surface ${action === 'blank' ? 'template-gallery-card__preview-surface--blank' : ''}">
+                    <span class="template-gallery-card__preview-frame design-preview-frame">
+                        ${previewMarkup}
+                    </span>
                 </span>
             </span>
             <span class="template-gallery-card__info">

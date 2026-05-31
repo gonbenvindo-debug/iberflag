@@ -726,19 +726,20 @@
             margin-bottom: 0.15rem !important;
         }
 
+        .cart-design-preview-surface {
+            width: 100%;
+            --design-preview-radius: 10px;
+        }
+
+        .cart-design-preview-frame {
+            --design-preview-radius: 10px;
+            --design-preview-inset: 8px;
+        }
+
         .cart-design-preview {
             width: 100%;
             height: min(48vh, 420px);
-            object-fit: contain;
-            object-position: center;
             display: block;
-            box-sizing: border-box;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            border-radius: 10px;
-            background-color: #f8fafc;
-            background-image: none;
-            border: 1px solid rgba(239, 72, 37, 0.45);
         }
 
         .cart-base-grid {
@@ -948,8 +949,10 @@
 
             .cart-design-preview {
                 height: min(46dvh, 460px);
-                padding-top: 10px;
-                padding-bottom: 10px;
+            }
+
+            .cart-design-preview-frame {
+                --design-preview-inset: 10px;
             }
 
             .cart-base-grid {

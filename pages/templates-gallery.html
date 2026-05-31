@@ -53,22 +53,37 @@
 
         .template-preview {
             aspect-ratio: var(--preview-ratio, 4/3);
-            background: #f8fafc;
             position: relative;
             overflow: hidden;
+            --design-preview-radius: 0;
+        }
+
+        .template-preview-frame {
+            width: 100%;
+            height: 100%;
+            --design-preview-radius: 0;
+            --design-preview-inset: 0.7rem;
         }
 
         .template-preview img {
-            width: 90%;
-            height: 90%;
-            margin: 5%;
-            object-fit: contain;
+            width: 100%;
+            height: 100%;
         }
 
         .template-preview svg {
+            width: auto;
+            height: 100%;
+            max-width: 100%;
+            max-height: 100%;
+            display: block;
+        }
+
+        .template-preview-content {
             width: 100%;
             height: 100%;
-            display: block;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
         .template-blank {
@@ -240,12 +255,14 @@
         <div class="gallery-grid" id="templates-grid">
             <!-- Template em branco (sempre primeiro) -->
             <div class="template-card" onclick="selectTemplate(null)">
-                <div class="template-preview">
-                    <div class="template-blank">
+                <div class="template-preview design-preview-surface">
+                    <div class="template-preview-frame design-preview-frame">
+                        <div class="template-blank">
                         <div class="blank-icon">
                             <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
                         </div>
                         <span class="font-medium">Começar em branco</span>
+                        </div>
                     </div>
                 </div>
                 <div class="template-info">
@@ -321,12 +338,14 @@
                 // Remover skeletons
                 grid.innerHTML = `
                     <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
-                                <div class="blank-icon">
-                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                        <div class="template-preview design-preview-surface">
+                            <div class="template-preview-frame design-preview-frame">
+                                <div class="template-blank">
+                                    <div class="blank-icon">
+                                        <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                                    </div>
+                                    <span class="font-medium">Começar em branco</span>
                                 </div>
-                                <span class="font-medium">Começar em branco</span>
                             </div>
                         </div>
                         <div class="template-info">
@@ -342,12 +361,14 @@
                 console.error('Erro ao carregar templates:', err);
                 grid.innerHTML = `
                     <div class="template-card" onclick="selectTemplate(null)">
-                        <div class="template-preview">
-                            <div class="template-blank">
-                                <div class="blank-icon">
-                                    <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                        <div class="template-preview design-preview-surface">
+                            <div class="template-preview-frame design-preview-frame">
+                                <div class="template-blank">
+                                    <div class="blank-icon">
+                                        <iconify-icon icon="lucide:plus" width="32"></iconify-icon>
+                                    </div>
+                                    <span class="font-medium">Começar em branco</span>
                                 </div>
-                                <span class="font-medium">Começar em branco</span>
                             </div>
                         </div>
                         <div class="template-info">
@@ -398,7 +419,7 @@
             const previewMarkup = window.DesignSvgStore?.buildPreviewSvgMarkup?.(
                 previewUrl,
                 null,
-                { backgroundColor: '#f8fafc', contentFillRatio: 0.9, includeOutline: false }
+                { backgroundColor: 'transparent', contentFillRatio: 0.9, includeOutline: false }
             );
             const categoryLabels = {
                 'promocoes': 'Promocoes',
@@ -409,11 +430,13 @@
             };
 
             div.innerHTML = `
-                <div class="template-preview">
+                <div class="template-preview design-preview-surface">
+                    <div class="template-preview-frame design-preview-frame">
                     ${previewMarkup
-                        ? previewMarkup
-                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy"
+                        ? `<span class="template-preview-content">${previewMarkup}</span>`
+                        : `<img src="${previewUrl}" alt="${template.nome}" loading="lazy" class="design-preview-media"
                             onerror="this.src='/assets/images/template-placeholder.svg'">`}
+                    </div>
                 </div>
                 <div class="template-info">
                     <div class="template-name">${template.nome}</div>

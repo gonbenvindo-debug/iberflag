@@ -2443,7 +2443,11 @@ async function loadCart() {
     // Render cart items
     orderItems.innerHTML = cart.map(item => `
         <div class="checkout-summary-item">
-            <img src="${escapeHtml(typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem)}" alt="${escapeHtml(item.nome)}" class="checkout-summary-item-media">
+            <div class="checkout-summary-item-preview design-preview-surface">
+                <div class="design-preview-frame">
+                    <img src="${escapeHtml(typeof getCartItemImage === 'function' ? getCartItemImage(item) : item.imagem)}" alt="${escapeHtml(item.nome)}" class="checkout-summary-item-media design-preview-media">
+                </div>
+            </div>
             <div class="checkout-summary-item-body">
                 <div class="checkout-summary-item-main">
                     <h4>${escapeHtml(item.nome)}</h4>

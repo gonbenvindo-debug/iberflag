@@ -561,18 +561,20 @@
             display: block;
         }
 
+        .cart-design-preview-surface {
+            width: 100%;
+            --design-preview-radius: 12px;
+        }
+
+        .cart-design-preview-frame {
+            --design-preview-radius: 12px;
+            --design-preview-inset: 8px;
+        }
+
         .cart-design-preview {
             width: 100%;
             height: 52vh;
-            object-fit: contain;
-            object-position: center;
             display: block;
-            box-sizing: border-box;
-            padding-top: 8px;
-            padding-bottom: 8px;
-            border-radius: 12px;
-            background: #f8fafc;
-            border: 1px solid rgba(239, 72, 37, 0.45);
         }
 
         .cart-base-grid {
@@ -679,8 +681,10 @@
 
             .cart-design-preview {
                 height: min(46dvh, 460px);
-                padding-top: 10px;
-                padding-bottom: 10px;
+            }
+
+            .cart-design-preview-frame {
+                --design-preview-inset: 10px;
             }
 
             .cart-steps-panel > div:last-child {
