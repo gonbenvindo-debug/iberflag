@@ -2271,6 +2271,42 @@ function getCustomizedItemsNeedingRemoteSnapshot(items = []) {
         .filter(Boolean);
 }
 
+function isRemoteDesignSyncTemporarilyUnavailable(status = {}) {
+    const errorCode = String(status?.errorCode || status?.code || '').trim().toUpperCase();
+    const httpStatus = Number(status?.status || 0);
+    const raw = [status?.message, status?.details, status?.hint]
+        .filter(Boolean)
+        .join(' | ')
+        .toLowerCase();
+
+    if (errorCode === 'DESIGNS_TABLE_UNAVAILABLE' || errorCode === 'PGRST205' || errorCode === '42P01') {
+        return true;
+    }
+
+    if (httpStatus >= 500) {
+        return true;
+    }
+
+    if (errorCode === 'REMOTE_FETCH_NETWORK_ERROR' || errorCode === 'REMOTE_SAVE_NETWORK_ERROR') {
+        return true;
+    }
+
+    if (!raw) {
+        return false;
+    }
+
+    const referencesDesignSnapshots = raw.includes('design_snapshots') || raw.includes('design snapshot');
+    const referencesSchemaOrAvailability =
+        raw.includes('nao esta disponivel')
+        || raw.includes('not available')
+        || raw.includes('schema cache')
+        || raw.includes('does not exist')
+        || raw.includes('relation')
+        || raw.includes('service unavailable');
+
+    return referencesDesignSnapshots && referencesSchemaOrAvailability;
+}
+
 async function ensureRemoteSnapshotForCheckoutItem(target) {
     const designId = String(target?.designId || '').trim();
     if (!designId) {
@@ -2282,11 +2318,13 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
     }
 
     const remoteStatusReader = window.CartAssetStore?.getRemoteDesignStatus;
+    let remoteSyncUnavailable = false;
     if (typeof remoteStatusReader === 'function') {
         const initialRemoteStatus = await remoteStatusReader(designId, { requirePreview: true });
         if (initialRemoteStatus?.ok && initialRemoteStatus?.valid) {
             return { ok: true };
         }
+        remoteSyncUnavailable = isRemoteDesignSyncTemporarilyUnavailable(initialRemoteStatus);
     }
 
     let localRecord = null;
@@ -2310,6 +2348,14 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
         };
     }
 
+    if (remoteSyncUnavailable) {
+        return {
+            ok: true,
+            code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
+            degraded: true
+        };
+    }
+
     const remoteSaveResult = await window.CartAssetStore?.saveDesign?.(designId, designSvg, {
         productId: target.productId,
         preview: String(localRecord?.preview || target?.item?.designPreview || fallbackPreview || '').trim(),
@@ -2320,6 +2366,14 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
     });
 
     if (!remoteSaveResult?.remoteSync?.ok) {
+        if (isRemoteDesignSyncTemporarilyUnavailable(remoteSaveResult?.remoteSync)) {
+            return {
+                ok: true,
+                code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
+                degraded: true
+            };
+        }
+
         return {
             ok: false,
             code: String(remoteSaveResult?.remoteSync?.errorCode || 'REMOTE_SAVE_FAILED'),
@@ -2334,6 +2388,14 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
     const revalidatedStatus = await remoteStatusReader(designId, { requirePreview: true });
     if (revalidatedStatus?.ok && revalidatedStatus?.valid) {
         return { ok: true };
+    }
+
+    if (isRemoteDesignSyncTemporarilyUnavailable(revalidatedStatus)) {
+        return {
+            ok: true,
+            code: 'REMOTE_SYNC_UNAVAILABLE_LOCAL_FALLBACK',
+            degraded: true
+        };
     }
 
     return {

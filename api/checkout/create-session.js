@@ -260,10 +260,46 @@ function collectCustomizedDesignRequirements(items = []) {
         .filter(Boolean);
 }
 
+function isDesignSnapshotStorageUnavailable(error) {
+    const errorCode = String(error?.code || '').trim().toUpperCase();
+    const raw = [error?.message, error?.details, error?.hint]
+        .filter(Boolean)
+        .join(' | ')
+        .toLowerCase();
+
+    if (errorCode === 'PGRST205' || errorCode === '42P01') {
+        return true;
+    }
+
+    const referencesDesignSnapshots = raw.includes('design_snapshots') || raw.includes('design snapshot');
+    const referencesSchemaOrAvailability =
+        raw.includes('schema cache')
+        || raw.includes('does not exist')
+        || raw.includes('relation')
+        || raw.includes('not available')
+        || raw.includes('nao esta disponivel');
+
+    return referencesDesignSnapshots && referencesSchemaOrAvailability;
+}
+
 async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
     const requirements = collectCustomizedDesignRequirements(checkoutItems);
     if (requirements.length === 0) {
         return;
+    }
+
+    const missingDesignIdItems = requirements
+        .filter((entry) => !entry.designId)
+        .map((entry) => ({
+            ...entry,
+            reason: 'MISSING_DESIGN_ID'
+        }));
+
+    if (missingDesignIdItems.length > 0) {
+        const error = new Error('Existe um design personalizado sem designId valido. Reabra o personalizador e confirme o design novamente.');
+        error.code = 'DESIGN_SNAPSHOT_REQUIRED';
+        error.details = missingDesignIdItems;
+        throw error;
     }
 
     const designIds = [...new Set(requirements.map((entry) => entry.designId).filter(Boolean))];
@@ -276,6 +312,13 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
             .in('design_id', designIds);
 
         if (error) {
+            if (isDesignSnapshotStorageUnavailable(error)) {
+                console.warn('Checkout: validacao remota de design indisponivel, a continuar com fallback local.', {
+                    code: error?.code || '',
+                    message: error?.message || ''
+                });
+                return;
+            }
             throw error;
         }
 
@@ -292,13 +335,6 @@ async function assertRemoteDesignSnapshotsReady(supabase, checkoutItems = []) {
 
     const missingItems = requirements
         .map((entry) => {
-            if (!entry.designId) {
-                return {
-                    ...entry,
-                    reason: 'MISSING_DESIGN_ID'
-                };
-            }
-
             const snapshot = snapshotsById.get(entry.designId);
             if (!snapshot) {
                 return {
