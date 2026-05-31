@@ -2313,7 +2313,10 @@ async function ensureRemoteSnapshotForCheckoutItem(target) {
     const remoteSaveResult = await window.CartAssetStore?.saveDesign?.(designId, designSvg, {
         productId: target.productId,
         preview: String(localRecord?.preview || target?.item?.designPreview || fallbackPreview || '').trim(),
-        scene: null
+        scene: localRecord?.designSceneV1
+            || target?.item?.designSceneV1
+            || target?.item?.design_scene_v1
+            || null
     });
 
     if (!remoteSaveResult?.remoteSync?.ok) {

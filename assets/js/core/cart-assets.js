@@ -178,6 +178,9 @@
         const preview = previewRaw.length > REMOTE_MAX_PREVIEW_LENGTH
             ? ''
             : previewRaw;
+        const designSceneV1 = record?.designSceneV1 && typeof record.designSceneV1 === 'object'
+            ? compactSceneImageSources(record.designSceneV1)
+            : null;
         const payload = {
             designId: normalized.id,
             designSvg,
@@ -185,6 +188,9 @@
         };
         if (preview) {
             payload.preview = preview;
+        }
+        if (designSceneV1) {
+            payload.designSceneV1 = designSceneV1;
         }
 
         let response;

@@ -1,9 +1,22 @@
 const { getSupabaseAdmin } = require('../lib/server/supabase-admin');
 const { applyRateLimit, readJsonBody, sendJson } = require('../lib/server/http');
+const { getMissingColumnFromError } = require('../lib/server/schema-safe');
 
 const MAX_ID_LENGTH = 120;
 const MAX_SVG_LENGTH = 2_000_000;
 const MAX_PREVIEW_LENGTH = 1_500_000;
+const DESIGN_SELECT_REQUIRED_COLUMNS = [
+    'design_id',
+    'design_svg',
+    'design_preview',
+    'created_at',
+    'updated_at'
+];
+const DESIGN_SELECT_OPTIONAL_COLUMNS = [
+    'design_document_v3',
+    'design_document_v2',
+    'product_id'
+];
 
 function normalizeDesignId(value) {
     const normalized = String(value || '').trim();
@@ -29,6 +42,83 @@ function normalizeProductId(value) {
         return null;
     }
     return Math.round(parsed);
+}
+
+function hasOwn(source, key) {
+    return Boolean(source) && Object.prototype.hasOwnProperty.call(source, key);
+}
+
+function readOptionalField(source, keys = []) {
+    for (const key of keys) {
+        if (hasOwn(source, key)) {
+            return {
+                present: true,
+                value: source[key]
+            };
+        }
+    }
+
+    return {
+        present: false,
+        value: undefined
+    };
+}
+
+function buildDesignSelectColumns(optionalColumns = []) {
+    return [...DESIGN_SELECT_REQUIRED_COLUMNS, ...optionalColumns].join(', ');
+}
+
+async function fetchDesignSnapshotById(supabase, designId) {
+    let optionalColumns = [...DESIGN_SELECT_OPTIONAL_COLUMNS];
+
+    while (true) {
+        try {
+            return await supabase
+                .from('design_snapshots')
+                .select(buildDesignSelectColumns(optionalColumns))
+                .eq('design_id', designId)
+                .maybeSingle();
+        } catch (error) {
+            const missingColumn = getMissingColumnFromError(error, 'design_snapshots');
+            if (!missingColumn || !optionalColumns.includes(missingColumn)) {
+                throw error;
+            }
+
+            optionalColumns = optionalColumns.filter((column) => column !== missingColumn);
+        }
+    }
+}
+
+async function upsertDesignSnapshot(supabase, requiredPayload, optionalPayload = {}) {
+    let optionalEntries = Object.entries(optionalPayload)
+        .filter(([, value]) => value !== undefined);
+
+    while (true) {
+        const payload = {
+            ...requiredPayload,
+            ...Object.fromEntries(optionalEntries)
+        };
+
+        try {
+            return await supabase
+                .from('design_snapshots')
+                .upsert(payload, { onConflict: 'design_id' })
+                .select('design_id, updated_at')
+                .maybeSingle();
+        } catch (error) {
+            const missingColumn = getMissingColumnFromError(error, 'design_snapshots');
+            if (!missingColumn) {
+                throw error;
+            }
+
+            const nextEntries = optionalEntries.filter(([columnName]) => columnName !== missingColumn);
+            if (nextEntries.length === optionalEntries.length) {
+                throw error;
+            }
+
+            optionalEntries = nextEntries;
+        }
+    }
 }
 
 module.exports = async function designsHandler(req, res) {
@@ -57,11 +147,7 @@ module.exports = async function designsHandler(req, res) {
                 return;
             }
 
-            const { data, error } = await supabase
-                .from('design_snapshots')
-                .select('design_id, design_svg, design_preview, design_document_v3, design_document_v2, product_id, created_at, updated_at')
-                .eq('design_id', designId)
-                .maybeSingle();
+            const { data, error } = await fetchDesignSnapshotById(supabase, designId);
 
             if (error) {
                 throw error;
@@ -77,11 +163,18 @@ module.exports = async function designsHandler(req, res) {
         const body = await readJsonBody(req);
         const designId = normalizeDesignId(body.designId || body.design_id);
         const designSvg = normalizeSvg(body.design || body.designSvg || body.design_svg);
-        const designPreview = normalizePreview(body.preview || body.designPreview || body.design_preview);
-        const productId = normalizeProductId(body.productId || body.product_id);
-        const designSceneV1 = body.designSceneV1 && typeof body.designSceneV1 === 'object'
-            ? body.designSceneV1
-            : (body.design_scene_v1 && typeof body.design_scene_v1 === 'object' ? body.design_scene_v1 : null);
+        const previewField = readOptionalField(body, ['preview', 'designPreview', 'design_preview']);
+        const productField = readOptionalField(body, ['productId', 'product_id']);
+        const sceneField = readOptionalField(body, ['designSceneV1', 'design_scene_v1']);
+        const designPreview = previewField.present
+            ? normalizePreview(previewField.value)
+            : '';
+        const productId = productField.present
+            ? normalizeProductId(productField.value)
+            : null;
+        const designSceneV1 = sceneField.present && sceneField.value && typeof sceneField.value === 'object'
+            ? sceneField.value
+            : null;
 
         if (!designId || !designSvg) {
             sendJson(res, 400, {
@@ -91,21 +184,17 @@ module.exports = async function designsHandler(req, res) {
             return;
         }
 
-        const payload = {
+        const requiredPayload = {
             design_id: designId,
             design_svg: designSvg,
-            design_preview: designPreview || null,
-            design_document_v3: designSceneV1 || null,
-            design_document_v2: null,
-            product_id: productId,
             updated_at: new Date().toISOString()
         };
-
-        const { data, error } = await supabase
-            .from('design_snapshots')
-            .upsert(payload, { onConflict: 'design_id' })
-            .select('design_id, updated_at')
-            .maybeSingle();
+        const optionalPayload = {
+            design_preview: previewField.present ? (designPreview || null) : undefined,
+            design_document_v3: sceneField.present ? (designSceneV1 || null) : undefined,
+            product_id: productField.present && productId !== null ? productId : undefined
+        };
+        const { data, error } = await upsertDesignSnapshot(supabase, requiredPayload, optionalPayload);
 
         if (error) {
             throw error;
@@ -117,6 +206,15 @@ module.exports = async function designsHandler(req, res) {
         });
     } catch (error) {
         console.error('Falha na API de designs:', error);
+        const errorCode = String(error?.code || '').toUpperCase();
+        if (errorCode === 'PGRST205') {
+            sendJson(res, 503, {
+                error: 'DESIGNS_TABLE_UNAVAILABLE',
+                message: 'A tabela design_snapshots nao esta disponivel no ambiente atual.'
+            });
+            return;
+        }
+
         sendJson(res, 500, {
             error: 'DESIGNS_API_FAILED',
             message: error?.message || 'Falha ao guardar/ler design.'
