@@ -306,6 +306,13 @@ body {
     outline-offset: 3px;
 }
 
+.order-summary-table .order-item-preview-button .design-preview-frame,
+.order-summary-table .order-item-preview-button:hover .design-preview-frame,
+.order-summary-table .order-item-preview-button:focus-visible .design-preview-frame {
+    border-color: transparent;
+    box-shadow: none;
+}
+
 .checkout-summary-item-preview {
     flex: 0 0 4rem;
     width: 4rem;
