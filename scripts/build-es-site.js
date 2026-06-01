@@ -818,6 +818,21 @@ function applyHtmlFallbackTranslations(html) {
         .replace(/Descreva o formato, quantidades e prazo pretendido/g, 'Describa el formato, las cantidades y el plazo deseado')
         .replace(/Enviar Pedido/g, 'Enviar solicitud')
         .replace(/Enviar Email/g, 'Enviar email')
+        .replace(/Todo o processo de encomenda e acompanhamento é feito online\./g, 'Todo el proceso de pedido y seguimiento se realiza online.')
+        .replace(/Estamos disponíveis online 24 horas para receber pedidos e mensagens\./g, 'Estamos disponibles online 24 horas para recibir pedidos y mensajes.')
+        .replace(/Assunto \*/g, 'Asunto *')
+        .replace(/>Outro</g, '>Otro<')
+        .replace(/Aceito a/g, 'Acepto la')
+        .replace(/autorizo o tratamento dos meus dados pessoais/g, 'autorizo el tratamiento de mis datos personales')
+        .replace(/Política de privacidad<\/a>e autorizo/g, 'Política de privacidad</a> y autorizo')
+        .replace(/Talvez a sua resposta já esteja aqui/g, 'Quizás su respuesta ya esté aquí')
+        .replace(/Informação sobre tempos de produção e envio/g, 'Información sobre tiempos de producción y envío')
+        .replace(/Formas de pagamento aceites/g, 'Formas de pago aceptadas')
+        .replace(/Apoio no design dos seus produtos/g, 'Ayuda en el diseño de sus productos')
+        .replace(/Quem somos/g, 'Quiénes somos')
+        .replace(/Como trabalhamos/g, 'Cómo trabajamos')
+        .replace(/Pronto para avançar com o seu projeto\?/g, '¿Listo para avanzar con su proyecto?')
+        .replace(/Fale connosco para recomendações de formato e quantidade\./g, 'Hable con nosotros para recomendaciones de formato y cantidad.')
         .replace(/Todos os direitos reservados\./g, 'Todos los derechos reservados.')
         .replace(/Consultar encomenda/g, 'Consultar pedido')
         .replace(/A confirmar o pagamento e a preparar o tracking dsu encomenda IberFlag\./g, 'Confirmando el pago y preparando el seguimiento de su pedido IberFlag.')
@@ -836,6 +851,109 @@ function applyHtmlFallbackTranslations(html) {
         .replace(/Espessura:/g, 'Grosor:')
         .replace(/Rev\u00ea o resultado final para garantir que est\u00e1 tudo correto\./g, 'Revise el resultado final para asegurarse de que todo está correcto.')
         .replace(/Rota\u00e7\u00e3o:/g, 'Rotación:');
+}
+
+function applyAboutPageTranslations($) {
+    $('.about-hero h1').first().text('Sobre IberFlag');
+    $('.about-hero p').first().text('Operación B2B para eventos y retail con foco comercial y operativo en Portugal.');
+
+    const cards = $('.about-card');
+    const introCard = cards.eq(0);
+    introCard.find('h2').first().text('Quiénes somos');
+    introCard.find('p').eq(0).text('IberFlag es un equipo especializado en publicidad física para marcas que necesitan una presencia sólida en eventos, activaciones comerciales y retail.');
+    introCard.find('p').eq(1).text('Trabajamos con un flujo directo de personalización, validación técnica, producción y entrega, siempre con soporte humano en todas las etapas.');
+
+    const features = $('.about-feature');
+    features.eq(0).find('h3').first().text('Calidad consistente');
+    features.eq(0).find('p').first().text('Materiales resistentes y revisión técnica antes de la producción.');
+    features.eq(1).find('h3').first().text('Ejecución rápida');
+    features.eq(1).find('p').first().text('Plazo total estándar de 24-48 h tras el pago confirmado.');
+    features.eq(2).find('h3').first().text('Operación controlada');
+    features.eq(2).find('p').first().text('Foco principal en Portugal, con procesos preparados para pedidos ibéricos compatibles.');
+
+    const processCard = cards.eq(1);
+    processCard.find('h2').first().text('Cómo trabajamos');
+    const steps = processCard.find('li');
+    steps.eq(0).html('<strong>1.</strong> Elija el producto y personalícelo en el editor de la tienda.');
+    steps.eq(1).html('<strong>2.</strong> El equipo valida el archivo y confirma los detalles de producción.');
+    steps.eq(2).html('<strong>3.</strong> Producimos y expedimos con seguimiento por email (entregas de lunes a viernes).');
+    steps.eq(3).html('<strong>4.</strong> El plazo se comunica y confirma por pedido, según dirección, volumen y validación técnica.');
+
+    $('.about-cta h2').first().text('¿Listo para avanzar con su proyecto?');
+    $('.about-cta p').first().text('Hable con nosotros para recomendaciones de formato y cantidad.');
+    $('.about-cta a').first().text('Hablar con el equipo');
+}
+
+function setSection($, index, title, bodyHtml) {
+    const section = $('main section').eq(index);
+    section.find('h2').first().text(title);
+    if (bodyHtml) {
+        section.children().not('h2').remove();
+        section.append(bodyHtml);
+    }
+}
+
+function applyLegalPageTranslations($, sourceCanonical) {
+    if (sourceCanonical === '/devolucoes') {
+        $('h1').first().text('Devoluciones y reembolsos');
+        $('section').first().find('p').first().text('Reglas claras para pedidos personalizados.');
+        setSection($, 0, '1. Cancelación', '<p class="text-gray-700 leading-relaxed">La cancelación es posible sin coste antes de iniciar la producción. Una vez iniciada la producción, el pedido pasa al régimen de personalización y ya no puede cancelarse por desistimiento.</p><p class="text-gray-700 leading-relaxed mt-3">Si existe un error de producción, defecto validado o daño de transporte comprobado, tratamos la situación con prioridad y presentamos una solución formal.</p>');
+        setSection($, 1, '2. Cuándo aceptamos devoluciones', '<ul class="list-disc pl-5 space-y-2 text-gray-700"><li>Defecto de fabricación comprobado.</li><li>Error de producción frente al diseño aprobado.</li><li>Daño de transporte documentado en el momento de recepción.</li></ul>');
+        setSection($, 2, '3. Plazo para abrir una incidencia', '<p class="text-gray-700 leading-relaxed">Tiene 5 días laborables tras la recepción para comunicar el problema con número de pedido, descripción objetiva y fotografías del material.</p>');
+        setSection($, 3, '4. Proceso de análisis', '<ol class="space-y-2 text-gray-700"><li><strong>1.</strong> Registro de la incidencia y validación inicial.</li><li><strong>2.</strong> Análisis técnico por parte del equipo.</li><li><strong>3.</strong> Solución formal: reposición, corrección o reembolso parcial/total.</li></ol><p class="text-gray-700 leading-relaxed mt-3">La respuesta se da por email en el mismo proceso de soporte, para mantener visibilidad total.</p>');
+        setSection($, 4, '5. Contacto', '<p class="text-gray-700 leading-relaxed">Envíe la incidencia a <a href="mailto:geral@iberflag.com" class="text-blue-600 hover:underline">geral@iberflag.com</a> o use la <a href="/es/contacto" class="text-blue-600 hover:underline">página de contacto</a>.</p>');
+    }
+
+    if (sourceCanonical === '/privacidade') {
+        $('h1').first().text('Política de privacidad');
+        $('section').first().find('p').first().text('Transparencia total en el tratamiento de sus datos personales.');
+        setSection($, 0, '1. Datos recogidos', '<p class="text-gray-700 leading-relaxed">Recogemos únicamente los datos necesarios para procesar solicitudes de contacto, pedidos y soporte: nombre, email, teléfono, dirección de entrega e información de facturación cuando corresponda.</p>');
+        setSection($, 1, '2. Finalidad de uso', '<p class="text-gray-700 leading-relaxed mb-3">Los datos se usan para:</p><ul class="list-disc pl-5 space-y-1 text-gray-700"><li>procesar y entregar pedidos;</li><li>prestar atención al cliente y responder a solicitudes;</li><li>cumplir obligaciones legales y fiscales.</li></ul>');
+        setSection($, 2, '3. Conservación y seguridad', '<p class="text-gray-700 leading-relaxed">Conservamos los datos durante el periodo estrictamente necesario para la operación y el cumplimiento legal. Aplicamos medidas técnicas y organizativas para reducir el riesgo de acceso indebido.</p>');
+        setSection($, 3, '4. Compartición de datos', '<p class="text-gray-700 leading-relaxed">Los datos pueden compartirse con socios logísticos y plataformas tecnológicas únicamente para ejecutar el servicio. Nunca vendemos datos personales a terceros.</p>');
+        setSection($, 4, '5. Derechos del titular', '<p class="text-gray-700 leading-relaxed">Puede solicitar acceso, rectificación, supresión o limitación del tratamiento en cualquier momento enviando un email a <a href="mailto:geral@iberflag.com" class="text-blue-600 hover:underline">geral@iberflag.com</a>.</p>');
+    }
+
+    if (sourceCanonical === '/termos') {
+        $('h1').first().text('Términos y condiciones');
+        $('section').first().find('p').first().text('Reglas de uso y compra en la plataforma IberFlag.');
+        setSection($, 0, '1. Ámbito', '<p class="text-gray-700 leading-relaxed">Estos términos regulan el acceso al sitio y la compra de productos personalizados en IberFlag. Al realizar un pedido, el cliente acepta las condiciones siguientes.</p>');
+        setSection($, 1, '2. Productos y personalización', '<p class="text-gray-700 leading-relaxed mb-3">El cliente es responsable de la revisión final de los contenidos enviados en el editor (texto, imágenes, dimensiones y posicionamiento).</p><p class="text-gray-700 leading-relaxed mb-3">Cuando el cliente añade la opción de revisión de diseño de pago, IberFlag realiza solo una verificación manual general antes de la producción. Esta revisión no sustituye la aprobación final del cliente ni transfiere a IberFlag la responsabilidad por errores ortográficos, contenidos, medidas, alineaciones, cortes, resolución, archivos enviados u otros errores existentes en el diseño que no hayan sido identificados y corregidos expresamente antes de la producción.</p><p class="text-gray-700 leading-relaxed">Nos reservamos el derecho de rechazar contenidos ilegales, ofensivos o que vulneren derechos de terceros.</p>');
+        setSection($, 2, '3. Precios y pago', '<p class="text-gray-700 leading-relaxed">Los precios mostrados incluyen IVA cuando corresponda y pueden actualizarse sin previo aviso. Las condiciones de pago y la confirmación final del pedido se presentan en el checkout.</p>');
+        setSection($, 3, '4. Producción y entrega', '<p class="text-gray-700 leading-relaxed mb-3">Los plazos de producción y entrega son indicativos y pueden variar por volumen, temporada y disponibilidad logística.</p><p class="text-gray-700 leading-relaxed">Cualquier retraso excepcional será comunicado al cliente en cuanto se identifique.</p>');
+        setSection($, 4, '5. Devoluciones y cancelaciones', '<p class="text-gray-700 leading-relaxed">Los productos personalizados solo pueden cancelarse/devolverse en las situaciones previstas por la ley o en caso de defecto de fabricación. Consulte los detalles en <a href="/es/devolucoes" class="text-blue-600 hover:underline">Devoluciones</a>.</p>');
+        setSection($, 5, '6. Contacto y soporte', '<p class="text-gray-700 leading-relaxed">Para aclaraciones, cambios de pedido o soporte, use <a href="/es/contacto" class="text-blue-600 hover:underline">la página de contacto</a> o envíe un email a <a href="mailto:geral@iberflag.com" class="text-blue-600 hover:underline">geral@iberflag.com</a>.</p>');
+    }
+}
+
+function applyOrderTrackingPageTranslations($) {
+    $('nav a[href="/es/produtos"], #mobile-menu a[href="/es/produtos"], footer a[href="/es/produtos"]').text('Productos');
+    $('nav a[href="/es/sobre"], #mobile-menu a[href="/es/sobre"], footer a[href="/es/sobre"]').text('Sobre nosotros');
+    $('nav a[href="/es/contacto"], #mobile-menu a[href="/es/contacto"], footer a[href="/es/contacto"]').text('Contacto');
+    $('#order-loading').html('<div class="spinner mx-auto mb-3"></div>Cargando pedido...');
+    $('#order-not-found h2').text('Pedido no encontrado');
+    $('#order-not-found p').text('Compruebe el código identificador e inténtelo de nuevo.');
+    $('#order-not-found a, #order-error a').html('<i data-lucide="search" class="w-4 h-4"></i>Volver al seguimiento');
+    $('#order-error h2').text('Error al cargar el pedido');
+    $('#order-error-message').text('Se ha producido un problema técnico al consultar este pedido.');
+    $('.tracking-kicker').html('<i data-lucide="package-check" class="w-3.5 h-3.5"></i>Seguimiento del pedido');
+    $('.tracking-summary-copy').text('Cargando estado...');
+    $('.tracking-panel-kicker').eq(0).text('Progreso');
+    $('.tracking-panel-title').eq(0).text('Seguimiento del pedido');
+    $('.tracking-panel-kicker').eq(1).text('Resumen');
+    $('.tracking-panel-title').eq(1).text('Resumen del pedido');
+    $('.tracking-panel-kicker').eq(2).text('Acciones');
+    $('.tracking-panel-title').eq(2).text('Acciones rápidas');
+    $('#order-progressbar').attr('aria-label', 'Progreso del pedido');
+    $('#order-copy-code-btn').html('<i data-lucide="copy" class="w-4 h-4"></i>Copiar código');
+    $('#order-copy-tracking-btn').html('<i data-lucide="package-search" class="w-4 h-4"></i>Copiar seguimiento');
+    $('footer p.max-w-sm').text('Especialistas en fly banners y productos publicitarios con operación principal en Portugal, producción rápida y atención dedicada.');
+    $('footer h4').eq(0).text('Enlaces rápidos');
+    $('footer h4').eq(1).text('Información');
+    $('footer a[href="/es/termos"]').text('Términos y condiciones');
+    $('footer a[href="/es/privacidade"]').text('Política de privacidad');
+    $('footer a[href="/es/devolucoes"]').text('Devoluciones');
+    $('#item-preview-modal p.text-xs').first().text('Personalización');
 }
 
 function translateDom($) {
@@ -901,6 +1019,13 @@ function translateDom($) {
     };
 
     walk($.root()[0]);
+    if (sourceCanonical === '/sobre') {
+        applyAboutPageTranslations($);
+    }
+    applyLegalPageTranslations($, sourceCanonical);
+    if (sourceCanonical === '/encomenda') {
+        applyOrderTrackingPageTranslations($);
+    }
     applyCatalogTranslations($, sourceCanonical);
     localizeInlineScripts($);
     injectI18nScript($);
@@ -1113,6 +1238,8 @@ function applyCheckoutOverrides($) {
 }
 
 function applyOrderTrackingOverrides($) {
+    applyOrderTrackingPageTranslations($);
+
     const setText = (selector, text) => {
         const element = $(selector).first();
         if (element.length > 0) {
@@ -1120,11 +1247,9 @@ function applyOrderTrackingOverrides($) {
         }
     };
 
-    setText('nav a[href="/es/contacto"]', 'Ayuda');
+    setText('nav a[href="/es/contacto"]', 'Contacto');
     setText('#order-tracking-link', 'Abrir seguimiento');
     setText('#order-facturalusa-link', 'Abrir factura');
-    setText('#order-copy-code-btn', 'Copiar código');
-    setText('#order-copy-tracking-btn', 'Copiar seguimiento');
     setText('#order-contact-support-btn', 'Solicitar ayuda');
     setText('.order-history-disclosure summary', 'Historial');
     setText('#order-detail section:last-of-type p.text-xs.text-gray-500', 'Resumen del pedido');

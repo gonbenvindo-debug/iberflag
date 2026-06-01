@@ -19,7 +19,25 @@ const BLOCKED_PATTERNS = [
     /\bFale com\b/i,
     /\bEscolha\b/i,
     /\bSelecione\b/i,
-    /\bEnvios e Entregas\b/i
+    /\bEnvios e Entregas\b/i,
+    /\bTodo o processo\b/i,
+    /\bEstamos dispon/i,
+    /\bAceito a\b/i,
+    /\bautorizo o tratamento\b/i,
+    /\bAssunto\b/i,
+    /\bTalvez\b/i,
+    /\bInforma[cç][aã]o sobre\b/i,
+    /\bFormas de pagamento\b/i,
+    /\bApoio no design\b/i,
+    /\bQuem somos\b/i,
+    /\bComo trabalhamos\b/i,
+    /\bFale connosco\b/i,
+    /\bPronto para avan[cç]ar\b/i,
+    /\bEscolhe o produto\b/i,
+    /\bA equipa valida\b/i,
+    /\bProduzimos e expedimos\b/i,
+    /\bpublicidade f[ií]sica para marcas\b/i,
+    /\bsuporte humano\b/i
 ];
 const ALLOWLIST_PATTERNS = [
     /IberFlag/i,
@@ -52,7 +70,9 @@ async function collectHtmlFiles(dir) {
 }
 
 function isAllowed(value) {
-    return ALLOWLIST_PATTERNS.some((pattern) => pattern.test(value));
+    const sample = compact(value);
+    if (sample.length > 140) return false;
+    return ALLOWLIST_PATTERNS.some((pattern) => pattern.test(sample));
 }
 
 function compact(value) {
