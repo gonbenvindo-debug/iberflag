@@ -854,8 +854,8 @@ function openItemPreview(index) {
         itemPreviewSurface.classList.toggle('design-preview-surface--plain', !data.hasDesign);
     }
     if (itemPreviewOptions) {
-        renderItemPreviewOptions(data.options);
-        itemPreviewOptions.classList.remove('hidden');
+        itemPreviewOptions.innerHTML = '';
+        itemPreviewOptions.classList.add('hidden');
     }
 
     if (itemPreviewDownload) {
