@@ -346,12 +346,13 @@ Object.assign(DesignEditor.prototype, {
         }
 
         const availableBases = this.getAvailableBaseOptions();
-        const exists = availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
-        if (exists) return;
+        if (availableBases.length === 0) {
+            this.selectedBaseId = null;
+            return;
+        }
 
-        const defaultBase = availableBases.find((base) => Boolean(base.is_default));
-        const nextBaseId = defaultBase?.base_id || availableBases[0]?.base_id || null;
-        this.selectedBaseId = nextBaseId ? Number(nextBaseId) : null;
+        const exists = availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
+        this.selectedBaseId = exists ? Number(this.selectedBaseId) : null;
     },
 
     getSelectedBaseOption() {
