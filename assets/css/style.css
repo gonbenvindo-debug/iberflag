@@ -1061,30 +1061,6 @@ body {
     opacity: 0.96;
 }
 
-.homepage-metric-card {
-    display: flex;
-    flex-direction: column;
-    gap: 0.25rem;
-    padding: 1.15rem 1.2rem;
-    border-radius: 1.5rem;
-    border: 1px solid rgba(148, 163, 184, 0.16);
-    background: rgba(255, 255, 255, 0.6);
-    backdrop-filter: blur(18px);
-    box-shadow: 0 18px 40px rgba(15, 23, 42, 0.07);
-}
-
-.homepage-metric-value {
-    font-size: 1.4rem;
-    font-weight: 800;
-    letter-spacing: -0.03em;
-    color: #0f172a;
-}
-
-.homepage-metric-label {
-    color: #64748b;
-    font-size: 0.9rem;
-}
-
 .homepage-floating-label {
     display: inline-block;
     margin-bottom: 0.45rem;
@@ -1102,10 +1078,6 @@ body {
 }
 
 @media (max-width: 767px) {
-    .homepage-metric-card {
-        border-radius: 1.2rem;
-    }
-
     .homepage-hero-image-layer {
         width: 100%;
         opacity: 0.42;
