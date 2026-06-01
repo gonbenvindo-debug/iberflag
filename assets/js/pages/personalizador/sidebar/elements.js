@@ -806,11 +806,21 @@ Object.assign(DesignEditor.prototype, {
         ) || 0;
     },
 
-    hasCanonicalAutosavePreview(record) {
-        const previewVersion = this.getAutosavePreviewVersion(record);
-        const currentVersion = Number(window.CART_PREVIEW_VERSION || 7) || 7;
-        const remotePreview = this.getAutosaveRemotePreviewSource(record);
-        return Boolean(remotePreview && previewVersion >= currentVersion);
+    buildAutosavePreviewCartItem(record, designSceneOverride = null) {
+        const designScene = designSceneOverride || this.getAutosaveDesignScene(record);
+        const designSvg = this.getAutosaveDesignSvg(record);
+        const preview = this.getAutosaveRemotePreviewSource(record);
+        return {
+            customized: true,
+            designPreview: preview || '',
+            designPreviewVersion: this.getAutosavePreviewVersion(record),
+            designSceneV1: designScene || null,
+            design_scene_v1: designScene || null,
+            svgTemplate: String(this.currentProduct?.svg_template || '').trim(),
+            svg_template: String(this.currentProduct?.svg_template || '').trim(),
+            design: designSvg || '',
+            imagem: ''
+        };
     },
 
     getAutosaveDesignSvg(record) {
@@ -829,78 +839,23 @@ Object.assign(DesignEditor.prototype, {
         return rawValue.includes('<svg') ? rawValue : '';
     },
 
-    buildSharedAutosavePreviewSource(record, designSceneOverride = null) {
-        const designScene = designSceneOverride || this.getAutosaveDesignScene(record);
-        const designSvg = this.getAutosaveDesignSvg(record);
-
-        if (typeof this.buildCartStepsPreviewDataUrl === 'function') {
-            const previewDataUrl = this.buildCartStepsPreviewDataUrl(designScene, designSvg);
-            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                return previewDataUrl.trim();
-            }
-        }
-
-        if (designScene && (window.DesignRenderEngine?.buildScenePreviewDataUrl || window.DesignRenderEngine?.buildPreviewDataUrl)) {
-            const previewDataUrl = window.DesignRenderEngine?.buildScenePreviewDataUrl
-                ? window.DesignRenderEngine.buildScenePreviewDataUrl(designScene, {
-                    productSvg: this.currentProduct?.svg_template || '',
-                    fillRatio: 1,
-                    includeOutline: false,
-                    backgroundColor: 'transparent'
-                })
-                : window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
-                    productSvg: this.currentProduct?.svg_template || '',
-                    fillRatio: 1,
-                    includeOutline: false,
-                    backgroundColor: 'transparent'
-                });
-            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                return previewDataUrl.trim();
-            }
-        }
-
-        if (designSvg) {
-            const previewSvg = typeof this.generateCartPreviewSVG === 'function'
-                ? this.generateCartPreviewSVG(designSvg)
-                : designSvg;
-            if (typeof previewSvg === 'string' && previewSvg.trim().includes('<svg')) {
-                const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
-                    ? this.svgToPreviewDataUrl(previewSvg)
-                    : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
-                if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                    return previewDataUrl.trim();
-                }
-            }
-        }
-
-        return '';
-    },
-
     buildAutosavePreviewSource(record) {
+        const cartLikeItem = this.buildAutosavePreviewCartItem(record);
+        if (typeof window.getCartItemImage === 'function') {
+            const preview = String(window.getCartItemImage(cartLikeItem) || '').trim();
+            if (preview) {
+                return preview;
+            }
+        }
+
+        if (typeof window.buildAdaptiveCartPreviewDataUrl === 'function') {
+            const preview = String(window.buildAdaptiveCartPreviewDataUrl(cartLikeItem) || '').trim();
+            if (preview) {
+                return preview;
+            }
+        }
+
         const remotePreview = this.getAutosaveRemotePreviewSource(record);
-        if (this.hasCanonicalAutosavePreview(record)) {
-            return remotePreview;
-        }
-
-        const designScene = this.getAutosaveDesignScene(record);
-        if (designScene) {
-            const sharedPreview = this.buildSharedAutosavePreviewSource(record, designScene);
-            if (sharedPreview) {
-                return sharedPreview;
-            }
-
-            const localPreviewSvg = this.buildAutosaveScenePreviewSvg(designScene);
-            const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
-            if (localPreviewDataUrl) {
-                return localPreviewDataUrl;
-            }
-        }
-
-        const sharedPreview = this.buildSharedAutosavePreviewSource(record);
-        if (sharedPreview) {
-            return sharedPreview;
-        }
-
         if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
             return remotePreview;
         }
@@ -1090,12 +1045,18 @@ Object.assign(DesignEditor.prototype, {
             savedPreviewImg
             && rawScene
             && typeof this.hydrateDesignSceneImageSources === 'function'
-            && !this.hasCanonicalAutosavePreview(record)
         ) {
             (async () => {
                 try {
                     const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
-                    const hydratedPreview = this.buildSharedAutosavePreviewSource(record, hydratedScene);
+                    const hydratedPreview = this.buildAutosavePreviewSource({
+                        ...record,
+                        parsed: {
+                            ...(record?.parsed && typeof record.parsed === 'object' ? record.parsed : {}),
+                            design_scene_v1: hydratedScene,
+                            designSceneV1: hydratedScene
+                        }
+                    });
                     if (hydratedPreview) {
                         savedPreviewImg.src = hydratedPreview;
                     }
