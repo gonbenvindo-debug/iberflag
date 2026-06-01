@@ -456,8 +456,8 @@ function renderHead({ title, description, canonicalPath, imageUrl, robots = 'ind
   <meta name="twitter:title" content="${escapeHtml(title)}">
   <meta name="twitter:description" content="${escapeHtml(description)}">
   <meta name="twitter:image" content="${escapeHtml(ogImage)}">
-  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260428logo">
-  <link rel="shortcut icon" href="/favicon.svg?v=20260428logo">
+  <link rel="icon" type="image/svg+xml" href="/favicon.svg?v=20260601squarefavicon1">
+  <link rel="shortcut icon" href="/favicon.svg?v=20260601squarefavicon1">
   <link rel="stylesheet" href="/assets/css/tailwind.output.css?v=20260411cat1">
   <link rel="stylesheet" href="/assets/css/style.css?v=20260505cart-controls1">
   <style>
