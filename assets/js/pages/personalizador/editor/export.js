@@ -486,7 +486,7 @@ Object.assign(DesignEditor.prototype, {
             designPreview: null,
             designPreviewVersion: Number(window.CART_PREVIEW_VERSION || 7) || 7,
             svgTemplate: this.currentProduct.svg_template || null,
-            baseId: selectedBase ? Number(selectedBase.base_id) : null,
+            baseId: selectedBase ? String(selectedBase.base_id || '').trim() || null : null,
             baseNome: selectedBase ? String(selectedBase.base_nome || '') : null,
             baseImagem: selectedBase ? String(selectedBase.base_imagem || '') : null,
             basePrecoExtra: Number(selectedBaseExtra.toFixed(2))

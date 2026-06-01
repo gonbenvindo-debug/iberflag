@@ -162,7 +162,9 @@ Object.assign(DesignEditor.prototype, {
 
     async loadProductBases() {
         if (!this.currentProduct?.id || typeof supabaseClient === 'undefined') {
-            this.availableBases = [];
+            this.availableBases = this.isFlybannerProductContext()
+                ? this.getFlybannerFallbackBases()
+                : [];
             return;
         }
 
@@ -186,17 +188,75 @@ Object.assign(DesignEditor.prototype, {
             }
 
             if (queryResult.error) throw queryResult.error;
-            this.availableBases = (Array.isArray(queryResult.data) ? queryResult.data : []).map((base) => ({
+
+            const mappedBases = (Array.isArray(queryResult.data) ? queryResult.data : []).map((base) => ({
                 ...base,
                 base_nome_pt: String(base?.base_nome || '').trim(),
                 base_nome: i18nText(String(base?.base_nome_es || '').trim() || base?.base_nome || ''),
                 base_disponivel: base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false',
                 base_nota_indisponibilidade: String(base?.base_nota_indisponibilidade || '').trim()
             }));
+            this.availableBases = mappedBases.length > 0
+                ? mappedBases
+                : (this.isFlybannerProductContext() ? this.getFlybannerFallbackBases() : []);
         } catch (error) {
-            this.availableBases = [];
+            this.availableBases = this.isFlybannerProductContext()
+                ? this.getFlybannerFallbackBases()
+                : [];
             console.warn('Falha ao carregar bases do produto:', error?.message || error);
         }
+    },
+
+    getNormalizedBaseOptionId(baseId) {
+        if (baseId === null || typeof baseId === 'undefined') {
+            return '';
+        }
+
+        const normalized = String(baseId).trim();
+        return normalized || '';
+    },
+
+    isFlybannerProductContext() {
+        const normalizedCategory = String(
+            this.currentProduct?.categoria
+            || this.currentProduct?.categorySlug
+            || this.currentProduct?.categoria_slug
+            || ''
+        ).trim().toLowerCase();
+        const normalizedSlug = String(
+            this.productSlug
+            || this.currentProduct?.slug
+            || ''
+        ).trim().toLowerCase();
+
+        return normalizedCategory === 'fly-banner'
+            || normalizedCategory === 'flybanners'
+            || normalizedSlug.includes('fly-banner');
+    },
+
+    getFlybannerFallbackBases() {
+        return [
+            {
+                base_id: 'com-reforco',
+                base_nome_pt: 'Com reforço',
+                base_nome: i18nText('Com reforço'),
+                base_imagem: '/assets/images/flybanner-variants/com-reforco.svg',
+                preco_extra_aplicado: 0,
+                is_default: true,
+                base_disponivel: true,
+                base_nota_indisponibilidade: i18nText('Incluído')
+            },
+            {
+                base_id: 'sem-reforco',
+                base_nome_pt: 'Sem reforço',
+                base_nome: i18nText('Sem reforço'),
+                base_imagem: '/assets/images/flybanner-variants/sem-reforco.svg',
+                preco_extra_aplicado: 0,
+                is_default: false,
+                base_disponivel: false,
+                base_nota_indisponibilidade: i18nText('Indisponível')
+            }
+        ];
     },
 
     // Carregar template do Supabase
@@ -311,16 +371,16 @@ Object.assign(DesignEditor.prototype, {
     },
 
     restoreSelectedBaseFromCart() {
-        if (Number.isFinite(Number(this.selectedBaseId)) && Number(this.selectedBaseId) > 0) {
+        if (this.getNormalizedBaseOptionId(this.selectedBaseId)) {
             return;
         }
 
         const cart = this.getCartData();
         const targetIndex = this.resolveEditingCartIndex(cart);
         const item = targetIndex >= 0 ? cart[targetIndex] : null;
-        const baseId = Number(item?.baseId || item?.base_id || 0);
+        const baseId = this.getNormalizedBaseOptionId(item?.baseId || item?.base_id || null);
 
-        if (Number.isFinite(baseId) && baseId > 0) {
+        if (baseId) {
             this.selectedBaseId = baseId;
         }
     },
@@ -351,8 +411,9 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const exists = availableBases.some((base) => Number(base.base_id) === Number(this.selectedBaseId));
-        this.selectedBaseId = exists ? Number(this.selectedBaseId) : null;
+        const normalizedSelectedBaseId = this.getNormalizedBaseOptionId(this.selectedBaseId);
+        const exists = availableBases.some((base) => this.getNormalizedBaseOptionId(base.base_id) === normalizedSelectedBaseId);
+        this.selectedBaseId = exists ? normalizedSelectedBaseId : null;
     },
 
     getSelectedBaseOption() {
@@ -361,7 +422,7 @@ Object.assign(DesignEditor.prototype, {
         }
 
         return this.availableBases.find((base) => (
-            Number(base.base_id) === Number(this.selectedBaseId)
+            this.getNormalizedBaseOptionId(base.base_id) === this.getNormalizedBaseOptionId(this.selectedBaseId)
             && this.isBaseOptionAvailable(base)
         )) || null;
     },
@@ -811,16 +872,16 @@ Object.assign(DesignEditor.prototype, {
 
         emptyState.classList.add('hidden');
         optionsWrap.innerHTML = this.availableBases.map((base) => {
-            const baseId = Number(base.base_id);
+            const baseId = this.getNormalizedBaseOptionId(base.base_id);
             const isAvailable = this.isBaseOptionAvailable(base);
-            const selected = isAvailable && baseId === Number(this.selectedBaseId);
+            const selected = isAvailable && baseId === this.getNormalizedBaseOptionId(this.selectedBaseId);
             const extra = Number(base.preco_extra_aplicado || 0);
             const baseName = escapeHtml(base.base_nome || 'Base');
-            const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId}/640/400`);
+            const imageUrl = escapeHtml(base.base_imagem || `https://picsum.photos/seed/base-${baseId || 'default'}/640/400`);
             const availabilityNote = escapeHtml(base.base_nota_indisponibilidade || 'Indisponível');
 
             return `
-                <button type="button" class="cart-base-card ${selected ? 'selected' : ''} ${isAvailable ? '' : 'is-unavailable'}" data-base-id="${baseId}" ${isAvailable ? '' : 'disabled aria-disabled="true"'}>
+                <button type="button" class="cart-base-card ${selected ? 'selected' : ''} ${isAvailable ? '' : 'is-unavailable'}" data-base-id="${escapeHtml(baseId)}" ${isAvailable ? '' : 'disabled aria-disabled="true"'}>
                     <img src="${imageUrl}" alt="${baseName}">
                     <p class="text-sm font-semibold text-slate-900">${baseName}</p>
                     <p class="text-xs text-slate-500 mt-1">${isAvailable ? (extra > 0 ? `+${extra.toFixed(2)}€` : 'Incluida') : availabilityNote}</p>
@@ -834,7 +895,7 @@ Object.assign(DesignEditor.prototype, {
             }
 
             button.addEventListener('click', () => {
-                this.selectedBaseId = Number(button.getAttribute('data-base-id')) || null;
+                this.selectedBaseId = this.getNormalizedBaseOptionId(button.getAttribute('data-base-id')) || null;
                 this.renderProductBaseOptions();
                 this.updateProductPriceDisplay();
                 this.renderCartStepsBaseOptions();
