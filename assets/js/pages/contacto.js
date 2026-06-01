@@ -60,7 +60,8 @@ function renderContactLoadingState(button) {
     const previous = button.innerHTML;
     button.disabled = true;
     button.setAttribute('aria-busy', 'true');
-    button.innerHTML = '<div class="spinner mx-auto"></div>';
+    button.classList.add('contact-submit-btn-loading');
+    button.innerHTML = '<span class="contact-submit-spinner" aria-hidden="true"></span>';
     return previous;
 }
 
@@ -68,6 +69,7 @@ function restoreContactButton(button, previousHtml) {
     if (!button) return;
     button.disabled = false;
     button.removeAttribute('aria-busy');
+    button.classList.remove('contact-submit-btn-loading');
     button.innerHTML = previousHtml || button.innerHTML;
     if (typeof lucide !== 'undefined') {
         lucide.createIcons();

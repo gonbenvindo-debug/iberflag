@@ -3910,6 +3910,60 @@ a[href="/checkout"].block.w-full:hover {
     border-radius: 50%;
 }
 
+/* ===== CONTACT FORM HARDENING ===== */
+.privacy-consent-row #privacy.custom-checkbox {
+    width: 20px;
+    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
+    flex: 0 0 20px;
+    margin-top: 0.125rem;
+}
+
+.privacy-consent-row label[for="privacy"] {
+    flex: 1 1 auto;
+    line-height: 1.45;
+}
+
+.contact-submit-btn {
+    display: inline-flex !important;
+    align-items: center;
+    justify-content: center;
+    white-space: nowrap;
+    overflow: hidden;
+    min-height: 3rem;
+}
+
+.contact-submit-content {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    flex: 0 0 auto;
+    line-height: 1;
+    white-space: nowrap;
+}
+
+.contact-submit-label {
+    display: inline-block;
+    white-space: nowrap;
+}
+
+.contact-submit-btn-loading {
+    cursor: wait;
+}
+
+.contact-submit-spinner {
+    display: inline-block;
+    width: 1rem;
+    height: 1rem;
+    border: 2px solid rgba(255, 255, 255, 0.4);
+    border-top-color: #ffffff;
+    border-radius: 999px;
+    animation: spin 0.75s linear infinite;
+    flex: 0 0 auto;
+}
+
 /* ===== SEARCH BAR ===== */
 .search-container {
     position: relative;
@@ -4691,6 +4745,26 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     select,
     textarea {
         font-size: 16px !important;
+    }
+
+    .privacy-consent-row #privacy.custom-checkbox {
+        width: 20px;
+        height: 20px;
+        min-width: 20px;
+        min-height: 20px;
+        flex: 0 0 20px;
+    }
+
+    .contact-submit-btn {
+        min-height: 3rem;
+        padding-left: 1rem !important;
+        padding-right: 1rem !important;
+        white-space: nowrap;
+    }
+
+    .contact-submit-content {
+        max-width: 100%;
+        flex-wrap: nowrap;
     }
 
     /* Prevent zoom on iOS */
