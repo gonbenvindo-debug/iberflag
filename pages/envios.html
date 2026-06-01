@@ -36,7 +36,7 @@
     <link rel="stylesheet" href="/assets/css/style.css?v=20260529previewfix7">
 </head>
 
-<body class="app-page bg-gray-50 flat-mobile-page">
+<body class="app-page bg-gray-50 flat-mobile-page shipping-page">
     <nav class="bg-white shadow-sm sticky top-0 z-50 nav-blur">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between h-16 items-center">
@@ -71,9 +71,9 @@
 
     <section class="py-16">
         <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
-            <div class="bg-white rounded-xl p-8 border border-gray-200">
+            <div class="bg-white rounded-xl p-8 border border-gray-200 shipping-card">
                 <h2 class="text-2xl font-bold mb-4">Resumo rápido</h2>
-                <ul class="space-y-3 text-gray-700">
+                <ul class="space-y-3 text-gray-700 shipping-check-list">
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 mt-0.5"></i>
                         <span>Cobertura confirmada no checkout com base na morada indicada.</span>
@@ -93,9 +93,9 @@
                 </ul>
             </div>
 
-            <div class="bg-white rounded-xl p-8 border border-gray-200">
+            <div class="bg-white rounded-xl p-8 border border-gray-200 shipping-card">
                 <h2 class="text-2xl font-bold mb-6">Detalhe operacional</h2>
-                <div class="table-container">
+                <div class="table-container shipping-table-container">
                     <table>
                         <thead>
                             <tr>
@@ -107,22 +107,22 @@
                         </thead>
                         <tbody>
                             <tr>
-                                <td>Zona validada no checkout</td>
-                                <td>24-48h após pagamento</td>
-                                <td>Gratis</td>
-                                <td>Tracking online</td>
+                                <td data-label="Zona">Zona validada no checkout</td>
+                                <td data-label="Prazo total">24-48h após pagamento</td>
+                                <td data-label="Custo">Gratis</td>
+                                <td data-label="Acompanhamento">Tracking online</td>
                             </tr>
                         </tbody>
                     </table>
                 </div>
             </div>
 
-            <div class="bg-blue-50 rounded-xl p-8 border border-blue-200">
+            <div class="bg-blue-50 rounded-xl p-8 border border-blue-200 shipping-card shipping-card-highlight">
                 <h2 class="text-2xl font-bold mb-6 flex items-center gap-2">
                     <i data-lucide="info" class="w-6 h-6 text-blue-600"></i>
                     Informações importantes
                 </h2>
-                <ul class="space-y-3 text-gray-700">
+                <ul class="space-y-3 text-gray-700 shipping-check-list">
                     <li class="flex items-start gap-2">
                         <i data-lucide="check" class="w-5 h-5 text-blue-600 flex-shrink-0 mt-0.5"></i>
                         <span>O prazo de 24-48h conta após confirmação de pagamento e validação do design.</span>
