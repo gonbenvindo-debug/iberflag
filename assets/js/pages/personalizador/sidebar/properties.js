@@ -1794,6 +1794,7 @@ Object.assign(DesignEditor.prototype, {
     autoSave() {
         const saveKeys = [this.getAutosaveKey(), ...this.getLegacyAutosaveKeys()];
         const designScene = this.getDesignSceneV1?.() || null;
+        const previewVersion = Number(window.CART_PREVIEW_VERSION || 7) || 7;
         const compactScene = this.compactDesignSceneForStorage?.(designScene, {
             stripImageSources: true
         }) || designScene;
@@ -1830,7 +1831,9 @@ Object.assign(DesignEditor.prototype, {
             selectedBaseId: this.selectedBaseId || null,
             design_scene_v1: compactScene,
             designPreview: autosavePreview || undefined,
-            design_preview: autosavePreview || undefined
+            design_preview: autosavePreview || undefined,
+            designPreviewVersion: autosavePreview ? previewVersion : undefined,
+            design_preview_version: autosavePreview ? previewVersion : undefined
         };
         const compactDesign = JSON.stringify(payload);
         const candidates = [compactDesign];

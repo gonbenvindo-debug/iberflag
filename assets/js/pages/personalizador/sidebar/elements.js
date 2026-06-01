@@ -798,6 +798,21 @@ Object.assign(DesignEditor.prototype, {
             .find((value) => value && !value.startsWith('blob:')) || '';
     },
 
+    getAutosavePreviewVersion(record) {
+        return Number(
+            record?.parsed?.designPreviewVersion
+            || record?.parsed?.design_preview_version
+            || 0
+        ) || 0;
+    },
+
+    hasCanonicalAutosavePreview(record) {
+        const previewVersion = this.getAutosavePreviewVersion(record);
+        const currentVersion = Number(window.CART_PREVIEW_VERSION || 7) || 7;
+        const remotePreview = this.getAutosaveRemotePreviewSource(record);
+        return Boolean(remotePreview && previewVersion >= currentVersion);
+    },
+
     getAutosaveDesignSvg(record) {
         const storedSvg = [
             record?.parsed?.design_svg,
@@ -862,6 +877,11 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildAutosavePreviewSource(record) {
+        const remotePreview = this.getAutosaveRemotePreviewSource(record);
+        if (this.hasCanonicalAutosavePreview(record)) {
+            return remotePreview;
+        }
+
         const designScene = this.getAutosaveDesignScene(record);
         if (designScene) {
             const sharedPreview = this.buildSharedAutosavePreviewSource(record, designScene);
@@ -881,7 +901,6 @@ Object.assign(DesignEditor.prototype, {
             return sharedPreview;
         }
 
-        const remotePreview = this.getAutosaveRemotePreviewSource(record);
         if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
             return remotePreview;
         }
@@ -1067,7 +1086,12 @@ Object.assign(DesignEditor.prototype, {
 
         const savedPreviewImg = modal.querySelector('#autosave-recovery-resume img');
         const rawScene = this.getAutosaveDesignScene(record);
-        if (savedPreviewImg && rawScene && typeof this.hydrateDesignSceneImageSources === 'function') {
+        if (
+            savedPreviewImg
+            && rawScene
+            && typeof this.hydrateDesignSceneImageSources === 'function'
+            && !this.hasCanonicalAutosavePreview(record)
+        ) {
             (async () => {
                 try {
                     const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
