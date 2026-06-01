@@ -275,12 +275,35 @@ body {
 }
 
 .order-item-preview-thumb {
-    width: 2.25rem;
-    height: 2.25rem;
-    flex: 0 0 2.25rem;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 2.75rem;
     display: inline-flex;
-    --design-preview-radius: 0.4rem;
-    --design-preview-inset: 0.12rem;
+    --design-preview-radius: 0.28rem;
+    --design-preview-inset: 0.14rem;
+}
+
+.order-item-preview-button {
+    display: inline-flex;
+    width: 2.75rem;
+    height: 2.75rem;
+    flex: 0 0 2.75rem;
+    padding: 0;
+    border: 0;
+    border-radius: 0.28rem;
+    background: transparent;
+    cursor: pointer;
+}
+
+.order-item-preview-button:hover .design-preview-frame,
+.order-item-preview-button:focus-visible .design-preview-frame {
+    border-color: rgba(37, 99, 235, 0.75);
+    box-shadow: inset 0 0 0 1px rgba(37, 99, 235, 0.18);
+}
+
+.order-item-preview-button:focus-visible {
+    outline: 2px solid rgba(37, 99, 235, 0.55);
+    outline-offset: 3px;
 }
 
 .checkout-summary-item-preview {

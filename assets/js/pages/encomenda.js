@@ -66,7 +66,8 @@ const ES_TEXT = {
     'Sessao expirada': 'Sesion expirada',
     'Pagamento online': 'Pago online',
     'Abrir fatura': 'Abrir factura',
-    'PDF em emissao': 'PDF en emision'
+    'PDF em emissao': 'PDF en emision',
+    'Ver design': 'Ver diseno'
 };
 
 function escapeHtml(value) {
@@ -761,16 +762,22 @@ function renderOrderItems(order, items, splitMeta) {
             hasDesign: Boolean(visual?.hasDesign),
             options
         });
+        const previewSurfaceClass = visual?.hasDesign
+            ? 'order-item-preview-thumb design-preview-surface'
+            : 'order-item-preview-thumb design-preview-surface design-preview-surface--plain';
+        const previewLabel = `${i18nText('Ver design')}: ${productName}`;
 
         return `
             <tr>
                 <td class="order-summary-product">
                     <span class="inline-flex items-center gap-2">
-                        <span class="order-item-preview-thumb design-preview-surface">
+                        <button type="button" class="order-item-preview-button" data-preview-index="${escapeHtml(index)}" aria-label="${escapeHtml(previewLabel)}">
+                        <span class="${previewSurfaceClass}">
                             <span class="design-preview-frame">
                                 <img src="${escapeHtml(previewUrl)}" alt="${escapeHtml(productName)}" class="design-preview-media">
                             </span>
                         </span>
+                        </button>
                         <span>${escapeHtml(productName)}</span>
                     </span>
                 </td>
