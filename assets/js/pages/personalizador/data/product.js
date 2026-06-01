@@ -703,6 +703,18 @@ Object.assign(DesignEditor.prototype, {
         const buildSnapshotPreview = (sceneInput = null, svgInput = '') => {
             const scene = sceneInput || null;
             const rawDesignSvg = typeof svgInput === 'string' ? svgInput.trim() : '';
+
+            if (rawDesignSvg) {
+                const previewSvg = typeof this.generateCartPreviewSVG === 'function'
+                    ? this.generateCartPreviewSVG(rawDesignSvg)
+                    : rawDesignSvg;
+                if (typeof previewSvg === 'string' && previewSvg.trim().includes('<svg')) {
+                    return typeof this.svgToPreviewDataUrl === 'function'
+                        ? this.svgToPreviewDataUrl(previewSvg)
+                        : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+                }
+            }
+
             const templateGeometry = window.DesignRenderEngine?.resolveTemplateGeometry
                 ? window.DesignRenderEngine.resolveTemplateGeometry(this.currentProduct?.svg_template || '')
                 : null;
@@ -731,17 +743,6 @@ Object.assign(DesignEditor.prototype, {
                     });
                 if (typeof preview === 'string' && preview.trim()) {
                     return preview;
-                }
-            }
-
-            if (rawDesignSvg) {
-                const previewSvg = typeof this.generateCartPreviewSVG === 'function'
-                    ? this.generateCartPreviewSVG(rawDesignSvg)
-                    : rawDesignSvg;
-                if (typeof previewSvg === 'string' && previewSvg.trim().includes('<svg')) {
-                    return typeof this.svgToPreviewDataUrl === 'function'
-                        ? this.svgToPreviewDataUrl(previewSvg)
-                        : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
                 }
             }
 
