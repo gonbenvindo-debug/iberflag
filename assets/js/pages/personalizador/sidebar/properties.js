@@ -1797,11 +1797,40 @@ Object.assign(DesignEditor.prototype, {
         const compactScene = this.compactDesignSceneForStorage?.(designScene, {
             stripImageSources: true
         }) || designScene;
+        const autosavePreview = (() => {
+            try {
+                const liveSvg = this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG?.() || '';
+                const previewSvg = liveSvg && typeof this.generateCartPreviewSVG === 'function'
+                    ? this.generateCartPreviewSVG(liveSvg)
+                    : '';
+                const previewDataUrl = previewSvg && typeof this.svgToPreviewDataUrl === 'function'
+                    ? this.svgToPreviewDataUrl(previewSvg)
+                    : (previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '');
+                if (previewDataUrl && previewDataUrl.length <= 1_250_000) {
+                    return previewDataUrl;
+                }
+
+                const scenePreview = designScene && window.DesignRenderEngine?.buildPreviewDataUrl
+                    ? window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
+                        productSvg: this.currentProduct?.svg_template || '',
+                        fillRatio: 1,
+                        includeOutline: false,
+                        backgroundColor: 'transparent'
+                    })
+                    : '';
+                return scenePreview && scenePreview.length <= 1_250_000 ? scenePreview : '';
+            } catch (error) {
+                console.warn('Falha ao gerar preview do autosave:', error);
+                return '';
+            }
+        })();
         const payload = {
             format: window.DesignRenderEngine?.DESIGN_SCENE_V1_FORMAT || 'design-scene-v1',
             productId: this.productId || null,
             selectedBaseId: this.selectedBaseId || null,
-            design_scene_v1: compactScene
+            design_scene_v1: compactScene,
+            designPreview: autosavePreview || undefined,
+            design_preview: autosavePreview || undefined
         };
         const compactDesign = JSON.stringify(payload);
         const candidates = [compactDesign];

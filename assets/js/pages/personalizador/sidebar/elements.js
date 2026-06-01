@@ -789,8 +789,10 @@ Object.assign(DesignEditor.prototype, {
             record?.parsed?.design_svg_url,
             record?.parsed?.svgUrl,
             record?.parsed?.preview_url,
+            record?.parsed?.preview,
             record?.parsed?.designPreview,
-            record?.parsed?.design_preview
+            record?.parsed?.design_preview,
+            record?.parsed?.designPreviewDataUrl
         ]
             .map((value) => String(value || '').trim())
             .find((value) => value && !value.startsWith('blob:')) || '';
