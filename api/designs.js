@@ -42,7 +42,7 @@ function normalizeDesignId(value) {
 function normalizeSvg(value) {
     const normalized = String(value || '').trim();
     if (!normalized) return '';
-    return normalized.slice(0, MAX_SVG_LENGTH);
+    return sanitizeSvgLinkedAssets(normalized.slice(0, MAX_SVG_LENGTH));
 }
 
 function normalizePreview(value) {
@@ -141,6 +141,43 @@ function isLikelySvg(value) {
     return normalized.startsWith('<svg') || normalized.includes('<svg');
 }
 
+function isUsableSvgHref(value) {
+    const normalized = String(value || '').trim();
+    const lowered = normalized.toLowerCase();
+    return Boolean(
+        normalized
+        && normalized !== '#'
+        && lowered !== 'null'
+        && lowered !== 'undefined'
+    );
+}
+
+function sanitizeSvgLinkedAssets(svgMarkup) {
+    const source = String(svgMarkup || '');
+    if (!source || !source.toLowerCase().includes('<image')) {
+        return source;
+    }
+
+    const imageTagPattern = /<image\b[^>]*(?:\/>|>[\s\S]*?<\/image>)/gi;
+    const hrefAttributePattern = /\s(?:href|xlink:href)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s>]+))/gi;
+
+    return source.replace(imageTagPattern, (tag) => {
+        const hrefs = [];
+        tag.replace(hrefAttributePattern, (match, doubleQuoted, singleQuoted, bareValue) => {
+            hrefs.push(doubleQuoted ?? singleQuoted ?? bareValue ?? '');
+            return match;
+        });
+
+        if (!hrefs.some(isUsableSvgHref)) {
+            return '';
+        }
+
+        return tag.replace(hrefAttributePattern, (match, doubleQuoted, singleQuoted, bareValue) => (
+            isUsableSvgHref(doubleQuoted ?? singleQuoted ?? bareValue ?? '') ? match : ''
+        ));
+    });
+}
+
 function getReadTokenFromRequest(req, requestUrl) {
     const headerToken = req.headers?.['x-design-read-token'] || req.headers?.['X-Design-Read-Token'];
     return String(headerToken || requestUrl.searchParams.get('token') || '').trim();
@@ -189,7 +226,7 @@ function sendSvg(res, svgMarkup) {
     res.setHeader('Content-Type', 'image/svg+xml; charset=utf-8');
     res.setHeader('Cache-Control', 'private, max-age=300, stale-while-revalidate=30');
     setSecurityHeaders(res);
-    res.end(String(svgMarkup || ''));
+    res.end(sanitizeSvgLinkedAssets(svgMarkup));
 }
 
 module.exports = async function designsHandler(req, res) {

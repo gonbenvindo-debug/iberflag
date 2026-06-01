@@ -343,10 +343,41 @@
         }
     }
 
+    function normalizeImageHref(value) {
+        const normalized = String(value || '').trim();
+        return normalized && normalized !== 'null' && normalized !== 'undefined' ? normalized : '';
+    }
+
+    function cleanupInvalidImageNodes(rootNode) {
+        if (!rootNode?.querySelectorAll) {
+            return rootNode;
+        }
+
+        Array.from(rootNode.querySelectorAll('image')).forEach((imageNode) => {
+            const href = normalizeImageHref(imageNode.getAttribute('href'));
+            const xlinkHref = normalizeImageHref(imageNode.getAttributeNS?.('http://www.w3.org/1999/xlink', 'href') || imageNode.getAttribute('xlink:href'));
+            const usableHref = href || xlinkHref;
+
+            if (!usableHref) {
+                imageNode.remove();
+                return;
+            }
+
+            imageNode.setAttribute('href', usableHref);
+            imageNode.setAttributeNS('http://www.w3.org/1999/xlink', 'xlink:href', usableHref);
+        });
+
+        return rootNode;
+    }
+
     function buildImageNode(data) {
-        const node = document.createElementNS(SVG_NS, 'image');
         const objectFit = String(data.objectFit || 'cover').toLowerCase();
-        const href = data.src || (data.imageKind === 'qr' ? generateQrDataUrl(data.qrContent, data.qrColor) : '');
+        const href = normalizeImageHref(data.src || (data.imageKind === 'qr' ? generateQrDataUrl(data.qrContent, data.qrColor) : ''));
+        if (!href) {
+            return null;
+        }
+
+        const node = document.createElementNS(SVG_NS, 'image');
 
         node.setAttribute('id', data.id);
         node.setAttribute('data-editable', 'true');
@@ -1244,8 +1275,12 @@
 
     function buildAbsoluteImageNode(element, printAreaBounds) {
         const frame = resolveFrameFromBounds(element.frame, printAreaBounds);
+        const href = normalizeImageHref(element.src || (element.imageKind === 'qr' ? generateQrDataUrl(element.qrContent, element.qrColor) : ''));
+        if (!href) {
+            return null;
+        }
+
         const imageNode = document.createElementNS(SVG_NS, 'image');
-        const href = String(element.src || '');
         const objectFit = String(element.objectFit || 'contain').toLowerCase();
 
         imageNode.setAttribute('data-editable', 'true');
@@ -1473,6 +1508,7 @@
                 wrapper.appendChild(buildPreviewOutlineNode(maskNode, sourceTransform));
             }
 
+            cleanupInvalidImageNodes(wrapper);
             return new XMLSerializer().serializeToString(wrapper);
         }
 
@@ -1511,6 +1547,7 @@
         appendDesignDocumentElements(group, scene, printAreaBounds);
         svg.appendChild(group);
 
+        cleanupInvalidImageNodes(svg);
         return new XMLSerializer().serializeToString(svg);
     }
 
@@ -1615,6 +1652,7 @@
             });
 
         svg.appendChild(clippedGroup);
+        cleanupInvalidImageNodes(svg);
         return new XMLSerializer().serializeToString(svg);
     }
 
