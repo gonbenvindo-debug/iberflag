@@ -1020,6 +1020,7 @@ body {
 .homepage-hero {
     position: relative;
     background: linear-gradient(180deg, rgba(244, 239, 231, 0.96) 0%, rgba(248, 250, 252, 0.96) 48%, rgba(255, 255, 255, 1) 100%);
+    min-height: clamp(34rem, 72vh, 52rem);
 }
 
 .homepage-display {
@@ -1078,6 +1079,10 @@ body {
 }
 
 @media (max-width: 767px) {
+    .homepage-hero {
+        min-height: clamp(30rem, 74vh, 40rem);
+    }
+
     .homepage-hero-image-layer {
         width: 100%;
         opacity: 0.42;
