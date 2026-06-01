@@ -1563,6 +1563,10 @@
         return previewSvg ? toDataUrlFromSvgMarkup(previewSvg) : '';
     }
 
+    function buildScenePreviewDataUrl(sceneInput, options = {}) {
+        return buildPreviewDataUrl(sceneInput, options);
+    }
+
     function renderDesignDocumentToSvg(designDocumentInput, productContext = {}) {
         const scene = buildSceneFromDesignDocument(
             designDocumentInput,
@@ -3134,7 +3138,8 @@
         unwrapDesignSceneV1,
         renderSceneToSvg,
         buildPreviewSvg,
-        buildPreviewDataUrl
+        buildPreviewDataUrl,
+        buildScenePreviewDataUrl
     };
 
     window.DesignSvgStore = {
@@ -3166,6 +3171,7 @@
         renderSceneToSvg,
         buildPreviewSvg,
         buildPreviewDataUrl,
+        buildScenePreviewDataUrl,
         serializeEditorToSvg,
         extractTemplateSvg,
         importSvgIntoEditor,

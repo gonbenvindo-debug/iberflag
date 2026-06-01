@@ -825,18 +825,72 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        if (designScene && window.DesignRenderEngine?.buildPreviewDataUrl) {
-            const previewDataUrl = window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
-                productSvg: this.currentProduct?.svg_template || '',
-                fillRatio: 1,
-                includeOutline: false,
-                backgroundColor: 'transparent'
-            });
+        if (designScene && (window.DesignRenderEngine?.buildScenePreviewDataUrl || window.DesignRenderEngine?.buildPreviewDataUrl)) {
+            const previewDataUrl = window.DesignRenderEngine?.buildScenePreviewDataUrl
+                ? window.DesignRenderEngine.buildScenePreviewDataUrl(designScene, {
+                    productSvg: this.currentProduct?.svg_template || '',
+                    fillRatio: 1,
+                    includeOutline: false,
+                    backgroundColor: 'transparent'
+                })
+                : window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
+                    productSvg: this.currentProduct?.svg_template || '',
+                    fillRatio: 1,
+                    includeOutline: false,
+                    backgroundColor: 'transparent'
+                });
             if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
                 return previewDataUrl.trim();
             }
         }
 
+        if (designSvg) {
+            const previewSvg = typeof this.generateCartPreviewSVG === 'function'
+                ? this.generateCartPreviewSVG(designSvg)
+                : designSvg;
+            if (typeof previewSvg === 'string' && previewSvg.trim().includes('<svg')) {
+                const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
+                    ? this.svgToPreviewDataUrl(previewSvg)
+                    : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+                if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                    return previewDataUrl.trim();
+                }
+            }
+        }
+
+        return '';
+    },
+
+    buildAutosavePreviewSource(record) {
+        const designScene = this.getAutosaveDesignScene(record);
+        if (designScene) {
+            const sharedPreview = this.buildSharedAutosavePreviewSource(record, designScene);
+            if (sharedPreview) {
+                return sharedPreview;
+            }
+
+            const localPreviewSvg = this.buildAutosaveScenePreviewSvg(designScene);
+            const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
+            if (localPreviewDataUrl) {
+                return localPreviewDataUrl;
+            }
+        }
+
+        const sharedPreview = this.buildSharedAutosavePreviewSource(record);
+        if (sharedPreview) {
+            return sharedPreview;
+        }
+
+        const remotePreview = this.getAutosaveRemotePreviewSource(record);
+        if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
+            return remotePreview;
+        }
+
+        const localPreviewSvg = this.buildAutosavePreviewSvg(record);
+        const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
+        if (localPreviewDataUrl) {
+            return localPreviewDataUrl;
+        }
         return '';
     },
 
@@ -865,7 +919,7 @@ Object.assign(DesignEditor.prototype, {
 
         if (window.DesignRenderEngine?.buildPreviewSvg) {
             const previewSvg = window.DesignRenderEngine.buildPreviewSvg(designScene, {
-                productSvg,
+                productSvg: this.currentProduct?.svg_template || '',
                 fillRatio: 1,
                 includeOutline: false,
                 backgroundColor: 'transparent'
@@ -875,25 +929,6 @@ Object.assign(DesignEditor.prototype, {
             }
         }
 
-        return '';
-    },
-
-    buildAutosavePreviewSource(record) {
-        const remotePreview = this.getAutosaveRemotePreviewSource(record);
-        if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
-            return remotePreview;
-        }
-
-        const sharedPreview = this.buildSharedAutosavePreviewSource(record);
-        if (sharedPreview) {
-            return sharedPreview;
-        }
-
-        const localPreviewSvg = this.buildAutosavePreviewSvg(record);
-        const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
-        if (localPreviewDataUrl) {
-            return localPreviewDataUrl;
-        }
         return '';
     },
 

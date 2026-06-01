@@ -697,53 +697,79 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
+        const explicitScene = designScene || null;
+        const explicitSvg = typeof designSvgMarkup === 'string' ? designSvgMarkup.trim() : '';
+
+        const buildSnapshotPreview = (sceneInput = null, svgInput = '') => {
+            const scene = sceneInput || null;
+            const rawDesignSvg = typeof svgInput === 'string' ? svgInput.trim() : '';
+            const templateGeometry = window.DesignRenderEngine?.resolveTemplateGeometry
+                ? window.DesignRenderEngine.resolveTemplateGeometry(this.currentProduct?.svg_template || '')
+                : null;
+            const sceneForPreview = scene
+                ? {
+                    ...scene,
+                    templateGeometry: templateGeometry || scene.templateGeometry || null
+                }
+                : null;
+
+            if (sceneForPreview) {
+                const preview = window.DesignRenderEngine?.buildScenePreviewDataUrl
+                    ? window.DesignRenderEngine.buildScenePreviewDataUrl(sceneForPreview, {
+                        productSvg: this.currentProduct?.svg_template || '',
+                        templateGeometry: templateGeometry || undefined,
+                        fillRatio: 1,
+                        includeOutline: false,
+                        backgroundColor: 'transparent'
+                    })
+                    : window.DesignRenderEngine?.buildPreviewDataUrl?.(sceneForPreview, {
+                        productSvg: this.currentProduct?.svg_template || '',
+                        templateGeometry: templateGeometry || undefined,
+                        fillRatio: 1,
+                        includeOutline: false,
+                        backgroundColor: 'transparent'
+                    });
+                if (typeof preview === 'string' && preview.trim()) {
+                    return preview;
+                }
+            }
+
+            if (rawDesignSvg) {
+                const previewSvg = typeof this.generateCartPreviewSVG === 'function'
+                    ? this.generateCartPreviewSVG(rawDesignSvg)
+                    : rawDesignSvg;
+                if (typeof previewSvg === 'string' && previewSvg.trim().includes('<svg')) {
+                    return typeof this.svgToPreviewDataUrl === 'function'
+                        ? this.svgToPreviewDataUrl(previewSvg)
+                        : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}`;
+                }
+            }
+
+            return '';
+        };
+
+        if (explicitScene || explicitSvg) {
+            const snapshotPreview = buildSnapshotPreview(explicitScene, explicitSvg);
+            if (snapshotPreview) {
+                return snapshotPreview;
+            }
+        }
+
         const currentScene = this.getDesignSceneV1?.() || null;
-        const scene = designScene || currentScene || null;
-        const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
-            ? designSvgMarkup
-            : (this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG());
-        const liveSnapshotSvg = this.getDesignSVG?.({ preferLiveSnapshot: true }) || rawDesignSvg;
+        const liveScene = currentScene || null;
+        const liveDesignSvg = this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG() || '';
         const liveSnapshotPreviewSvg = typeof this.generateCartPreviewSVG === 'function'
-            ? this.generateCartPreviewSVG(liveSnapshotSvg)
+            ? this.generateCartPreviewSVG(liveDesignSvg)
             : '';
         if (typeof liveSnapshotPreviewSvg === 'string' && liveSnapshotPreviewSvg.trim().includes('<svg')) {
             return typeof this.svgToPreviewDataUrl === 'function'
                 ? this.svgToPreviewDataUrl(liveSnapshotPreviewSvg)
                 : `data:image/svg+xml;charset=utf-8,${encodeURIComponent(liveSnapshotPreviewSvg)}`;
         }
-        const templateGeometry = window.DesignRenderEngine?.resolveTemplateGeometry
-            ? window.DesignRenderEngine.resolveTemplateGeometry(this.currentProduct?.svg_template || '')
-            : null;
-        const sceneForPreview = scene
-            ? {
-                ...scene,
-                templateGeometry: templateGeometry || scene.templateGeometry || null
-            }
-            : null;
-        if (sceneForPreview && typeof this.buildAutosavePreviewSvg === 'function') {
-            const previewSvg = this.buildAutosavePreviewSvg({
-                parsed: {
-                    design_scene_v1: sceneForPreview
-                }
-            });
-            const previewDataUrl = typeof this.svgToPreviewDataUrl === 'function'
-                ? this.svgToPreviewDataUrl(previewSvg)
-                : (previewSvg ? `data:image/svg+xml;charset=utf-8,${encodeURIComponent(previewSvg)}` : '');
-            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
-                return previewDataUrl;
-            }
-        }
-
-        if (sceneForPreview && window.DesignRenderEngine?.buildPreviewDataUrl) {
-            const preview = window.DesignRenderEngine.buildPreviewDataUrl(sceneForPreview, {
-                productSvg: this.currentProduct?.svg_template || '',
-                templateGeometry: templateGeometry || undefined,
-                fillRatio: 1,
-                includeOutline: false,
-                backgroundColor: 'transparent'
-            });
-            if (typeof preview === 'string' && preview.trim()) {
-                return preview;
+        if (liveScene) {
+            const liveScenePreview = buildSnapshotPreview(liveScene, '');
+            if (liveScenePreview) {
+                return liveScenePreview;
             }
         }
 
