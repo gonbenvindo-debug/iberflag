@@ -698,7 +698,7 @@ Object.assign(DesignEditor.prototype, {
 
     buildCartStepsPreviewDataUrl(designScene = null, designSvgMarkup = '') {
         const currentScene = this.getDesignSceneV1?.() || null;
-        const scene = currentScene || designScene || null;
+        const scene = designScene || currentScene || null;
         const rawDesignSvg = typeof designSvgMarkup === 'string' && designSvgMarkup.trim()
             ? designSvgMarkup
             : (this.getDesignSVG?.({ preferLiveSnapshot: true }) || this.getDesignSVG());

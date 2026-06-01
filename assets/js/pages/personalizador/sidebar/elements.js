@@ -798,6 +798,48 @@ Object.assign(DesignEditor.prototype, {
             .find((value) => value && !value.startsWith('blob:')) || '';
     },
 
+    getAutosaveDesignSvg(record) {
+        const storedSvg = [
+            record?.parsed?.design_svg,
+            record?.parsed?.designSvg,
+            record?.parsed?.svg
+        ]
+            .map((value) => String(value || '').trim())
+            .find((value) => value.includes('<svg'));
+        if (storedSvg) {
+            return storedSvg;
+        }
+
+        const rawValue = String(record?.raw || '').trim();
+        return rawValue.includes('<svg') ? rawValue : '';
+    },
+
+    buildSharedAutosavePreviewSource(record, designSceneOverride = null) {
+        const designScene = designSceneOverride || this.getAutosaveDesignScene(record);
+        const designSvg = this.getAutosaveDesignSvg(record);
+
+        if (typeof this.buildCartStepsPreviewDataUrl === 'function') {
+            const previewDataUrl = this.buildCartStepsPreviewDataUrl(designScene, designSvg);
+            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                return previewDataUrl.trim();
+            }
+        }
+
+        if (designScene && window.DesignRenderEngine?.buildPreviewDataUrl) {
+            const previewDataUrl = window.DesignRenderEngine.buildPreviewDataUrl(designScene, {
+                productSvg: this.currentProduct?.svg_template || '',
+                fillRatio: 1,
+                includeOutline: false,
+                backgroundColor: 'transparent'
+            });
+            if (typeof previewDataUrl === 'string' && previewDataUrl.trim()) {
+                return previewDataUrl.trim();
+            }
+        }
+
+        return '';
+    },
+
     buildAutosaveScenePreviewSvg(designScene) {
         if (!designScene || !this.currentProduct?.svg_template) {
             return '';
@@ -837,15 +879,20 @@ Object.assign(DesignEditor.prototype, {
     },
 
     buildAutosavePreviewSource(record) {
+        const remotePreview = this.getAutosaveRemotePreviewSource(record);
+        if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
+            return remotePreview;
+        }
+
+        const sharedPreview = this.buildSharedAutosavePreviewSource(record);
+        if (sharedPreview) {
+            return sharedPreview;
+        }
+
         const localPreviewSvg = this.buildAutosavePreviewSvg(record);
         const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
         if (localPreviewDataUrl) {
             return localPreviewDataUrl;
-        }
-
-        const remotePreview = this.getAutosaveRemotePreviewSource(record);
-        if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
-            return remotePreview;
         }
         return '';
     },
@@ -985,14 +1032,13 @@ Object.assign(DesignEditor.prototype, {
 
         const savedPreviewImg = modal.querySelector('#autosave-recovery-resume img');
         const rawScene = this.getAutosaveDesignScene(record);
-        if (savedPreviewImg && rawScene && typeof this.hydrateDesignSceneImageSources === 'function' && window.DesignRenderEngine?.buildPreviewSvg) {
+        if (savedPreviewImg && rawScene && typeof this.hydrateDesignSceneImageSources === 'function') {
             (async () => {
                 try {
                     const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
-                    const hydratedPreview = this.buildAutosaveScenePreviewSvg(hydratedScene);
-                    const hydratedDataUrl = this.svgToPreviewDataUrl(hydratedPreview);
-                    if (hydratedDataUrl) {
-                        savedPreviewImg.src = hydratedDataUrl;
+                    const hydratedPreview = this.buildSharedAutosavePreviewSource(record, hydratedScene);
+                    if (hydratedPreview) {
+                        savedPreviewImg.src = hydratedPreview;
                     }
                 } catch (error) {
                     console.warn('Falha ao hidratar preview do autosave:', error);
