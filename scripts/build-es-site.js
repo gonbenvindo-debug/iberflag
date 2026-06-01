@@ -124,7 +124,6 @@ const EXTRA_TEXT_REPLACEMENTS = [
     ['Voltar', 'Volver'],
     ['Telemóvel / telefone', 'Móvil / teléfono'],
     ['Grátis', 'Gratis'],
-    ['IVA calculado no checkout', 'IVA calculado en el checkout'],
     ['Personalização incluída', 'Personalización incluida'],
     ['itens incluídos', 'artículos incluidos'],
     ['3 passos', '3 pasos'],
@@ -790,7 +789,6 @@ function applyHtmlFallbackTranslations(html) {
     return String(html || '')
         .replace(/(\d+)\s+produtos/g, '$1 productos')
         .replace(/(\d+)\s+produto(?!s)/g, '$1 producto')
-        .replace(/IVA calculado no checkout/g, 'IVA calculado en el checkout')
         .replace(/Personalização incluída/g, 'Personalización incluida')
         .replace(/(\d+)\s+itens incluídos/g, '$1 artículos incluidos')
         .replace(/(\d+)\s+passos/g, '$1 pasos')

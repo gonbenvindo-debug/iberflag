@@ -987,7 +987,7 @@ function renderProductPage(product, categoryEntries, productEntries) {
                     <div class="mt-1 text-4xl font-semibold leading-none text-slate-950 sm:text-5xl">${escapeHtml(formatCurrency(product.preco))}</div>
                   </div>
                   <div class="hidden text-right text-xs leading-5 text-slate-500 sm:block">
-                    IVA calculado no checkout<br>
+                    Produto isento de IVA<br>
                     Personalização incluída
                   </div>
                 </div>
