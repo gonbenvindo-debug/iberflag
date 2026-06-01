@@ -911,7 +911,7 @@ Object.assign(DesignEditor.prototype, {
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
         const outline = this.canvas?.querySelector?.('#print-area-shape-outline')
             || this.canvas?.querySelector?.('#print-area-outline');
-        let shapeMarkup = `<rect x="24" y="24" width="${Math.max(1, width - 48)}" height="${Math.max(1, height - 48)}" rx="14" fill="none" stroke="#cbd5e1" stroke-width="2" stroke-dasharray="10 10"/>`;
+        let shapeMarkup = `<rect x="24" y="24" width="${Math.max(1, width - 48)}" height="${Math.max(1, height - 48)}" rx="14" fill="#ffffff" stroke="none"/>`;
 
         if (outline) {
             const clone = outline.cloneNode(true);
@@ -919,11 +919,10 @@ Object.assign(DesignEditor.prototype, {
             clone.removeAttribute('class');
             clone.removeAttribute('opacity');
             clone.removeAttribute('stroke-dasharray');
-            clone.setAttribute('fill', 'none');
-            clone.setAttribute('stroke', '#cbd5e1');
-            clone.setAttribute('stroke-width', '2');
-            clone.setAttribute('stroke-dasharray', '10 10');
-            clone.setAttribute('vector-effect', 'non-scaling-stroke');
+            clone.removeAttribute('stroke');
+            clone.removeAttribute('stroke-width');
+            clone.removeAttribute('vector-effect');
+            clone.setAttribute('fill', '#ffffff');
             shapeMarkup = new XMLSerializer().serializeToString(clone);
         }
 
