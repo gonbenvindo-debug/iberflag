@@ -774,6 +774,38 @@ Object.assign(DesignEditor.prototype, {
         return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
     },
 
+    getAutosaveDesignScene(record) {
+        return window.DesignRenderEngine?.unwrapDesignSceneV1?.(
+            record?.parsed?.design_scene_v1
+            || record?.parsed?.designSceneV1
+            || record?.parsed
+            || null
+        ) || null;
+    },
+
+    getAutosaveRemotePreviewSource(record) {
+        return [
+            record?.parsed?.designSvgUrl,
+            record?.parsed?.design_svg_url,
+            record?.parsed?.svgUrl,
+            record?.parsed?.preview_url,
+            record?.parsed?.designPreview,
+            record?.parsed?.design_preview
+        ]
+            .map((value) => String(value || '').trim())
+            .find((value) => value && !value.startsWith('blob:')) || '';
+    },
+
+    buildAutosavePreviewSource(record) {
+        const remotePreview = this.getAutosaveRemotePreviewSource(record);
+        if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
+            return remotePreview;
+        }
+
+        const previewSvg = this.buildAutosavePreviewSvg(record);
+        return this.svgToPreviewDataUrl(previewSvg);
+    },
+
     buildBlankDesignPreviewSvg() {
         const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
@@ -799,15 +831,13 @@ Object.assign(DesignEditor.prototype, {
     buildAutosavePreviewSvg(record) {
         const width = Math.max(1, Math.round(Number(this.baseCanvasSize?.width) || 800));
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
-        const designScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
-            record?.parsed?.design_scene_v1 || record?.parsed || null
-        ) || null;
+        const designScene = this.getAutosaveDesignScene(record);
 
         if (designScene && this.currentProduct?.svg_template && window.DesignRenderEngine?.buildPreviewSvg) {
             const previewSvg = window.DesignRenderEngine.buildPreviewSvg(designScene, {
                 productSvg: this.currentProduct.svg_template,
-                fillRatio: 0.9,
-                includeOutline: true,
+                fillRatio: 1,
+                includeOutline: false,
                 backgroundColor: 'transparent'
             });
             if (previewSvg) return previewSvg;
@@ -855,7 +885,7 @@ Object.assign(DesignEditor.prototype, {
             existingModal.remove();
         }
 
-        const savedPreview = this.svgToPreviewDataUrl(this.buildAutosavePreviewSvg(record));
+        const savedPreview = this.buildAutosavePreviewSource(record);
         const blankPreview = this.svgToPreviewDataUrl(this.buildBlankDesignPreviewSvg());
         const productName = this.currentProduct?.nome ? ` ${this.currentProduct.nome}` : '';
         const modal = document.createElement('div');
@@ -871,8 +901,10 @@ Object.assign(DesignEditor.prototype, {
                 </div>
                 <div class="autosave-recovery-grid">
                     <button type="button" id="autosave-recovery-resume" class="autosave-recovery-card autosave-recovery-card--primary">
-                        <span class="autosave-recovery-preview">
-                            <img src="${savedPreview}" alt="${escapeHtml(translate('Preview do design guardado'))}">
+                        <span class="autosave-recovery-preview design-preview-surface">
+                            <span class="autosave-recovery-preview-frame design-preview-frame">
+                                <img src="${escapeHtml(savedPreview)}" alt="${escapeHtml(translate('Preview do design guardado'))}" class="design-preview-media">
+                            </span>
                         </span>
                         <span class="autosave-recovery-card-body">
                             <span class="autosave-recovery-card-title">${escapeHtml(translate('Continuar edição'))}</span>
@@ -880,8 +912,10 @@ Object.assign(DesignEditor.prototype, {
                         </span>
                     </button>
                     <button type="button" id="autosave-recovery-blank" class="autosave-recovery-card">
-                        <span class="autosave-recovery-preview">
-                            <img src="${blankPreview}" alt="${escapeHtml(translate('Preview do design em branco'))}">
+                        <span class="autosave-recovery-preview design-preview-surface">
+                            <span class="autosave-recovery-preview-frame design-preview-frame">
+                                <img src="${escapeHtml(blankPreview)}" alt="${escapeHtml(translate('Preview do design em branco'))}" class="design-preview-media">
+                            </span>
                         </span>
                         <span class="autosave-recovery-card-body">
                             <span class="autosave-recovery-card-title">${escapeHtml(translate('Começar em branco'))}</span>
@@ -896,17 +930,15 @@ Object.assign(DesignEditor.prototype, {
         document.body.style.overflow = 'hidden';
 
         const savedPreviewImg = modal.querySelector('#autosave-recovery-resume img');
-        const rawScene = window.DesignRenderEngine?.unwrapDesignSceneV1?.(
-            record?.parsed?.design_scene_v1 || record?.parsed || null
-        ) || null;
+        const rawScene = this.getAutosaveDesignScene(record);
         if (savedPreviewImg && rawScene && typeof this.hydrateDesignSceneImageSources === 'function' && window.DesignRenderEngine?.buildPreviewSvg) {
             (async () => {
                 try {
                     const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
                     const hydratedPreview = window.DesignRenderEngine.buildPreviewSvg(hydratedScene, {
                         productSvg: this.currentProduct?.svg_template || '',
-                        fillRatio: 0.9,
-                        includeOutline: true,
+                        fillRatio: 1,
+                        includeOutline: false,
                         backgroundColor: 'transparent'
                     });
                     const hydratedDataUrl = this.svgToPreviewDataUrl(hydratedPreview);
