@@ -798,14 +798,56 @@ Object.assign(DesignEditor.prototype, {
             .find((value) => value && !value.startsWith('blob:')) || '';
     },
 
+    buildAutosaveScenePreviewSvg(designScene) {
+        if (!designScene || !this.currentProduct?.svg_template) {
+            return '';
+        }
+
+        const productSvg = String(this.currentProduct.svg_template || '').trim();
+        if (!productSvg) {
+            return '';
+        }
+
+        if (window.DesignSvgStore?.buildCanonicalProductPreviewSvg) {
+            const canonicalPreview = window.DesignSvgStore.buildCanonicalProductPreviewSvg({
+                designScene,
+                productSvg,
+                fillRatio: 1,
+                includeOutline: false,
+                backgroundColor: 'transparent'
+            });
+            if (typeof canonicalPreview === 'string' && canonicalPreview.includes('<svg')) {
+                return canonicalPreview;
+            }
+        }
+
+        if (window.DesignRenderEngine?.buildPreviewSvg) {
+            const previewSvg = window.DesignRenderEngine.buildPreviewSvg(designScene, {
+                productSvg,
+                fillRatio: 1,
+                includeOutline: false,
+                backgroundColor: 'transparent'
+            });
+            if (typeof previewSvg === 'string' && previewSvg.includes('<svg')) {
+                return previewSvg;
+            }
+        }
+
+        return '';
+    },
+
     buildAutosavePreviewSource(record) {
+        const localPreviewSvg = this.buildAutosavePreviewSvg(record);
+        const localPreviewDataUrl = this.svgToPreviewDataUrl(localPreviewSvg);
+        if (localPreviewDataUrl) {
+            return localPreviewDataUrl;
+        }
+
         const remotePreview = this.getAutosaveRemotePreviewSource(record);
         if (remotePreview && (remotePreview.startsWith('data:image/') || !remotePreview.startsWith('data:'))) {
             return remotePreview;
         }
-
-        const previewSvg = this.buildAutosavePreviewSvg(record);
-        return this.svgToPreviewDataUrl(previewSvg);
+        return '';
     },
 
     buildBlankDesignPreviewSvg() {
@@ -835,13 +877,8 @@ Object.assign(DesignEditor.prototype, {
         const height = Math.max(1, Math.round(Number(this.baseCanvasSize?.height) || 600));
         const designScene = this.getAutosaveDesignScene(record);
 
-        if (designScene && this.currentProduct?.svg_template && window.DesignRenderEngine?.buildPreviewSvg) {
-            const previewSvg = window.DesignRenderEngine.buildPreviewSvg(designScene, {
-                productSvg: this.currentProduct.svg_template,
-                fillRatio: 1,
-                includeOutline: false,
-                backgroundColor: 'transparent'
-            });
+        if (designScene) {
+            const previewSvg = this.buildAutosaveScenePreviewSvg(designScene);
             if (previewSvg) return previewSvg;
         }
 
@@ -855,7 +892,22 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (record?.raw && String(record.raw).includes('<svg')) {
-            return record.raw;
+            const rawSvg = String(record.raw || '').trim();
+            const fallbackBounds = this.getCanvasViewBoxSize?.() || { x: 0, y: 0, width, height };
+            const maskedDataUrl = window.DesignSvgStore?.buildMaskedExportPreviewDataUrl?.(rawSvg, fallbackBounds) || '';
+            if (typeof maskedDataUrl === 'string' && maskedDataUrl.startsWith('data:image/svg+xml')) {
+                const commaIndex = maskedDataUrl.indexOf(',');
+                if (commaIndex > -1) {
+                    try {
+                        const encoded = maskedDataUrl.slice(commaIndex + 1);
+                        const decoded = decodeURIComponent(encoded);
+                        if (decoded && decoded.includes('<svg')) {
+                            return decoded;
+                        }
+                    } catch (_) {}
+                }
+            }
+            return rawSvg;
         }
 
         return this.buildBlankDesignPreviewSvg();
@@ -937,12 +989,7 @@ Object.assign(DesignEditor.prototype, {
             (async () => {
                 try {
                     const hydratedScene = await this.hydrateDesignSceneImageSources(rawScene, { mode: 'dataUrl' });
-                    const hydratedPreview = window.DesignRenderEngine.buildPreviewSvg(hydratedScene, {
-                        productSvg: this.currentProduct?.svg_template || '',
-                        fillRatio: 1,
-                        includeOutline: false,
-                        backgroundColor: 'transparent'
-                    });
+                    const hydratedPreview = this.buildAutosaveScenePreviewSvg(hydratedScene);
                     const hydratedDataUrl = this.svgToPreviewDataUrl(hydratedPreview);
                     if (hydratedDataUrl) {
                         savedPreviewImg.src = hydratedDataUrl;
