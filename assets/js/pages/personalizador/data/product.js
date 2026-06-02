@@ -220,6 +220,74 @@ Object.assign(DesignEditor.prototype, {
         return normalized || '';
     },
 
+    getFlyBannerCatalogBaseSlugs() {
+        return [
+            'flybanner-cruzeta-com-flutuador',
+            'flybanner-base-parede',
+            'flybanner-base-parafuso-roscado',
+            'flybanner-base-pica',
+            'flybanner-base-hercules-12kg',
+            'flybanner-base-agua',
+            'flybanner-base-deluxe-4kg',
+            'flybanner-base-universal-com-abracadeiras',
+            'flybanner-base-distancia-entre-eixos-do-carro',
+            'flybanner-base-para-tenda'
+        ];
+    },
+
+    mapBaseCatalogRecordToOption(base, assignment = null, fallbackOrder = 0) {
+        const isSelectable = base?.ativo !== false
+            && base?.disponivel !== false
+            && String(base?.disponivel) !== 'false';
+        const unavailableNote = base?.ativo === false
+            ? i18nText('Inativa')
+            : String(base?.nota_indisponibilidade || '').trim();
+
+        return {
+            id: Number(base?.id),
+            produto_id: Number(this.currentProduct.id),
+            base_id: Number(base?.id),
+            ativo: assignment?.ativo !== false,
+            ordem: Number(assignment?.ordem ?? base?.ordem ?? fallbackOrder ?? 0) || 0,
+            is_default: assignment
+                ? (assignment?.is_default === true || String(assignment?.is_default) === 'true')
+                : fallbackOrder === 0,
+            preco_extra_aplicado: Number(
+                assignment?.preco_extra_override ?? base?.preco_extra ?? 0
+            ) || 0,
+            base_nome_pt: String(base?.nome || '').trim(),
+            base_nome: i18nText(String(base?.nome_es || '').trim() || base?.nome || ''),
+            base_slug: String(base?.slug || '').trim(),
+            base_imagem: String(base?.imagem || '').trim(),
+            base_preco_extra: Number(base?.preco_extra || 0) || 0,
+            base_ativa: base?.ativo !== false,
+            base_disponivel: isSelectable,
+            base_nota_indisponibilidade: unavailableNote
+        };
+    },
+
+    async loadGlobalFlyBannerBasesFromCatalog() {
+        if (!this.isFlyBannerProduct()) {
+            return [];
+        }
+
+        const slugs = this.getFlyBannerCatalogBaseSlugs();
+        const basesResult = await supabaseClient
+            .from('bases_fixacao')
+            .select('id, nome, nome_es, slug, imagem, preco_extra, ativo, disponivel, nota_indisponibilidade, ordem')
+            .in('slug', slugs)
+            .eq('ativo', true)
+            .order('ordem', { ascending: true });
+
+        if (basesResult.error) {
+            throw basesResult.error;
+        }
+
+        return (Array.isArray(basesResult.data) ? basesResult.data : [])
+            .map((base, index) => this.mapBaseCatalogRecordToOption(base, null, index))
+            .filter(Boolean);
+    },
+
     async loadAssignedProductBasesFromTables() {
         const assignmentResult = await supabaseClient
             .from('produto_bases_fixacao')
@@ -234,7 +302,7 @@ Object.assign(DesignEditor.prototype, {
 
         const assignmentRows = Array.isArray(assignmentResult.data) ? assignmentResult.data : [];
         if (assignmentRows.length === 0) {
-            return [];
+            return this.loadGlobalFlyBannerBasesFromCatalog();
         }
 
         const baseIds = assignmentRows
@@ -265,32 +333,7 @@ Object.assign(DesignEditor.prototype, {
                 return null;
             }
 
-            const isSelectable = base?.ativo !== false
-                && base?.disponivel !== false
-                && String(base?.disponivel) !== 'false';
-            const unavailableNote = base?.ativo === false
-                ? i18nText('Inativa')
-                : String(base?.nota_indisponibilidade || '').trim();
-
-            return {
-                id: baseId,
-                produto_id: Number(this.currentProduct.id),
-                base_id: baseId,
-                ativo: assignment?.ativo !== false,
-                ordem: Number(assignment?.ordem || 0) || 0,
-                is_default: assignment?.is_default === true || String(assignment?.is_default) === 'true',
-                preco_extra_aplicado: Number(
-                    assignment?.preco_extra_override ?? base?.preco_extra ?? 0
-                ) || 0,
-                base_nome_pt: String(base?.nome || '').trim(),
-                base_nome: i18nText(String(base?.nome_es || '').trim() || base?.nome || ''),
-                base_slug: String(base?.slug || '').trim(),
-                base_imagem: String(base?.imagem || '').trim(),
-                base_preco_extra: Number(base?.preco_extra || 0) || 0,
-                base_ativa: base?.ativo !== false,
-                base_disponivel: isSelectable,
-                base_nota_indisponibilidade: unavailableNote
-            };
+            return this.mapBaseCatalogRecordToOption(base, assignment);
         }).filter(Boolean);
     },
 
