@@ -235,6 +235,16 @@ Object.assign(DesignEditor.prototype, {
         ];
     },
 
+    isFlyBannerCatalogBaseSlug(slug) {
+        const normalizedSlug = String(slug || '').trim().toLowerCase();
+        if (!normalizedSlug) {
+            return false;
+        }
+
+        return this.getFlyBannerCatalogBaseSlugs().includes(normalizedSlug)
+            || normalizedSlug.startsWith('flybanner-base-custom-');
+    },
+
     mapBaseCatalogRecordToOption(base, assignment = null, fallbackOrder = 0) {
         const isSelectable = base?.ativo !== false
             && base?.disponivel !== false
@@ -271,11 +281,9 @@ Object.assign(DesignEditor.prototype, {
             return [];
         }
 
-        const slugs = this.getFlyBannerCatalogBaseSlugs();
         const basesResult = await supabaseClient
             .from('bases_fixacao')
             .select('id, nome, nome_es, slug, imagem, preco_extra, ativo, disponivel, nota_indisponibilidade, ordem')
-            .in('slug', slugs)
             .eq('ativo', true)
             .order('ordem', { ascending: true });
 
@@ -284,6 +292,7 @@ Object.assign(DesignEditor.prototype, {
         }
 
         return (Array.isArray(basesResult.data) ? basesResult.data : [])
+            .filter((base) => this.isFlyBannerCatalogBaseSlug(base?.slug))
             .map((base, index) => this.mapBaseCatalogRecordToOption(base, null, index))
             .filter(Boolean);
     },

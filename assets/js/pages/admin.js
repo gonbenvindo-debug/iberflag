@@ -361,6 +361,7 @@ let currentTab = 'dashboard';
 let currentProductId = null;
 let currentProductCategoria = null;
 let currentBaseId = null;
+let currentBaseSlug = '';
 let currentContactId = null;
 let currentOrderId = null;
 let currentOrderData = null;
@@ -1003,10 +1004,21 @@ const FLYBANNER_BASE_SLUGS = new Set([
     'flybanner-base-distancia-entre-eixos-do-carro',
     'flybanner-base-para-tenda'
 ]);
+const FLYBANNER_CUSTOM_BASE_SLUG_PREFIX = 'flybanner-base-custom-';
+
+function buildFlybannerBaseSlug(name, existingSlug = '') {
+    const preservedSlug = String(existingSlug || '').trim().toLowerCase();
+    if (preservedSlug) {
+        return preservedSlug;
+    }
+
+    const normalizedNameSlug = slugify(name) || 'base';
+    return `${FLYBANNER_CUSTOM_BASE_SLUG_PREFIX}${normalizedNameSlug}`;
+}
 
 function isFlybannerBase(base) {
     const slug = String(base?.slug || '').trim().toLowerCase();
-    return FLYBANNER_BASE_SLUGS.has(slug);
+    return FLYBANNER_BASE_SLUGS.has(slug) || slug.startsWith(FLYBANNER_CUSTOM_BASE_SLUG_PREFIX);
 }
 
 function isFlybannerProductCategory(category) {
@@ -1694,6 +1706,7 @@ async function loadFlybannerBases() {
 if (addBaseBtn) {
     addBaseBtn.addEventListener('click', () => {
         currentBaseId = null;
+        currentBaseSlug = '';
         document.getElementById('base-modal-title').textContent = 'Adicionar Base';
         if (baseForm) baseForm.reset();
         setBaseImageValue('');
@@ -1727,7 +1740,7 @@ if (baseForm) {
 
         const baseData = {
             nome,
-            slug: slugify(nome),
+            slug: buildFlybannerBaseSlug(nome, currentBaseSlug),
             descricao: document.getElementById('base-descricao').value.trim() || null,
             imagem: baseImageValue,
             preco_extra: parseLocaleNumber(document.getElementById('base-preco-extra').value || '0'),
@@ -1778,6 +1791,7 @@ async function editBase(id) {
         if (error) throw error;
 
         currentBaseId = id;
+        currentBaseSlug = String(data.slug || '').trim();
         document.getElementById('base-modal-title').textContent = 'Editar Base';
         document.getElementById('base-nome').value = data.nome || '';
         document.getElementById('base-descricao').value = data.descricao || '';
