@@ -750,6 +750,32 @@ Object.assign(DesignEditor.prototype, {
         optionsWrap.dataset.dragScrollReady = 'true';
     },
 
+    syncCartBaseStepVisibility(hasBaseStep) {
+        const panel = document.querySelector('#cart-steps-modal .cart-steps-panel');
+        const step2 = document.getElementById('checkout-step-2');
+        const stepSeparator = step2?.previousElementSibling;
+        const pane2 = document.getElementById('cart-step-pane-2');
+
+        if (panel instanceof HTMLElement) {
+            panel.dataset.hasBaseStep = hasBaseStep ? 'true' : 'false';
+        }
+
+        if (step2 instanceof HTMLElement) {
+            step2.classList.toggle('hidden', !hasBaseStep);
+            step2.setAttribute('aria-hidden', hasBaseStep ? 'false' : 'true');
+        }
+
+        if (stepSeparator instanceof HTMLElement) {
+            stepSeparator.classList.toggle('hidden', !hasBaseStep);
+            stepSeparator.setAttribute('aria-hidden', hasBaseStep ? 'false' : 'true');
+        }
+
+        if (pane2 instanceof HTMLElement) {
+            pane2.classList.toggle('hidden', !hasBaseStep);
+            pane2.setAttribute('aria-hidden', hasBaseStep ? 'false' : 'true');
+        }
+    },
+
     setCartStepsCurrent(stepNumber) {
         const hasBaseStep = this.hasBaseSelectionStep();
         this.cartStepsCurrent = hasBaseStep && stepNumber === 2 ? 2 : 1;
@@ -765,12 +791,13 @@ Object.assign(DesignEditor.prototype, {
         const nextBtn = document.getElementById('cart-steps-next');
         const confirmBtn = document.getElementById('cart-steps-confirm');
 
+        this.syncCartBaseStepVisibility(hasBaseStep);
+
         if (step1 && step2) {
             step1.classList.toggle('active', this.cartStepsCurrent === 1);
             step1.classList.toggle('done', this.cartStepsCurrent === 2);
             step2.classList.toggle('active', this.cartStepsCurrent === 2);
             step2.classList.toggle('done', false);
-            step2.classList.toggle('hidden', !hasBaseStep);
         }
 
         if (panel instanceof HTMLElement) {
@@ -779,10 +806,6 @@ Object.assign(DesignEditor.prototype, {
 
         if (content instanceof HTMLElement) {
             content.scrollTop = 0;
-        }
-
-        if (stepSeparator instanceof HTMLElement) {
-            stepSeparator.classList.toggle('hidden', !hasBaseStep);
         }
 
         if (pane1 && pane2) {

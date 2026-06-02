@@ -560,6 +560,12 @@ body {
     display: block;
 }
 
+.cart-steps-panel[data-has-base-step="false"] #checkout-step-2,
+.cart-steps-panel[data-has-base-step="false"] .checkout-step-separator,
+.cart-steps-panel[data-has-base-step="false"] #cart-step-pane-2 {
+    display: none !important;
+}
+
 #cart-step-pane-2.active {
     display: flex;
     flex-direction: column;
