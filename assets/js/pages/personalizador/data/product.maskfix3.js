@@ -162,10 +162,18 @@ Object.assign(DesignEditor.prototype, {
 
     async loadProductBases() {
         if (!this.currentProduct?.id || typeof supabaseClient === 'undefined') {
-            this.availableBases = this.isFlybannerProductContext()
-                ? this.getFlybannerFallbackBases()
-                : [];
+            this.availableBases = [];
             return;
+        }
+
+        try {
+            const assignedBases = await this.loadAssignedProductBasesFromTables();
+            if (assignedBases.length > 0) {
+                this.availableBases = assignedBases;
+                return;
+            }
+        } catch (error) {
+            console.warn('Falha ao carregar bases diretamente das tabelas:', error?.message || error);
         }
 
         try {
@@ -196,13 +204,9 @@ Object.assign(DesignEditor.prototype, {
                 base_disponivel: base?.base_disponivel !== false && String(base?.base_disponivel) !== 'false',
                 base_nota_indisponibilidade: String(base?.base_nota_indisponibilidade || '').trim()
             }));
-            this.availableBases = mappedBases.length > 0
-                ? mappedBases
-                : (this.isFlybannerProductContext() ? this.getFlybannerFallbackBases() : []);
+            this.availableBases = mappedBases;
         } catch (error) {
-            this.availableBases = this.isFlybannerProductContext()
-                ? this.getFlybannerFallbackBases()
-                : [];
+            this.availableBases = [];
             console.warn('Falha ao carregar bases do produto:', error?.message || error);
         }
     },
@@ -216,47 +220,78 @@ Object.assign(DesignEditor.prototype, {
         return normalized || '';
     },
 
-    isFlybannerProductContext() {
-        const normalizedCategory = String(
-            this.currentProduct?.categoria
-            || this.currentProduct?.categorySlug
-            || this.currentProduct?.categoria_slug
-            || ''
-        ).trim().toLowerCase();
-        const normalizedSlug = String(
-            this.productSlug
-            || this.currentProduct?.slug
-            || ''
-        ).trim().toLowerCase();
+    async loadAssignedProductBasesFromTables() {
+        const assignmentResult = await supabaseClient
+            .from('produto_bases_fixacao')
+            .select('base_id, ativo, ordem, is_default, preco_extra_override')
+            .eq('produto_id', Number(this.currentProduct.id))
+            .eq('ativo', true)
+            .order('ordem', { ascending: true });
 
-        return normalizedCategory === 'fly-banner'
-            || normalizedCategory === 'flybanners'
-            || normalizedSlug.includes('fly-banner');
-    },
+        if (assignmentResult.error) {
+            throw assignmentResult.error;
+        }
 
-    getFlybannerFallbackBases() {
-        return [
-            {
-                base_id: 'com-reforco',
-                base_nome_pt: 'Com reforço',
-                base_nome: i18nText('Com reforço'),
-                base_imagem: '/assets/images/flybanner-variants/com-reforco.svg',
-                preco_extra_aplicado: 0,
-                is_default: true,
-                base_disponivel: true,
-                base_nota_indisponibilidade: i18nText('Incluído')
-            },
-            {
-                base_id: 'sem-reforco',
-                base_nome_pt: 'Sem reforço',
-                base_nome: i18nText('Sem reforço'),
-                base_imagem: '/assets/images/flybanner-variants/sem-reforco.svg',
-                preco_extra_aplicado: 0,
-                is_default: false,
-                base_disponivel: false,
-                base_nota_indisponibilidade: i18nText('Indisponível')
+        const assignmentRows = Array.isArray(assignmentResult.data) ? assignmentResult.data : [];
+        if (assignmentRows.length === 0) {
+            return [];
+        }
+
+        const baseIds = assignmentRows
+            .map((row) => Number(row?.base_id))
+            .filter(Number.isFinite);
+        if (baseIds.length === 0) {
+            return [];
+        }
+
+        const basesResult = await supabaseClient
+            .from('bases_fixacao')
+            .select('id, nome, nome_es, slug, imagem, preco_extra, ativo, disponivel, nota_indisponibilidade')
+            .in('id', baseIds);
+
+        if (basesResult.error) {
+            throw basesResult.error;
+        }
+
+        const baseMap = new Map(
+            (Array.isArray(basesResult.data) ? basesResult.data : [])
+                .map((base) => [Number(base?.id), base])
+        );
+
+        return assignmentRows.map((assignment) => {
+            const baseId = Number(assignment?.base_id);
+            const base = baseMap.get(baseId);
+            if (!Number.isFinite(baseId) || !base) {
+                return null;
             }
-        ];
+
+            const isSelectable = base?.ativo !== false
+                && base?.disponivel !== false
+                && String(base?.disponivel) !== 'false';
+            const unavailableNote = base?.ativo === false
+                ? i18nText('Inativa')
+                : String(base?.nota_indisponibilidade || '').trim();
+
+            return {
+                id: baseId,
+                produto_id: Number(this.currentProduct.id),
+                base_id: baseId,
+                ativo: assignment?.ativo !== false,
+                ordem: Number(assignment?.ordem || 0) || 0,
+                is_default: assignment?.is_default === true || String(assignment?.is_default) === 'true',
+                preco_extra_aplicado: Number(
+                    assignment?.preco_extra_override ?? base?.preco_extra ?? 0
+                ) || 0,
+                base_nome_pt: String(base?.nome || '').trim(),
+                base_nome: i18nText(String(base?.nome_es || '').trim() || base?.nome || ''),
+                base_slug: String(base?.slug || '').trim(),
+                base_imagem: String(base?.imagem || '').trim(),
+                base_preco_extra: Number(base?.preco_extra || 0) || 0,
+                base_ativa: base?.ativo !== false,
+                base_disponivel: isSelectable,
+                base_nota_indisponibilidade: unavailableNote
+            };
+        }).filter(Boolean);
     },
 
     // Carregar template do Supabase
