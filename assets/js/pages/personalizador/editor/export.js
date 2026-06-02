@@ -457,11 +457,11 @@ Object.assign(DesignEditor.prototype, {
         const designId = (existingCartItem?.designId || existingCartItem?.design_id || this.editDesignId || `dsg-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`);
         const selectedBase = this.getSelectedBaseOption();
 
-        if (this.hasBaseSelectionStep?.() && !selectedBase) {
+        if (this.requiresBaseSelection?.() && !selectedBase) {
             showToast(
-                this.isReinforcementOptionFlow?.()
-                ? (window.personalizerI18nText ? window.personalizerI18nText('Sem refor√ßo indispon√≠vel. Escolha a op√ß√£o com refor√ßo.') : 'Sem refor√ßo indispon√≠vel. Escolha a op√ß√£o com refor√ßo.')
-                    : (window.personalizerI18nText ? window.personalizerI18nText('Selecione uma op√ß√£o dispon√≠vel antes de adicionar ao carrinho.') : 'Selecione uma op√ß√£o dispon√≠vel antes de adicionar ao carrinho.'),
+                this.hasMissingRequiredBaseConfiguration?.()
+                    ? (window.personalizerI18nText ? window.personalizerI18nText('Este Fly Banner n„o tem bases de fixaÁ„o configuradas no admin. Configure uma base antes de continuar.') : 'Este Fly Banner n„o tem bases de fixaÁ„o configuradas no admin. Configure uma base antes de continuar.')
+                    : (window.personalizerI18nText ? window.personalizerI18nText('Selecione uma base de fixaÁ„o disponÌvel antes de adicionar ao carrinho.') : 'Selecione uma base de fixaÁ„o disponÌvel antes de adicionar ao carrinho.'),
                 'warning'
             );
             return;

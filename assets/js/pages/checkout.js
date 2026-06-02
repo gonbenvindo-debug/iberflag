@@ -2149,6 +2149,18 @@ function getCheckoutErrorMessage(error) {
         return i18nText('Uma base selecionada jÃ¡ nÃ£o estÃ¡ disponÃ­vel para esse produto. Reabra o personalizador e escolha outra base.');
     }
 
+    if (error?.code === 'BASE_REQUIRED') {
+        return i18nText('Falta selecionar a base de fixação de um Fly Banner. Reabra o personalizador e confirme a base antes de pagar.');
+    }
+
+    if (error?.code === 'BASE_CONFIG_MISSING') {
+        return i18nText('Um Fly Banner do carrinho não tem bases de fixação configuradas no admin. Corrija a configuração antes de continuar.');
+    }
+
+    if (error?.code === 'BASE_UNAVAILABLE') {
+        return i18nText('Um Fly Banner do carrinho não tem bases de fixação disponíveis neste momento. Reabra o personalizador e escolha outra base.');
+    }
+
     if (error?.code === '23503') {
         return 'Um produto do carrinho deixou de existir. Reabra o produto e adicione novamente ao carrinho.';
     }

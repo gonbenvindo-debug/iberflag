@@ -139,6 +139,18 @@ function getCheckoutErrorMessage(error) {
         return 'Uma das bases selecionadas ja nao esta disponivel para o produto.';
     }
 
+    if (error?.code === 'BASE_REQUIRED') {
+        return 'Falta selecionar a base de fixacao de um Fly Banner.';
+    }
+
+    if (error?.code === 'BASE_CONFIG_MISSING') {
+        return 'Um Fly Banner do carrinho nao tem bases de fixacao configuradas no admin.';
+    }
+
+    if (error?.code === 'BASE_UNAVAILABLE') {
+        return 'Um Fly Banner do carrinho nao tem bases de fixacao disponiveis neste momento.';
+    }
+
     if (errorCode === 'DESIGN_SNAPSHOT_REQUIRED') {
         return error?.message || 'Existe um design personalizado sem snapshot remoto valido. Reabra o personalizador e confirme o design novamente.';
     }
@@ -193,6 +205,7 @@ function getCheckoutErrorStatus(error) {
         'CODIGO_POSTAL_INVALIDO',
         'COUNTRY_INVALIDO',
         'BASE_INVALIDA',
+        'BASE_REQUIRED',
         'CUSTOMER_IDENTITY_CONFLICT'
     ].includes(errorCode)) {
         return 400;
@@ -201,6 +214,8 @@ function getCheckoutErrorStatus(error) {
     if ([
         'MISSING_PRODUCT_MAPPING',
         'PRODUCT_INACTIVE',
+        'BASE_CONFIG_MISSING',
+        'BASE_UNAVAILABLE',
         'DESIGN_SNAPSHOT_REQUIRED'
     ].includes(errorCode)) {
         return 409;

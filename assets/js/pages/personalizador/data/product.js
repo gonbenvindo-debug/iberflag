@@ -430,8 +430,45 @@ Object.assign(DesignEditor.prototype, {
             : [];
     },
 
-    hasBaseSelectionStep() {
+    isFlyBannerProduct() {
+        const normalizedCategory = String(
+            this.currentProduct?.categoria
+            || this.currentProduct?.categorySlug
+            || this.currentProduct?.categoria_slug
+            || ''
+        ).trim().toLowerCase();
+        return normalizedCategory === 'fly-banner' || normalizedCategory === 'flybanners';
+    },
+
+    hasConfiguredBaseOptions() {
+        return Array.isArray(this.availableBases) && this.availableBases.length > 0;
+    },
+
+    hasSelectableBaseOptions() {
         return this.getAvailableBaseOptions().length > 0;
+    },
+
+    requiresBaseSelection() {
+        return this.isFlyBannerProduct() || this.hasConfiguredBaseOptions();
+    },
+
+    getPreferredBaseOption() {
+        const availableBases = this.getAvailableBaseOptions();
+        if (availableBases.length === 0) {
+            return null;
+        }
+
+        return availableBases.find((base) => base?.is_default === true || String(base?.is_default) === 'true')
+            || availableBases[0]
+            || null;
+    },
+
+    hasMissingRequiredBaseConfiguration() {
+        return this.requiresBaseSelection() && !this.hasConfiguredBaseOptions();
+    },
+
+    hasBaseSelectionStep() {
+        return this.requiresBaseSelection();
     },
 
     ensureSelectedBase() {
@@ -448,7 +485,15 @@ Object.assign(DesignEditor.prototype, {
 
         const normalizedSelectedBaseId = this.getNormalizedBaseOptionId(this.selectedBaseId);
         const exists = availableBases.some((base) => this.getNormalizedBaseOptionId(base.base_id) === normalizedSelectedBaseId);
-        this.selectedBaseId = exists ? normalizedSelectedBaseId : null;
+        if (exists) {
+            this.selectedBaseId = normalizedSelectedBaseId;
+            return;
+        }
+
+        const preferredBase = this.getPreferredBaseOption();
+        this.selectedBaseId = preferredBase
+            ? this.getNormalizedBaseOptionId(preferredBase.base_id)
+            : null;
     },
 
     getSelectedBaseOption() {
@@ -476,11 +521,19 @@ Object.assign(DesignEditor.prototype, {
         }
 
         if (descriptionEl) {
-            descriptionEl.textContent = i18nText('Selecione uma base para este design.');
+            descriptionEl.textContent = this.requiresBaseSelection()
+                ? i18nText('Selecione uma base de fixação para este design.')
+                : i18nText('Selecione uma base para este design.');
         }
 
         if (emptyState) {
-            emptyState.textContent = i18nText('Este produto não tem bases configuradas. O design será adicionado sem base.');
+            if (this.hasMissingRequiredBaseConfiguration()) {
+                emptyState.textContent = i18nText('Este Fly Banner não tem bases de fixação configuradas no admin. Não é possível continuar sem base.');
+            } else if (this.requiresBaseSelection() && !this.hasSelectableBaseOptions()) {
+                emptyState.textContent = i18nText('Não existem bases de fixação disponíveis de momento para este produto.');
+            } else {
+                emptyState.textContent = i18nText('Este produto não tem bases configuradas.');
+            }
         }
     },
 
@@ -490,7 +543,12 @@ Object.assign(DesignEditor.prototype, {
 
         const hasOptions = this.hasBaseSelectionStep();
         const hasAvailableSelection = Boolean(this.getSelectedBaseOption());
-        const canConfirm = !hasOptions || hasAvailableSelection;
+        const canConfirm = !hasOptions
+            || (
+                this.hasConfiguredBaseOptions()
+                && this.hasSelectableBaseOptions()
+                && hasAvailableSelection
+            );
 
         confirmBtn.disabled = !canConfirm;
         confirmBtn.classList.toggle('opacity-50', !canConfirm);
@@ -545,7 +603,7 @@ Object.assign(DesignEditor.prototype, {
         closeBtn.addEventListener('click', closeModal);
         backBtn.addEventListener('click', () => this.setCartStepsCurrent(1));
         nextBtn.addEventListener('click', () => {
-            if (this.hasBaseSelectionStep()) {
+            if (this.requiresBaseSelection()) {
                 this.setCartStepsCurrent(2);
                 return;
             }
@@ -905,7 +963,15 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        emptyState.classList.add('hidden');
+        if (this.hasMissingRequiredBaseConfiguration()) {
+            optionsWrap.innerHTML = '';
+            emptyState.classList.remove('hidden');
+            this.updateCartStepsTotalDisplay();
+            this.updateCartStepActionState();
+            return;
+        }
+
+        emptyState.classList.toggle('hidden', this.availableBases.length > 0);
         optionsWrap.innerHTML = this.availableBases.map((base) => {
             const baseId = this.getNormalizedBaseOptionId(base.base_id);
             const isAvailable = this.isBaseOptionAvailable(base);
