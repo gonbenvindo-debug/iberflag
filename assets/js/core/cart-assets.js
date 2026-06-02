@@ -115,6 +115,45 @@
         return cloned;
     }
 
+    function collectSceneImageAssetIds(sceneLike = null) {
+        const scene = sceneLike && typeof sceneLike === 'object' ? sceneLike : null;
+        const elements = Array.isArray(scene?.elements) ? scene.elements : [];
+        return elements
+            .map((element) => String(element?.assetRef?.assetId || element?.assetId || '').trim())
+            .filter(Boolean);
+    }
+
+    function collectAutosaveImageAssetIds() {
+        if (typeof localStorage === 'undefined') {
+            return [];
+        }
+
+        const active = new Set();
+        Object.keys(localStorage)
+            .filter((key) => String(key || '').startsWith('iberflag_autosave_'))
+            .forEach((key) => {
+                try {
+                    const raw = String(localStorage.getItem(key) || '').trim();
+                    if (!raw || !raw.startsWith('{')) {
+                        return;
+                    }
+
+                    const parsed = JSON.parse(raw);
+                    const scene = (parsed?.design_scene_v1 && typeof parsed.design_scene_v1 === 'object')
+                        ? parsed.design_scene_v1
+                        : (parsed?.designSceneV1 && typeof parsed.designSceneV1 === 'object')
+                            ? parsed.designSceneV1
+                            : null;
+
+                    collectSceneImageAssetIds(scene).forEach((assetId) => active.add(assetId));
+                } catch (error) {
+                    console.warn('Falha ao recolher image assets do autosave:', error);
+                }
+            });
+
+        return [...active];
+    }
+
     function openDatabase() {
         if (typeof indexedDB === 'undefined') {
             return Promise.resolve(null);
@@ -741,6 +780,8 @@
 
     global.CartAssetStore = {
         buildSvgDataUrl,
+        collectSceneImageAssetIds,
+        collectAutosaveImageAssetIds,
         saveDesign,
         saveDesignRemotely,
         getRemoteDesignStatus,

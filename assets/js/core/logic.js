@@ -1605,13 +1605,18 @@ function updateCart() {
     if (window.CartAssetStore?.cleanupUnusedImageAssets) {
         const activeImageAssetIds = cart.flatMap((item) => {
             const scene = item?.designSceneV1 || item?.design_scene_v1 || null;
-            const elements = Array.isArray(scene?.elements) ? scene.elements : [];
-            return elements
-                .map((element) => String(element?.assetRef?.assetId || element?.assetId || '').trim())
-                .filter(Boolean);
+            return window.CartAssetStore.collectSceneImageAssetIds
+                ? window.CartAssetStore.collectSceneImageAssetIds(scene)
+                : [];
         });
+        const autosaveImageAssetIds = window.CartAssetStore.collectAutosaveImageAssetIds
+            ? window.CartAssetStore.collectAutosaveImageAssetIds()
+            : [];
 
-        window.CartAssetStore.cleanupUnusedImageAssets(activeImageAssetIds).catch((error) => {
+        window.CartAssetStore.cleanupUnusedImageAssets([
+            ...activeImageAssetIds,
+            ...autosaveImageAssetIds
+        ]).catch((error) => {
             console.warn('Falha ao limpar image assets antigos do carrinho:', error);
         });
     }
