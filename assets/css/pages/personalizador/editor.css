@@ -35,7 +35,7 @@
             border-radius: 50%;
             position: absolute;
             cursor: pointer;
-            z-index: 1000;
+            z-index: var(--z-editor-handle-knob, 1);
             touch-action: none;
             -webkit-touch-callout: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -60,7 +60,7 @@
             height: 36px;
             position: absolute;
             cursor: grab;
-            z-index: 1000;
+            z-index: var(--z-editor-handle-knob, 1);
             color: #2563eb;
             touch-action: none;
             -webkit-touch-callout: none;
@@ -353,7 +353,7 @@
         .upload-crop-modal {
             position: fixed;
             inset: 0;
-            z-index: 1200;
+            z-index: var(--z-editor-modal-crop, 2200);
             background: rgba(15, 23, 42, 0.78);
             display: flex;
             align-items: center;
@@ -438,7 +438,7 @@
             background: #ffffff;
             border: 2px solid #2563eb;
             border-radius: 9999px;
-            z-index: 1300;
+            z-index: var(--z-editor-modal-handle, 2220);
             pointer-events: auto;
             touch-action: none;
         }
@@ -469,7 +469,7 @@
         .cart-steps-modal {
             position: fixed;
             inset: 0;
-            z-index: 1300;
+            z-index: var(--z-editor-modal-cart, 2210);
             background: rgba(15, 23, 42, 0.74);
             display: none;
             align-items: center;
@@ -771,7 +771,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: 110;
+            z-index: var(--z-editor-mobile-backdrop, 1440);
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
@@ -853,7 +853,7 @@
             min-height: 0;
             overflow: hidden;
             position: relative;
-            z-index: 1;
+            z-index: var(--z-editor-main, 1);
         }
 
         #canvas-stage {
@@ -867,7 +867,7 @@
             min-height: 100%;
             overflow: hidden;
             position: relative;
-            z-index: 1;
+            z-index: var(--z-editor-canvas, 10);
         }
 
         .editor-bottom-bar {
@@ -918,7 +918,7 @@
                 right: 0;
                 width: 100%;
                 max-height: calc(65dvh - env(safe-area-inset-bottom, 0px));
-                z-index: 120;
+                z-index: var(--z-editor-mobile-sheet, 1450);
                 padding: 0;
                 margin: 0;
                 background: #ffffff;
@@ -1015,7 +1015,7 @@
             .sidebar-shell textarea {
                 pointer-events: auto !important;
                 position: relative;
-                z-index: 1;
+                z-index: var(--z-editor-main, 1);
             }
 
             .section-title {
@@ -1108,7 +1108,7 @@
                 touch-action: manipulation;
                 pointer-events: auto !important;
                 position: relative;
-                z-index: 1;
+                z-index: var(--z-editor-main, 1);
             }
 
             /* Melhorar thumb do range no mobile */

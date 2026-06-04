@@ -11,24 +11,26 @@
             --text-muted: #6b7280;
             --text-strong: #111827;
             --accent: #2563eb;
-            --z-base: 0;
-            --z-main: 1;
-            --z-canvas-stage: 1;
-            --z-properties-popover: 40;
-            --z-resize-handles: 80;
-            --z-resize-handle-knob: 1;
-            --z-floating-context: 220;
-            --z-desktop-toolbar: 320;
-            --z-mobile-tabs: 360;
-            --z-mobile-popover: 380;
-            --z-mobile-backdrop: 1600;
-            --z-mobile-sheet: 1610;
-            --z-top-info: 1200;
-            --z-top-nav: 1210;
-            --z-modal-crop: 2200;
-            --z-modal-cart: 2210;
-            --z-modal-handle: 2220;
-            --z-loading: 3000;
+            --z-editor-base: 0;
+            --z-editor-main: 1;
+            --z-editor-canvas: 10;
+            --z-editor-canvas-content: 20;
+            --z-editor-handles: 120;
+            --z-editor-handle-knob: 1;
+            --z-editor-inline-text: 180;
+            --z-editor-sidebar: 340;
+            --z-editor-properties-popover: 360;
+            --z-editor-floating-toolbar: 420;
+            --z-editor-mobile-tabs: 1400;
+            --z-editor-mobile-backdrop: 1440;
+            --z-editor-mobile-sheet: 1450;
+            --z-editor-mobile-popover: 1460;
+            --z-editor-top-info: 1500;
+            --z-editor-top-nav: 1510;
+            --z-editor-modal-crop: 2200;
+            --z-editor-modal-cart: 2210;
+            --z-editor-modal-handle: 2220;
+            --z-editor-loading: 3000;
             --editor-sidebar-width: 292px;
         }
 
@@ -63,7 +65,7 @@
             border-radius: 50%;
             position: absolute;
             cursor: pointer;
-            z-index: var(--z-resize-handle-knob);
+            z-index: var(--z-editor-handle-knob);
             touch-action: none;
             -webkit-touch-callout: none;
             box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
@@ -88,7 +90,7 @@
             height: 36px;
             position: absolute;
             cursor: grab;
-            z-index: var(--z-resize-handle-knob);
+            z-index: var(--z-editor-handle-knob);
             color: #2563eb;
             touch-action: none;
             -webkit-touch-callout: none;
@@ -486,7 +488,7 @@
         .upload-crop-modal {
             position: fixed;
             inset: 0;
-            z-index: var(--z-modal-crop);
+            z-index: var(--z-editor-modal-crop);
             background: rgba(15, 23, 42, 0.78);
             display: flex;
             align-items: center;
@@ -571,7 +573,7 @@
             background: #ffffff;
             border: 2px solid #2563eb;
             border-radius: 9999px;
-            z-index: var(--z-modal-handle);
+            z-index: var(--z-editor-modal-handle);
             pointer-events: auto;
             touch-action: none;
         }
@@ -602,7 +604,7 @@
         .cart-steps-modal {
             position: fixed;
             inset: 0;
-            z-index: var(--z-modal-cart);
+            z-index: var(--z-editor-modal-cart);
             background: rgba(15, 23, 42, 0.48);
             display: none;
             align-items: center;

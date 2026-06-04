@@ -71,6 +71,7 @@ Object.assign(DesignEditor.prototype, {
 
         const editorShell = document.createElement('div');
         editorShell.id = 'inline-text-editor-shell';
+        editorShell.className = 'inline-text-editor-shell';
         editorShell.setAttribute('aria-hidden', 'true');
         const editor = document.createElement('input');
         editor.type = 'text';
@@ -92,7 +93,6 @@ Object.assign(DesignEditor.prototype, {
         const fontStyle = textNode.getAttribute('font-style') || computed.fontStyle || 'normal';
         Object.assign(editorShell.style, {
             position: 'absolute',
-            zIndex: '180',
             display: 'flex',
             alignItems: 'center',
             minWidth: '88px',
@@ -580,7 +580,6 @@ Object.assign(DesignEditor.prototype, {
         overlay.style.inset = '0';
         overlay.style.pointerEvents = 'none';
         overlay.style.overflow = 'visible';
-        overlay.style.zIndex = '0';
 
         const outline = document.createElementNS(svgNS, 'polyline');
         outline.setAttribute('class', 'resize-handles-outline-polyline');

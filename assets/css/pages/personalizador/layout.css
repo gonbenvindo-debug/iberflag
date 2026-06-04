@@ -49,7 +49,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: var(--z-mobile-backdrop) !important;
+            z-index: var(--z-editor-mobile-backdrop) !important;
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
@@ -124,7 +124,7 @@
             grid-column: 1;
             grid-row: 2;
             position: relative;
-            z-index: var(--z-floating-context);
+            z-index: var(--z-editor-sidebar);
             padding: 0;
             min-width: 0;
             width: 100%;
@@ -141,7 +141,7 @@
             width: 100%;
             min-height: 0;
             overflow: hidden;
-            z-index: var(--z-desktop-toolbar);
+            z-index: var(--z-editor-floating-toolbar);
         }
 
         .editor-sidebar-right .sidebar-shell {
@@ -196,7 +196,7 @@
             top: calc(100% + 0.5rem);
             left: 0.75rem;
             right: 0.75rem;
-            z-index: var(--z-properties-popover);
+            z-index: var(--z-editor-properties-popover);
         }
 
         #properties-panel #no-selection {
@@ -241,7 +241,7 @@
             min-height: 100%;
             overflow: hidden;
             position: relative;
-            z-index: var(--z-canvas-stage);
+            z-index: var(--z-editor-canvas);
             border: none;
             box-shadow: none;
         }
@@ -251,7 +251,7 @@
             /* Oversized plane so pan/zoom keeps the checker visible as an "infinite" world */
             inset: -200vmax;
             pointer-events: none;
-            z-index: 0;
+            z-index: var(--z-editor-base);
             background:
                 linear-gradient(45deg, #eceff3 25%, transparent 25%),
                 linear-gradient(-45deg, #eceff3 25%, transparent 25%),
@@ -273,7 +273,7 @@
             min-height: 0;
             background: transparent;
             position: relative;
-            z-index: 1;
+            z-index: var(--z-editor-canvas-content);
         }
 
         .editor-bottom-bar {
@@ -307,7 +307,7 @@
             transition: opacity 180ms ease, transform 180ms ease;
             transform: translateY(0.85rem) scale(0.98);
             transform-origin: bottom center;
-            z-index: var(--z-mobile-popover);
+            z-index: var(--z-editor-mobile-popover);
         }
 
         .editor-bottom-bar > .context-popover.is-open {

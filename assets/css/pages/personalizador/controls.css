@@ -18,12 +18,12 @@ body.app-page {
 
 #editor-nav {
     position: relative;
-    z-index: var(--z-top-nav);
+    z-index: var(--z-editor-top-nav);
 }
 
 #editor-info-bar {
     position: relative;
-    z-index: var(--z-top-info);
+    z-index: var(--z-editor-top-info);
 }
 
 #editor-body-layout {
@@ -34,19 +34,39 @@ body.app-page {
 #resize-handles {
     position: fixed !important;
     inset: 0 !important;
-    z-index: var(--z-resize-handles) !important;
+    z-index: var(--z-editor-handles) !important;
     pointer-events: none !important;
 }
 
 #resize-handles .resize-handle,
-#resize-handles .rotate-handle,
-#resize-handles .resize-handles-outline-svg {
-    z-index: var(--z-resize-handle-knob) !important;
+#resize-handles .rotate-handle {
+    z-index: var(--z-editor-handle-knob) !important;
 }
 
-#editor-sidebar-left,
-#editor-sidebar-right {
-    z-index: var(--z-floating-context) !important;
+#resize-handles .resize-handles-outline-svg {
+    z-index: var(--z-editor-base) !important;
+}
+
+.inline-text-editor-shell {
+    z-index: var(--z-editor-inline-text);
+}
+
+@media (min-width: 1024px) {
+    #editor-sidebar-left {
+        z-index: var(--z-editor-sidebar) !important;
+    }
+
+    #editor-sidebar-right,
+    #editor-sidebar-right.toolbar-visible {
+        z-index: var(--z-editor-floating-toolbar) !important;
+    }
+}
+
+@media (max-width: 1023px) {
+    #editor-sidebar-left.panel-open,
+    #editor-sidebar-right.panel-open {
+        z-index: var(--z-editor-mobile-sheet) !important;
+    }
 }
 
 #editor-nav {
@@ -88,7 +108,7 @@ body.app-page {
 .editor-exit-modal {
     position: fixed;
     inset: 0;
-    z-index: var(--z-modal-cart);
+    z-index: var(--z-editor-modal-cart);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -166,7 +186,7 @@ body.app-page {
 .autosave-recovery-modal {
     position: fixed;
     inset: 0;
-    z-index: var(--z-modal-cart);
+    z-index: var(--z-editor-modal-cart);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -795,7 +815,7 @@ body.is-camera-panning #canvas-stage {
     position: absolute;
     top: 14px;
     right: 14px;
-    z-index: 260;
+    z-index: var(--z-editor-floating-toolbar);
     display: inline-flex;
     align-items: center;
     gap: 8px;
@@ -910,7 +930,7 @@ body.is-camera-panning #canvas-stage {
     border-top: 1px solid var(--iber-border) !important;
     background: #fff !important;
     position: relative;
-    z-index: var(--z-mobile-tabs);
+    z-index: var(--z-editor-mobile-tabs);
 }
 
 .editor-mobile-tab {
@@ -922,7 +942,7 @@ body.is-camera-panning #canvas-stage {
 }
 
 #editor-loading {
-    z-index: var(--z-loading) !important;
+    z-index: var(--z-editor-loading) !important;
 }
 
 @media (max-width: 1023px) {
@@ -943,7 +963,7 @@ body.is-camera-panning #canvas-stage {
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: var(--z-desktop-toolbar) !important;
+    z-index: var(--z-editor-floating-toolbar) !important;
     width: max-content;
     max-width: calc(100% - 20px);
     padding: 6px 8px;
@@ -2434,7 +2454,7 @@ body.is-camera-panning #canvas-stage {
         border: 0 !important;
         border-radius: 0 !important;
         box-shadow: none !important;
-        z-index: var(--z-desktop-toolbar);
+        z-index: var(--z-editor-floating-toolbar);
         pointer-events: none;
         opacity: 0;
         transform: translateY(-8px);

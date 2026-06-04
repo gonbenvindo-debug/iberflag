@@ -1873,7 +1873,7 @@ tbody tr:hover {
     align-items: center;
     gap: 0.75rem;
     animation: slideInRight 0.3s ease-out;
-    z-index: 1000;
+    z-index: var(--z-editor-handle-knob, 1000);
 }
 
 .toast-success {
@@ -4223,7 +4223,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     border: 2px solid #2563eb;
     background: rgba(37, 99, 235, 0.1);
     pointer-events: none;
-    z-index: 1000;
+    z-index: var(--z-editor-handle-knob, 1000);
 }
 
 /* Resize handles */
@@ -4234,7 +4234,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     background: white;
     border: 2px solid #2563eb;
     border-radius: 50%;
-    z-index: 1000;
+    z-index: var(--z-editor-handle-knob, 1000);
 }
 
 .rotate-handle {
@@ -4244,7 +4244,7 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     background: white;
     border: 2px solid #2563eb;
     border-radius: 50%;
-    z-index: 1000;
+    z-index: var(--z-editor-handle-knob, 1000);
     display: flex;
     align-items: center;
     justify-content: center;
@@ -4257,6 +4257,16 @@ a:not(.btn-primary):not(.btn-secondary):not(.social-icon) {
     color: white;
     transform: scale(1.1);
     cursor: grab;
+}
+
+body.app-page #resize-handles {
+    z-index: var(--z-editor-handles, 120) !important;
+}
+
+body.app-page #resize-handles .selection-box,
+body.app-page #resize-handles .resize-handle,
+body.app-page #resize-handles .rotate-handle {
+    z-index: var(--z-editor-handle-knob, 1) !important;
 }
 
 .rotate-handle:active {
