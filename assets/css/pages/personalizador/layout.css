@@ -49,7 +49,7 @@
             display: none;
             position: fixed;
             inset: 0;
-            z-index: var(--z-mobile-backdrop);
+            z-index: var(--z-mobile-backdrop) !important;
             background: rgba(15, 23, 42, 0.5);
             backdrop-filter: blur(1px);
             -webkit-backdrop-filter: blur(1px);
