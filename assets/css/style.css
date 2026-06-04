@@ -4905,6 +4905,22 @@ body.app-page #resize-handles .rotate-handle {
         gap: 1.25rem !important;
     }
 
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-media {
+        order: 1;
+    }
+
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-copy {
+        order: 2;
+    }
+
+    body[data-analytics-event="view_product"] .product-detail-hero > .product-hero-trust {
+        order: 3;
+        display: grid !important;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.75rem;
+        margin-top: 0 !important;
+    }
+
     body[data-analytics-event="view_product"] .product-main-image {
         max-height: 18rem;
         padding: 1rem !important;
@@ -4916,6 +4932,10 @@ body.app-page #resize-handles .rotate-handle {
 
     body[data-analytics-event="view_product"] .product-hero-trust-item {
         gap: 0.65rem !important;
+        min-width: 0;
+        margin-top: 0 !important;
+        padding-top: 0 !important;
+        border-top: 0 !important;
     }
 
     body[data-analytics-event="view_product"] .product-hero-trust-icon {
@@ -4925,6 +4945,11 @@ body.app-page #resize-handles .rotate-handle {
 
     body[data-analytics-event="view_product"] .product-hero-trust-title {
         font-size: 1rem !important;
+    }
+
+    body[data-analytics-event="view_product"] .product-hero-trust-copy {
+        font-size: 0.78rem !important;
+        line-height: 1.35 !important;
     }
 
     body[data-analytics-event="view_product"] .product-page-title {
