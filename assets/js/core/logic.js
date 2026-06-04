@@ -1449,20 +1449,13 @@ function detectPriceLocale() {
     return path.startsWith('/es') ? 'es-ES' : 'pt-PT';
 }
 
-function formatCatalogCurrency(value, locale = 'pt-PT') {
+function formatCatalogCurrency(value) {
     const amount = Number(value);
     if (!Number.isFinite(amount)) {
         return '0.00€';
     }
 
-    try {
-        return `${amount.toLocaleString(locale, {
-            minimumFractionDigits: 2,
-            maximumFractionDigits: 2
-        })}€`;
-    } catch {
-        return `${amount.toFixed(2)}€`;
-    }
+    return `${amount.toFixed(2)}€`;
 }
 
 function updateProductDetailDom(product) {

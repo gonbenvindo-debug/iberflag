@@ -49,9 +49,8 @@ const TABLE_SPECS = [
     {
         table: 'itens_encomenda',
         idColumn: 'id',
-        select: 'id,preco_unitario,subtotal,base_preco_extra,item_snapshot',
-        columns: ['preco_unitario', 'subtotal', 'base_preco_extra'],
-        jsonColumns: ['item_snapshot']
+        select: 'id,preco_unitario,subtotal,base_preco_extra',
+        columns: ['preco_unitario', 'subtotal', 'base_preco_extra']
     },
     {
         table: 'product_costs',

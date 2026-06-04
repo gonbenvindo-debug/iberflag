@@ -206,12 +206,7 @@ function renderOrderProgress(order, workflowStatus, splitMeta) {
 
 function formatCurrency(value) {
     const amount = Number(value || 0);
-    return new Intl.NumberFormat(getCurrentLocaleTag(), {
-        style: 'currency',
-        currency: 'EUR',
-        minimumFractionDigits: 2,
-        maximumFractionDigits: 2
-    }).format(Number.isFinite(amount) ? amount : 0);
+    return `${(Number.isFinite(amount) ? amount : 0).toFixed(2)}€`;
 }
 
 function formatDateTime(value) {
