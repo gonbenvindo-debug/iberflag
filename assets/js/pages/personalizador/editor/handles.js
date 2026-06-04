@@ -658,6 +658,11 @@ Object.assign(DesignEditor.prototype, {
         const container = handlesContainer || document.getElementById('resize-handles');
         if (!container) return;
 
+        if (this.isMobileViewport?.() && document.body.classList.contains('has-mobile-panel-open')) {
+            container.style.clipPath = 'inset(100%)';
+            return;
+        }
+
         const editorMain = document.querySelector('.editor-main');
         if (!editorMain) {
             container.style.removeProperty('clip-path');

@@ -67,6 +67,12 @@ body.app-page {
     #editor-sidebar-right.panel-open {
         z-index: var(--z-editor-mobile-sheet) !important;
     }
+
+    body.has-mobile-panel-open #resize-handles {
+        opacity: 0 !important;
+        visibility: hidden !important;
+        pointer-events: none !important;
+    }
 }
 
 #editor-nav {

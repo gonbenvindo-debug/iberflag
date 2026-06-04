@@ -321,11 +321,13 @@ class DesignEditor {
             sidebarRight.style.transition = '';
             backdrop.classList.remove('active');
             document.body.classList.remove('has-layers-panel-open');
+            document.body.classList.remove('has-mobile-panel-open');
             document.querySelectorAll('.editor-mobile-tab').forEach(t => t.classList.remove('active'));
             document.getElementById('elements-panel')?.classList.remove('hidden');
             document.getElementById('layers-panel')?.classList.remove('hidden');
             this.editorState.activeMobilePanel = null;
             this.updateContextualToolbar?.(this.selectedElement);
+            this.requestHandlesRefresh?.();
         };
 
         backdrop.addEventListener('click', closeAll);
@@ -359,11 +361,13 @@ class DesignEditor {
                     layersPanel.classList.toggle('hidden', panelId !== 'layers-panel');
                 }
                 document.body.classList.toggle('has-layers-panel-open', panelId === 'layers-panel');
+                document.body.classList.add('has-mobile-panel-open');
                 sidebarLeft.classList.add('panel-open');
                 backdrop.classList.add('active');
                 document.getElementById(tabId)?.classList.add('active');
                 this.editorState.activeMobilePanel = panelId === 'layers-panel' ? 'layers' : 'elements';
                 this.updateContextualToolbar?.(this.selectedElement);
+                this.requestHandlesRefresh?.();
             }
         };
 
@@ -376,6 +380,7 @@ class DesignEditor {
             if (!isAlreadyOpen) {
                 propertiesPanel.classList.remove('hidden');
                 document.body.classList.remove('has-layers-panel-open');
+                document.body.classList.add('has-mobile-panel-open');
                 sidebarRight.classList.add('panel-open');
                 sidebarRight.classList.add('panel-expanded');
                 sidebarRight.classList.remove('panel-compact');
@@ -386,6 +391,7 @@ class DesignEditor {
                 }
                 this.editorState.activeMobilePanel = 'properties';
                 this.updateContextualToolbar?.(this.selectedElement);
+                this.requestHandlesRefresh?.();
             }
         };
 
