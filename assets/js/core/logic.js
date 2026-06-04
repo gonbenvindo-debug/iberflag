@@ -1920,24 +1920,21 @@ function mobileMenuText(value) {
     }
 
     const translations = {
-        'Início': 'Inicio',
+        'In\u00edcio': 'Inicio',
+        'Cat\u00e1logo': 'Cat\u00e1logo',
         'Produtos': 'Productos',
-        'Sobre Nós': 'Sobre nosotros',
+        'Modelos': 'Modelos',
+        'Sobre N\u00f3s': 'Sobre nosotros',
+        'FAQ': 'FAQ',
+        'Tracking': 'Seguimiento',
         'Contacto': 'Contacto',
         'Pesquisar produtos': 'Buscar productos',
         'Pesquisar': 'Buscar',
-        'Categorias populares': 'Categorías populares',
-        'Finalizar encomenda': 'Finalizar pedido',
-        'Acompanhar encomenda': 'Seguir pedido',
-        'Informação': 'Información',
-        'Envios e entregas': 'Envíos y entregas',
-        'Termos e condições': 'Términos y condiciones',
-        'Política de privacidade': 'Política de privacidad',
-        'Devoluções': 'Devoluciones',
-        'Menu mobile': 'Menú móvil',
-        'Redes sociais': 'Redes sociales',
+        'MENU': 'MEN\u00da',
+        'Menu mobile': 'Men\u00fa m\u00f3vil',
+        'Fechar menu': 'Cerrar men\u00fa',
         'produto(s) encontrado(s) para': 'producto(s) encontrado(s) para',
-        'Nenhum produto encontrado para': 'No se encontró ningún producto para'
+        'Nenhum produto encontrado para': 'No se encontr\u00f3 ning\u00fan producto para'
     };
 
     return translations[raw] || i18nText(raw);
@@ -1946,11 +1943,9 @@ function mobileMenuText(value) {
 function renderMobileMenuLink(link, extraClass = '') {
     const href = getMobileMenuPath(link.path);
     const active = isMobileMenuCurrent(link.path);
-    const icon = link.icon ? `<i data-lucide="${escapeHtml(link.icon)}" class="mobile-menu-link-icon" aria-hidden="true"></i>` : '';
 
     return `
         <a href="${escapeHtml(href)}" class="mobile-menu-link ${active ? 'is-active' : ''} ${extraClass}">
-            ${icon}
             <span>${escapeHtml(mobileMenuText(link.label))}</span>
         </a>
     `;
@@ -1965,26 +1960,13 @@ function enhanceMobileMenu() {
 
     const searchPath = getMobileMenuPath('/produtos');
     const primaryLinks = [
-        { path: '/', label: 'Início', icon: 'home' },
-        { path: '/produtos', label: 'Produtos', icon: 'grid-3x3' },
-        { path: '/sobre', label: 'Sobre Nós', icon: 'building-2' },
-        { path: '/faq', label: 'FAQ', icon: 'circle-help' },
-        { path: '/contacto', label: 'Contacto', icon: 'message-circle' }
+        { path: '/produtos', label: 'Cat\u00e1logo' },
+        { path: '/modelos', label: 'Modelos' },
+        { path: '/sobre', label: 'Sobre N\u00f3s' },
+        { path: '/faq', label: 'FAQ' },
+        { path: '/encomendas', label: 'Tracking' },
+        { path: '/contacto', label: 'Contacto' }
     ];
-    const categoryLinks = [
-        { path: '/produtos/fly-banner', label: 'Fly Banners' },
-        { path: '/produtos/roll-up', label: 'Roll Up' },
-        { path: '/produtos/wall-banner', label: 'Wall Banner' },
-        { path: '/produtos/photocall', label: 'Photocall' }
-    ];
-    const footerLinks = [
-        { path: '/envios', label: 'Envios e entregas' },
-        { path: '/termos', label: 'Termos e condições' },
-        { path: '/privacidade', label: 'Política de privacidade' },
-        { path: '/devolucoes', label: 'Devoluções' }
-    ];
-    const trackingPath = getMobileMenuPath('/encomendas');
-    const cartPath = getMobileMenuPath('/checkout');
 
     mobileMenu.classList.add('mobile-menu-panel');
     mobileMenu.setAttribute('role', 'dialog');
@@ -1992,55 +1974,23 @@ function enhanceMobileMenu() {
     mobileMenu.setAttribute('aria-hidden', 'true');
     mobileMenu.innerHTML = `
         <div class="mobile-menu-inner">
+            <div class="mobile-menu-heading">
+                <p>${escapeHtml(mobileMenuText('MENU'))}</p>
+                <button type="button" class="mobile-menu-close" data-mobile-menu-close aria-label="${escapeHtml(mobileMenuText('Fechar menu'))}">
+                    <i data-lucide="x" aria-hidden="true"></i>
+                </button>
+            </div>
+
             <form class="mobile-menu-search" action="${escapeHtml(searchPath)}" method="get" data-mobile-menu-search>
                 <label class="sr-only" for="mobile-menu-search-input">${escapeHtml(mobileMenuText('Pesquisar produtos'))}</label>
                 <i data-lucide="search" class="mobile-menu-search-icon" aria-hidden="true"></i>
                 <input id="mobile-menu-search-input" name="search" type="search" autocomplete="off"
                     placeholder="${escapeHtml(mobileMenuText('Pesquisar produtos'))}">
-                <button type="submit">${escapeHtml(mobileMenuText('Pesquisar'))}</button>
             </form>
 
-            <div class="mobile-menu-primary">
+            <nav class="mobile-menu-primary" aria-label="${escapeHtml(mobileMenuText('Menu mobile'))}">
                 ${primaryLinks.map((link) => renderMobileMenuLink(link)).join('')}
-            </div>
-
-            <div class="mobile-menu-section">
-                <p class="mobile-menu-kicker">${escapeHtml(mobileMenuText('Categorias populares'))}</p>
-                <div class="mobile-menu-category-grid">
-                    ${categoryLinks.map((link) => renderMobileMenuLink(link, 'mobile-menu-category')).join('')}
-                </div>
-            </div>
-
-            <div class="mobile-menu-actions">
-                <a href="${escapeHtml(cartPath)}" class="mobile-menu-action">
-                    <i data-lucide="shopping-cart" aria-hidden="true"></i>
-                    <span>${escapeHtml(mobileMenuText('Finalizar encomenda'))}</span>
-                </a>
-                <a href="${escapeHtml(trackingPath)}" class="mobile-menu-action">
-                    <i data-lucide="package-search" aria-hidden="true"></i>
-                    <span>${escapeHtml(mobileMenuText('Acompanhar encomenda'))}</span>
-                </a>
-            </div>
-
-            <div class="mobile-menu-footer">
-                <div>
-                    <p class="mobile-menu-kicker">${escapeHtml(mobileMenuText('Informação'))}</p>
-                    <div class="mobile-menu-footer-links">
-                        ${footerLinks.map((link) => renderMobileMenuLink(link, 'mobile-menu-footer-link')).join('')}
-                    </div>
-                </div>
-                <div class="mobile-menu-contact">
-                    <a href="mailto:geral@iberflag.com">
-                        <i data-lucide="mail" aria-hidden="true"></i>
-                        <span>geral@iberflag.com</span>
-                    </a>
-                    <div class="mobile-menu-socials" aria-label="${escapeHtml(mobileMenuText('Redes sociais'))}">
-                        <a href="https://www.facebook.com/iberflag" aria-label="Facebook">Facebook</a>
-                        <a href="https://www.instagram.com/iberflag/" aria-label="Instagram">Instagram</a>
-                        <a href="https://www.linkedin.com/company/iberflag/" aria-label="LinkedIn">LinkedIn</a>
-                    </div>
-                </div>
-            </div>
+            </nav>
         </div>
     `;
 
@@ -2054,6 +2004,11 @@ function enhanceMobileMenu() {
                 input?.focus();
             }
         });
+    }
+
+    const closeButton = mobileMenu.querySelector('[data-mobile-menu-close]');
+    if (closeButton) {
+        closeButton.addEventListener('click', () => closeMobileMenu());
     }
 
     mobileMenu.querySelectorAll('a').forEach((link) => {
