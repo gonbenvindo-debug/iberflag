@@ -20,6 +20,7 @@ let filteredProducts = [];
 let currentCategory = 'all';
 let currentSort = 'default';
 let priceFilters = [];
+let searchQuery = '';
 let currentPage = 1;
 const PRODUCTS_PER_PAGE = 12;
 
@@ -110,6 +111,12 @@ function syncCategoryUrl() {
         url.searchParams.set('page', String(currentPage));
     } else {
         url.searchParams.delete('page');
+    }
+
+    if (searchQuery) {
+        url.searchParams.set('search', searchQuery);
+    } else {
+        url.searchParams.delete('search');
     }
 
     const nextUrl = `${nextPath}${url.search ? url.search : ''}`;
@@ -304,6 +311,21 @@ function renderProductsGrid(products) {
 // ===== FILTER & SORT =====
 function applyFilters() {
     let products = [...allProducts];
+
+    if (searchQuery) {
+        const normalizedSearch = searchQuery.toLowerCase();
+        products = products.filter((product) => {
+            const localized = i18nProduct(product) || product || {};
+            const haystack = [
+                localized.nome,
+                localized.descricao,
+                localized.seo_description,
+                localized.categoria,
+                getCategoryName(localized.categoria || product?.categoria || '')
+            ].join(' ').toLowerCase();
+            return haystack.includes(normalizedSearch);
+        });
+    }
 
     // Category filter
     if (currentCategory !== 'all') {
@@ -503,6 +525,7 @@ if (clearFiltersBtn) {
 
         // Reset sort
         currentSort = 'default';
+        searchQuery = '';
         currentPage = 1;
         if (sortSelect) sortSelect.value = 'default';
 
@@ -527,9 +550,11 @@ function checkUrlParams() {
         : { categorySlug: '' };
     const urlParams = new URLSearchParams(window.location.search);
     const categoria = urlParams.get('categoria');
+    const search = urlParams.get('search') || urlParams.get('q') || '';
     const page = Number.parseInt(urlParams.get('page') || '1', 10);
 
     currentPage = Number.isFinite(page) && page > 0 ? page : 1;
+    searchQuery = String(search || '').trim();
 
     if (locationState.categorySlug) {
         currentCategory = String(locationState.categorySlug).trim().toLowerCase();

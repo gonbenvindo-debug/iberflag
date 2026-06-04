@@ -94,6 +94,7 @@ var cartCount = document.getElementById('cart-count');
 var cartSidebarCount = null;
 var mobileMenuBtn = document.getElementById('mobile-menu-btn');
 var mobileMenu = document.getElementById('mobile-menu');
+var mobileMenuEnhanced = false;
 var cartUiListenersReady = false;
 var cartPreviewHeightSyncRaf = null;
 var cartItemsContainerClickBoundTo = null;
@@ -408,6 +409,7 @@ function initPageUiInteractions() {
     refreshCartDomReferences();
     bindCartItemsContainerEvents();
     initProductQuantityControls();
+    enhanceMobileMenu();
 
     if (!cartUiListenersReady) {
         if (cartBtn) {
@@ -1547,6 +1549,52 @@ async function hydrateProductDetailPageFromSupabase() {
     }
 }
 
+function applyStaticCatalogSearchFromUrl() {
+    if (typeof window === 'undefined') {
+        return;
+    }
+
+    const params = new URLSearchParams(window.location.search || '');
+    const rawQuery = String(params.get('search') || params.get('q') || '').trim();
+    const query = rawQuery.toLowerCase();
+    if (!query) {
+        return;
+    }
+
+    document.querySelectorAll('[data-catalog-grid]').forEach((grid) => {
+        const items = Array.from(grid.querySelectorAll('[data-catalog-item]'));
+        if (!items.length) {
+            return;
+        }
+
+        let visibleCount = 0;
+        items.forEach((item) => {
+            const haystack = [
+                item.getAttribute('data-name'),
+                item.getAttribute('data-category'),
+                item.textContent
+            ].join(' ').toLowerCase();
+            const isVisible = haystack.includes(query);
+            item.hidden = !isVisible;
+            item.style.display = isVisible ? '' : 'none';
+            if (isVisible) visibleCount += 1;
+        });
+
+        const existingState = document.querySelector('[data-static-catalog-search-state]');
+        if (existingState) {
+            existingState.remove();
+        }
+
+        const state = document.createElement('div');
+        state.setAttribute('data-static-catalog-search-state', '1');
+        state.className = 'catalog-search-state';
+        state.textContent = visibleCount > 0
+            ? `${visibleCount} ${mobileMenuText('produto(s) encontrado(s) para')} "${rawQuery}"`
+            : `${mobileMenuText('Nenhum produto encontrado para')} "${rawQuery}"`;
+        grid.parentElement?.insertBefore(state, grid);
+    });
+}
+
 // ===== CART FUNCTIONS =====
 function updateCart() {
     refreshCartDomReferences();
@@ -1777,6 +1825,10 @@ function closeCart() {
 
 function handleCartEscape(event) {
     if (event.key !== 'Escape') return;
+    if (mobileMenu && mobileMenu.classList.contains('mobile-menu-open')) {
+        closeMobileMenu();
+        return;
+    }
     if (!cartSidebar || cartSidebar.getAttribute('aria-hidden') === 'true') return;
     closeCart();
 }
@@ -1836,6 +1888,204 @@ function quickView(productId) {
 }
 
 // ===== MOBILE MENU =====
+function getMobileMenuPath(path) {
+    if (typeof SiteRoutes !== 'undefined' && typeof SiteRoutes.getLocalizedPath === 'function') {
+        return SiteRoutes.getLocalizedPath(path);
+    }
+
+    const isSpanish = String(window.location.pathname || '').startsWith('/es');
+    if (!isSpanish) {
+        return path;
+    }
+
+    return path === '/' ? '/es/' : `/es${path}`;
+}
+
+function isMobileMenuCurrent(path) {
+    const currentPath = String(window.location.pathname || '/').replace(/\/+$/, '') || '/';
+    const targetPath = String(getMobileMenuPath(path) || '/').replace(/\/+$/, '') || '/';
+
+    if (targetPath === '/' || targetPath === '/es') {
+        return currentPath === '/' || currentPath === '/es';
+    }
+
+    return currentPath === targetPath || currentPath.startsWith(`${targetPath}/`);
+}
+
+function mobileMenuText(value) {
+    const raw = String(value || '');
+    const isSpanish = String(window.location.pathname || '').startsWith('/es');
+    if (!isSpanish) {
+        return i18nText(raw);
+    }
+
+    const translations = {
+        'Início': 'Inicio',
+        'Produtos': 'Productos',
+        'Sobre Nós': 'Sobre nosotros',
+        'Contacto': 'Contacto',
+        'Pesquisar produtos': 'Buscar productos',
+        'Pesquisar': 'Buscar',
+        'Categorias populares': 'Categorías populares',
+        'Finalizar encomenda': 'Finalizar pedido',
+        'Acompanhar encomenda': 'Seguir pedido',
+        'Informação': 'Información',
+        'Envios e entregas': 'Envíos y entregas',
+        'Termos e condições': 'Términos y condiciones',
+        'Política de privacidade': 'Política de privacidad',
+        'Devoluções': 'Devoluciones',
+        'Menu mobile': 'Menú móvil',
+        'Redes sociais': 'Redes sociales',
+        'produto(s) encontrado(s) para': 'producto(s) encontrado(s) para',
+        'Nenhum produto encontrado para': 'No se encontró ningún producto para'
+    };
+
+    return translations[raw] || i18nText(raw);
+}
+
+function renderMobileMenuLink(link, extraClass = '') {
+    const href = getMobileMenuPath(link.path);
+    const active = isMobileMenuCurrent(link.path);
+    const icon = link.icon ? `<i data-lucide="${escapeHtml(link.icon)}" class="mobile-menu-link-icon" aria-hidden="true"></i>` : '';
+
+    return `
+        <a href="${escapeHtml(href)}" class="mobile-menu-link ${active ? 'is-active' : ''} ${extraClass}">
+            ${icon}
+            <span>${escapeHtml(mobileMenuText(link.label))}</span>
+        </a>
+    `;
+}
+
+function enhanceMobileMenu() {
+    refreshCartDomReferences();
+
+    if (!mobileMenu || mobileMenuEnhanced) {
+        return;
+    }
+
+    const searchPath = getMobileMenuPath('/produtos');
+    const primaryLinks = [
+        { path: '/', label: 'Início', icon: 'home' },
+        { path: '/produtos', label: 'Produtos', icon: 'grid-3x3' },
+        { path: '/sobre', label: 'Sobre Nós', icon: 'building-2' },
+        { path: '/faq', label: 'FAQ', icon: 'circle-help' },
+        { path: '/contacto', label: 'Contacto', icon: 'message-circle' }
+    ];
+    const categoryLinks = [
+        { path: '/produtos/fly-banner', label: 'Fly Banners' },
+        { path: '/produtos/roll-up', label: 'Roll Up' },
+        { path: '/produtos/wall-banner', label: 'Wall Banner' },
+        { path: '/produtos/photocall', label: 'Photocall' }
+    ];
+    const footerLinks = [
+        { path: '/envios', label: 'Envios e entregas' },
+        { path: '/termos', label: 'Termos e condições' },
+        { path: '/privacidade', label: 'Política de privacidade' },
+        { path: '/devolucoes', label: 'Devoluções' }
+    ];
+    const trackingPath = getMobileMenuPath('/encomendas');
+    const cartPath = getMobileMenuPath('/checkout');
+
+    mobileMenu.classList.add('mobile-menu-panel');
+    mobileMenu.setAttribute('role', 'dialog');
+    mobileMenu.setAttribute('aria-label', mobileMenuText('Menu mobile'));
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    mobileMenu.innerHTML = `
+        <div class="mobile-menu-inner">
+            <form class="mobile-menu-search" action="${escapeHtml(searchPath)}" method="get" data-mobile-menu-search>
+                <label class="sr-only" for="mobile-menu-search-input">${escapeHtml(mobileMenuText('Pesquisar produtos'))}</label>
+                <i data-lucide="search" class="mobile-menu-search-icon" aria-hidden="true"></i>
+                <input id="mobile-menu-search-input" name="search" type="search" autocomplete="off"
+                    placeholder="${escapeHtml(mobileMenuText('Pesquisar produtos'))}">
+                <button type="submit">${escapeHtml(mobileMenuText('Pesquisar'))}</button>
+            </form>
+
+            <div class="mobile-menu-primary">
+                ${primaryLinks.map((link) => renderMobileMenuLink(link)).join('')}
+            </div>
+
+            <div class="mobile-menu-section">
+                <p class="mobile-menu-kicker">${escapeHtml(mobileMenuText('Categorias populares'))}</p>
+                <div class="mobile-menu-category-grid">
+                    ${categoryLinks.map((link) => renderMobileMenuLink(link, 'mobile-menu-category')).join('')}
+                </div>
+            </div>
+
+            <div class="mobile-menu-actions">
+                <a href="${escapeHtml(cartPath)}" class="mobile-menu-action">
+                    <i data-lucide="shopping-cart" aria-hidden="true"></i>
+                    <span>${escapeHtml(mobileMenuText('Finalizar encomenda'))}</span>
+                </a>
+                <a href="${escapeHtml(trackingPath)}" class="mobile-menu-action">
+                    <i data-lucide="package-search" aria-hidden="true"></i>
+                    <span>${escapeHtml(mobileMenuText('Acompanhar encomenda'))}</span>
+                </a>
+            </div>
+
+            <div class="mobile-menu-footer">
+                <div>
+                    <p class="mobile-menu-kicker">${escapeHtml(mobileMenuText('Informação'))}</p>
+                    <div class="mobile-menu-footer-links">
+                        ${footerLinks.map((link) => renderMobileMenuLink(link, 'mobile-menu-footer-link')).join('')}
+                    </div>
+                </div>
+                <div class="mobile-menu-contact">
+                    <a href="mailto:geral@iberflag.com">
+                        <i data-lucide="mail" aria-hidden="true"></i>
+                        <span>geral@iberflag.com</span>
+                    </a>
+                    <div class="mobile-menu-socials" aria-label="${escapeHtml(mobileMenuText('Redes sociais'))}">
+                        <a href="https://www.facebook.com/iberflag" aria-label="Facebook">Facebook</a>
+                        <a href="https://www.instagram.com/iberflag/" aria-label="Instagram">Instagram</a>
+                        <a href="https://www.linkedin.com/company/iberflag/" aria-label="LinkedIn">LinkedIn</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    `;
+
+    const searchForm = mobileMenu.querySelector('[data-mobile-menu-search]');
+    if (searchForm) {
+        searchForm.addEventListener('submit', (event) => {
+            const input = searchForm.querySelector('input[name="search"]');
+            const value = String(input?.value || '').trim();
+            if (!value) {
+                event.preventDefault();
+                input?.focus();
+            }
+        });
+    }
+
+    mobileMenu.querySelectorAll('a').forEach((link) => {
+        link.addEventListener('click', () => closeMobileMenu());
+    });
+
+    mobileMenuEnhanced = true;
+
+    if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+    }
+}
+
+function closeMobileMenu() {
+    refreshCartDomReferences();
+    if (!mobileMenu) {
+        return;
+    }
+
+    mobileMenu.classList.remove('mobile-menu-open');
+    mobileMenu.setAttribute('aria-hidden', 'true');
+    document.body.classList.remove('mobile-menu-is-open');
+    if (mobileMenuBtn) {
+        mobileMenuBtn.setAttribute('aria-expanded', 'false');
+    }
+    window.setTimeout(() => {
+        if (mobileMenu && !mobileMenu.classList.contains('mobile-menu-open')) {
+            mobileMenu.classList.add('hidden');
+        }
+    }, 220);
+}
+
 function toggleMobileMenu(event) {
     if (event && typeof event.preventDefault === 'function') {
         event.preventDefault();
@@ -1847,11 +2097,14 @@ function toggleMobileMenu(event) {
         event.__iberflagMobileMenuHandled = true;
     }
 
+    enhanceMobileMenu();
+
     if (mobileMenu) {
         const willOpen = !mobileMenu.classList.contains('mobile-menu-open');
         mobileMenu.classList.remove('hidden');
         mobileMenu.classList.toggle('mobile-menu-open', willOpen);
         mobileMenu.setAttribute('aria-hidden', willOpen ? 'false' : 'true');
+        document.body.classList.toggle('mobile-menu-is-open', willOpen);
         if (mobileMenuBtn) {
             mobileMenuBtn.setAttribute('aria-expanded', willOpen ? 'true' : 'false');
         }
@@ -1861,6 +2114,9 @@ function toggleMobileMenu(event) {
                     mobileMenu.classList.add('hidden');
                 }
             }, 220);
+        } else {
+            const input = mobileMenu.querySelector('#mobile-menu-search-input');
+            window.setTimeout(() => input?.focus?.({ preventScroll: true }), 90);
         }
     }
 }
@@ -1874,6 +2130,7 @@ if (cartBtn) {
 document.addEventListener('DOMContentLoaded', () => {
     fetchProducts();
     hydrateProductDetailPageFromSupabase();
+    applyStaticCatalogSearchFromUrl();
     initPageUiInteractions();
     scheduleProductCardTitleFit();
 
