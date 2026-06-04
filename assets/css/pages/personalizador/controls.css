@@ -38,6 +38,17 @@ body.app-page {
     pointer-events: none !important;
 }
 
+#resize-handles .resize-handle,
+#resize-handles .rotate-handle,
+#resize-handles .resize-handles-outline-svg {
+    z-index: var(--z-resize-handle-knob) !important;
+}
+
+#editor-sidebar-left,
+#editor-sidebar-right {
+    z-index: var(--z-floating-context) !important;
+}
+
 #editor-nav {
     background: var(--iber-surface) !important;
     border-bottom: 1px solid var(--iber-border) !important;
@@ -932,7 +943,7 @@ body.is-camera-panning #canvas-stage {
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: var(--z-desktop-toolbar);
+    z-index: var(--z-desktop-toolbar) !important;
     width: max-content;
     max-width: calc(100% - 20px);
     padding: 6px 8px;
