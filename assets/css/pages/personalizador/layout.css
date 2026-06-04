@@ -123,6 +123,8 @@
         .editor-sidebar-left {
             grid-column: 1;
             grid-row: 2;
+            position: relative;
+            z-index: var(--z-floating-context);
             padding: 0;
             min-width: 0;
             width: 100%;
@@ -133,6 +135,7 @@
         .editor-sidebar-right {
             grid-column: 1 / -1;
             grid-row: 1;
+            position: relative;
             padding: 0;
             min-width: 0;
             width: 100%;
@@ -224,7 +227,7 @@
             min-width: 0;
             overflow: hidden;
             position: relative;
-            z-index: var(--z-main);
+            z-index: auto;
         }
 
         #canvas-stage {

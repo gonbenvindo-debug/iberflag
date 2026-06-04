@@ -932,7 +932,7 @@ body.is-camera-panning #canvas-stage {
     top: 12px;
     left: 50%;
     transform: translateX(-50%);
-    z-index: var(--z-floating-context);
+    z-index: var(--z-desktop-toolbar);
     width: max-content;
     max-width: calc(100% - 20px);
     padding: 6px 8px;
