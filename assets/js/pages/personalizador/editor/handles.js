@@ -497,6 +497,7 @@ Object.assign(DesignEditor.prototype, {
         const handlesContainer = document.getElementById('resize-handles');
         handlesContainer.innerHTML = '';
         handlesContainer.classList.remove('hidden');
+        this.updateResizeHandlesClip?.(handlesContainer);
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
         this.renderHandleOutlineOverlay?.(handlesContainer, { tl, tr, br, bl });
@@ -603,6 +604,7 @@ Object.assign(DesignEditor.prototype, {
         const handlesContainer = document.getElementById('resize-handles');
         if (!handlesContainer || handlesContainer.classList.contains('hidden')) return;
         if (!elementData || !elementData.element) return;
+        this.updateResizeHandlesClip?.(handlesContainer);
 
         const { tl, tr, br, bl, tc, rc, bc, lc, rotatePoint } = this.getHandlePoints(elementData);
         const outlinePolyline = handlesContainer.querySelector('.resize-handles-outline-polyline');
@@ -651,9 +653,33 @@ Object.assign(DesignEditor.prototype, {
             this.refreshInlineTextEditorPosition?.();
         });
     },
+
+    updateResizeHandlesClip(handlesContainer) {
+        const container = handlesContainer || document.getElementById('resize-handles');
+        if (!container) return;
+
+        const editorMain = document.querySelector('.editor-main');
+        if (!editorMain) {
+            container.style.removeProperty('clip-path');
+            return;
+        }
+
+        const rect = editorMain.getBoundingClientRect();
+        const viewportWidth = Math.max(1, window.innerWidth || document.documentElement?.clientWidth || 1);
+        const viewportHeight = Math.max(1, window.innerHeight || document.documentElement?.clientHeight || 1);
+        const top = Math.max(0, rect.top);
+        const right = Math.max(0, viewportWidth - rect.right);
+        const bottom = Math.max(0, viewportHeight - rect.bottom);
+        const left = Math.max(0, rect.left);
+
+        container.style.clipPath = `inset(${top}px ${right}px ${bottom}px ${left}px)`;
+    },
     
     hideResizeHandles() {
-        document.getElementById('resize-handles').classList.add('hidden');
+        const handlesContainer = document.getElementById('resize-handles');
+        if (!handlesContainer) return;
+        handlesContainer.classList.add('hidden');
+        handlesContainer.style.removeProperty('clip-path');
     },
     
     updatePropertiesPanel(elementData) {
