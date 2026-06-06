@@ -304,7 +304,7 @@ function renderCartItemsList() {
             <div class="cart-item-row flex items-start gap-3">
                 <a href="${getCartItemEditorLink(item, index)}" class="cart-item-preview-link design-preview-surface flex w-16 shrink-0 self-start" data-cart-preview-link="${index}" aria-label="${i18nText('Abrir personalizador do item')}">
                     <div id="cart-item-preview-${index}" data-cart-preview="${index}" class="cart-item-preview-frame design-preview-frame">
-                        <img src="${getCartItemImage(item)}" alt="${item.nome}" class="cart-item-preview-image design-preview-media">
+                        <img src="${escapeHtml(getCartItemImage(item))}" alt="" class="cart-item-preview-image design-preview-media" loading="lazy" decoding="async">
                     </div>
                 </a>
                 <div id="cart-item-details-${index}" data-cart-details="${index}" class="cart-item-details min-w-0 flex-1">
@@ -336,6 +336,29 @@ function renderCartItemsList() {
             </div>
         </article>
     `).join('');
+
+    bindCartPreviewImageFallbacks();
+}
+
+function bindCartPreviewImageFallbacks() {
+    if (!cartItemsContainer) return;
+
+    cartItemsContainer.querySelectorAll('.cart-item-preview-image').forEach((image) => {
+        if (!(image instanceof HTMLImageElement)) {
+            return;
+        }
+
+        const markFailed = () => {
+            image.hidden = true;
+            image.closest('.cart-item-preview-frame')?.classList.add('cart-item-preview-frame--failed');
+        };
+
+        image.addEventListener('error', markFailed, { once: true });
+
+        if (image.complete && image.naturalWidth === 0) {
+            markFailed();
+        }
+    });
 }
 
 function syncCartItemPreviewHeights() {
@@ -904,6 +927,42 @@ function buildSvgDataUrl(svgMarkup) {
     return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svgMarkup)}`;
 }
 
+function isDesignApiPreviewUrl(value) {
+    const raw = String(value || '').trim();
+    return Boolean(raw && /(?:^|\/)api\/designs(?:\?|$)/.test(raw));
+}
+
+function buildCartRemoteDesignSvgUrl(item) {
+    const rawUrl = String(item?.designSvgUrl || item?.design_svg_url || '').trim();
+    if (!rawUrl) {
+        return '';
+    }
+
+    if (!isDesignApiPreviewUrl(rawUrl)) {
+        return rawUrl;
+    }
+
+    const readToken = String(item?.designReadToken || item?.design_read_token || '').trim();
+    if (!readToken) {
+        return '';
+    }
+
+    try {
+        const parsed = new URL(rawUrl, window.location.origin);
+        parsed.searchParams.set('token', readToken);
+        if (!parsed.searchParams.get('asset')) {
+            parsed.searchParams.set('asset', 'svg');
+        }
+
+        return parsed.origin === window.location.origin
+            ? `${parsed.pathname}${parsed.search}${parsed.hash}`
+            : parsed.toString();
+    } catch (error) {
+        const separator = rawUrl.includes('?') ? '&' : '?';
+        return `${rawUrl}${separator}token=${encodeURIComponent(readToken)}&asset=svg`;
+    }
+}
+
 function getCartItemSvgTemplate(item) {
     if (!item || typeof item !== 'object') {
         return '';
@@ -948,7 +1007,7 @@ function buildAdaptiveCartPreviewDataUrl(item) {
         ? item.designPreview.trim()
         : '';
     const previewVersion = Number(item.designPreviewVersion || 0) || 0;
-    if (storedPreview && previewVersion >= CART_PREVIEW_VERSION) {
+    if (storedPreview && previewVersion >= CART_PREVIEW_VERSION && !isDesignApiPreviewUrl(storedPreview)) {
         return storedPreview;
     }
 
@@ -1036,23 +1095,17 @@ function getCartItemImage(item) {
         return '';
     }
 
-    const remoteSvgUrl = String(item.designSvgUrl || item.design_svg_url || '').trim();
-    if (remoteSvgUrl) {
-        return remoteSvgUrl;
-    }
-
-    if ((Number(item.designPreviewVersion || 0) || 0) >= CART_PREVIEW_VERSION
-        && typeof item.designPreview === 'string'
-        && item.designPreview.trim()) {
-        return item.designPreview.trim();
-    }
-
     const adaptivePreview = buildAdaptiveCartPreviewDataUrl(item);
     if (adaptivePreview) {
         return adaptivePreview;
     }
 
-    if (typeof item.designPreview === 'string' && item.designPreview.trim()) {
+    const remoteSvgUrl = buildCartRemoteDesignSvgUrl(item);
+    if (remoteSvgUrl) {
+        return remoteSvgUrl;
+    }
+
+    if (typeof item.designPreview === 'string' && item.designPreview.trim() && !isDesignApiPreviewUrl(item.designPreview)) {
         return item.designPreview.trim();
     }
 

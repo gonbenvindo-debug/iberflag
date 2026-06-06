@@ -538,7 +538,6 @@ Object.assign(DesignEditor.prototype, {
                     cartItem.design_storage_bucket = cartItem.designStorageBucket;
                     cartItem.designStoragePath = storedDesign.maskedSvgPath || '';
                     cartItem.design_storage_path = cartItem.designStoragePath;
-                    cartItem.designPreview = cartItem.designSvgUrl || cartItem.designPreview;
                     cartItem.design = '';
                 }
             } catch (error) {

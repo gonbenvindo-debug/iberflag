@@ -418,7 +418,7 @@
                 ...record,
                 ...remoteSync.design,
                 svg: record.svg,
-                preview: remoteSync.design.designPreview || remoteSync.design.design_preview || remoteSync.design.svgUrl || remoteSync.design.designSvgUrl || record.preview
+                preview: record.preview || remoteSync.design.designPreview || remoteSync.design.design_preview || ''
             }, record.id)
             : record;
 
@@ -768,7 +768,7 @@
                     next.design_storage_bucket = next.designStorageBucket;
                     next.designStoragePath = stored.maskedSvgPath || next.designStoragePath || '';
                     next.design_storage_path = next.designStoragePath;
-                    next.designPreview = next.designSvgUrl || next.designPreview || '';
+                    next.designPreview = stored.preview || next.designPreview || '';
                 }
             }
 
