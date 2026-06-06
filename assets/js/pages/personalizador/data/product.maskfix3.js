@@ -589,9 +589,69 @@ Object.assign(DesignEditor.prototype, {
         }
     },
 
+
+    setDesignConfirmationLoading(isLoading) {
+        this.isConfirmingDesign = Boolean(isLoading);
+        document.body.classList.toggle('editor-design-confirming', this.isConfirmingDesign);
+
+        const loadingLabel = i18nText('A guardar design...');
+        const actionButtons = [
+            document.getElementById('add-to-cart-btn'),
+            document.getElementById('cart-steps-next'),
+            document.getElementById('cart-steps-confirm')
+        ].filter(Boolean);
+        const blockingButtons = [
+            document.getElementById('cart-steps-back'),
+            document.getElementById('close-cart-steps')
+        ].filter(Boolean);
+
+        actionButtons.forEach((button) => {
+            if (!(button instanceof HTMLButtonElement)) return;
+
+            if (!button.dataset.confirmIdleHtml) {
+                button.dataset.confirmIdleHtml = button.innerHTML;
+            }
+
+            button.disabled = this.isConfirmingDesign;
+            button.classList.toggle('is-design-confirm-loading', this.isConfirmingDesign);
+            button.setAttribute('aria-busy', this.isConfirmingDesign ? 'true' : 'false');
+
+            const label = button.querySelector('.editor-cart-text');
+            if (this.isConfirmingDesign) {
+                if (label) {
+                    label.textContent = loadingLabel;
+                } else {
+                    button.textContent = loadingLabel;
+                }
+            } else {
+                button.innerHTML = button.dataset.confirmIdleHtml || button.innerHTML;
+                button.removeAttribute('aria-busy');
+            }
+        });
+
+        blockingButtons.forEach((button) => {
+            if (!(button instanceof HTMLButtonElement)) return;
+            button.disabled = this.isConfirmingDesign;
+            button.classList.toggle('is-design-confirm-blocked', this.isConfirmingDesign);
+        });
+
+        if (!this.isConfirmingDesign) {
+            if (typeof lucide !== 'undefined') {
+                lucide.createIcons();
+            }
+            this.updateCartStepActionState?.();
+        }
+    },
+
     updateCartStepActionState() {
         const confirmBtn = document.getElementById('cart-steps-confirm');
         if (!confirmBtn) return;
+
+        if (this.isConfirmingDesign) {
+            confirmBtn.disabled = true;
+            confirmBtn.classList.add('is-design-confirm-loading');
+            return;
+        }
 
         const hasOptions = this.hasBaseSelectionStep();
         const hasAvailableSelection = Boolean(this.getSelectedBaseOption());
@@ -650,11 +710,19 @@ Object.assign(DesignEditor.prototype, {
             return;
         }
 
-        const closeModal = () => this.closeCartStepsModal();
+        const closeModal = () => {
+            if (this.isConfirmingDesign) return;
+            this.closeCartStepsModal();
+        };
 
         closeBtn.addEventListener('click', closeModal);
-        backBtn.addEventListener('click', () => this.setCartStepsCurrent(1));
+        backBtn.addEventListener('click', () => {
+            if (this.isConfirmingDesign) return;
+            this.setCartStepsCurrent(1);
+        });
         nextBtn.addEventListener('click', () => {
+            if (this.isConfirmingDesign) return;
+
             if (this.requiresBaseSelection()) {
                 this.setCartStepsCurrent(2);
                 return;
@@ -665,12 +733,16 @@ Object.assign(DesignEditor.prototype, {
             });
         });
         confirmBtn.addEventListener('click', () => {
+            if (this.isConfirmingDesign) return;
+
             this.addToCart(this.cartStepsDesignSnapshot || this.getDesignSVG(), {
                 designScene: this.cartStepsDesignSceneSnapshot || this.getDesignSceneV1?.() || null
             });
         });
 
         modal.addEventListener('click', (event) => {
+            if (this.isConfirmingDesign) return;
+
             if (event.target === modal) {
                 closeModal();
             }
@@ -679,6 +751,8 @@ Object.assign(DesignEditor.prototype, {
         this.setupCartBaseTouchScroll();
 
         document.addEventListener('keydown', (event) => {
+            if (this.isConfirmingDesign) return;
+
             if (event.key === 'Escape' && modal.classList.contains('is-open')) {
                 closeModal();
             }

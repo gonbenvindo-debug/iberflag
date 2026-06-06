@@ -100,6 +100,7 @@ class DesignEditor {
         this.cartStepsCurrent = 1;
         this.cartStepsDesignSnapshot = null;
         this.cartStepsDesignPreview = '';
+        this.isConfirmingDesign = false;
 
         this.init();
     }

@@ -111,6 +111,71 @@ body.app-page {
     filter: brightness(0.96);
 }
 
+#add-to-cart-btn.is-design-confirm-loading,
+#cart-steps-next.is-design-confirm-loading,
+#cart-steps-confirm.is-design-confirm-loading {
+    position: relative;
+    cursor: wait !important;
+    opacity: 0.92;
+    filter: none !important;
+    pointer-events: none;
+}
+
+#add-to-cart-btn.is-design-confirm-loading {
+    box-shadow: 0 0 0 4px rgba(255, 75, 45, 0.16) !important;
+}
+
+#add-to-cart-btn.is-design-confirm-loading > i {
+    display: none;
+}
+
+#add-to-cart-btn.is-design-confirm-loading::before,
+#cart-steps-next.is-design-confirm-loading::before,
+#cart-steps-confirm.is-design-confirm-loading::before {
+    content: "";
+    width: 1rem;
+    height: 1rem;
+    flex: 0 0 auto;
+    border: 2px solid rgba(255, 255, 255, 0.45);
+    border-top-color: #ffffff;
+    border-radius: 999px;
+    animation: editor-confirm-spin 0.75s linear infinite;
+}
+
+#cart-steps-next.is-design-confirm-loading,
+#cart-steps-confirm.is-design-confirm-loading {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.is-design-confirm-blocked {
+    cursor: wait !important;
+    opacity: 0.55;
+}
+
+body.editor-design-confirming #editor-body-layout,
+body.editor-design-confirming #editor-floating-context-bar,
+body.editor-design-confirming #editor-bottom-context-bar,
+body.editor-design-confirming .editor-mobile-tabs,
+body.editor-design-confirming #undo-btn,
+body.editor-design-confirming #redo-btn,
+body.editor-design-confirming #close-editor-btn {
+    pointer-events: none !important;
+}
+
+body.editor-design-confirming #cart-steps-modal .cart-step-content,
+body.editor-design-confirming #cart-steps-modal .checkout-steps {
+    pointer-events: none;
+}
+
+@keyframes editor-confirm-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
 .editor-exit-modal {
     position: fixed;
     inset: 0;

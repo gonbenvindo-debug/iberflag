@@ -437,6 +437,14 @@ Object.assign(DesignEditor.prototype, {
 
     // ===== ADD TO CART =====
     async addToCart(designOverride = null, options = {}) {
+        if (this.isConfirmingDesign) {
+            return;
+        }
+
+        this.setDesignConfirmationLoading?.(true);
+        let keepConfirmationLoading = false;
+
+        try {
         const designScene = options?.designScene
             || this.getDesignSceneV1?.()
             || null;
@@ -565,12 +573,18 @@ Object.assign(DesignEditor.prototype, {
         this.getLegacyAutosaveKeys().forEach((key) => localStorage.removeItem(key));
         this.closeCartStepsModal();
 
+        keepConfirmationLoading = true;
         setTimeout(() => {
             const nextPath = window.personalizerProductsPath ? window.personalizerProductsPath() : '/produtos';
             const nextUrl = new URL(String(nextPath || '/produtos'), window.location.origin);
             nextUrl.searchParams.set('openCart', '1');
             window.location.href = nextUrl.toString();
         }, 1000);
+        } finally {
+            if (!keepConfirmationLoading) {
+                this.setDesignConfirmationLoading?.(false);
+            }
+        }
     }
 
 });
