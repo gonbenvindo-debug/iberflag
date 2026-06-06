@@ -1193,27 +1193,56 @@ Object.assign(DesignEditor.prototype, {
 
     saveCartData(cart) {
         const compactCart = Array.isArray(cart)
-            ? cart.map((item) => ({
-                id: Number(item?.id || 0) || 0,
-                nome: String(item?.nome || '').trim(),
-                preco: Number(item?.preco || 0),
-                imagem: String(item?.imagem || '').trim(),
-                quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
-                customized: Boolean(item?.customized),
-                designId: item?.designId ? String(item.designId).trim() : null,
-                designPreview: item?.designPreview ? String(item.designPreview).trim() : null,
-                designPreviewVersion: Number(item?.designPreviewVersion || 0) || 0,
-                designSceneV1: this.compactDesignSceneForStorage?.(
-                    item?.designSceneV1 || item?.design_scene_v1 || null,
-                    { stripImageSources: true }
-                ) || item?.designSceneV1 || item?.design_scene_v1 || null,
-                slug: item?.slug ? String(item.slug).trim() : null,
-                svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
-                baseId: item?.baseId || item?.base_id || null,
-                baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
-                baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
-                basePrecoExtra: Number(item?.basePrecoExtra || 0)
-            }))
+            ? cart.map((item) => {
+                const rawPreview = item?.designPreview ? String(item.designPreview).trim() : '';
+                const storablePreview = rawPreview
+                    && !rawPreview.startsWith('data:')
+                    && rawPreview.length <= 4096
+                    ? rawPreview
+                    : null;
+                const designReadToken = item?.designReadToken || item?.design_read_token
+                    ? String(item.designReadToken || item.design_read_token).trim()
+                    : null;
+                const designSvgUrl = item?.designSvgUrl || item?.design_svg_url
+                    ? String(item.designSvgUrl || item.design_svg_url).trim()
+                    : null;
+                const designStorageBucket = item?.designStorageBucket || item?.design_storage_bucket
+                    ? String(item.designStorageBucket || item.design_storage_bucket).trim()
+                    : null;
+                const designStoragePath = item?.designStoragePath || item?.design_storage_path
+                    ? String(item.designStoragePath || item.design_storage_path).trim()
+                    : null;
+
+                return {
+                    id: Number(item?.id || 0) || 0,
+                    nome: String(item?.nome || '').trim(),
+                    preco: Number(item?.preco || 0),
+                    imagem: String(item?.imagem || '').trim(),
+                    quantity: Math.max(1, Number.parseInt(item?.quantity ?? 1, 10) || 1),
+                    customized: Boolean(item?.customized),
+                    designId: item?.designId ? String(item.designId).trim() : null,
+                    designReadToken,
+                    design_read_token: designReadToken,
+                    designSvgUrl,
+                    design_svg_url: designSvgUrl,
+                    designStorageBucket,
+                    design_storage_bucket: designStorageBucket,
+                    designStoragePath,
+                    design_storage_path: designStoragePath,
+                    designPreview: storablePreview,
+                    designPreviewVersion: storablePreview ? (Number(item?.designPreviewVersion || 0) || 0) : 0,
+                    designSceneV1: this.compactDesignSceneForStorage?.(
+                        item?.designSceneV1 || item?.design_scene_v1 || null,
+                        { stripImageSources: true }
+                    ) || null,
+                    slug: item?.slug ? String(item.slug).trim() : null,
+                    svgTemplate: item?.svgTemplate ? String(item.svgTemplate) : (item?.svg_template ? String(item.svg_template) : null),
+                    baseId: item?.baseId || item?.base_id || null,
+                    baseNome: item?.baseNome ? String(item.baseNome).trim() : null,
+                    baseImagem: item?.baseImagem ? String(item.baseImagem).trim() : null,
+                    basePrecoExtra: Number(item?.basePrecoExtra || 0)
+                };
+            })
             : [];
 
         const serialized = JSON.stringify(compactCart);
@@ -1236,19 +1265,53 @@ Object.assign(DesignEditor.prototype, {
                 throw error;
             }
 
+            const draftKeysToFree = [
+                typeof this.getAutosaveKey === 'function' ? this.getAutosaveKey() : null,
+                ...(typeof this.getLegacyAutosaveKeys === 'function' ? this.getLegacyAutosaveKeys() : [])
+            ].filter(Boolean);
+
+            draftKeysToFree.forEach((key) => {
+                try {
+                    localStorage.removeItem(key);
+                } catch (cleanupError) {
+                    console.warn('Falha ao libertar rascunho antigo antes de gravar carrinho:', cleanupError);
+                }
+            });
+
+            try {
+                localStorage.removeItem(this.cartStorageKey);
+                localStorage.setItem(this.cartStorageKey, serialized);
+                return;
+            } catch (retryError) {
+                const retryName = String(retryError?.name || '').toLowerCase();
+                const retryMessage = String(retryError?.message || '').toLowerCase();
+                const retryIsQuotaExceeded = retryName.includes('quota') || retryMessage.includes('quota');
+                if (!retryIsQuotaExceeded) {
+                    throw retryError;
+                }
+            }
+
             const minimalCart = JSON.stringify(compactCart.map((item) => ({
                 id: item.id,
                 nome: item.nome,
                 preco: item.preco,
+                imagem: item.imagem,
                 quantity: item.quantity,
                 customized: item.customized,
                 designId: item.designId,
-                designPreview: item.designPreview,
-                designPreviewVersion: item.designPreviewVersion,
+                designReadToken: item.designReadToken,
+                design_read_token: item.design_read_token,
+                designSvgUrl: item.designSvgUrl,
+                design_svg_url: item.design_svg_url,
+                designStorageBucket: item.designStorageBucket,
+                design_storage_bucket: item.design_storage_bucket,
+                designStoragePath: item.designStoragePath,
+                design_storage_path: item.design_storage_path,
                 slug: item.slug,
                 svgTemplate: item.svgTemplate,
                 baseId: item.baseId,
                 baseNome: item.baseNome,
+                baseImagem: item.baseImagem,
                 basePrecoExtra: item.basePrecoExtra
             })));
 
