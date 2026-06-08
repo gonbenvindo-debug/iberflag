@@ -942,11 +942,7 @@ function applyOrderTrackingPageTranslations($) {
     $('.tracking-panel-title').eq(0).text('Seguimiento del pedido');
     $('.tracking-panel-kicker').eq(1).text('Resumen');
     $('.tracking-panel-title').eq(1).text('Resumen del pedido');
-    $('.tracking-panel-kicker').eq(2).text('Acciones');
-    $('.tracking-panel-title').eq(2).text('Acciones rápidas');
     $('#order-progressbar').attr('aria-label', 'Progreso del pedido');
-    $('#order-copy-code-btn').html('<i data-lucide="copy" class="w-4 h-4"></i>Copiar código');
-    $('#order-copy-tracking-btn').html('<i data-lucide="package-search" class="w-4 h-4"></i>Copiar seguimiento');
     $('footer p.max-w-sm').text('Especialistas en fly banners y productos publicitarios con operación principal en Portugal, producción rápida y atención dedicada.');
     $('footer h4').eq(0).text('Enlaces rápidos');
     $('footer h4').eq(1).text('Información');

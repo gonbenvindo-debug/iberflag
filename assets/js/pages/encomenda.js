@@ -10,8 +10,6 @@ const itemPreviewSurface = document.getElementById('item-preview-surface');
 const itemPreviewImage = document.getElementById('item-preview-image');
 const itemPreviewOptions = document.getElementById('item-preview-options');
 const itemPreviewDownload = document.getElementById('item-preview-download');
-const orderCopyCodeBtn = document.getElementById('order-copy-code-btn');
-const orderCopyTrackingBtn = document.getElementById('order-copy-tracking-btn');
 
 let renderedItemPreviews = [];
 const ES_TEXT = {
@@ -22,8 +20,6 @@ const ES_TEXT = {
     'Entregue': 'Entregado',
     'atualizado em': 'actualizado el',
     'Criada em': 'Creada el',
-    'Nada para copiar.': 'Nada que copiar.',
-    'Nao foi possivel copiar automaticamente.': 'No fue posible copiar automaticamente.',
     'Faturacao': 'Facturacion',
     'Ainda nao disponivel': 'Todavia no disponible',
     'Disponivel no email de confirmacao': 'Disponible en el email de confirmacion',
@@ -51,8 +47,6 @@ const ES_TEXT = {
     'A encomenda ja foi expedida. O tracking ficara visivel assim que estiver disponivel.': 'El pedido ya ha sido expedido. El seguimiento sera visible en cuanto este disponible.',
     'A encomenda aparece como entregue. Se precisar de apoio, use o botao de contacto e responda com o codigo IBF.': 'El pedido figura como entregado. Si necesita ayuda, use el boton de contacto y responda con el codigo IBF.',
     'Sem passos adicionais para mostrar neste momento.': 'No hay pasos adicionales que mostrar en este momento.',
-    'Codigo da encomenda copiado.': 'Codigo del pedido copiado.',
-    'Codigo de tracking copiado.': 'Codigo de seguimiento copiado.',
     'Apoio a encomenda': 'Ayuda con el pedido',
     'Documento fiscal indisponivel.': 'Documento fiscal no disponible.',
     'O PDF da fatura ainda esta a ser preparado.': 'El PDF de la factura aun se esta preparando.',
@@ -67,7 +61,8 @@ const ES_TEXT = {
     'Pagamento online': 'Pago online',
     'Abrir fatura': 'Abrir factura',
     'PDF em emissao': 'PDF en emision',
-    'Ver design': 'Ver diseno'
+    'Ver design': 'Ver diseno',
+    'Abrir tracking': 'Abrir seguimiento'
 };
 
 function escapeHtml(value) {
@@ -216,35 +211,6 @@ function formatDateTime(value) {
 
 function normalizeOrderCode(value) {
     return String(value || '').trim().toUpperCase().replace(/\s+/g, '');
-}
-
-async function copyTextToClipboard(value, successMessage) {
-    const normalized = String(value || '').trim();
-    if (!normalized) {
-        showToast(i18nText('Nada para copiar.'), 'warning');
-        return;
-    }
-
-    try {
-        if (navigator.clipboard?.writeText) {
-            await navigator.clipboard.writeText(normalized);
-        } else {
-            const helper = document.createElement('textarea');
-            helper.value = normalized;
-            helper.setAttribute('readonly', '');
-            helper.style.position = 'fixed';
-            helper.style.opacity = '0';
-            document.body.appendChild(helper);
-            helper.select();
-            document.execCommand('copy');
-            helper.remove();
-        }
-
-        showToast(successMessage, 'success');
-    } catch (error) {
-        console.error('Falha ao copiar texto:', error);
-        showToast(i18nText('Nao foi possivel copiar automaticamente.'), 'error');
-    }
 }
 
 function sanitizeFilenameToken(value) {
@@ -599,6 +565,9 @@ function resolveOrderItemVisual(item, snapshot) {
 
 function renderOrderHeader(order, workflowStatus) {
     const statusLabel = typeof getWorkflowStatusLabel === 'function' ? getWorkflowStatusLabel(workflowStatus) : workflowStatus;
+    const tracking = typeof getTrackingDetails === 'function'
+        ? getTrackingDetails(order)
+        : { trackingCode: '', trackingUrl: '' };
 
     document.getElementById('order-number').textContent = order.numero_encomenda || `#${order.id}`;
     document.getElementById('order-created-at').textContent = `${i18nText('Criada em')} ${formatDateTime(order.created_at)}`;
@@ -608,67 +577,30 @@ function renderOrderHeader(order, workflowStatus) {
         statusBadgeEl.className = 'inline-flex items-center gap-2 mt-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 border border-gray-200 text-gray-700';
         statusBadgeEl.innerHTML = buildWorkflowLabelWithGradeHtml(workflowStatus || statusLabel);
     }
-}
 
-function buildOrderNextSteps(order, workflowStatus, splitMeta) {
-    const paymentStatus = String(order?.payment_status || splitMeta?.meta?.paymentStatus || '').toLowerCase();
-    const fiscalStatus = typeof getFacturalusaStatus === 'function'
-        ? getFacturalusaStatus(order)
-        : 'not_required';
-    const tracking = typeof getTrackingDetails === 'function'
-        ? getTrackingDetails(order)
-        : { trackingCode: '', trackingUrl: '' };
-    const steps = [];
-
-    if (paymentStatus !== 'paid') {
-        steps.push(i18nText('O pagamento ainda nao foi confirmado. Assim que entrar, a equipa pode avancar para a validacao do pedido.'));
-    } else {
-        steps.push(i18nText('Pagamento confirmado. A encomenda ja esta em fila operacional e pode ser atualizada pela equipa em tempo real.'));
-    }
-
-    if (fiscalStatus === 'emitted') {
-        steps.push(i18nText('A fatura ja foi emitida e pode ser aberta diretamente a partir desta pagina.'));
-    } else if (paymentStatus === 'paid') {
-        steps.push(i18nText('A emissao fiscal esta a ser tratada automaticamente. Se houver atraso, a equipa consegue reemitir manualmente no painel.'));
-    }
-
-    if (workflowStatus === 'em_preparacao') {
-        steps.push(i18nText('Estamos a validar ficheiros e a preparar a producao do teu material.'));
-    } else if (workflowStatus === 'em_producao') {
-        steps.push(i18nText('A encomenda ja esta em producao. O proximo passo normal e expedicao.'));
-    } else if (workflowStatus === 'expedido') {
-        steps.push(tracking.trackingCode
-            ? `${i18nText('A encomenda ja saiu para entrega. Use o tracking')} ${tracking.trackingCode} ${i18nText('para acompanhar o percurso.')}`
-            : i18nText('A encomenda ja foi expedida. O tracking ficara visivel assim que estiver disponivel.'));
-    } else if (workflowStatus === 'entregue') {
-        steps.push(i18nText('A encomenda aparece como entregue. Se precisar de apoio, use o botao de contacto e responda com o codigo IBF.'));
-    }
-
-    return steps.slice(0, 4);
-}
-
-function renderOrderOperationalPanels(order, workflowStatus, splitMeta) {
-    const tracking = typeof getTrackingDetails === 'function'
-        ? getTrackingDetails(order)
-        : { trackingCode: '', trackingUrl: '' };
-    const orderCode = String(order?.numero_encomenda || '').trim();
-    const trackingCodeEl = document.getElementById('order-tracking-code-inline');
-    if (trackingCodeEl) {
-        trackingCodeEl.textContent = tracking.trackingCode || i18nText('Ainda nao disponivel');
-    }
-
-    if (orderCopyCodeBtn) {
-        orderCopyCodeBtn.onclick = () => copyTextToClipboard(orderCode, i18nText('Codigo da encomenda copiado.'));
-        orderCopyCodeBtn.disabled = !orderCode;
-    }
-
-    if (orderCopyTrackingBtn) {
-        const hasTracking = Boolean(tracking.trackingCode);
-        orderCopyTrackingBtn.onclick = () => copyTextToClipboard(tracking.trackingCode, i18nText('Codigo de tracking copiado.'));
-        orderCopyTrackingBtn.disabled = !hasTracking;
-        orderCopyTrackingBtn.classList.toggle('opacity-50', !hasTracking);
-        orderCopyTrackingBtn.classList.toggle('cursor-not-allowed', !hasTracking);
-        orderCopyTrackingBtn.setAttribute('aria-disabled', String(!hasTracking));
+    const trackingBadgeEl = document.getElementById('order-tracking-badge');
+    if (trackingBadgeEl) {
+        const trackingUrl = normalizeExternalUrl(tracking.trackingUrl);
+        const trackingLabel = tracking.trackingCode || (trackingUrl ? i18nText('Abrir tracking') : '');
+        trackingBadgeEl.classList.toggle('hidden', !trackingLabel);
+        trackingBadgeEl.innerHTML = trackingLabel
+            ? `
+                <i data-lucide="package-search" class="w-3.5 h-3.5" aria-hidden="true"></i>
+                <span>${escapeHtml(trackingLabel)}</span>
+                ${trackingUrl ? '<i data-lucide="external-link" class="w-3 h-3" aria-hidden="true"></i>' : ''}
+            `
+            : '';
+        if (trackingUrl) {
+            trackingBadgeEl.setAttribute('href', trackingUrl);
+            trackingBadgeEl.setAttribute('target', '_blank');
+            trackingBadgeEl.setAttribute('rel', 'noopener noreferrer');
+            trackingBadgeEl.setAttribute('aria-label', `${i18nText('Abrir tracking')}: ${trackingLabel}`);
+        } else {
+            trackingBadgeEl.removeAttribute('href');
+            trackingBadgeEl.removeAttribute('target');
+            trackingBadgeEl.removeAttribute('rel');
+            trackingBadgeEl.setAttribute('aria-label', `Tracking: ${trackingLabel}`);
+        }
     }
 
     if (typeof lucide !== 'undefined') {
@@ -978,7 +910,6 @@ async function initOrderPage() {
 
         renderOrderHeader(result.order, workflowStatus);
         renderOrderProgress(result.order, workflowStatus, splitMeta);
-        renderOrderOperationalPanels(result.order, workflowStatus, splitMeta);
         renderOrderItems(result.order, result.items, splitMeta);
 
         orderLoading.classList.add('hidden');
