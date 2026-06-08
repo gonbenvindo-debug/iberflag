@@ -48,6 +48,13 @@
         cancelado: 'em_preparacao'
     };
 
+    const WORKFLOW_STATUS_RANK = {
+        em_preparacao: 0,
+        em_producao: 1,
+        expedido: 2,
+        entregue: 3
+    };
+
     const WORKFLOW_STATUS_ALIASES = {
         pendente_confirmacao: 'em_preparacao',
         aguarda_pagamento: 'em_preparacao',
@@ -231,15 +238,50 @@
         return LEGACY_TO_WORKFLOW_STATUS[String(legacyStatus || '').trim()] || 'em_preparacao';
     }
 
+    function resolveWorkflowStatusFromOrderRow(order = {}) {
+        const explicit = String(
+            order?.workflow_status
+            || order?.workflowStatus
+            || order?.estado_workflow
+            || ''
+        ).trim();
+        if (explicit) {
+            return normalizeWorkflowStatusValue(explicit);
+        }
+
+        const rawStatus = String(order?.status || order?.estado || '').trim();
+        if (!rawStatus) {
+            return '';
+        }
+
+        const normalized = normalizeWorkflowStatusValue(rawStatus);
+        if (Object.prototype.hasOwnProperty.call(WORKFLOW_STATUS_RANK, normalized)) {
+            return normalized;
+        }
+
+        return getWorkflowStatusFromLegacy(rawStatus);
+    }
+
+    function pickMostAdvancedWorkflowStatus(...values) {
+        const normalizedValues = values
+            .map((value) => normalizeWorkflowStatusValue(value))
+            .filter((value) => Object.prototype.hasOwnProperty.call(WORKFLOW_STATUS_RANK, value));
+
+        if (normalizedValues.length === 0) {
+            return 'em_preparacao';
+        }
+
+        return normalizedValues.reduce((best, value) => (
+            WORKFLOW_STATUS_RANK[value] > WORKFLOW_STATUS_RANK[best] ? value : best
+        ), normalizedValues[0]);
+    }
+
     function deriveWorkflowStatus(order) {
         const split = splitOrderNotesAndMeta(order?.notas || '');
         const statusFromMeta = split.meta.workflowStatus;
+        const statusFromRow = resolveWorkflowStatusFromOrderRow(order);
 
-        if (statusFromMeta) {
-            return statusFromMeta;
-        }
-
-        return getWorkflowStatusFromLegacy(order?.status || 'pendente');
+        return pickMostAdvancedWorkflowStatus(statusFromMeta, statusFromRow);
     }
 
     function appendWorkflowHistory(meta, nextStatus, note) {
@@ -297,6 +339,8 @@
     global.normalizeWorkflowStatusValue = normalizeWorkflowStatusValue;
     global.getLegacyStatusFromWorkflow = getLegacyStatusFromWorkflow;
     global.getWorkflowStatusFromLegacy = getWorkflowStatusFromLegacy;
+    global.resolveWorkflowStatusFromOrderRow = resolveWorkflowStatusFromOrderRow;
+    global.pickMostAdvancedWorkflowStatus = pickMostAdvancedWorkflowStatus;
     global.deriveWorkflowStatus = deriveWorkflowStatus;
     global.appendWorkflowHistory = appendWorkflowHistory;
     global.getTrackingDetails = getTrackingDetails;
