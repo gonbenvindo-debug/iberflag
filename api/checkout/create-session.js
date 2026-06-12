@@ -9,7 +9,11 @@ const {
     resolveStripePaymentMethodTypes
 } = require('../../lib/server/checkout');
 const { getSupabaseAdmin } = require('../../lib/server/supabase-admin');
-const { getStripeClient, getStripePublishableKey } = require('../../lib/server/stripe');
+const {
+    getPaymentEnvironment,
+    getStripeClient,
+    getStripePublishableKey
+} = require('../../lib/server/stripe');
 const { insertOrderItemsWithFallback } = require('../../lib/server/order-items');
 const {
     applyRateLimit,
@@ -253,6 +257,43 @@ function normalizeCheckoutText(value) {
     return String(value || '').trim();
 }
 
+function resolveStripePaymentMethodConfigurationId() {
+    const mode = getPaymentEnvironment();
+    return mode === 'live'
+        ? normalizeCheckoutText(process.env.STRIPE_PAYMENT_METHOD_CONFIGURATION_LIVE || process.env.STRIPE_PAYMENT_METHOD_CONFIGURATION)
+        : normalizeCheckoutText(process.env.STRIPE_PAYMENT_METHOD_CONFIGURATION_TEST || process.env.STRIPE_PAYMENT_METHOD_CONFIGURATION);
+}
+
+function buildStripeCustomerPayload(customerSnapshot, orderNumber) {
+    const payload = {
+        email: customerSnapshot.email,
+        name: customerSnapshot.tipo_cliente === 'empresa'
+            ? normalizeCheckoutText(customerSnapshot.empresa || customerSnapshot.nome)
+            : customerSnapshot.nome,
+        phone: customerSnapshot.telefone || undefined,
+        metadata: {
+            order_code: orderNumber,
+            source: 'iberflag_checkout'
+        }
+    };
+
+    const line1 = normalizeCheckoutText(customerSnapshot.morada);
+    const postalCode = normalizeCheckoutText(customerSnapshot.codigo_postal);
+    const city = normalizeCheckoutText(customerSnapshot.cidade);
+    const country = normalizeCheckoutText(customerSnapshot.country);
+
+    if (line1 || postalCode || city || country) {
+        payload.address = {
+            line1: line1 || undefined,
+            postal_code: postalCode || undefined,
+            city: city || undefined,
+            country: country || undefined
+        };
+    }
+
+    return payload;
+}
+
 function collectCustomizedDesignRequirements(items = []) {
     if (!Array.isArray(items) || items.length === 0) {
         return [];
@@ -404,6 +445,7 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
     }
 
     let orderIdForCleanup = null;
+    let stripeCustomerIdForCleanup = null;
 
     try {
         const body = await readJsonBody(req);
@@ -696,26 +738,41 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
         })}`;
 
         const checkoutCountryCode = resolveCheckoutCountryCode(customerSnapshot);
+        const stripePaymentMethodConfiguration = resolveStripePaymentMethodConfigurationId();
         const stripePaymentMethodTypes = resolveStripePaymentMethodTypes(
             selectedPaymentMethod,
             checkoutCountryCode
         );
+        const stripeCustomer = stripePaymentMethodConfiguration
+            ? await stripe.customers.create(buildStripeCustomerPayload(customerSnapshot, orderNumber))
+            : null;
+        const stripeCustomerId = normalizeCheckoutText(stripeCustomer?.id);
+        stripeCustomerIdForCleanup = stripeCustomerId || null;
 
-        const session = await stripe.checkout.sessions.create({
+        const checkoutSessionPayload = {
             mode: 'payment',
             ui_mode: 'embedded',
             redirect_on_completion: 'if_required',
             return_url: returnUrl,
             client_reference_id: orderNumber,
-            customer_email: customerSnapshot.email,
-            payment_method_types: stripePaymentMethodTypes,
             metadata: {
                 order_code: orderNumber,
                 payment_method: selectedPaymentMethod
             },
             line_items: chargeableItems.map(buildStripeLineItem),
             billing_address_collection: 'auto'
-        });
+        };
+
+        if (stripePaymentMethodConfiguration) {
+            checkoutSessionPayload.customer = stripeCustomerId;
+            checkoutSessionPayload.payment_method_configuration = stripePaymentMethodConfiguration;
+        } else {
+            checkoutSessionPayload.customer_email = customerSnapshot.email;
+            checkoutSessionPayload.payment_method_types = stripePaymentMethodTypes;
+        }
+
+        const session = await stripe.checkout.sessions.create(checkoutSessionPayload);
+        stripeCustomerIdForCleanup = null;
 
         if (!String(session?.client_secret || '').trim()) {
             const embeddedError = new Error('Stripe did not return an embedded checkout client secret.');
@@ -770,6 +827,10 @@ module.exports = async function createCheckoutSessionHandler(req, res) {
             if (orderIdForCleanup) {
                 const supabase = getSupabaseAdmin();
                 await deleteOrderWithItems(supabase, orderIdForCleanup);
+            }
+            if (stripeCustomerIdForCleanup) {
+                const stripe = getStripeClient();
+                await stripe.customers.del(stripeCustomerIdForCleanup);
             }
         } catch (cleanupError) {
             console.warn('Falha ao limpar encomenda provisoria:', cleanupError);
